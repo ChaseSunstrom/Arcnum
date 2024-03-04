@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="app">
+      <UniqueIdentifier>{665E880B-D267-887C-5BE3-9E7CC7EB937C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="audio">
+      <UniqueIdentifier>{B7281C0F-233D-44C0-ECBE-E71F589240F1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ecs">
+      <UniqueIdentifier>{C06D880B-2C77-887C-B5F2-9E7C21FB937C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ecs\component">
+      <UniqueIdentifier>{4296BCA2-AE56-38D9-7791-8156E3107DB5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ecs\entity">
+      <UniqueIdentifier>{2C961D11-184E-5F5E-8155-38BA6D2CFA4E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ecs\system">
+      <UniqueIdentifier>{F47C8C32-E034-CE7F-493C-A7DB35136970}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="events">
+      <UniqueIdentifier>{5A9D08FC-463F-33D2-2FFA-46261B3BBA22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lighting">
+      <UniqueIdentifier>{7BBAFAB1-6787-55BD-90A0-43657CCC8A4B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="logging">
+      <UniqueIdentifier>{CC00C087-38E0-3E23-41F8-C9F9AD56A584}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net">
+      <UniqueIdentifier>{4C94880B-B89D-887C-4119-9F7CAD21947C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="physics">
+      <UniqueIdentifier>{A823A1AC-1403-2048-1D1B-AB1E897986A9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="renderer">
+      <UniqueIdentifier>{9C6AA017-8837-FB22-B150-E9CA9D7C30B1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="scene">
+      <UniqueIdentifier>{D3075810-3F1C-80C1-089E-232174717CF2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tests">
+      <UniqueIdentifier>{78756B10-E489-93C1-AD0B-372119DF8FF2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="user">
+      <UniqueIdentifier>{842E9F7C-7065-A00D-1952-861005681C0F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="util">
+      <UniqueIdentifier>{43339F7C-2F6A-A00D-D856-8610C46C1C0F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="window">
+      <UniqueIdentifier>{5DFE1E25-49A0-49FB-325B-5D4F1E9CD04B}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Spark\core\app\app.hpp">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\app\app_interface.hpp">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\app\service.hpp">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\audio\audio.hpp">
+      <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\audio\sound.hpp">
+      <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\ecs\component\component.hpp">
+      <Filter>ecs\component</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\ecs\component\component_types.hpp">
+      <Filter>ecs\component</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\ecs\component\shader.hpp">
+      <Filter>ecs\component</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\ecs\ecs.hpp">
+      <Filter>ecs</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\ecs\entity\entity.hpp">
+      <Filter>ecs\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\ecs\entity\entity_type.hpp">
+      <Filter>ecs\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\ecs\system\system.hpp">
+      <Filter>ecs\system</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\events\event.hpp">
+      <Filter>events</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\events\sub.hpp">
+      <Filter>events</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\lighting\light.hpp">
+      <Filter>lighting</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\logging\log.hpp">
+      <Filter>logging</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\net\packet.hpp">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\net\tcp.hpp">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\net\udp.hpp">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\physics\aabb.hpp">
+      <Filter>physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\physics\gravity.hpp">
+      <Filter>physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\renderer\instancer.hpp">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\renderer\layer.hpp">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\renderer\layer_stack.hpp">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\renderer\renderer.hpp">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\scene\scene.hpp">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\scene\scene_manager.hpp">
+      <Filter>scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\spark.hpp" />
+    <ClInclude Include="Spark\core\spark_main.hpp" />
+    <ClInclude Include="Spark\core\std_include.hpp" />
+    <ClInclude Include="Spark\core\tests\test.hpp">
+      <Filter>tests</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\types.hpp" />
+    <ClInclude Include="Spark\core\user\control.hpp">
+      <Filter>user</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\util\file.hpp">
+      <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\util\memory.hpp">
+      <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\util\thread_pool.hpp">
+      <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\util\wrap.hpp">
+      <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\window\window.hpp">
+      <Filter>window</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Spark\core\app\app.cpp">
+      <Filter>app</Filter>
+    </ClCompile>
+    <ClCompile Include="Spark\core\app\app_interface.cpp">
+      <Filter>app</Filter>
+    </ClCompile>
+    <ClCompile Include="Spark\core\audio\audio.cpp">
+      <Filter>audio</Filter>
+    </ClCompile>
+    <ClCompile Include="Spark\core\ecs\component\component_types.cpp">
+      <Filter>ecs\component</Filter>
+    </ClCompile>
+    <ClCompile Include="Spark\core\ecs\component\shader.cpp">
+      <Filter>ecs\component</Filter>
+    </ClCompile>
+    <ClCompile Include="Spark\core\events\sub.cpp">
+      <Filter>events</Filter>
+    </ClCompile>
+    <ClCompile Include="Spark\core\logging\log.cpp">
+      <Filter>logging</Filter>
+    </ClCompile>
+    <ClCompile Include="Spark\core\physics\aabb.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
+    <ClCompile Include="Spark\core\renderer\renderer.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Spark\core\spark_main.cpp" />
+    <ClCompile Include="Spark\core\tests\test.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
+    <ClCompile Include="Spark\core\util\file.cpp">
+      <Filter>util</Filter>
+    </ClCompile>
+    <ClCompile Include="Spark\core\util\wrap.cpp">
+      <Filter>util</Filter>
+    </ClCompile>
+    <ClCompile Include="Spark\core\window\window.cpp">
+      <Filter>window</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,18 @@
+#include "audio.hpp"
+#include "../app/app.hpp"
+
+namespace spark
+{
+	void audio_system::on_update(float64_t delta_time)
+	{
+		audio_manager& audio_man = application::get_audio_manager();
+
+		for (const auto& component : m_audio_components)
+		{
+			if (component.m_play_condition(m_component_manager))
+			{
+				audio_man.play_sound(component.m_name);
+			}
+		}
+	}
+}

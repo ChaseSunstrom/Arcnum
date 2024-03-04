@@ -1,0 +1,167 @@
+#ifndef SPARK_EVENT_HPP
+#define SPARK_EVENT_HPP
+
+#include "../spark.hpp"
+
+namespace spark
+{
+
+// Macros instead of enums to allow for any event type
+#define NO_EVENT 0
+#define APP_UPDATE_EVENT 1
+#define APP_TICK_EVENT 2
+#define APP_RENDER_EVENT 3
+#define WINDOW_CLOSED_EVENT 4
+#define WINDOW_RESIZED_EVENT 5
+#define WINDOW_MOVED_EVENT 6
+#define KEY_PRESSED_EVENT 7
+#define KEY_RELEASED_EVENT 8
+#define KEY_REPEAT_EVENT 9
+#define MOUSE_PRESSED_EVENT 10
+#define MOUSE_RELEASED_EVENT 11
+#define MOUSE_MOVE_EVENT 12
+#define MOUSE_SCROLLED_EVENT 13
+
+	struct event
+	{
+		event() = default;
+
+		event(int32_t type) :
+				m_type(type) { }
+
+		bool m_handled = false;
+
+		int32_t m_type = NO_EVENT;
+	};
+
+	using app_update_event = event;
+	using app_tick_event = event;
+	using app_render_event = event;
+	using window_closed_event = event;
+
+	struct window_resized_event :
+			event
+	{
+		window_resized_event() = default;
+
+		window_resized_event(int32_t width, int32_t height) :
+				event(WINDOW_RESIZED_EVENT), m_width(width), m_height(height) { }
+
+		int32_t m_width;
+
+		int32_t m_height;
+	};
+
+	struct window_moved_event :
+			event
+	{
+		window_moved_event() = default;
+
+		window_moved_event(int32_t x_pos, int32_t y_pos) :
+				event(WINDOW_MOVED_EVENT), m_x_pos(x_pos), m_y_pos(y_pos) { }
+
+		int32_t m_x_pos;
+
+		int32_t m_y_pos;
+	};
+
+	struct key_pressed_event :
+			event
+	{
+		key_pressed_event() = default;
+
+		key_pressed_event(int32_t key_code) :
+				event(KEY_PRESSED_EVENT), m_key_code(key_code) { }
+
+		int32_t m_key_code;
+	};
+
+	struct key_released_event :
+			event
+	{
+		key_released_event(int32_t key_code) :
+				event(KEY_RELEASED_EVENT), m_key_code(key_code) { }
+
+		int32_t m_key_code;
+	};
+
+	struct key_repeat_event :
+			event
+	{
+		key_repeat_event() = default;
+
+		key_repeat_event(int32_t key_code) :
+				event(KEY_REPEAT_EVENT), m_key_code(key_code) { }
+
+		int32_t m_key_code;
+	};
+
+	struct mouse_pressed_event :
+			event
+	{
+		mouse_pressed_event() = default;
+
+		mouse_pressed_event(int32_t button) :
+				event(MOUSE_PRESSED_EVENT), m_button(button) { }
+
+		int32_t m_button;
+	};
+
+	struct mouse_released_event :
+			event
+	{
+		mouse_released_event() = default;
+
+		mouse_released_event(int32_t button) :
+				event(MOUSE_RELEASED_EVENT), m_button(button) { }
+
+		int32_t m_button;
+	};
+
+	struct mouse_moved_event :
+			event
+	{
+		mouse_moved_event() = default;
+
+		mouse_moved_event(float64_t x_pos, float64_t y_pos) :
+				event(MOUSE_MOVE_EVENT), m_x_pos(x_pos), m_y_pos(y_pos) { }
+
+		float64_t m_x_pos;
+
+		float64_t m_y_pos;
+	};
+
+	struct mouse_scrolled_event :
+			event
+	{
+		mouse_scrolled_event() = default;
+
+		mouse_scrolled_event(float64_t x_offset, float64_t y_offset) :
+				event(MOUSE_SCROLLED_EVENT), m_x_offset(x_offset), m_y_offset(y_offset) { }
+
+		float64_t m_x_offset;
+
+		float64_t m_y_offset;
+	};
+
+	// ===============================================================
+
+	class event_dispatcher
+	{
+	public:
+		event_dispatcher() = default;
+
+		event_dispatcher(std::shared_ptr <event> event) :
+				m_event(event) { }
+
+		inline bool dispatch(std::function<bool(std::shared_ptr<event>)> fn)
+		{
+			return fn(m_event);
+		}
+
+	private:
+		std::shared_ptr <event> m_event;
+	};
+}
+
+#endif // CORE_EVENT_H

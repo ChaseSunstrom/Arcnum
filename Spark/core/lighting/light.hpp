@@ -1,0 +1,117 @@
+#ifndef SPARK_LIGHT_HPP
+#define SPARK_LIGHT_HPP
+
+#include "../spark.hpp"
+
+namespace spark
+{
+	struct dir_light_component
+	{
+		dir_light_component() = default;
+
+		dir_light_component(
+				glm::vec3 direction, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular) :
+				m_direction(direction), m_ambient(ambient), m_diffuse(diffuse), m_specular(specular) { }
+
+		bool operator!=(const dir_light_component& other) const
+		{
+			return m_direction != other.m_direction || m_ambient != other.m_ambient || m_diffuse != other.m_diffuse ||
+			       m_specular != other.m_specular;
+		}
+
+		glm::vec3 m_direction;
+
+		glm::vec3 m_ambient;
+
+		glm::vec3 m_diffuse;
+
+		glm::vec3 m_specular;
+	};
+
+	struct point_light_component
+	{
+		point_light_component() = default;
+
+		point_light_component(
+				glm::vec3 position,
+				float32_t constant,
+				float32_t linear,
+				float32_t quadratic,
+				glm::vec3 ambient,
+				glm::vec3 diffuse,
+				glm::vec3 specular) :
+				m_position(position), m_constant(constant), m_linear(linear), m_quadratic(quadratic), m_ambient(ambient), m_diffuse(
+				diffuse), m_specular(specular) { }
+
+		bool operator!=(const point_light_component& other) const
+		{
+			return m_position != other.m_position || m_constant != other.m_constant || m_linear != other.m_linear ||
+			       m_quadratic != other.m_quadratic || m_ambient != other.m_ambient || m_diffuse != other.m_diffuse ||
+			       m_specular != other.m_specular;
+		}
+
+		glm::vec3 m_position;
+
+		float32_t m_constant;
+
+		float32_t m_linear;
+
+		float32_t m_quadratic;
+
+		glm::vec3 m_ambient;
+
+		glm::vec3 m_diffuse;
+
+		glm::vec3 m_specular;
+	};
+
+	struct spot_light_component
+	{
+		spot_light_component() = default;
+
+		spot_light_component(
+				glm::vec3 position,
+				glm::vec3 direction,
+				float32_t cut_off,
+				float32_t outer_cut_off,
+				float32_t constant,
+				float32_t linear,
+				float32_t quadratic,
+				glm::vec3 ambient,
+				glm::vec3 diffuse,
+				glm::vec3 specular) :
+				m_position(position), m_direction(direction), m_cut_off(cut_off), m_outer_cut_off(outer_cut_off), m_constant(
+				constant), m_linear(linear), m_quadratic(quadratic), m_ambient(ambient), m_diffuse(diffuse), m_specular(
+				specular) { }
+
+		bool operator!=(const spot_light_component& other) const
+		{
+			return m_position != other.m_position || m_direction != other.m_direction || m_cut_off != other.m_cut_off ||
+			       m_outer_cut_off != other.m_outer_cut_off || m_constant != other.m_constant ||
+			       m_linear != other.m_linear || m_quadratic != other.m_quadratic || m_ambient != other.m_ambient ||
+			       m_diffuse != other.m_diffuse || m_specular != other.m_specular;
+		}
+
+		glm::vec3 m_position;
+
+		glm::vec3 m_direction;
+
+		float32_t m_cut_off;
+
+		float32_t m_outer_cut_off;
+
+		float32_t m_constant;
+
+		float32_t m_linear;
+
+		float32_t m_quadratic;
+
+		glm::vec3 m_ambient;
+
+		glm::vec3 m_diffuse;
+
+		glm::vec3 m_specular;
+	};
+}
+
+#endif

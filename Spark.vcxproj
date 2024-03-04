@@ -1,0 +1,157 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{26081C0E-921C-44BF-5B9E-E71EC77140F0}</ProjectGuid>
+    <IgnoreWarnCompileDuplicatedFilename>true</IgnoreWarnCompileDuplicatedFilename>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>Spark</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>bin\Debug\lib\</OutDir>
+    <IntDir>obj\Debug\Spark\</IntDir>
+    <TargetName>Spark</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>bin\Release\lib\</OutDir>
+    <IntDir>obj\Release\Spark\</IntDir>
+    <TargetName>Spark</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Spark\include;Spark\include\BOOST;Spark\include\IRRKLANG;Spark\include\GLEW;Spark\include\GLFW;Spark\include\GLM;Spark\include\OTHER;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ExternalWarningLevel>Level3</ExternalWarningLevel>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>glfw3.lib;glew32.lib;opengl32.lib;irrKlang.lib;libboost_system-vc143-mt-gd-x64-1_83.lib;libboost_serialization-vc143-mt-gd-x64-1_83.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>Spark\lib;Spark\lib\BOOST;Spark\lib\IRRKLANG;Spark\lib\GLEW;Spark\lib\GLFW;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Spark\include;Spark\include\BOOST;Spark\include\IRRKLANG;Spark\include\GLEW;Spark\include\GLFW;Spark\include\GLM;Spark\include\OTHER;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Optimization>Full</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <StringPooling>true</StringPooling>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ExternalWarningLevel>Level3</ExternalWarningLevel>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>glfw3.lib;glew32.lib;opengl32.lib;irrKlang.lib;libboost_system-vc143-mt-x64-1_83.lib;libboost_serialization-vc143-mt-x64-1_83.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>Spark\lib;Spark\lib\BOOST;Spark\lib\IRRKLANG;Spark\lib\GLEW;Spark\lib\GLFW;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="Spark\core\app\app.hpp" />
+    <ClInclude Include="Spark\core\app\app_interface.hpp" />
+    <ClInclude Include="Spark\core\app\service.hpp" />
+    <ClInclude Include="Spark\core\audio\audio.hpp" />
+    <ClInclude Include="Spark\core\audio\sound.hpp" />
+    <ClInclude Include="Spark\core\ecs\component\component.hpp" />
+    <ClInclude Include="Spark\core\ecs\component\component_types.hpp" />
+    <ClInclude Include="Spark\core\ecs\component\shader.hpp" />
+    <ClInclude Include="Spark\core\ecs\ecs.hpp" />
+    <ClInclude Include="Spark\core\ecs\entity\entity.hpp" />
+    <ClInclude Include="Spark\core\ecs\entity\entity_type.hpp" />
+    <ClInclude Include="Spark\core\ecs\system\system.hpp" />
+    <ClInclude Include="Spark\core\events\event.hpp" />
+    <ClInclude Include="Spark\core\events\sub.hpp" />
+    <ClInclude Include="Spark\core\lighting\light.hpp" />
+    <ClInclude Include="Spark\core\logging\log.hpp" />
+    <ClInclude Include="Spark\core\net\packet.hpp" />
+    <ClInclude Include="Spark\core\net\tcp.hpp" />
+    <ClInclude Include="Spark\core\net\udp.hpp" />
+    <ClInclude Include="Spark\core\physics\aabb.hpp" />
+    <ClInclude Include="Spark\core\physics\gravity.hpp" />
+    <ClInclude Include="Spark\core\renderer\instancer.hpp" />
+    <ClInclude Include="Spark\core\renderer\layer.hpp" />
+    <ClInclude Include="Spark\core\renderer\layer_stack.hpp" />
+    <ClInclude Include="Spark\core\renderer\renderer.hpp" />
+    <ClInclude Include="Spark\core\scene\scene.hpp" />
+    <ClInclude Include="Spark\core\scene\scene_manager.hpp" />
+    <ClInclude Include="Spark\core\spark.hpp" />
+    <ClInclude Include="Spark\core\spark_main.hpp" />
+    <ClInclude Include="Spark\core\std_include.hpp" />
+    <ClInclude Include="Spark\core\tests\test.hpp" />
+    <ClInclude Include="Spark\core\types.hpp" />
+    <ClInclude Include="Spark\core\user\control.hpp" />
+    <ClInclude Include="Spark\core\util\file.hpp" />
+    <ClInclude Include="Spark\core\util\memory.hpp" />
+    <ClInclude Include="Spark\core\util\thread_pool.hpp" />
+    <ClInclude Include="Spark\core\util\wrap.hpp" />
+    <ClInclude Include="Spark\core\window\window.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Spark\core\app\app.cpp" />
+    <ClCompile Include="Spark\core\app\app_interface.cpp" />
+    <ClCompile Include="Spark\core\audio\audio.cpp" />
+    <ClCompile Include="Spark\core\ecs\component\component_types.cpp" />
+    <ClCompile Include="Spark\core\ecs\component\shader.cpp" />
+    <ClCompile Include="Spark\core\events\sub.cpp" />
+    <ClCompile Include="Spark\core\logging\log.cpp" />
+    <ClCompile Include="Spark\core\physics\aabb.cpp" />
+    <ClCompile Include="Spark\core\renderer\renderer.cpp" />
+    <ClCompile Include="Spark\core\spark_main.cpp" />
+    <ClCompile Include="Spark\core\tests\test.cpp" />
+    <ClCompile Include="Spark\core\util\file.cpp" />
+    <ClCompile Include="Spark\core\util\wrap.cpp" />
+    <ClCompile Include="Spark\core\window\window.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -28,7 +28,6 @@ namespace spark
             void send(const T& packet)
             {
                 std::string serialized_packet = serialize(packet);
-                SPARK_INFO("[TCP CLIENT SENT PACKET]: " << serialized_packet);
                 boost::asio::write(m_socket, asio::buffer(serialized_packet));
             }
 
@@ -45,7 +44,7 @@ namespace spark
         class tcp_server
         {
         public:
-            tcp_server(const std::string& ip = "127.0.0.1", const std::string& port = "12345", asio::io_context& io_context = default_io_context()) :
+            tcp_server(const std::string& ip = "127.0.0.1", const std::string& port = "8080", asio::io_context& io_context = default_io_context()) :
                 m_io_context(io_context),
                 m_acceptor(io_context, tcp::endpoint(asio::ip::make_address(ip), static_cast<uint16_t>(std::stoi(port)))),
                 m_socket(io_context)

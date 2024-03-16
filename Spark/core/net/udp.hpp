@@ -44,7 +44,7 @@ namespace spark
         class udp_server
         {
         public:
-            udp_server(const std::string& ip = "127.0.0.1", const std::string& port = "12345", asio::io_context& io_context = default_io_context())
+            udp_server(const std::string& ip = "127.0.0.1", const std::string& port = "8080", asio::io_context& io_context = default_io_context())
                 : m_socket(io_context), m_work(io_context)
             {
                 udp::endpoint local_endpoint(asio::ip::make_address(ip), static_cast<uint16_t>(std::stoi(port)));

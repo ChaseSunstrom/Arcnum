@@ -86,21 +86,21 @@ namespace spark
             EXPECT_EQ(*ptr.access(), 2000); // This should pass if the shared_shield_ptr properly locks around the int increment.
         }
 
-        //TEST(test_udp_server)
-        //{
-        //    spark::thread_pool::enqueue(spark::task_priority::HIGH, []()
-        //        {
-        //            net::udp_server server("0.0.0.0", "12345");
-        //        });
+        TEST(test_udp_server)
+        {
+            spark::thread_pool::enqueue(spark::task_priority::HIGH, []()
+                {
+                    net::udp_server server("127.0.0.1", "8080");
+                });
 
-        //    spark::net::udp_client client("127.0.0.1", "8080");
+            spark::net::udp_client client("127.0.0.1", "8080");
 
-        //    std::string line;
-        //    while (std::getline(std::cin, line)) {
-        //        chat_message msg(line);
-        //        client.send(msg);
-        //    }
-        //}
+            std::string line;
+            while (std::getline(std::cin, line)) {
+                chat_message msg(line);
+                client.send(msg);
+            }
+        }
 
         TEST(test_tcp_server)
         {

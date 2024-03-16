@@ -126,7 +126,7 @@ namespace spark
             static bool steal_task(uint32_t thread_id)
             {
                 // Iterate over other queues to steal a task
-                for (size_t i = 0; i < s_tasks_queues.size(); ++i)
+                for (uint32_t i = 0; i < s_tasks_queues.size(); ++i)
                 {
                     if (i != thread_id) // Don't steal from itself
                     {
@@ -146,12 +146,6 @@ namespace spark
     private:
         struct task_queue
         {
-            std::priority_queue<
-                std::pair<task_priority, std::function<void()>>,
-                std::vector<std::pair<task_priority, std::function<void()>>>,
-                task_comparator
-            > m_queue;
-            std::mutex m_mutex;
 
             // Delete copy constructor and copy assignment operator
             task_queue(const task_queue&) = delete;
@@ -177,6 +171,13 @@ namespace spark
 
             // Default constructor
             task_queue() = default;
+
+            std::priority_queue<
+                std::pair<task_priority, std::function<void()>>,
+                std::vector<std::pair<task_priority, std::function<void()>>>,
+                task_comparator
+            > m_queue;
+            std::mutex m_mutex;
         };
         // Static members
         static inline std::vector<std::thread> s_workers;

@@ -11,10 +11,6 @@ namespace spark
 	// Default main function
 	void spark_main()
 	{
-//#define TEST_MAIN
-#ifdef TEST_MAIN
-		test::core_test_main();
-#else
 		uint32_t num_threads = std::thread::hardware_concurrency();
 
 		if (num_threads == 0)
@@ -24,6 +20,10 @@ namespace spark
 
 		thread_pool::initialize(num_threads);
 
+#define TEST_MAIN
+#ifdef TEST_MAIN
+		test::core_test_main();
+#else
 		application::on_start();
 #endif
 	}

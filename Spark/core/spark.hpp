@@ -18,9 +18,7 @@
 
 #ifdef _MSC_VER
 	#pragma warning(disable : 4996)
-#else
-	#define _SPARK_RESTRICT restrict
-#endif // _MSC_VER
+#endif
 
 namespace spark
 {

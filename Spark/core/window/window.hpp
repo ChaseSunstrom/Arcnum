@@ -29,7 +29,7 @@ namespace spark
 
 		uint32_t m_height = 1080;
 
-		std::function<void(std::shared_ptr<event > )> m_event_callback;
+		std::function<void(std::shared_ptr<event>)> m_event_callback;
 	};
 
 	class window
@@ -71,7 +71,6 @@ namespace spark
 		// ==============================================================================
 
 	private:
-
 		GLFWwindow* m_window;
 
 		std::unique_ptr <window_data> m_window_data = std::make_unique<window_data>();

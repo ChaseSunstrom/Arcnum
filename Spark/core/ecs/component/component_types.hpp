@@ -10,7 +10,7 @@ namespace spark
 	struct vertex
 	{
 		vertex(const math::vec3& position = math::vec3(0), const math::vec3& normal = math::vec3(0), const math::vec2& texcoord = math::vec2(0)) :
-				m_position(position), m_normal(normal), m_texcoords(texcoord) { }
+			m_position(position), m_normal(normal), m_texcoords(texcoord) { }
 
 		~vertex() = default;
 
@@ -34,14 +34,14 @@ namespace spark
 			const math::vec3& scale = math::vec3(1.0f)
 		) : m_position(position), m_rotation(rotation), m_scale(scale) {}
 
-		math::mat4 to_mat4() const 
+		math::mat4 to_mat4() const
 		{
 			return math::translate(math::mat4(1.0f), m_position) *
 				math::toMat4(m_rotation) *
 				math::scale(math::mat4(1.0f), m_scale);
 		}
 
-		 bool operator!=(const transform& other) const { return m_position != other.m_position || m_rotation != other.m_rotation || m_scale != other.m_scale; }
+		bool operator!=(const transform& other) const { return m_position != other.m_position || m_rotation != other.m_rotation || m_scale != other.m_scale; }
 
 		math::vec3 m_position;
 		math::quat m_rotation;
@@ -54,9 +54,9 @@ namespace spark
 		texture() = default;
 
 		texture(const std::filesystem::path& path,
-				texture_type type,
-				std::optional <int32_t> depth = std::nullopt,
-				const std::vector <std::pair<GLenum, GLenum>>& params = std::vector<std::pair < GLenum, GLenum>>());
+			texture_type type,
+			std::optional <int32_t> depth = std::nullopt,
+			const std::vector <std::pair<GLenum, GLenum>>& params = std::vector<std::pair < GLenum, GLenum>>());
 
 		~texture();
 
@@ -94,13 +94,13 @@ namespace spark
 
 		~mesh();
 
-		mesh(mesh&& other) noexcept : 
+		mesh(mesh&& other) noexcept :
 			m_vertices(std::move(other.m_vertices)),
 			m_indices(std::move(other.m_indices)),
 			m_vao(other.m_vao),
 			m_vbo(other.m_vbo),
 			m_ibo(other.m_ibo),
-			m_index_count(other.m_index_count) 
+			m_index_count(other.m_index_count)
 		{
 			// Transfer ownership
 			other.m_vao = 0;
@@ -117,13 +117,13 @@ namespace spark
 
 		void create_mesh();
 
-		 GLuint get_vao() { return m_vao; }
+		GLuint get_vao() { return m_vao; }
 
-		 GLuint get_vbo() { return m_vbo; }
+		GLuint get_vbo() { return m_vbo; }
 
-		 GLuint get_ibo() { return m_ibo; }
+		GLuint get_ibo() { return m_ibo; }
 
-		 GLsizei get_index_count() { return m_index_count; }
+		GLsizei get_index_count() { return m_index_count; }
 
 		std::vector <vertex> m_vertices = std::vector<vertex>();
 
@@ -141,7 +141,7 @@ namespace spark
 	struct instanced_mesh
 	{
 		instanced_mesh(mesh&& m) :
-				m_mesh(std::move(m)), m_instance_vbo(0)
+			m_mesh(std::move(m)), m_instance_vbo(0)
 		{
 			generate_vertex_buffer(m_instance_vbo);
 		}
@@ -176,16 +176,16 @@ namespace spark
 		material() = default;
 
 		material(
-				GLuint shader_program,
-				const math::vec4& color = math::vec4(1),
-				texture texture = texture(),
-				int32_t diffuse = 0,
-				int32_t specular = 0,
-				int32_t ambient = 1,
-				float32_t shininess = 0) :
-				m_color(color), m_diffuse(diffuse), m_specular(specular), m_ambient(ambient), m_shininess(shininess), m_texture(texture), 
-				m_shader_program(shader_program) { }
-		
+			GLuint shader_program,
+			const math::vec4& color = math::vec4(1),
+			texture texture = texture(),
+			int32_t diffuse = 0,
+			int32_t specular = 0,
+			int32_t ambient = 1,
+			float32_t shininess = 0) :
+			m_color(color), m_diffuse(diffuse), m_specular(specular), m_ambient(ambient), m_shininess(shininess), m_texture(texture),
+			m_shader_program(shader_program) { }
+
 		~material() = default;
 
 		math::vec4 m_color = math::vec4(1);
@@ -208,11 +208,11 @@ namespace spark
 		mesh_component() = default;
 
 		mesh_component(const std::string& name) :
-				m_mesh_name(name) { }
+			m_mesh_name(name) { }
 
 		~mesh_component() = default;
 
-		 bool operator!=(const mesh_component& other) const { return m_mesh_name != other.m_mesh_name; }
+		bool operator!=(const mesh_component& other) const { return m_mesh_name != other.m_mesh_name; }
 
 		std::string m_mesh_name = "";
 	};
@@ -222,24 +222,23 @@ namespace spark
 		material_component() = default;
 
 		material_component(const std::string& name) :
-				m_material_name(name) { }
+			m_material_name(name) { }
 
 		~material_component() = default;
 
-		 bool operator!=(const material_component& other) const { return m_material_name != other.m_material_name; }
+		bool operator!=(const material_component& other) const { return m_material_name != other.m_material_name; }
 
 		std::string m_material_name = "";
 	};
-
 
 	struct render_component
 	{
 		render_component() = default;
 
 		render_component(bool has_mesh, bool has_transform, bool has_material) :
-				m_renderable(has_mesh && has_transform && has_material) { }
+			m_renderable(has_mesh&& has_transform&& has_material) { }
 
-		 bool operator!=(const render_component& other) const { return m_renderable != other.m_renderable; }
+		bool operator!=(const render_component& other) const { return m_renderable != other.m_renderable; }
 
 		bool m_renderable = false;
 	};
@@ -253,10 +252,10 @@ namespace spark
 
 		template <typename... Args>
 		material& create_material(
-				const std::string& name,
-				const std::pair <std::optional<std::string>, 
-				std::optional<std::string>>& shader_paths,
-				Args&& ... args)
+			const std::string& name,
+			const std::pair <std::optional<std::string>,
+			std::optional<std::string>>&shader_paths,
+			Args&& ... args)
 		{
 			GLuint shader_program = std::get<1>(m_shader_manager->load_shader(shader_paths));
 
@@ -284,11 +283,11 @@ namespace spark
 		~texture_manager() = default;
 
 		texture& create_texture(
-				const std::string& name,
-				const std::filesystem::path& path,
-				texture_type type,
-				std::optional <int32_t> depth,
-				const std::vector <std::pair<GLenum, GLenum>>& params);
+			const std::string& name,
+			const std::filesystem::path& path,
+			texture_type type,
+			std::optional <int32_t> depth,
+			const std::vector <std::pair<GLenum, GLenum>>& params);
 
 		void load_texture(const std::string& name, const texture& texture);
 
@@ -308,13 +307,13 @@ namespace spark
 		~mesh_manager() = default;
 
 		instanced_mesh& create_mesh(
-				const std::string& name, const std::vector <vertex>& vertices, const std::vector <GLuint>& indices)
+			const std::string& name, const std::vector <vertex>& vertices, const std::vector <GLuint>& indices)
 		{
 			m_meshes[name] = std::make_unique<instanced_mesh>(mesh(vertices, indices));
 			return *m_meshes[name];
 		}
 
-		 void load_mesh(const std::string& name, std::unique_ptr <instanced_mesh> instanced_mesh)
+		void load_mesh(const std::string& name, std::unique_ptr <instanced_mesh> instanced_mesh)
 		{
 			m_meshes[name] = std::move(instanced_mesh);
 		}
@@ -324,7 +323,7 @@ namespace spark
 			return *m_meshes[name];
 		}
 
-		 void destroy_mesh(const std::string& name)
+		void destroy_mesh(const std::string& name)
 		{
 			m_meshes.erase(name);
 		}

@@ -159,7 +159,7 @@ inline void check_const_loading(){
                 typename boost::is_const< T >
             >
         >::type typex;
-    // cannot load data into a "const" object unless it's a
+    // cannot load data into a "const" object unless it's aA
     // wrapper around some other non-const object.
     BOOST_STATIC_ASSERT(typex::value);
 }

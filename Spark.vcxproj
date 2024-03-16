@@ -112,6 +112,7 @@
     <ClInclude Include="Spark\core\events\sub.hpp" />
     <ClInclude Include="Spark\core\lighting\light.hpp" />
     <ClInclude Include="Spark\core\logging\log.hpp" />
+    <ClInclude Include="Spark\core\net\net_common.hpp" />
     <ClInclude Include="Spark\core\net\packet.hpp" />
     <ClInclude Include="Spark\core\net\tcp.hpp" />
     <ClInclude Include="Spark\core\net\udp.hpp" />
@@ -128,6 +129,7 @@
     <ClInclude Include="Spark\core\std_include.hpp" />
     <ClInclude Include="Spark\core\tests\test.hpp" />
     <ClInclude Include="Spark\core\types.hpp" />
+    <ClInclude Include="Spark\core\user\camera.hpp" />
     <ClInclude Include="Spark\core\user\control.hpp" />
     <ClInclude Include="Spark\core\util\file.hpp" />
     <ClInclude Include="Spark\core\util\memory.hpp" />
@@ -143,6 +145,7 @@
     <ClCompile Include="Spark\core\ecs\component\shader.cpp" />
     <ClCompile Include="Spark\core\events\sub.cpp" />
     <ClCompile Include="Spark\core\logging\log.cpp" />
+    <ClCompile Include="Spark\core\net\packet.cpp" />
     <ClCompile Include="Spark\core\physics\aabb.cpp" />
     <ClCompile Include="Spark\core\renderer\renderer.cpp" />
     <ClCompile Include="Spark\core\spark_main.cpp" />

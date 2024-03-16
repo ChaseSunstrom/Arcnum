@@ -160,6 +160,8 @@
     <ClInclude Include="Spark\core\window\window.hpp">
       <Filter>window</Filter>
     </ClInclude>
+    <ClInclude Include="Spark\core\user\camera.hpp" />
+    <ClInclude Include="Spark\core\net\net_common.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spark\core\app\app.cpp">
@@ -202,5 +204,6 @@
     <ClCompile Include="Spark\core\window\window.cpp">
       <Filter>window</Filter>
     </ClCompile>
+    <ClCompile Include="Spark\core\net\packet.cpp" />
   </ItemGroup>
 </Project>

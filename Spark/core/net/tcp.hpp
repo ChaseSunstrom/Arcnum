@@ -56,8 +56,6 @@ namespace spark
                 SPARK_INFO("[TCP SERVER STARTED]: [IP]: " << ip << " [PORT]: " << port);
 
                 io_context.run();
-
-                SPARK_INFO("[TCP SERVER STOPPED]: [IP]: " << ip << " [PORT]: " << port);
             }
 
             ~tcp_server()
@@ -101,6 +99,10 @@ namespace spark
                                 if (packet)
                                 {
                                     packet->process();
+
+									std::shared_ptr<tcp_server_receive_event> event = std::make_shared<tcp_server_receive_event>(std::move(packet));
+                                    send_to_topic(TCP_SERVER_RECEIVE_TOPIC, event);
+
                                 }
                                 else
                                 {

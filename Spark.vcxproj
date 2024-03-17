@@ -112,6 +112,7 @@
     <ClInclude Include="Spark\core\events\sub.hpp" />
     <ClInclude Include="Spark\core\lighting\light.hpp" />
     <ClInclude Include="Spark\core\logging\log.hpp" />
+    <ClInclude Include="Spark\core\net\chat_message.hpp" />
     <ClInclude Include="Spark\core\net\net_common.hpp" />
     <ClInclude Include="Spark\core\net\packet.hpp" />
     <ClInclude Include="Spark\core\net\tcp.hpp" />

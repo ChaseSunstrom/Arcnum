@@ -162,6 +162,7 @@
     </ClInclude>
     <ClInclude Include="Spark\core\user\camera.hpp" />
     <ClInclude Include="Spark\core\net\net_common.hpp" />
+    <ClInclude Include="Spark\core\net\chat_message.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spark\core\app\app.cpp">

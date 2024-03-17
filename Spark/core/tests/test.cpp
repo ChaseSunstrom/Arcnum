@@ -1,36 +1,7 @@
 #include "test.hpp"
 
 #include "../util/memory.hpp"
-#include "../net/udp.hpp"
-#include "../net/tcp.hpp"
-
-namespace net = spark::net;
-
-class chat_message : public net::packet
-{
-public:
-    chat_message() : packet("chat_message", 1) {};
-    chat_message(const std::string& msg) : 
-        packet("chat_message", 1), m_message(msg) {}
-
-    void process() const override 
-    {
-        std::cout << "Received chat message: " << m_message << std::endl;
-    }
-
-    template<class Archive>
-    void serialize(Archive& ar, const unsigned int version)
-    {
-        ar& boost::serialization::base_object<packet>(*this);
-        ar& m_message;
-    }
-public:
-    std::string m_message;
-private:
-    friend class boost::serialization::access;
-};
-
-REGISTER_PACKET_TYPE(chat_message, 1);
+#include "../net/chat_message.hpp"
 
 namespace spark
 {
@@ -84,39 +55,6 @@ namespace spark
             t1.join();
             t2.join();
             EXPECT_EQ(*ptr.access(), 2000); // This should pass if the shared_shield_ptr properly locks around the int increment.
-        }
-
-        /*TEST(test_udp_server)
-        {
-            spark::thread_pool::enqueue(spark::task_priority::HIGH, []()
-                {
-                    net::udp_server server("127.0.0.1", "8080");
-                });
-
-            spark::net::udp_client client("127.0.0.1", "12345");
-
-            std::string line;
-            while (std::getline(std::cin, line)) {
-                chat_message msg(line);
-                client.send(msg);
-            }
-        }*/
-
-        TEST(test_tcp_server)
-        {
-            spark::thread_pool::enqueue(spark::task_priority::HIGH, []()
-                {
-                    net::tcp_server server;
-                });
-
-            net::tcp_client client;
-
-            std::string line;
-            while (std::getline(std::cin, line)) 
-            {
-                chat_message msg(line);
-                client.send(msg);
-            }
         }
 
         bool core_test_main()

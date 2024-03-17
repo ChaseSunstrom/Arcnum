@@ -1,10 +1,27 @@
 #include "core_include.hpp"
 #include "game.hpp"
 
+#include <core/net/chat_message.hpp>
 
 void on_start()
 {
-	
+    spark::thread_pool::enqueue(spark::task_priority::HIGH, []()
+        {
+            spark::net::udp_server server("127.0.0.1", "8080");
+            server.run();
+        });
+
+
+    spark::thread_pool::enqueue(spark::task_priority::HIGH, []()
+        {
+            spark::net::udp_client client("127.0.0.1", "8080");
+
+            std::string line;
+            while (std::getline(std::cin, line)) {
+                spark::net::chat_message msg(line);
+                client.send(msg);
+            }
+        });
 }
 
 void on_update()
@@ -16,7 +33,8 @@ void on_update()
 // every event
 bool on_event(std::shared_ptr<spark::event> event)
 {
-	return true;
+    SPARK_INFO(event->m_type);
+    return true;
 }
 
 // Registers functions to be called at different points in the application

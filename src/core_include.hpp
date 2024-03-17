@@ -21,5 +21,6 @@
 #include <core/audio/sound.hpp>
 #include <core/net/udp.hpp>
 #include <core/net/tcp.hpp>
+#include <core/net/net_common.hpp>
 
 #endif // CORE_INCLUDE_HPP

@@ -170,10 +170,7 @@ namespace spark
 			task_queue& operator=(const task_queue&) = delete;
 
 			task_queue(task_queue&& other) noexcept
-				: m_queue(std::move(other.m_queue))
-			{
-
-			}
+				: m_queue(std::move(other.m_queue)) {}
 
 			task_queue& operator=(task_queue&& other) noexcept
 			{
@@ -203,7 +200,6 @@ namespace spark
 		static inline std::condition_variable s_sync_condition;
 		static inline std::atomic<uint64_t> s_active_tasks{ 0 };
 		static inline std::atomic<bool> s_stop{ false };
-
 	};
 }
 

@@ -15,9 +15,15 @@ void on_start()
     spark::thread_pool::enqueue(spark::task_priority::HIGH, false, []()
         {
             spark::net::udp_client client("127.0.0.1", "8080");
-
+            // Needs to be ran in a seprate thread
+            spark::thread_pool::enqueue(spark::task_priority::HIGH, false, [&client]()
+                {
+                    client.run();
+                });
+            
             std::string line;
-            while (std::getline(std::cin, line)) {
+            while (std::getline(std::cin, line)) 
+            {
                 spark::net::chat_message msg(line);
                 client.send(msg);
             }

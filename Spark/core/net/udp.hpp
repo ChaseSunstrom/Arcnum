@@ -1,6 +1,8 @@
 #ifndef SPARK_UDP_HPP
 #define SPARK_UDP_HPP
 
+// for getting the public ip of a client
+#include <curl.h>
 #include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
 
@@ -28,11 +30,6 @@ namespace spark
                 udp::resolver::query query(udp::v4(), host, port);
                 m_endpoint = *m_resolver.resolve(query).begin();
                 m_socket.open(udp::v4());
-
-                thread_pool::enqueue(task_priority::HIGH, false, [this]()
-                    {
-                        this->run();
-                    });
             }
 
             ~udp_client()
@@ -72,8 +69,10 @@ namespace spark
             // Call this method after initializing the client to start listening
             void run()
             {
-                start_receive();
-                m_io_context.get().run();
+                thread_pool::enqueue(task_priority::HIGH, false, [this]() {
+                        start_receive();
+                        m_io_context.get().run();                    
+                    });
             }
 
             template<typename T>
@@ -102,6 +101,7 @@ namespace spark
                 m_socket.bind(local_endpoint);
 
                 SPARK_INFO("[UDP SERVER STARTED]: [IP]: " << ip << " [PORT]: " << port);
+
             }
 
             ~udp_server()
@@ -121,7 +121,6 @@ namespace spark
 				if (m_socket.is_open())
 				    m_socket.close();
             }
-
         private:
             void start_receive()
             {
@@ -133,6 +132,8 @@ namespace spark
                         {
                             try
                             {
+                                m_clients.insert(m_remote_endpoint);
+
                                 auto [type, version, data] = deserialize(std::string(m_receive_buffer.begin(), m_receive_buffer.begin() + bytes_recvd));
                                 auto packet = packet_factory_registry::create_packet(type, version, data);
                                 SPARK_TRACE("[UDP SERVER RECEIVED PACKET]: [TYPE]:" << type << " [VERSION]:" << std::to_string(version));
@@ -166,11 +167,17 @@ namespace spark
                 {
                     // Asynchronously send data to all clients except the sender
                     m_socket.async_send_to(asio::buffer(serialized_packet), client_endpoint,
-                        [](boost::system::error_code ec, uint64_t bytes_sent)
+                               // Need to move serialized_packet to keep it alive while we send it, boost takes a reference to the packet data
+                               // So this is necessary to keep it alive
+                        [serialized_packet = std::move(serialized_packet), client_endpoint](boost::system::error_code ec, uint64_t bytes_sent)
                         {
                             if (ec)
                             {
-                                SPARK_ERROR("[SERVER BROADCAST]: Error sending packet to client " << ec.message());
+                                SPARK_ERROR("[UDP SERVER BROADCAST]: Error sending packet to client: " << ec.message() << "[CLIENT]: " << client_endpoint);
+                            }
+                            else
+                            {
+                                SPARK_TRACE("[UDP SERVER BROADCAST]: Broadcasted packet: " << serialized_packet << "to [CLIENT]: " << client_endpoint);
                             }
                         });
                 }

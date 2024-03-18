@@ -28,6 +28,11 @@ namespace spark
                 udp::resolver::query query(udp::v4(), host, port);
                 m_endpoint = *m_resolver.resolve(query).begin();
                 m_socket.open(udp::v4());
+
+                thread_pool::enqueue(task_priority::HIGH, false, [this]()
+                    {
+                        this->run();
+                    });
             }
 
             ~udp_client()

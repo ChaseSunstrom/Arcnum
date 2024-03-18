@@ -5,6 +5,7 @@
 #include "../spark.hpp"
 #include "packet.hpp"
 #include "net_common.hpp"
+#include "../events/sub.hpp"
 
 namespace spark
 {
@@ -101,7 +102,7 @@ namespace spark
                                     packet->process();
 
 									std::shared_ptr<tcp_server_receive_event> event = std::make_shared<tcp_server_receive_event>(std::move(packet));
-                                    send_to_topic(TCP_SERVER_RECEIVE_TOPIC, event);
+                                    publish_to_topic(TCP_SERVER_RECEIVE_TOPIC, event);
 
                                 }
                                 else

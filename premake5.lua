@@ -6,8 +6,8 @@ workspace "Arcnum"
 
 -- Common Boost library prefix and suffix
 local boost_lib_prefix = "libboost_"
-local debug_suffix = "-vc143-mt-gd-x64-1_83"
-local release_suffix = "-vc143-mt-x64-1_83"
+local debug_suffix = "-vc143-mt-gd-x64-1_84"
+local release_suffix = "-vc143-mt-x64-1_84"
 
 -- Configuration for the Arcnum project
 project "Arcnum"

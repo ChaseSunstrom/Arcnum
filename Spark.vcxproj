@@ -67,7 +67,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>glfw3.lib;glew32.lib;opengl32.lib;irrKlang.lib;libboost_system-vc143-mt-gd-x64-1_83.lib;libboost_serialization-vc143-mt-gd-x64-1_83.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;glew32.lib;opengl32.lib;irrKlang.lib;libboost_system-vc143-mt-gd-x64-1_84.lib;libboost_serialization-vc143-mt-gd-x64-1_84.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>Spark\lib;Spark\lib\BOOST;Spark\lib\IRRKLANG;Spark\lib\GLEW;Spark\lib\GLFW;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
@@ -91,7 +91,7 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <AdditionalDependencies>glfw3.lib;glew32.lib;opengl32.lib;irrKlang.lib;libboost_system-vc143-mt-x64-1_83.lib;libboost_serialization-vc143-mt-x64-1_83.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;glew32.lib;opengl32.lib;irrKlang.lib;libboost_system-vc143-mt-x64-1_84.lib;libboost_serialization-vc143-mt-x64-1_84.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>Spark\lib;Spark\lib\BOOST;Spark\lib\IRRKLANG;Spark\lib\GLEW;Spark\lib\GLFW;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>

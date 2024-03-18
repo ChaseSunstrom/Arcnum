@@ -7,7 +7,7 @@
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/variant.hpp>
 #include <boost/serialization/unique_ptr.hpp>
-#include <BOOST/serialization/access.hpp>
+#include <boost/serialization/access.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 

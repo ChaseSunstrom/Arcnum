@@ -102,6 +102,12 @@
     <ClInclude Include="Spark\core\logging\log.hpp">
       <Filter>logging</Filter>
     </ClInclude>
+    <ClInclude Include="Spark\core\net\chat_message.hpp">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\net\net_common.hpp">
+      <Filter>net</Filter>
+    </ClInclude>
     <ClInclude Include="Spark\core\net\packet.hpp">
       <Filter>net</Filter>
     </ClInclude>
@@ -142,6 +148,9 @@
       <Filter>tests</Filter>
     </ClInclude>
     <ClInclude Include="Spark\core\types.hpp" />
+    <ClInclude Include="Spark\core\user\camera.hpp">
+      <Filter>user</Filter>
+    </ClInclude>
     <ClInclude Include="Spark\core\user\control.hpp">
       <Filter>user</Filter>
     </ClInclude>
@@ -160,9 +169,6 @@
     <ClInclude Include="Spark\core\window\window.hpp">
       <Filter>window</Filter>
     </ClInclude>
-    <ClInclude Include="Spark\core\user\camera.hpp" />
-    <ClInclude Include="Spark\core\net\net_common.hpp" />
-    <ClInclude Include="Spark\core\net\chat_message.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spark\core\app\app.cpp">
@@ -186,6 +192,9 @@
     <ClCompile Include="Spark\core\logging\log.cpp">
       <Filter>logging</Filter>
     </ClCompile>
+    <ClCompile Include="Spark\core\net\packet.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
     <ClCompile Include="Spark\core\physics\aabb.cpp">
       <Filter>physics</Filter>
     </ClCompile>
@@ -205,6 +214,5 @@
     <ClCompile Include="Spark\core\window\window.cpp">
       <Filter>window</Filter>
     </ClCompile>
-    <ClCompile Include="Spark\core\net\packet.cpp" />
   </ItemGroup>
 </Project>

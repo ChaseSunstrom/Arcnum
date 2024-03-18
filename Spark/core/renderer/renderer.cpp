@@ -11,7 +11,7 @@ namespace spark
 		glClearColor(background_color.x, background_color.y, background_color.z, background_color.w);
 		check_gl_error("glClearColor");
 
-		ecs& ecs = scene.get_ecs();
+		ecs& ecs = application::get_ecs();
 
 		component_array<mesh_component> mesh_array = ecs.get_component_array<mesh_component>();
 		component_array<transform_component> transform_array = ecs.get_component_array<transform_component>();

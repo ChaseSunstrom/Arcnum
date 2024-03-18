@@ -75,11 +75,11 @@ namespace spark
 			}
 		}
 
-		 void update_systems(float64_t delta_time)
+		void update_systems(float64_t delta_time)
 		{
 			for (auto& system: m_update_systems)
 			{
-				thread_pool::enqueue(task_priority::HIGH, 
+				thread_pool::enqueue(task_priority::HIGH, true,
 					[system = system.get(), delta_time] 
 					{
 						system->on_update(delta_time);

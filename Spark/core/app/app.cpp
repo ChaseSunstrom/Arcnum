@@ -6,9 +6,13 @@
 
 namespace spark
 {
+	uint64_t application::s_delta_time = 0.05;
+
 	std::unique_ptr<window> application::s_window = std::make_unique<window>();
 
 	std::unique_ptr<renderer> application::s_renderer = std::make_unique<renderer>();
+
+	std::unique_ptr<ecs> application::s_ecs = std::make_unique<ecs>();
 
 	std::unique_ptr<scene_manager> application::s_scene_manager = std::make_unique<scene_manager>(application::get_renderer());
 
@@ -28,10 +32,7 @@ namespace spark
 
 		app_functions::s_on_start();
 
-		for (const auto& scene : s_scene_manager->get_all_scenes())
-		{
-			scene.get_ecs().start_systems();
-		}
+		s_ecs->start_systems();
 
 		subscription<event>::create(EVERY_EVENT_TOPIC, app_functions::s_on_event);
 
@@ -44,6 +45,8 @@ namespace spark
 	void application::on_update()
 	{
 		app_functions::s_on_update();
+		
+		s_ecs->update_systems(s_delta_time);
 
 		s_renderer->on_update();
 
@@ -51,7 +54,7 @@ namespace spark
 
 		s_window->on_update();
 
-		spark::thread_pool::synchronize();
+		spark::thread_pool::synchronize_registered_threads();
 	}
 
 	bool application::on_event(std::shared_ptr <event> event)
@@ -69,6 +72,16 @@ namespace spark
 	void application::add_scene(const std::string& name, const scene_config& config)
 	{
 		s_scene_manager->add_scene(name, std::make_unique<scene>(config));
+	}
+
+	void application::set_delta_time(uint64_t delta_time)
+	{
+		s_delta_time = delta_time;
+	}
+
+	uint64_t application::get_delta_time()
+	{
+		return s_delta_time;
 	}
 
 	scene& application::get_current_scene()
@@ -104,6 +117,11 @@ namespace spark
 	scene& application::get_scene(const std::string& name)
 	{
 		return s_scene_manager->get_scene(name);
+	}
+
+	ecs& application::get_ecs()
+	{
+		return *s_ecs;
 	}
 
 	renderer& application::get_renderer()

@@ -23,6 +23,10 @@ namespace spark
 
 		static void add_scene(const std::string& name, const scene_config& config);
 
+		static void set_delta_time(uint64_t delta_time);
+
+		static uint64_t get_delta_time();
+
 		static renderer& get_renderer();
 
 		static window& get_window();
@@ -33,6 +37,8 @@ namespace spark
 
 		static shader_manager& get_shader_manager();
 
+		static ecs& get_ecs();
+
 		static audio_manager& get_audio_manager();
 
 		static scene& get_scene(const std::string& name);
@@ -40,6 +46,8 @@ namespace spark
 		static scene& get_current_scene();
 
 	private:
+		static uint64_t s_delta_time;
+
 		static std::unique_ptr <window> s_window;
 
 		static std::unique_ptr <renderer> s_renderer;
@@ -55,6 +63,8 @@ namespace spark
 		static std::unique_ptr<audio_manager> s_audio_manager;
 
 		static std::unique_ptr <layer_stack> s_layer_stack;
+
+		static std::unique_ptr<ecs> s_ecs;
 	};
 }
 

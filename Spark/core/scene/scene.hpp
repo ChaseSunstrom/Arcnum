@@ -28,16 +28,10 @@ namespace spark
 
 		~scene() = default;
 
-		ecs& get_ecs() const { return *m_ecs.get(); }
-
 		scene_config& get_scene_config() const { return m_config; }
 
 		void set_background_color(const glm::vec4& color) { m_config.m_background_color = color; }
 	private:
-		// This is a shared pointer because multiple scenes can share the same ECS
-		std::shared_ptr <ecs> m_ecs = std::make_shared<ecs>();
-
-		// Same with this
 		scene_config& m_config;
 	};
 }

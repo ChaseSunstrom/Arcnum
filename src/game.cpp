@@ -5,14 +5,14 @@
 
 void on_start()
 {
-    spark::thread_pool::enqueue(spark::task_priority::HIGH, []()
+    spark::thread_pool::enqueue(spark::task_priority::HIGH, false, []()
         {
             spark::net::udp_server server("127.0.0.1", "8080");
             server.run();
         });
 
 
-    spark::thread_pool::enqueue(spark::task_priority::HIGH, []()
+    spark::thread_pool::enqueue(spark::task_priority::HIGH, false, []()
         {
             spark::net::udp_client client("127.0.0.1", "8080");
 

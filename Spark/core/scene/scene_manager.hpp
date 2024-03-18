@@ -54,8 +54,6 @@ namespace spark
 		{
 			scene& current_scene = *m_scenes[m_current_scene_name];
 
-			current_scene.get_ecs().update_systems(time_step);
-
 			m_renderer.render(current_scene);
 		}
 

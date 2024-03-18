@@ -8,7 +8,7 @@ namespace spark
 {
 	static uint64_t subscription_count = 0;
 
-	// Macros instead of enums to allow for any subscription topic
+// Macros instead of enums to allow for any subscription topic
 #define NO_EVENT_TOPIC 0
 #define EVERY_EVENT_TOPIC 1
 #define WINDOW_EVENT_TOPIC 2

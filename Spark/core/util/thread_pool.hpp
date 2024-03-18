@@ -2,193 +2,209 @@
 #define SPARK_THREAD_POOL_HPP
 
 #include "../spark.hpp"
+#include "../logging/log.hpp"
 
 namespace spark
 {
-    enum class task_priority
-    {
-        CRITICAL,
-        VERY_HIGH,
-        HIGH,
-        NORMAL,
-        LOW,
-        VERY_LOW,
-        BACKGROUND
-    };
+	enum class task_priority
+	{
+		CRITICAL,
+		VERY_HIGH,
+		HIGH,
+		NORMAL,
+		LOW,
+		VERY_LOW,
+		BACKGROUND
+	};
 
-    // Comparator for the priority queue to sort based on task_priority
-    struct task_comparator
-    {
-        bool operator()(const std::pair<task_priority, std::function<void()>>& lhs,
-                        const std::pair<task_priority, std::function<void()>>& rhs) const
-        {
-            return lhs.first < rhs.first; // we want the queue to be a min-heap
-        }
-    };
+	struct thread_control_block
+	{
+		std::thread::id thread_id;
+		std::atomic<bool> is_registered_for_sync{ false };
+		std::atomic<bool> has_reached_sync_point{ false };
+	};
 
-    class thread_pool
-    {
-    public:
+	struct task_comparator
+	{
+		bool operator()(const std::pair<task_priority, std::function<void()>>& lhs,
+			const std::pair<task_priority, std::function<void()>>& rhs) const
+		{
+			return lhs.first < rhs.first; // Higher priority tasks first
+		}
+	};
 
-        thread_pool() = delete;
-        ~thread_pool() = delete;
+	class thread_pool
+	{
+	public:
+		thread_pool() = delete;
+		~thread_pool() = delete;
 
-        static void initialize(uint32_t num_threads)
-        {
-            s_stop = false;
-            s_active_tasks = 0;
-            s_tasks_queues.resize(num_threads);
+		static void initialize(uint32_t num_threads)
+		{
+			s_stop = false;
+			s_active_tasks = 0;
+			s_tasks_queues.resize(num_threads);
+			s_threads_control.resize(num_threads);
 
-            for (uint32_t i = 0; i < num_threads; ++i)
-            {
-                s_workers.emplace_back(worker_thread, i);
-            }
-        }
+			for (uint32_t i = 0; i < num_threads; ++i)
+			{
+				s_threads_control[i] = std::make_shared<thread_control_block>();
+				s_workers.emplace_back(worker_thread, s_threads_control[i], i);
+			}
+		}
 
-        template <class F, class... Args>
-        static auto enqueue(task_priority priority, F&& f, Args&&... args) -> std::future<typename std::invoke_result<F, Args...>::type>
-        {
-            using return_type = typename std::invoke_result<F, Args...>::type;
+		template <class F, class... Args>
+		static auto enqueue(task_priority priority, bool synchronize, F&& f, Args&&... args) -> std::future<typename std::invoke_result<F, Args...>::type>
+		{
+			using return_type = typename std::invoke_result<F, Args...>::type;
 
-            auto task = std::make_shared<std::packaged_task<return_type()>>(
-                std::bind(std::forward<F>(f), std::forward<Args>(args)...)
-            );
+			auto task = std::make_shared<std::packaged_task<return_type()>>(
+				std::bind(std::forward<F>(f), std::forward<Args>(args)...)
+			);
 
-            std::future<return_type> res = task->get_future();
-            {
-                std::unique_lock<std::mutex> lock(s_queue_mutex);
+			std::future<return_type> res = task->get_future();
+			{
+				std::unique_lock<std::mutex> lock(s_queue_mutex);
 
-                if (s_stop)
-                {
-                    throw std::runtime_error("Enqueue on stopped ThreadPool");
-                }
+				if (__SPARK_ASSERT__(s_stop))
+				{
+					SPARK_ERROR("[THREAD POOL]: enqueue() called after shutdown");
+					return {};
+				}
 
-                // Find the least loaded queue or with the highest priority task to insert this task
-                auto min_it = std::min_element(s_tasks_queues.begin(), s_tasks_queues.end(),
-                    [](const task_queue& a, const task_queue& b) {
-                        return a.m_queue.size() < b.m_queue.size();
-                    });
+				// Find the least loaded queue or with the highest priority task to insert this task
+				auto min_it = std::min_element(s_tasks_queues.begin(), s_tasks_queues.end(),
+					[](const task_queue& a, const task_queue& b) {
+						return a.m_queue.size() < b.m_queue.size();
+					});
 
-                min_it->m_queue.emplace(priority, [task]() { (*task)(); });
-                s_active_tasks++;
-            }
+				min_it->m_queue.emplace(priority, [task, synchronize]() {
+					(*task)();
+					if (synchronize)
+					{
+						auto it = std::find_if(s_threads_control.begin(), s_threads_control.end(),
+							[](const std::shared_ptr<thread_control_block>& tcb) {
+								return tcb->thread_id == std::this_thread::get_id();
+							});
+						if (it != s_threads_control.end())
+						{
+							(*it)->has_reached_sync_point = true;
+						}
+					}
+					});
+				s_active_tasks++;
+			}
 
-            s_condition.notify_one();
-            return res;
-        }
+			s_condition.notify_one();
+			return res;
+		}
 
-        static void synchronize()
-        {
-            std::unique_lock<std::mutex> lock(s_sync_mutex);
-            s_sync_condition.wait(lock, [] 
-                {
-                    return s_active_tasks == 0;
-                });
-        }
-    private:
-            thread_pool(const thread_pool&) = delete;
-            thread_pool& operator=(const thread_pool&) = delete;
+		static void sync_this_thread(bool register_for_sync)
+		{
+			auto it = std::find_if(s_threads_control.begin(), s_threads_control.end(), [](const std::shared_ptr<thread_control_block>& tcb) {
+					return tcb->thread_id == std::this_thread::get_id();
+				});
 
-            static void worker_thread(uint32_t thread_id)
-            {
-                while (true)
-                {
-                    std::function<void()> task;
-                    {
-                        std::unique_lock<std::mutex> lock(s_queue_mutex);
-                        s_condition.wait(lock, [thread_id] {
-                                return s_stop || !s_tasks_queues[thread_id].m_queue.empty() || steal_task(thread_id);
-                            });
+			if (it != s_threads_control.end())
+			{
+				(*it)->is_registered_for_sync = register_for_sync;
+			}
+			else
+			{
+				// Thread is not part of the pool
+				throw std::runtime_error("Current thread is not part of the thread pool");
+			}
+		}
 
-                        if (s_stop && s_tasks_queues[thread_id].m_queue.empty() && !steal_task(thread_id))
-                        {
-                            return; // Exit point for the thread
-                        }
+		static void synchronize_registered_threads()
+		{
+			// Wait for all registered threads to reach their sync point
+			std::unique_lock<std::mutex> lock(s_sync_mutex);
+			s_sync_condition.wait(lock, [] {
+				return std::all_of(s_threads_control.begin(), s_threads_control.end(), [](const std::shared_ptr<thread_control_block>& tcb) {
+					return !tcb->is_registered_for_sync || tcb->has_reached_sync_point;
+					});
+				});
 
-                        task = s_tasks_queues[thread_id].m_queue.top().second;
-                        s_tasks_queues[thread_id].m_queue.pop();
-                    } // Release lock
+			// Reset sync points
+			for (auto& tcb : s_threads_control)
+			{
+				tcb->has_reached_sync_point = false;
+			}
+		}
 
-                    task(); // Execute task
+	private:
+		static void worker_thread(std::shared_ptr<thread_control_block> tcb, uint32_t index)
+		{
+			tcb->thread_id = std::this_thread::get_id();
 
-                    {
-                        std::lock_guard<std::mutex> lock(s_sync_mutex);
-                        s_active_tasks--;
-                        if (s_active_tasks == 0)
-                        {
-                            // Notify synchronize() to proceed
-                            s_sync_condition.notify_one();
-                        }
-                    }
-                }
-            }
+			while (!s_stop)
+			{
+				std::function<void()> task;
+				{
+					std::unique_lock<std::mutex> lock(s_queue_mutex);
+					if (!s_tasks_queues[index].m_queue.empty())
+					{
+						std::lock_guard<std::mutex> queue_lock(s_tasks_queues[index].m_mutex);
+						auto& queue = s_tasks_queues[index].m_queue;
+						task = std::move(queue.top().second);
+						queue.pop();
+						s_active_tasks--;
+					}
+				}
 
-            static bool steal_task(uint32_t thread_id)
-            {
-                // Iterate over other queues to steal a task
-                for (uint32_t i = 0; i < s_tasks_queues.size(); ++i)
-                {
-                    if (i != thread_id) // Don't steal from itself
-                    {
-                        task_queue& queue = s_tasks_queues[i];
-                        std::lock_guard<std::mutex> lock(queue.m_mutex);
-                        if (!queue.m_queue.empty())
-                        {
-                            auto task = queue.m_queue.top();
-                            queue.m_queue.pop();
-                            s_tasks_queues[thread_id].m_queue.push(task);
-                            return true;
-                        }
-                    }
-                }
-                return false;
-            }
-    private:
-        struct task_queue
-        {
+				if (task)
+				{
+					task(); // Execute the task
+				}
+				else
+				{
+					std::this_thread::yield(); // Yield if no task was found
+				}
+			}
+		}
+	private:
+		struct task_queue
+		{
+			task_queue(const task_queue&) = delete;
+			task_queue& operator=(const task_queue&) = delete;
 
-            // Delete copy constructor and copy assignment operator
-            task_queue(const task_queue&) = delete;
-            task_queue& operator=(const task_queue&) = delete;
+			task_queue(task_queue&& other) noexcept
+				: m_queue(std::move(other.m_queue))
+			{
 
-            // Implement the move constructor
-            task_queue(task_queue&& other) noexcept
-                : m_queue(std::move(other.m_queue))
-            {
-                // Note: mutex and other non-movable objects are not moved
-            }
+			}
 
-            // Implement the move assignment operator
-            task_queue& operator=(task_queue&& other) noexcept
-            {
-                if (this != &other)
-                {
-                    m_queue = std::move(other.m_queue);
-                    // Note: mutex and other non-movable objects are not moved
-                }
-                return *this;
-            }
+			task_queue& operator=(task_queue&& other) noexcept
+			{
+				if (this != &other)
+				{
+					m_queue = std::move(other.m_queue);
+				}
+				return *this;
+			}
 
-            // Default constructor
-            task_queue() = default;
+			task_queue() = default;
 
-            std::priority_queue<
-                std::pair<task_priority, std::function<void()>>,
-                std::vector<std::pair<task_priority, std::function<void()>>>,
-                task_comparator
-            > m_queue;
-            std::mutex m_mutex;
-        };
-        // Static members
-        static inline std::vector<std::thread> s_workers;
-        static inline std::vector<task_queue> s_tasks_queues;
-        static inline std::mutex s_queue_mutex;
-        static inline std::condition_variable s_condition;
-        static inline std::mutex s_sync_mutex;
-        static inline std::condition_variable s_sync_condition;
-        static inline std::atomic<uint64_t> s_active_tasks;
-        static inline std::atomic<bool> s_stop;
-    };
+			std::priority_queue<
+				std::pair<task_priority, std::function<void()>>,
+				std::vector<std::pair<task_priority, std::function<void()>>>,
+				task_comparator
+			> m_queue;
+			std::mutex m_mutex;
+		};
+
+		static inline std::vector<std::thread> s_workers;
+		static inline std::vector<std::shared_ptr<thread_control_block>> s_threads_control;
+		static inline std::vector<task_queue> s_tasks_queues;
+		static inline std::mutex s_queue_mutex;
+		static inline std::condition_variable s_condition;
+		static inline std::mutex s_sync_mutex;
+		static inline std::condition_variable s_sync_condition;
+		static inline std::atomic<uint64_t> s_active_tasks{ 0 };
+		static inline std::atomic<bool> s_stop{ false };
+
+	};
 }
 
 #endif // SPARK_THREAD_POOL_HPP

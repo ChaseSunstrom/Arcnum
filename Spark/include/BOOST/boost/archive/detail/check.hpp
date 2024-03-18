@@ -94,7 +94,7 @@ inline void check_object_tracking(){
     // may be an indicator of an error usage of the
     // serialization library and should be double checked.
     // See documentation on object tracking.  Also, see the
-    // "rationale" section of the documenation
+    // "rationale" section of the documentation
     // for motivation for this checking.
 
     BOOST_STATIC_WARNING(typex::value);
@@ -159,7 +159,7 @@ inline void check_const_loading(){
                 typename boost::is_const< T >
             >
         >::type typex;
-    // cannot load data into a "const" object unless it's aA
+    // cannot load data into a "const" object unless it's a
     // wrapper around some other non-const object.
     BOOST_STATIC_ASSERT(typex::value);
 }

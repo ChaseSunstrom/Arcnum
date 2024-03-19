@@ -8,8 +8,7 @@ namespace spark
 
 		math::vec4 background_color = scene.get_scene_config().m_background_color;
 
-		glClearColor(background_color.x, background_color.y, background_color.z, background_color.w);
-		check_gl_error("glClearColor");
+		set_background_color(background_color.x, background_color.y, background_color.z, background_color.w);
 
 		ecs& ecs = application::get_ecs();
 
@@ -26,18 +25,19 @@ namespace spark
 		{
 			for (auto& material_i : material_array.get_array())
 			{
-				material& material = material_man.get_material(material_i.m_material_name);
+				material& material = material_man.get_material("material");
 				mesh& mesh = mesh_man.get_mesh(mesh_i.m_mesh_name).m_mesh;
-
+				glValidateProgram(material.m_shader_program);
 				use_program(material.m_shader_program);
 				bind_vertex_array(mesh.get_vao());
 
-				//set_uniform(material, material.m_shader_program);
+				set_uniform(material, material.m_shader_program);
 
 				// Assume model uniform location is known
-				for (const auto& transform : transform_array.get_array()) {
+				for (const auto& transform : transform_array.get_array())
+				{
 					glm::mat4 model_matrix = transform.to_mat4();
-					set_uniform("model", model_matrix, material.m_shader_program);
+					//set_uniform("model", model_matrix, material.m_shader_program);
 					glDrawElements(GL_TRIANGLES, mesh.m_indices.size(), GL_UNSIGNED_INT, nullptr);
 				}
 			}

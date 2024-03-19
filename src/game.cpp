@@ -28,6 +28,32 @@ void on_start()
                 client.send(msg);
             }
         });
+
+    spark::material_manager& mat_man = spark::application::get_material_manager();
+    spark::mesh_manager& mesh_man = spark::application::get_mesh_manager();
+    spark::scene& cur_scene = spark::application::get_current_scene();
+    spark::ecs& ecs = spark::application::get_ecs();
+
+
+    cur_scene.set_background_color(spark::math::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+    
+    std::vector<spark::vertex> vertices = {
+         spark::math::vec3(0.5f,  0.5f, 0.0f),  // top right
+         spark::math::vec3(0.5f, -0.5f, 0.0f),  // bottom right
+         spark::math::vec3(-0.5f, -0.5f, 0.0f),  // bottom left
+         spark::math::vec3(-0.5f,  0.5f, 0.0f)   // top left
+    };
+
+    // Create material and mesh
+    spark::material& mat = mat_man.create_material("material", {}, spark::math::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+    spark::instanced_mesh& mesh = mesh_man.create_mesh("square", vertices, {0, 1, 3, 1, 2, 3});
+
+	// Create entity
+    spark::entity ent = ecs.create_entity(
+        spark::transform_component(spark::math::vec3(0.0f, 0.0f, 0.0f)),
+        spark::mesh_component("square"),
+		spark::material_component("material")
+    );
 }
 
 void on_update()

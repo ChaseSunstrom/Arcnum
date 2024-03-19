@@ -5,6 +5,85 @@
 
 namespace spark
 {
+	std::string shader_preprocessor::preprocess_shader(const std::string& file_path)
+	{
+		m_included_files.clear(); // Clear previously included files
+		return process_file(file_path);
+	}
+
+	// In shader_preprocessor
+	std::string shader_preprocessor::process_file(const std::string& file_path)
+	{
+		if (m_included_files.find(file_path) != m_included_files.end())
+		{
+			return ""; // Prevent circular include
+		}
+
+		std::ifstream file(file_path);
+		std::stringstream processed_shader;
+
+		if (!file.is_open())
+		{
+			SPARK_ERROR("[SHADER PREPROCESSOR]: Could not open shader file: " << file_path);
+			return "";
+		}
+
+		m_included_files.insert(file_path); // Mark this file as included
+
+		std::string line;
+		std::filesystem::path file_path_obj = file_path;
+		std::filesystem::path directory_path = file_path_obj.parent_path();
+
+		while (std::getline(file, line))
+		{
+			if (line.find("#include") == 0)
+			{
+				std::string include_file_name = extract_path(line);
+				std::filesystem::path full_include_path;
+				if (line.find("<") != std::string::npos)
+				{
+					full_include_path = include_file_name; // Library include
+				}
+				else
+				{
+					full_include_path = directory_path / include_file_name; // Local include
+				}
+				processed_shader << process_file(full_include_path.string()); // Recursive call
+			}
+			else
+			{
+				processed_shader << line << '\n';
+			}
+		}
+
+		return processed_shader.str();
+	}
+
+
+	std::string shader_preprocessor::extract_path(const std::string& line)
+	{
+		std::size_t start_pos = line.find_first_of("\"<");
+		std::size_t end_pos = line.find_last_of("\">");
+
+		if (start_pos != std::string::npos && end_pos != std::string::npos && start_pos < end_pos)
+		{
+			bool is_library_include = line[start_pos] == '<';
+			std::string path = line.substr(start_pos + 1, end_pos - start_pos - 1);
+
+			if (is_library_include)
+			{
+				return m_library_base_path + "/" + path;
+			}
+			else
+			{
+				return path;
+			}
+		}
+
+		SPARK_ERROR("[SHADER PREPROCESSOR]: Error processing #include directive: " << line);
+		return "";
+	}
+
 	shader_manager::~shader_manager()
 	{
 		for (auto& it: m_shaders)
@@ -33,19 +112,15 @@ namespace spark
 			fragment_path = std::filesystem::absolute(fragment_path_opt.value());
 		}
 
-		std::string vertex_code = read_file(vertex_path);
-		std::string fragment_code = read_file(fragment_path);
+		std::string vertex_code = read_file(m_preprocessor->preprocess_shader(vertex_path.string()));
+		std::string fragment_code = read_file(m_preprocessor->preprocess_shader(fragment_path.string()));
 
 		GLuint vertex_shader = compile_shader(vertex_code, GL_VERTEX_SHADER);
 		GLuint fragment_shader = compile_shader(fragment_code, GL_FRAGMENT_SHADER);
 
-		check_gl_error("Shader compilation");
-
 		GLuint shader_program = create_program();
 		attach_shader(shader_program, vertex_shader);
 		attach_shader(shader_program, fragment_shader);
-
-		check_gl_error("Shader attaching");
 
 		link_program(shader_program);
 
@@ -102,8 +177,7 @@ namespace spark
 		return shader;
 	}
 
-	inline std::string shader_manager::concat_paths(
-			const std::string& vertex_path, const std::string& fragment_path)
+	inline std::string shader_manager::concat_paths(const std::string& vertex_path, const std::string& fragment_path)
 	{
 		return vertex_path + fragment_path;
 	}

@@ -10,7 +10,8 @@ namespace spark
 	struct vertex
 	{
 		vertex(const math::vec3& position = math::vec3(0), const math::vec3& normal = math::vec3(0), const math::vec2& texcoord = math::vec2(0)) :
-			m_position(position), m_normal(normal), m_texcoords(texcoord) { }
+			m_position(position), m_normal(normal), m_texcoords(texcoord)
+		{}
 
 		~vertex() = default;
 
@@ -32,7 +33,8 @@ namespace spark
 			const math::vec3& position = math::vec3(0.0f),
 			const math::quat& rotation = math::quat(1.0f, 0.0f, 0.0f, 0.0f),
 			const math::vec3& scale = math::vec3(1.0f)
-		) : m_position(position), m_rotation(rotation), m_scale(scale) {}
+		) : m_position(position), m_rotation(rotation), m_scale(scale)
+		{}
 
 		math::mat4 to_mat4() const
 		{
@@ -41,7 +43,10 @@ namespace spark
 				math::scale(math::mat4(1.0f), m_scale);
 		}
 
-		bool operator!=(const transform& other) const { return m_position != other.m_position || m_rotation != other.m_rotation || m_scale != other.m_scale; }
+		bool operator!=(const transform& other) const
+		{
+			return m_position != other.m_position || m_rotation != other.m_rotation || m_scale != other.m_scale;
+		}
 
 		math::vec3 m_position;
 		math::quat m_rotation;
@@ -54,9 +59,9 @@ namespace spark
 		texture() = default;
 
 		texture(const std::filesystem::path& path,
-			texture_type type,
-			std::optional <int32_t> depth = std::nullopt,
-			const std::vector <std::pair<GLenum, GLenum>>& params = std::vector<std::pair < GLenum, GLenum>>());
+				texture_type type,
+				std::optional <int32_t> depth = std::nullopt,
+				const std::vector <std::pair<GLenum, GLenum>>& params = std::vector<std::pair < GLenum, GLenum>>());
 
 		~texture();
 
@@ -117,13 +122,25 @@ namespace spark
 
 		void create_mesh();
 
-		GLuint get_vao() { return m_vao; }
+		GLuint get_vao()
+		{
+			return m_vao;
+		}
 
-		GLuint get_vbo() { return m_vbo; }
+		GLuint get_vbo()
+		{
+			return m_vbo;
+		}
 
-		GLuint get_ibo() { return m_ibo; }
+		GLuint get_ibo()
+		{
+			return m_ibo;
+		}
 
-		GLsizei get_index_count() { return m_index_count; }
+		GLsizei get_index_count()
+		{
+			return m_index_count;
+		}
 
 		std::vector <vertex> m_vertices = std::vector<vertex>();
 
@@ -184,7 +201,8 @@ namespace spark
 			int32_t ambient = 1,
 			float32_t shininess = 0) :
 			m_color(color), m_diffuse(diffuse), m_specular(specular), m_ambient(ambient), m_shininess(shininess), m_texture(texture),
-			m_shader_program(shader_program) { }
+			m_shader_program(shader_program)
+		{}
 
 		~material() = default;
 
@@ -208,11 +226,15 @@ namespace spark
 		mesh_component() = default;
 
 		mesh_component(const std::string& name) :
-			m_mesh_name(name) { }
+			m_mesh_name(name)
+		{}
 
 		~mesh_component() = default;
 
-		bool operator!=(const mesh_component& other) const { return m_mesh_name != other.m_mesh_name; }
+		bool operator!=(const mesh_component& other) const
+		{
+			return m_mesh_name != other.m_mesh_name;
+		}
 
 		std::string m_mesh_name = "";
 	};
@@ -222,11 +244,15 @@ namespace spark
 		material_component() = default;
 
 		material_component(const std::string& name) :
-			m_material_name(name) { }
+			m_material_name(name)
+		{}
 
 		~material_component() = default;
 
-		bool operator!=(const material_component& other) const { return m_material_name != other.m_material_name; }
+		bool operator!=(const material_component& other) const
+		{
+			return m_material_name != other.m_material_name;
+		}
 
 		std::string m_material_name = "";
 	};
@@ -236,9 +262,13 @@ namespace spark
 		render_component() = default;
 
 		render_component(bool has_mesh, bool has_transform, bool has_material) :
-			m_renderable(has_mesh&& has_transform&& has_material) { }
+			m_renderable(has_mesh&& has_transform&& has_material)
+		{}
 
-		bool operator!=(const render_component& other) const { return m_renderable != other.m_renderable; }
+		bool operator!=(const render_component& other) const
+		{
+			return m_renderable != other.m_renderable;
+		}
 
 		bool m_renderable = false;
 	};
@@ -306,8 +336,7 @@ namespace spark
 
 		~mesh_manager() = default;
 
-		instanced_mesh& create_mesh(
-			const std::string& name, const std::vector <vertex>& vertices, const std::vector <GLuint>& indices)
+		instanced_mesh& create_mesh(const std::string& name, const std::vector <vertex>& vertices, const std::vector <GLuint>& indices)
 		{
 			m_meshes[name] = std::make_unique<instanced_mesh>(mesh(vertices, indices));
 			return *m_meshes[name];

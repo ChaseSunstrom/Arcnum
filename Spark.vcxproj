@@ -155,6 +155,10 @@
     <ClCompile Include="Spark\core\util\wrap.cpp" />
     <ClCompile Include="Spark\core\window\window.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Spark\shaders\lighting.frag" />
+    <None Include="Spark\shaders\material.frag" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

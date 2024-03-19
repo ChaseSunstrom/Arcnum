@@ -215,4 +215,8 @@
       <Filter>window</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Spark\shaders\material.frag" />
+    <None Include="Spark\shaders\lighting.frag" />
+  </ItemGroup>
 </Project>

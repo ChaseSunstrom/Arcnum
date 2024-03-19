@@ -4,7 +4,6 @@
 
 // Because stb_image is fucking weird
 #define STB_IMAGE_IMPLEMENTATION
-
 #include <stb_image.h>
 
 namespace spark
@@ -222,31 +221,28 @@ namespace spark
 
 		GLenum texture_type = material.m_texture.get_gl_texture_type();
 
-		glUseProgram(shader_program); // Make sure the program is used before setting uniforms
+		glUseProgram(shader_program);
 
 		// Automatically bind textures to texture units and set the corresponding
 		// uniforms=
-		active_texture(GL_TEXTURE0 + texture_unit);       // Activate texture unit
-		bind_texture(texture_type, material.m_diffuse);  // Bind the diffuse texture
-		set_uniform(
-			uniform_name + ".diffuse", texture_unit, shader_program
-		);  // Set the sampler to use this texture unit
+		//active_texture(GL_TEXTURE0 + texture_unit);       // Activate texture unit
+		//bind_texture(texture_type, material.m_diffuse);  // Bind the diffuse texture
+		set_uniform(uniform_name + ".diffuse", texture_unit, shader_program);  // Set the sampler to use this texture unit
 		texture_unit++;               // Move to the next texture unit
 
-		active_texture(GL_TEXTURE0 + texture_unit);
+		/*active_texture(GL_TEXTURE0 + texture_unit);
 		bind_texture(texture_type, material.m_specular);
+		*/
 		set_uniform(uniform_name + ".specular", texture_unit, shader_program);
 		texture_unit++;
 
-		active_texture(GL_TEXTURE0 + texture_unit);
-		bind_texture(texture_type, material.m_ambient);
+		//active_texture(GL_TEXTURE0 + texture_unit);
+		//bind_texture(texture_type, material.m_ambient);
 		set_uniform(uniform_name + ".ambient", texture_unit, shader_program);
 		texture_unit++;
 
 		// Set other material properties	
-		set_uniform(
-			uniform_name + ".shininess", material.m_shininess, shader_program
-		);
+		set_uniform(uniform_name + ".shininess", material.m_shininess, shader_program);
 		set_uniform(uniform_name + ".color", material.m_color, shader_program);
 	}
 }  // namespace spark

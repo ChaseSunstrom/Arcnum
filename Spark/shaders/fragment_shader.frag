@@ -5,12 +5,9 @@ in vec3 FragPos;
 in vec3 Normal;
 in vec2 TexCoords;
 
-// Allowed custom includes for different shader files
 #include "material.frag"
-#include "lighting.frag"
 
 uniform Material material;
-uniform vec3 viewPos;
 
 void main() {
     vec4 material_color = material.color;

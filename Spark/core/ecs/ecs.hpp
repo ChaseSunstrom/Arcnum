@@ -12,6 +12,54 @@
 
 namespace spark
 {
+	class base_holder
+	{
+	public:
+		virtual ~base_holder() = default;
+	};
+
+	template<typename T>
+	class holder : public base_holder
+	{
+	public:
+		explicit holder(component_manager& cm)
+		{
+			m_values = &cm.get_component_array<T>().get_array();
+		}
+
+		// Stores a vector of the data
+		std::vector<T>* m_values;
+	};
+
+	class group
+	{
+	public:
+		group() = default;
+
+		template<typename T>
+		void add(component_manager& cm)
+		{
+			m_map[std::type_index(typeid(T))] = std::make_unique<holder<T>>(cm);
+		}
+
+		template<typename T>
+		std::vector<T>* get() const
+		{
+			auto it = m_map.find(std::type_index(typeid(T)));
+			if (it != m_map.end())
+			{
+				// Safely downcast using static_cast since we know the derived type
+				holder<T>* _holder = static_cast<holder<T>*>(it->second.get());
+				return _holder->m_values; // Use m_values to reference the vector of components
+			}
+			return nullptr;
+		}
+
+	private:
+		std::unordered_map<std::type_index, std::unique_ptr<base_holder>> m_map;
+
+	};
+
 	class ecs
 	{
 	public:
@@ -140,12 +188,42 @@ namespace spark
 
 			(add_component(entity, std::forward<Components>(components)), ...);
 
+			// Creates a group based off the components passed in
+			std::unique_ptr<group> _group = std::make_unique<group>();
+			([&_group, this](auto&& component)
+			 {
+				 using component_type = std::decay_t<decltype(component)>;
+				 _group->add<component_type>(*this->m_component_manager);
+			 }(std::forward<Components>(components)), ...);  // ... is a fold expression
+
+			// Store the group
+			m_groups.emplace_back(std::move(_group));
+
 			return entity;
+		}
+
+		// Returns vectors of all components in the group
+		template <typename... Components>
+		std::tuple<std::vector<Components>*...> query_group_components()
+		{
+			for (auto& grp : m_groups)
+			{
+				// This will be true if all components exist in the group for the entity.
+				if ((... && (grp->get<Components>() != nullptr)))
+				{
+					return std::make_tuple(grp->get<Components>()...);
+				}
+			}
+
+			// If no group with all the requested components is found, return a tuple of nullptrs.
+			return std::make_tuple(static_cast<Components*>(nullptr)...);
 		}
 
 		// ==============================================================================
 		
 	private:
+		std::vector<std::unique_ptr<group>> m_groups = std::vector<std::unique_ptr<group>>();
+
 		std::unique_ptr <component_manager> m_component_manager = std::make_unique<component_manager>();
 
 		std::unique_ptr <entity_manager> m_entity_manager = std::make_unique<entity_manager>();

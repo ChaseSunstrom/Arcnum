@@ -112,27 +112,32 @@ namespace spark
 			fragment_path = std::filesystem::absolute(fragment_path_opt.value());
 		}
 
-		std::string vertex_code = read_file(m_preprocessor->preprocess_shader(vertex_path.string()));
-		std::string fragment_code = read_file(m_preprocessor->preprocess_shader(fragment_path.string()));
+		std::string pre_vertex = m_preprocessor->preprocess_shader(vertex_path.string());
+		std::string pre_fragment = m_preprocessor->preprocess_shader(fragment_path.string());
 
-		GLuint vertex_shader = compile_shader(vertex_code, GL_VERTEX_SHADER);
-		GLuint fragment_shader = compile_shader(fragment_code, GL_FRAGMENT_SHADER);
+		GLuint vertex_shader = compile_shader(pre_vertex, GL_VERTEX_SHADER);
 
-		GLuint shader_program = create_program();
-		attach_shader(shader_program, vertex_shader);
-		attach_shader(shader_program, fragment_shader);
+		GLuint fragment_shader = compile_shader(pre_fragment, GL_FRAGMENT_SHADER);
+		if (fragment_shader == 0)
+		{
+			glDeleteShader(vertex_shader); // Cleanup
+		}
 
-		link_program(shader_program);
+		GLuint shader_program;
+		if (!create_and_link_program(vertex_shader, fragment_shader, shader_program))
+		{
+		}
 
-		spark::delete_shader(vertex_shader);
-		spark::delete_shader(fragment_shader);
+		// Detach shaders after successful link
+		glDetachShader(shader_program, vertex_shader);
+		glDetachShader(shader_program, fragment_shader);
+		glDeleteShader(vertex_shader);
+		glDeleteShader(fragment_shader);
 
 		std::string shader_name = concat_paths(vertex_path.string(), fragment_path.string());
 		m_shaders[shader_name] = shader_program;
 
-		std::tuple <std::string, GLuint> tuple(shader_name, shader_program);
-
-		return tuple;
+		return { shader_name, shader_program };
 	}
 
 	inline GLuint shader_manager::get_shader(const std::string& concat_paths)
@@ -169,11 +174,47 @@ namespace spark
 		}
 	}
 
+	bool shader_manager::create_and_link_program(GLuint vertex_shader, GLuint fragment_shader, GLuint& out_program)
+	{
+		GLuint program = glCreateProgram();
+		glAttachShader(program, vertex_shader);
+		glAttachShader(program, fragment_shader);
+		glLinkProgram(program);
+
+		GLint success;
+		GLchar infoLog[1024];
+		glGetProgramiv(program, GL_LINK_STATUS, &success);
+		if (!success)
+		{
+			glGetProgramInfoLog(program, 1024, NULL, infoLog);
+			std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+			glDeleteProgram(program); // Cleanup on failure
+			return false; // Indicate failure
+		}
+
+		out_program = program; // Output the program ID
+		return true; // Indicate success
+	}
+
 	GLuint shader_manager::compile_shader(const std::string& shader_code, GLenum shader_type)
 	{
-		GLuint shader = create_shader(shader_type);
-		shader_source(shader, shader_code);
-		spark::compile_shader(shader);
+		const char* code = shader_code.c_str();
+		GLuint shader = glCreateShader(shader_type);
+		glShaderSource(shader, 1, &code, NULL);
+		glCompileShader(shader);
+
+		GLint success;
+		GLchar infoLog[1024];
+		glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+		if (!success)
+		{
+			glGetShaderInfoLog(shader, 1024, NULL, infoLog);
+			std::string type = shader_type == GL_VERTEX_SHADER ? "VERTEX" : "FRAGMENT";
+			std::cerr << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n" << infoLog << std::endl;
+			glDeleteShader(shader); // Don't leak the shader.
+			return 0; // Return 0 to indicate failure
+		}
+
 		return shader;
 	}
 

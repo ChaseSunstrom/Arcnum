@@ -37,6 +37,8 @@ namespace spark
 
 		static shader_manager& get_shader_manager();
 
+		static texture_manager& get_texture_manager();
+
 		static ecs& get_ecs();
 
 		static audio_manager& get_audio_manager();
@@ -63,6 +65,8 @@ namespace spark
 		static std::unique_ptr<audio_manager> s_audio_manager;
 
 		static std::unique_ptr <layer_stack> s_layer_stack;
+
+		static std::unique_ptr <texture_manager> s_texture_manager;
 
 		static std::unique_ptr<ecs> s_ecs;
 	};

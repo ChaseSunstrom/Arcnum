@@ -177,18 +177,6 @@ namespace spark
 		m_materials.erase(name);
 	}
 
-	texture& texture_manager::create_texture(
-		const std::string& name,
-		const std::filesystem::path& path,
-		texture_type type,
-		std::optional <int32_t> depth,
-		const std::vector <std::pair<GLenum, GLenum>>& params
-	)
-	{
-		m_textures[name] = texture(path, type, depth, params);
-		return m_textures[name];
-	}
-
 	void texture_manager::load_texture(
 		const std::string& name, const texture& texture
 	)

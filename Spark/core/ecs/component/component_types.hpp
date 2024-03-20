@@ -298,7 +298,6 @@ namespace spark
 		material& get_material(const std::string& name);
 
 		void destroy_material(const std::string& name);
-
 	private:
 		std::unique_ptr <shader_manager> m_shader_manager = std::make_unique<shader_manager>();
 
@@ -316,8 +315,17 @@ namespace spark
 			const std::string& name,
 			const std::filesystem::path& path,
 			texture_type type,
-			std::optional <int32_t> depth,
-			const std::vector <std::pair<GLenum, GLenum>>& params);
+			std::optional <int32_t> depth = std::nullopt,
+			const std::vector <std::pair<GLenum, GLenum>>& params = {
+				{GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR},
+				{GL_TEXTURE_MAG_FILTER, GL_LINEAR},
+				{GL_TEXTURE_WRAP_S, GL_REPEAT},
+				{GL_TEXTURE_WRAP_T, GL_REPEAT}
+			})
+		{
+			m_textures[name] = texture(path, type, depth, params);
+			return m_textures[name];
+		}
 
 		void load_texture(const std::string& name, const texture& texture);
 

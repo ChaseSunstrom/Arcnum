@@ -123,9 +123,6 @@
     <ClInclude Include="Spark\core\physics\gravity.hpp">
       <Filter>physics</Filter>
     </ClInclude>
-    <ClInclude Include="Spark\core\renderer\instancer.hpp">
-      <Filter>renderer</Filter>
-    </ClInclude>
     <ClInclude Include="Spark\core\renderer\layer.hpp">
       <Filter>renderer</Filter>
     </ClInclude>
@@ -169,6 +166,7 @@
     <ClInclude Include="Spark\core\window\window.hpp">
       <Filter>window</Filter>
     </ClInclude>
+    <ClInclude Include="Spark\core\renderer\instancer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spark\core\app\app.cpp">

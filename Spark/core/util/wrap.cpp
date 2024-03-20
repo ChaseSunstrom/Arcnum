@@ -196,6 +196,15 @@ namespace spark
 	{
 		glLinkProgram(program);
 
+		GLint success;
+		GLchar infoLog[1024];
+		glGetProgramiv(program, GL_LINK_STATUS, &success);
+		if (!success)
+		{
+			glGetProgramInfoLog(program, 1024, NULL, infoLog);
+			SPARK_ERROR("[SHADER]: Linking error \n" << infoLog << "\n -- --------------------------------------------------- -- ");
+		}
+
 		check_gl_error("Program link");
 	}
 
@@ -226,6 +235,15 @@ namespace spark
 	void compile_shader(uint32_t shader)
 	{
 		glCompileShader(shader);
+
+		GLint success;
+		GLchar infoLog[1024];
+		glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+		if (!success)
+		{
+			glGetShaderInfoLog(shader, 1024, NULL, infoLog);
+			SPARK_ERROR("[SHADER]: Compilation error of type: " << "\n" << infoLog << "\n -- --------------------------------------------------- -- ");
+		}
 
 		check_gl_error("Shader compilation");
 	}

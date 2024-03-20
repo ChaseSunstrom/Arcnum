@@ -29,6 +29,7 @@ void on_start()
             }
         });
 
+    spark::texture_manager& tex_man = spark::application::get_texture_manager();
     spark::material_manager& mat_man = spark::application::get_material_manager();
     spark::mesh_manager& mesh_man = spark::application::get_mesh_manager();
     spark::scene& cur_scene = spark::application::get_current_scene();
@@ -38,14 +39,17 @@ void on_start()
     cur_scene.set_background_color(spark::math::vec4(1.0f, 0.0f, 0.0f, 1.0f));
     
     std::vector<spark::vertex> vertices = {
-         spark::math::vec3(0.5f,  0.5f, 0.0f),  // top right
-         spark::math::vec3(0.5f, -0.5f, 0.0f),  // bottom right
-         spark::math::vec3(-0.5f, -0.5f, 0.0f),  // bottom left
-         spark::math::vec3(-0.5f,  0.5f, 0.0f)   // top left
+        // Position                      // Normal             // Texture Coords
+        {spark::math::vec3(0.5f,  0.5f, 0.0f), spark::math::vec3(0.0f, 0.0f, 1.0f), spark::math::vec2(1.0f, 1.0f)},  // Top Right
+        {spark::math::vec3(0.5f, -0.5f, 0.0f), spark::math::vec3(0.0f, 0.0f, 1.0f), spark::math::vec2(1.0f, 0.0f)},  // Bottom Right
+        {spark::math::vec3(-0.5f, -0.5f, 0.0f), spark::math::vec3(0.0f, 0.0f, 1.0f), spark::math::vec2(0.0f, 0.0f)}, // Bottom Left
+        {spark::math::vec3(-0.5f,  0.5f, 0.0f), spark::math::vec3(0.0f, 0.0f, 1.0f), spark::math::vec2(0.0f, 1.0f)}  // Top Left
     };
 
+
     // Create material and mesh
-    spark::material& mat = mat_man.create_material("material", {}, spark::math::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+    //spark::texture& tex = tex_man.create_texture("tex", "assets/sprites/grass.jpg", spark::texture_type::TWO_D);
+    spark::material& mat = mat_man.create_material("material", {}, spark::math::vec4(0.0f, 1.0f, 1.0f, 1.0f));
     spark::instanced_mesh& mesh = mesh_man.create_mesh("square", vertices, {0, 1, 3, 1, 2, 3});
 
 	// Create entity

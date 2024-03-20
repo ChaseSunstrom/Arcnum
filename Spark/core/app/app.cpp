@@ -26,6 +26,8 @@ namespace spark
 
 	std::unique_ptr<audio_manager> application::s_audio_manager = std::make_unique<audio_manager>();
 
+	std::unique_ptr<texture_manager> application::s_texture_manager = std::make_unique<texture_manager>();
+
 	void application::on_start()
 	{
 		application::add_scene("Main Scene", scene_config(math::vec4(0)));
@@ -97,6 +99,11 @@ namespace spark
 	mesh_manager& application::get_mesh_manager()
 	{
 		return *s_mesh_manager;
+	}
+
+	texture_manager& application::get_texture_manager()
+	{
+		return *s_texture_manager;
 	}
 
 	material_manager& application::get_material_manager()

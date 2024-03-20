@@ -10,7 +10,8 @@ namespace spark
 	struct component_info_base
 	{
 		component_info_base(const std::type_index& type) :
-				m_type(type) { }
+			m_type(type)
+		{}
 
 		virtual ~component_info_base() = default;
 
@@ -25,18 +26,19 @@ namespace spark
 	// For type information when returning all components in an entity
 	template <typename T>
 	class component_info :
-			public component_info_base
+		public component_info_base
 	{
 	public:
 		component_info(const T& component) :
-				component_info_base(typeid(T)), m_component(component) { }
+			component_info_base(typeid(T)), m_component(component)
+		{}
 
-		 const std::type_index& get_type() const override
+		const std::type_index& get_type() const override
 		{
 			return m_type;
 		}
 
-		 const T& get_component() const
+		const T& get_component() const
 		{
 			return m_component;
 		}
@@ -57,16 +59,15 @@ namespace spark
 	};
 
 	template <typename T>
-	class component_array :
-			public component_array_base
+	class component_array : public component_array_base
 	{
 	public:
-		 std::vector <T>& get_array()
+		std::vector <T>& get_array()
 		{
 			return m_component_array;
 		}
 
-		 void insert(entity entity, T component)
+		void insert(entity entity, T component)
 		{
 			if (entity >= m_component_array.size())
 			{
@@ -76,7 +77,7 @@ namespace spark
 			m_component_array[entity] = component;
 		}
 
-		 void remove(entity entity)
+		void remove(entity entity)
 		{
 			if (entity < m_component_array.size())
 			{
@@ -84,12 +85,12 @@ namespace spark
 			}
 		}
 
-		 void entity_destroyed(entity entity)
+		void entity_destroyed(entity entity)
 		{
 			m_component_array[entity] = T();
 		}
 
-		 const T& operator[](entity entity) const
+		const T& operator[](entity entity) const
 		{
 			if (__SPARK_ASSERT__(entity > m_component_array.size()))
 			{
@@ -99,12 +100,12 @@ namespace spark
 			return m_component_array[entity];
 		}
 
-		 bool has_component(entity entity) const override
+		bool has_component(entity entity) const override
 		{
 			return entity < m_component_array.size();
 		}
 
-		 const component_info_base get_component(entity entity) override
+		const component_info_base get_component(entity entity) override
 		{
 			return component_info<T>(m_component_array[entity]);
 		}
@@ -148,25 +149,25 @@ namespace spark
 		}
 
 		template <typename T>
-		 void add_component(entity entity, T component)
+		void add_component(entity entity, T component)
 		{
 			get_component_array<T>().insert(entity, component);
 		}
 
 		template <typename T>
-		 void set_component(entity entity, T component)
+		void set_component(entity entity, T component)
 		{
 			get_component_array<T>()[entity] = component;
 		}
 
 		template <typename T>
-		 void remove_component(entity entity)
+		void remove_component(entity entity)
 		{
 			get_component_array<T>().remove(entity);
 		}
 
 		template <typename T>
-		 T& operator[](entity entity)
+		T& operator[](entity entity)
 		{
 			if (__SPARK_ASSERT__(entity > get_component_array<T>().size()))
 			{
@@ -180,7 +181,7 @@ namespace spark
 		{
 			std::vector <component_info_base> components;
 
-			for (auto& [type, array]: m_components)
+			for (auto& [type, array] : m_components)
 			{
 				if (array->has_component(entity))
 				{
@@ -191,9 +192,9 @@ namespace spark
 			return components;
 		}
 
-		 void destroy_component_array(entity entity)
+		void destroy_component_array(entity entity)
 		{
-			for (const auto& [type, array]: m_components)
+			for (const auto& [type, array] : m_components)
 			{
 				array->entity_destroyed(entity);
 			}

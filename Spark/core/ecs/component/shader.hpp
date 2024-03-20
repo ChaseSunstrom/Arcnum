@@ -36,6 +36,8 @@ namespace spark
 			const std::pair<std::optional<std::string>, std::optional<std::string>>&
 			paths_opt);
 
+		bool create_and_link_program(GLuint vertex_shader, GLuint fragment_shader, GLuint& out_program);
+
 		GLuint get_shader(const std::string& vertex_path,
 						  const std::string& fragment_path);
 

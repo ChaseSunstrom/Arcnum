@@ -20,13 +20,19 @@ namespace spark
 			for (int32_t i = 0; i < 3; i++)
 			{
 				if (point[i] < new_min[i])
-					new_min[i] = m_center[i] - m_size/ 2.0f;
+					new_min[i] = m_center[i] - m_size / 2.0f;
 
 				else
 					new_max[i] = m_center[i] + m_size / 2.0f;
 			}
 		}
 
+		if (m_is_leaf && m_transforms.size() >= m_max_components)
+		{
+			subdivide();
+		}
+
+		// Now that the tree has grown and potentially subdivided, call grow if needed
 		for (int32_t i = 0; i < levels_to_grow; i++)
 			grow(point);
 	}
@@ -34,7 +40,7 @@ namespace spark
 	void octree::grow(const math::vec3& point)
 	{
 		math::vec3 direction = point - m_center;
-		direction = normalize(direction); 
+		direction = normalize(direction);
 
 		while (!is_inside(point))
 		{
@@ -53,7 +59,7 @@ namespace spark
 				}
 				m_children[child_index]->insert(transform);
 			}
-			m_transforms.clear(); 
+			m_transforms.clear();
 		}
 	}
 
@@ -69,29 +75,28 @@ namespace spark
 
 	void octree::subdivide()
 	{
-		if (!m_is_leaf) return;
+		if (!m_is_leaf || m_depth >= m_max_depth) // Check current depth before subdividing.
+			return;
 
-		m_is_leaf = true;
+		m_is_leaf = false;
+
 		float32_t half_size = m_size / 2.0f;
-		float32_t quarter_size = half_size / 2.0f;
 
-		for (int32_t i = 0; i < 8; i++)
+		for (int32_t i = 0; i < 8; ++i)
 		{
-			math::vec3 child_center = m_center + math::vec3(
-				(i & 1 ? quarter_size : -quarter_size),
-				(i & 2 ? quarter_size : -quarter_size),
-				(i & 4 ? quarter_size : -quarter_size));
-			m_children[i] = std::make_unique<octree>(child_center, half_size);
+			math::vec3 child_center = calculate_child_center(i);
+			// Pass depth + 1 to the newly created children.
+			m_children[i] = std::make_unique<octree>(child_center, half_size, m_depth + 1);
 		}
 
-		redistribute(); // Move existing transforms to appropriate child nodes
-
-		m_transforms.clear(); // Clear transforms from this node
+		redistribute(); // Move existing transforms to the appropriate child nodes.
 	}
+
 
 	void octree::redistribute()
 	{
-		for (auto* transform : m_transforms)
+		std::vector<transform_component*> tmp_transforms = std::move(m_transforms);
+		for (auto* transform : tmp_transforms)
 		{
 			math::vec3 position = math::vec3(transform->m_transform[3]);
 			int32_t child_index = determine_child(position);
@@ -104,26 +109,35 @@ namespace spark
 		math::vec3 position = math::vec3(transform->m_transform[3]);
 
 		if (!is_inside(position))
-		{
 			ensure_contains(position);
-			return;
-		}
 
-		if (m_is_leaf && m_transforms.size() < m_max_components)
+		if (m_is_leaf)
 		{
-			m_transforms.emplace_back(transform);
+			if (m_transforms.size() < m_max_components)
+				m_transforms.emplace_back(transform);
+			
+			else
+			{
+				subdivide();
+				if (!m_is_leaf)
+				{
+					int32_t child_index = determine_child(position);
+					if (m_children[child_index])
+						m_children[child_index]->insert(transform);
+					else
+						m_transforms.emplace_back(transform);
+				}
+				else
+					m_transforms.emplace_back(transform);
+			}
 		}
 		else
 		{
-			if (m_is_leaf)
-			{
-				subdivide();
-			}
-
 			int32_t child_index = determine_child(position);
 			m_children[child_index]->insert(transform);
 		}
 	}
+
 
 
 	int32_t octree::determine_child(const math::vec3& position) const
@@ -177,8 +191,8 @@ namespace spark
 		for (auto* transform : m_transforms)
 			transforms.emplace_back(transform);
 
-		if (!m_is_leaf) 
-			for (auto& child : m_children) 
+		if (!m_is_leaf)
+			for (auto& child : m_children)
 				child->collect_visible(frustum, transforms);
 	}
 }

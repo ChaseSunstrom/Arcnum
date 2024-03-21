@@ -29,21 +29,6 @@ namespace spark
 
 		~scene() = default;
 
-		scene(const scene& other)
-			: m_config(other.m_config),
-			m_octree(std::make_unique<octree>(*other.m_octree))
-		{}
-
-		scene& operator=(const scene& other)
-		{
-			if (this != &other)
-			{
-				m_config = other.m_config;
-				m_octree = std::make_unique<octree>(*other.m_octree);
-			}
-			return *this;
-		}
-
 		scene_config& get_scene_config() const { return m_config; }
 		octree& get_octree() const { return *m_octree; }
 

@@ -114,10 +114,8 @@ namespace spark
 				std::vector<math::mat4> visible_transforms;
 				for (auto& transform : trans_struct->m_data)
 				{
-					// Convert the math::mat4 to a bounding volume or use a center point for the frustum check.
-					// You'll need to adapt this part based on how you define your bounding volumes.
 					math::vec3 center = math::vec3(transform[3]);
-					float radius = 1.0f; // Calculate or retrieve the radius of the bounding volume.
+					float radius = 0.0f;
 
 					// Check if the bounding volume is inside the view frustum.
 					if (view_frustum.is_inside(center, radius))

@@ -5,6 +5,8 @@
 
 void on_start()
 {
+    spark::application::set_window_title("Arcnum");
+
     spark::thread_pool::enqueue(spark::task_priority::HIGH, false, []()
         {
             spark::net::udp_server server("127.0.0.1", "8080");
@@ -28,6 +30,8 @@ void on_start()
                 client.send(msg);
             }
         });
+
+    spark::renderer& renderer = spark::application::get_renderer();
 
     spark::texture_manager& tex_man = spark::application::get_texture_manager();
     spark::material_manager& mat_man = spark::application::get_material_manager();
@@ -53,11 +57,21 @@ void on_start()
     spark::instanced_mesh& mesh = mesh_man.create_mesh("square", vertices, {0, 1, 3, 1, 2, 3});
 
 	// Create entity
-    spark::entity ent = ecs.create_entity(
-        spark::transform_component(spark::math::vec3(0.0f, 0.0f, 0.0f)),
-        spark::mesh_component("square"),
-		spark::material_component("material")
-    );
+    
+    for (int i = 0; i < 600000; i++)
+    {
+        spark::transform_component trans = spark::transform_component(spark::math::vec3(i, i, i));
+
+        spark::entity ent = ecs.create_entity(
+            trans,
+            spark::mesh_component("square"),
+            spark::material_component("material")
+        );
+
+        renderer.get_instancer().add_renderable("square", "material", trans.m_transform);
+    }
+
+
 }
 
 void on_update()

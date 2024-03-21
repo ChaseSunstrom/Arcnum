@@ -63,6 +63,7 @@ namespace spark
 
 		inline void set_tick_speed(uint64_t speed) { m_tick_speed = speed; }
 
+		inline instancer& get_instancer() { return *m_instancer; }
 	private:
 		float64_t m_fixed_delta_time = 0.005;
 

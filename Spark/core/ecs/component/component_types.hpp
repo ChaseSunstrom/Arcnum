@@ -31,26 +31,31 @@ namespace spark
 	{
 		transform(
 			const math::vec3& position = math::vec3(0.0f),
-			const math::quat& rotation = math::quat(1.0f, 0.0f, 0.0f, 0.0f),
+			const math::vec3& rotation = math::vec3(1.0f),
 			const math::vec3& scale = math::vec3(1.0f)
-		) : m_position(position), m_rotation(rotation), m_scale(scale)
-		{}
-
-		math::mat4 to_mat4() const
+		)
 		{
-			return math::translate(math::mat4(1.0f), m_position) *
-				math::toMat4(m_rotation) *
-				math::scale(math::mat4(1.0f), m_scale);
+			glm::mat4 mat = glm::mat4(1.0f); // Start with identity matrix
+
+			// Apply translation
+			mat = glm::translate(mat, position);
+
+			// Apply rotations around the Z, Y, and X axes, in that order
+			mat = glm::rotate(mat, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+			mat = glm::rotate(mat, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+			mat = glm::rotate(mat, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+
+			// Apply scaling
+			mat = glm::scale(mat, scale);
+			m_transform = mat;
 		}
 
 		bool operator!=(const transform& other) const
 		{
-			return m_position != other.m_position || m_rotation != other.m_rotation || m_scale != other.m_scale;
+			return m_transform != other.m_transform;
 		}
 
-		math::vec3 m_position;
-		math::quat m_rotation;
-		math::vec3 m_scale;
+		math::mat4 m_transform;
 	};
 
 	class texture

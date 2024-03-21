@@ -212,6 +212,7 @@
     <ClCompile Include="Spark\core\window\window.cpp">
       <Filter>window</Filter>
     </ClCompile>
+    <ClCompile Include="Spark\core\renderer\instancer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Spark\shaders\material.frag" />

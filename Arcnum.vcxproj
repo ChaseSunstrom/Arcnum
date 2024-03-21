@@ -98,6 +98,7 @@
     <ClInclude Include="src\game.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Spark\core\renderer\instancer.cpp" />
     <ClCompile Include="src\game.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>

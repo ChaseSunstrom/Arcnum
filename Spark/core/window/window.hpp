@@ -51,6 +51,8 @@ namespace spark
 
 		void set_window_title(const std::string& title);
 
+		window_data& get_window_data() { return *m_window_data; }
+
 		// ==============================================================================
 		// EVENT CALLBACKS:
 

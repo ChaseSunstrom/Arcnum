@@ -58,7 +58,7 @@ void on_start()
 
 	// Create entity
     
-    for (int i = 0; i < 600000; i++)
+    for (int i = 0; i < 100; i++)
     {
         spark::transform_component trans = spark::transform_component(spark::math::vec3(i, i, i));
 
@@ -68,10 +68,8 @@ void on_start()
             spark::material_component("material")
         );
 
-        renderer.get_instancer().add_renderable("square", "material", trans.m_transform);
+        renderer.get_instancer().add_renderable(cur_scene, "square", "material", trans);
     }
-
-
 }
 
 void on_update()

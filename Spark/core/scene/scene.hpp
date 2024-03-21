@@ -3,6 +3,7 @@
 
 #include "../ecs/ecs.hpp"
 #include "../spark.hpp"
+#include "../renderer/octree.hpp"
 
 namespace spark
 {
@@ -28,11 +29,28 @@ namespace spark
 
 		~scene() = default;
 
+		scene(const scene& other)
+			: m_config(other.m_config),
+			m_octree(std::make_unique<octree>(*other.m_octree))
+		{}
+
+		scene& operator=(const scene& other)
+		{
+			if (this != &other)
+			{
+				m_config = other.m_config;
+				m_octree = std::make_unique<octree>(*other.m_octree);
+			}
+			return *this;
+		}
+
 		scene_config& get_scene_config() const { return m_config; }
+		octree& get_octree() const { return *m_octree; }
 
 		void set_background_color(const glm::vec4& color) { m_config.m_background_color = color; }
 	private:
 		scene_config& m_config;
+		std::unique_ptr<octree> m_octree = std::make_unique<octree>(math::vec3(0), 100.0f);
 	};
 }
 

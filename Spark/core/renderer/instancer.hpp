@@ -2,6 +2,7 @@
 #define SPARK_INSTANCER_HPP
 
 #include "../ecs/ecs.hpp"
+#include "../scene/scene.hpp"
 
 namespace spark
 {
@@ -23,8 +24,8 @@ namespace spark
 		instancer() = default;
 		~instancer() = default;
 
-		void add_renderable(const std::string& mesh_name, const std::string& material_name, math::mat4& transform);
-		void add_renderable(const std::string& mesh_name, const std::string& material_name, std::vector<math::mat4>& transforms);
+		void add_renderable(const scene& scene, const std::string& mesh_name, const std::string& material_name, transform_component& transform);
+		void add_renderable(const scene& scene, const std::string& mesh_name, const std::string& material_name, std::vector<transform_component>& transforms);
 
 		void bind_renderables(const std::string& mesh_name, const std::string& material_name);
 

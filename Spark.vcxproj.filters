@@ -167,6 +167,8 @@
       <Filter>window</Filter>
     </ClInclude>
     <ClInclude Include="Spark\core\renderer\instancer.hpp" />
+    <ClInclude Include="Spark\core\renderer\frustum.hpp" />
+    <ClInclude Include="Spark\core\renderer\octree.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spark\core\app\app.cpp">
@@ -213,6 +215,8 @@
       <Filter>window</Filter>
     </ClCompile>
     <ClCompile Include="Spark\core\renderer\instancer.cpp" />
+    <ClCompile Include="Spark\core\renderer\frustum.cpp" />
+    <ClCompile Include="Spark\core\renderer\octree.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Spark\shaders\material.frag" />

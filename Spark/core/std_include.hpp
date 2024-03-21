@@ -34,6 +34,7 @@
 #include <mutex>
 #include <ranges>
 #include <future>
+#include <array>
 #include <new>
 
 #include <glew.h>

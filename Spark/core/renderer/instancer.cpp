@@ -23,7 +23,7 @@ namespace spark
 		}
 	}
 
-	void instancer::add_renderable(const std::string& mesh_name, const std::string& material_name, math::mat4& transform)
+	void instancer::add_renderable(const scene& scene, const std::string& mesh_name, const std::string& material_name, transform_component& transform)
 	{
 		auto& material_map = m_renderables[mesh_name];
 		if (!material_map[material_name])
@@ -31,10 +31,11 @@ namespace spark
 			material_map[material_name] = std::make_unique<transforms>();
 		}
 
-		material_map[material_name]->add_transform(transform);
+		material_map[material_name]->add_transform(transform.m_transform);
+		scene.get_octree().insert(&transform);
 	}
 
-	void instancer::add_renderable(const std::string& mesh_name, const std::string& material_name, std::vector<math::mat4>& _transforms)
+	void instancer::add_renderable(const scene& scene, const std::string& mesh_name, const std::string& material_name, std::vector<transform_component>& _transforms)
 	{
 		auto& material_map = m_renderables[mesh_name];
 		if (!material_map[material_name])
@@ -44,7 +45,8 @@ namespace spark
 
 		for (auto& transform : _transforms)
 		{
-			material_map[material_name]->add_transform(transform);
+			material_map[material_name]->add_transform(transform.m_transform);
+			scene.get_octree().insert(&transform);
 		}
 	}
 
@@ -89,23 +91,55 @@ namespace spark
 
 	void instancer::render_instanced()
 	{
+		window_data& win = application::get_window().get_window_data();
 		mesh_manager& mesh_man = application::get_mesh_manager();
+		
+		glm::mat4 default_projection = glm::perspective(glm::radians(45.0f), (float)win.m_width / (float)win.m_height, 0.1f, 100.0f);
+		glm::mat4 default_view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), // Camera is at (0,0,3), in World Space
+											 glm::vec3(0.0f, 0.0f, 0.0f), // and looks at the origin
+											 glm::vec3(0.0f, 1.0f, 0.0f)  // Head is up (set to 0,-1,0 to look upside-down)
+		);
+		frustum view_frustum(default_projection * default_view);
 
 		for (auto& mesh_item : m_renderables)
 		{
 			const auto& mesh_name = mesh_item.first;
+
 			for (auto& material_item : mesh_item.second)
 			{
 				const auto& material_name = material_item.first;
-				auto& transforms = material_item.second;
+				auto& trans_struct = material_item.second;
 
-				if (transforms->m_data.empty()) continue; // Skip if no instances
+				// Filter the transforms based on frustum culling.
+				std::vector<math::mat4> visible_transforms;
+				for (auto& transform : trans_struct->m_data)
+				{
+					// Convert the math::mat4 to a bounding volume or use a center point for the frustum check.
+					// You'll need to adapt this part based on how you define your bounding volumes.
+					math::vec3 center = math::vec3(transform[3]);
+					float radius = 1.0f; // Calculate or retrieve the radius of the bounding volume.
 
-				bind_renderables(mesh_name, material_name); // Prepare mesh and material for rendering
+					// Check if the bounding volume is inside the view frustum.
+					if (view_frustum.is_inside(center, radius))
+					{
+						visible_transforms.push_back(transform);
+					}
+				}
 
-				auto index_count = static_cast<GLsizei>(mesh_man.get_mesh(mesh_name).m_mesh.m_indices.size());
+				// Now render only the visible transforms.
+				if (!visible_transforms.empty())
+				{
+					// Update the transform data with only the visible ones.
+					glBindBuffer(GL_ARRAY_BUFFER, trans_struct->m_vbo);
+					glBufferData(GL_ARRAY_BUFFER, visible_transforms.size() * sizeof(math::mat4), visible_transforms.data(), GL_DYNAMIC_DRAW);
 
-				glDrawElementsInstanced(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, 0, transforms->m_data.size());
+					bind_renderables(mesh_name, material_name); // Prepare mesh and material for rendering
+
+					mesh_manager& mesh_man = application::get_mesh_manager();
+					auto index_count = static_cast<GLsizei>(mesh_man.get_mesh(mesh_name).m_mesh.get_index_count());
+
+					glDrawElementsInstanced(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, 0, visible_transforms.size());
+				}
 			}
 		}
 	}

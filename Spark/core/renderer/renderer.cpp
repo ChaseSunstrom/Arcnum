@@ -10,7 +10,6 @@ namespace spark
         math::vec4 bc = config.m_background_color;
 
         set_background_color(bc.r, bc.g, bc.b, bc.a);
-
         m_instancer->render_instanced();
     }
 }

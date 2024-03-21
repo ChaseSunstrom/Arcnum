@@ -15,7 +15,8 @@ namespace spark
 		scene_manager() = default;
 
 		scene_manager(renderer& renderer) :
-				m_renderer(renderer) { }
+			m_renderer(renderer)
+		{}
 
 		~scene_manager() = default;
 
@@ -30,22 +31,22 @@ namespace spark
 			}
 		}
 
-		 void remove_scene(const std::string& name)
+		void remove_scene(const std::string& name)
 		{
 			m_scenes.erase(name);
 		}
 
-		 scene& get_scene(const std::string& name)
+		scene& get_scene(const std::string& name)
 		{
 			return *m_scenes[name];
 		}
 
-		 void switch_scene(const std::string& name)
+		void switch_scene(const std::string& name)
 		{
 			m_current_scene_name = name;
 		}
 
-		 scene& get_current_scene()
+		scene& get_current_scene()
 		{
 			return *m_scenes[m_current_scene_name];
 		}
@@ -57,14 +58,14 @@ namespace spark
 			m_renderer.render(current_scene);
 		}
 
-		 std::vector <scene>& get_all_scenes()
+		std::vector <scene>& get_all_scenes()
 		{
 			return m_scenes_vector;
 		}
 
 	private:
 		std::unordered_map <std::string, std::unique_ptr<scene>> m_scenes =
-				std::unordered_map <std::string, std::unique_ptr<scene>>();
+			std::unordered_map <std::string, std::unique_ptr<scene>>();
 
 		std::vector <scene> m_scenes_vector = std::vector<scene>();
 

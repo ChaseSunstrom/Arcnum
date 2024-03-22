@@ -4,26 +4,25 @@ namespace spark
 {
 	void octree::ensure_contains(const math::vec3& point)
 	{
-		if (is_inside(point)) return;
-
-		int32_t levels_to_grow = 0;
-		math::vec3 min = m_center - math::vec3(m_size / 2.0f);
-		math::vec3 max = m_center + math::vec3(m_size / 2.0f);
-		math::vec3 new_min = min;
-		math::vec3 new_max = max;
-
-		while (!is_inside(point, new_min, new_max))
+		if (!is_inside(point))
 		{
-			m_size *= 2.0f;
-			levels_to_grow++;
-
-			for (int32_t i = 0; i < 3; i++)
+			// Calculate the new bounds required to include the point
+			math::vec3 direction = normalize(point - m_center);
+			while (!is_inside(point))
 			{
-				if (point[i] < new_min[i])
-					new_min[i] = m_center[i] - m_size / 2.0f;
-
-				else
-					new_max[i] = m_center[i] + m_size / 2.0f;
+				// Expand the root node size
+				m_size *= 2;
+				// Adjust the center based on the direction to the point
+				m_center += direction * (m_size / 4);
+			}
+			// If the root node has children, re-insert objects to maintain the octree integrity
+			if (!m_is_leaf)
+			{
+				std::vector<transform_component*> objects(std::move(m_transforms));
+				for (auto* obj : objects)
+				{
+					insert(obj);
+				}
 			}
 		}
 
@@ -31,10 +30,6 @@ namespace spark
 		{
 			subdivide();
 		}
-
-		// Now that the tree has grown and potentially subdivided, call grow if needed
-		for (int32_t i = 0; i < levels_to_grow; i++)
-			grow(point);
 	}
 
 	void octree::grow(const math::vec3& point)
@@ -184,15 +179,77 @@ namespace spark
 			(point.z >= min.z && point.z <= max.z);
 	}
 
-	void octree::collect_visible(const frustum& frustum, std::vector<transform_component*>& transforms) const
+	bool octree::intersects(const frustum& frustum) const
 	{
-		if (!frustum.is_inside(m_center, m_size / 2.0f)) return;
+		for (const auto& plane : frustum.m_planes)
+		{
+			glm::vec3 closestPoint;
+			closestPoint.x = plane.m_normal.x > 0 ? m_center.x - m_size / 2 : m_center.x + m_size / 2;
+			closestPoint.y = plane.m_normal.y > 0 ? m_center.y - m_size / 2 : m_center.y + m_size / 2;
+			closestPoint.z = plane.m_normal.z > 0 ? m_center.z - m_size / 2 : m_center.z + m_size / 2;
 
+			if (plane.get_signed_distance(closestPoint) > 0)
+			{
+				return false; // AABB is completely outside the frustum
+			}
+		}
+		return true; // Intersects or is completely inside the frustum
+	}
+
+	void octree::get_node_edges(std::vector<glm::vec3>& lines) const
+	{
+		glm::vec3 min_corner = m_center - glm::vec3(m_size / 2.0f);
+		glm::vec3 max_corner = m_center + glm::vec3(m_size / 2.0f);
+
+		// 8 corners of the AABB
+		glm::vec3 corners[8] = {
+			glm::vec3(min_corner.x, min_corner.y, min_corner.z),
+			glm::vec3(max_corner.x, min_corner.y, min_corner.z),
+			glm::vec3(max_corner.x, max_corner.y, min_corner.z),
+			glm::vec3(min_corner.x, max_corner.y, min_corner.z),
+			glm::vec3(min_corner.x, min_corner.y, max_corner.z),
+			glm::vec3(max_corner.x, min_corner.y, max_corner.z),
+			glm::vec3(max_corner.x, max_corner.y, max_corner.z),
+			glm::vec3(min_corner.x, max_corner.y, max_corner.z)
+		};
+
+		// 12 edges of the AABB, each edge consists of 2 points
+		int32_t edges[12][2] = {
+			{0, 1}, {1, 2}, {2, 3}, {3, 0},
+			{4, 5}, {5, 6}, {6, 7}, {7, 4},
+			{0, 4}, {1, 5}, {2, 6}, {3, 7}
+		};
+
+		// Generate line segments for each edge
+		for (int32_t i = 0; i < 12; ++i)
+		{
+			lines.push_back(corners[edges[i][0]]);
+			lines.push_back(corners[edges[i][1]]);
+		}
+	}
+
+
+	void octree::collect_visible(const frustum& frustum, std::vector<math::mat4>& transforms) const
+	{
+		// First, check if the current node intersects the frustum.
+		if (!this->intersects(frustum)) return;
+
+		// If it intersects, add all objects in the current node.
 		for (auto* transform : m_transforms)
-			transforms.emplace_back(transform);
+		{
+			transforms.emplace_back(transform->m_transform);
+		}
 
+		// Recursively check child nodes if this is not a leaf.
 		if (!m_is_leaf)
-			for (auto& child : m_children)
-				child->collect_visible(frustum, transforms);
+		{
+			for (const auto& child : m_children)
+			{
+				if (child)
+				{ // Ensure child exists before trying to access it
+					child->collect_visible(frustum, transforms);
+				}
+			}
+		}
 	}
 }

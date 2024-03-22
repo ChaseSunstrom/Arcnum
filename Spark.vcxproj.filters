@@ -221,5 +221,7 @@
   <ItemGroup>
     <None Include="Spark\shaders\material.frag" />
     <None Include="Spark\shaders\lighting.frag" />
+    <None Include="Spark\shaders\line.vert" />
+    <None Include="Spark\shaders\line.frag" />
   </ItemGroup>
 </Project>

@@ -7,6 +7,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <vector>
+#include <numeric>
 #include <string>
 #include <memory>
 #include <chrono>
@@ -16,6 +17,7 @@
 #include <list>
 #include <unordered_map>
 #include <unordered_set>
+#include <cmath>
 #include <random>
 #include <functional>
 #include <stack>
@@ -44,6 +46,7 @@
 #include <gtx/quaternion.hpp>
 #include <gtc/quaternion.hpp>
 #include <gtc/matrix_transform.hpp>
+#include <gtc/matrix_inverse.hpp>
 #include <gtx/transform.hpp>
 #include <gtc/type_ptr.hpp>
 #include <common.hpp>

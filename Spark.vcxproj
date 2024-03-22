@@ -162,6 +162,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Spark\shaders\lighting.frag" />
+    <None Include="Spark\shaders\line.frag" />
+    <None Include="Spark\shaders\line.vert" />
     <None Include="Spark\shaders\material.frag" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

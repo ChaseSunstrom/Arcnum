@@ -35,7 +35,7 @@ namespace spark
 		void set_background_color(const glm::vec4& color) { m_config.m_background_color = color; }
 	private:
 		scene_config& m_config;
-		std::unique_ptr<octree> m_octree = std::make_unique<octree>(math::vec3(0), 100.0f);
+		std::unique_ptr<octree> m_octree = std::make_unique<octree>(math::vec3(0), 1.0f);
 	};
 }
 

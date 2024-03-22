@@ -140,12 +140,12 @@ namespace spark
 		return { shader_name, shader_program };
 	}
 
-	inline GLuint shader_manager::get_shader(const std::string& concat_paths)
+	GLuint shader_manager::get_shader(const std::string& concat_paths)
 	{
 		return m_shaders[concat_paths];
 	}
 
-	inline GLuint shader_manager::get_shader(const std::string& vertex_path, const std::string& fragment_path)
+	GLuint shader_manager::get_shader(const std::string& vertex_path, const std::string& fragment_path)
 	{
 		std::string name = concat_paths(vertex_path, fragment_path);
 		return m_shaders[name];
@@ -218,7 +218,7 @@ namespace spark
 		return shader;
 	}
 
-	inline std::string shader_manager::concat_paths(const std::string& vertex_path, const std::string& fragment_path)
+	std::string shader_manager::concat_paths(const std::string& vertex_path, const std::string& fragment_path)
 	{
 		return vertex_path + fragment_path;
 	}

@@ -39,7 +39,10 @@ void on_start()
     spark::scene& cur_scene = spark::application::get_current_scene();
     spark::ecs& ecs = spark::application::get_ecs();
 
+    spark::shader_manager& shader_man = spark::application::get_shader_manager();
 
+    auto [vert, frag] = shader_man.load_shader({"Spark/shaders/line.vert", "Spark/shaders/line.frag"});
+    SPARK_INFO("Shaders: " << vert);
     cur_scene.set_background_color(spark::math::vec4(1.0f, 0.0f, 0.0f, 1.0f));
     
     std::vector<spark::vertex> vertices = {
@@ -58,7 +61,7 @@ void on_start()
 
 	// Create entity
     
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < 10000; i++)
     {
         spark::transform_component trans = spark::transform_component(spark::math::vec3(i, i, i));
 
@@ -74,7 +77,16 @@ void on_start()
 
 void on_update()
 {
-	
+    static float x = 3; // Static to keep its value between calls
+
+    spark::scene& cur_scene = spark::application::get_current_scene();
+    spark::material_manager& mat_man = spark::application::get_material_manager();
+    spark::renderer& renderer = spark::application::get_renderer();
+    spark::camera& camera = *renderer.get_cameras()[0];
+
+    camera.m_position = spark::math::vec3(0.0f, 0.0f, x);
+    x += 0.0001f;
+
 }
 // required function
 // will recieve events from everything, it is automatically subscribed to recieve

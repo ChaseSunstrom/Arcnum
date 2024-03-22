@@ -2,38 +2,97 @@
 
 namespace spark
 {
-	frustum::frustum(const math::mat4& pv_matrix)
-	{
-		update(pv_matrix);
-	}
+    frustum::frustum(const math::mat4& pv_matrix)
+    {
+        m_view_projection = pv_matrix;
+        update(pv_matrix);
+    }
 
-	void frustum::update(const math::mat4& pv_matrix)
-	{
-		for (int32_t i = 0; i < 3; i++)
-		{
-			m_planes[i] = glm::vec4(pv_matrix[0][3] + pv_matrix[0][i], pv_matrix[1][3] + pv_matrix[1][i], pv_matrix[2][3] + pv_matrix[2][i], pv_matrix[3][3] + pv_matrix[3][i]); // Left, bottom, near
-			m_planes[i + 3] = glm::vec4(pv_matrix[0][3] - pv_matrix[0][i], pv_matrix[1][3] - pv_matrix[1][i], pv_matrix[2][3] - pv_matrix[2][i], pv_matrix[3][3] - pv_matrix[3][i]); // Right, top, far
-		}
-		// Normalize the planes
-		for (auto& plane : m_planes)
-		{
-			float32_t length = math::length(glm::vec3(plane));
-			plane /= length;
-		}
-	}
+    void frustum::update(const math::mat4& pv_matrix)
+    {
+        // Left Plane
+        m_planes[0] = plane(
+            glm::vec3(pv_matrix[0][3] + pv_matrix[0][0], pv_matrix[1][3] + pv_matrix[1][0], pv_matrix[2][3] + pv_matrix[2][0]),
+            pv_matrix[3][3] + pv_matrix[3][0]);
 
-	bool frustum::is_inside(const math::vec3& center, float32_t size) const
-	{
-		glm::vec3 half_diagonal(size);
-		for (const auto& plane : m_planes)
-		{
-			glm::vec3 normal(plane);
-			float distance = plane.w + math::dot(normal, center);
-			if (distance < -math::dot(normal, half_diagonal))
-			{
-				return false; // Box is completely outside this plane
-			}
-		}
-		return true; // Box is inside all planes
-	}
+        // Right Plane
+        m_planes[1] = plane(
+            glm::vec3(pv_matrix[0][3] - pv_matrix[0][0], pv_matrix[1][3] - pv_matrix[1][0], pv_matrix[2][3] - pv_matrix[2][0]),
+            pv_matrix[3][3] - pv_matrix[3][0]);
+
+        // Bottom Plane
+        m_planes[2] = plane(
+            glm::vec3(pv_matrix[0][3] + pv_matrix[0][1], pv_matrix[1][3] + pv_matrix[1][1], pv_matrix[2][3] + pv_matrix[2][1]),
+            pv_matrix[3][3] + pv_matrix[3][1]);
+
+        // Top Plane
+        m_planes[3] = plane(
+            glm::vec3(pv_matrix[0][3] - pv_matrix[0][1], pv_matrix[1][3] - pv_matrix[1][1], pv_matrix[2][3] - pv_matrix[2][1]),
+            pv_matrix[3][3] - pv_matrix[3][1]);
+
+        // Near Plane
+        m_planes[4] = plane(
+            glm::vec3(pv_matrix[0][3] + pv_matrix[0][2], pv_matrix[1][3] + pv_matrix[1][2], pv_matrix[2][3] + pv_matrix[2][2]),
+            pv_matrix[3][3] + pv_matrix[3][2]);
+
+        // Far Plane
+        m_planes[5] = plane(
+            glm::vec3(pv_matrix[0][3] - pv_matrix[0][2], pv_matrix[1][3] - pv_matrix[1][2], pv_matrix[2][3] - pv_matrix[2][2]),
+            pv_matrix[3][3] - pv_matrix[3][2]);
+
+        // Normalize all planes
+        for (auto& plane : m_planes)
+        {
+            float length = glm::length(plane.m_normal);
+            plane.m_normal /= length;
+            plane.m_distance /= length;
+
+            //SPARK_INFO("Plane: " << plane.m_normal.x << ", " << plane.m_normal.y << ", " << plane.m_normal.z << ", " << plane.m_distance);
+        }
+    }
+    std::array<glm::vec3, 8> frustum::get_corners() const
+    {
+        // Define an array to hold the corners
+        std::array<glm::vec3, 8> corners;
+
+        // The inverse of the view-projection matrix will take points from
+        // clip space back to world space.
+        glm::mat4 invVP = glm::inverse(m_view_projection);
+
+        // Define the NDC (Normalized Device Coordinates) frustum corners
+        std::array<glm::vec4, 8> ndcCorners = {
+            glm::vec4(-1.0f,  1.0f, -1.0f, 1.0f), // near top left
+            glm::vec4(1.0f,  1.0f, -1.0f, 1.0f), // near top right
+            glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f), // near bottom left
+            glm::vec4(1.0f, -1.0f, -1.0f, 1.0f), // near bottom right
+            glm::vec4(-1.0f,  1.0f,  1.0f, 1.0f), // far top left
+            glm::vec4(1.0f,  1.0f,  1.0f, 1.0f), // far top right
+            glm::vec4(-1.0f, -1.0f,  1.0f, 1.0f), // far bottom left
+            glm::vec4(1.0f, -1.0f,  1.0f, 1.0f)  // far bottom right
+        };
+
+        // Transform the NDC corners back to world space
+        for (int i = 0; i < ndcCorners.size(); ++i)
+        {
+            // Transform the NDC corners to world space
+            glm::vec4 worldSpaceCorner = invVP * ndcCorners[i];
+            // Perform perspective divide to get the 3D world space coordinates
+            corners[i] = glm::vec3(worldSpaceCorner) / worldSpaceCorner.w;
+        }
+
+        return corners;
+    }
+
+
+    bool frustum::is_inside(const math::vec3& center, float radius) const
+    {
+        for (const auto& plane : m_planes)
+        {
+            if (plane.get_signed_distance(center) < -radius)
+            {
+                return false; // Sphere center - radius is outside the plane, hence outside the frustum
+            }
+        }
+        return true; // Sphere is either fully inside the frustum or intersects it
+    }
 }

@@ -6,6 +6,7 @@
 #include "../scene/scene.hpp"
 #include "../events/event.hpp"
 #include "../ecs/ecs.hpp"
+#include "../user/camera.hpp"
 #include "../logging/log.hpp"
 #include "instancer.hpp"
 
@@ -18,7 +19,10 @@ namespace spark
 	class renderer
 	{
 	public:
-		renderer() = default;
+		renderer()
+		{
+			m_cameras.emplace_back(std::make_unique<camera>());
+		}
 
 		~renderer() = default;
 
@@ -63,6 +67,11 @@ namespace spark
 
 		inline void set_tick_speed(uint64_t speed) { m_tick_speed = speed; }
 
+		std::vector<std::unique_ptr<camera>>& get_cameras() { return m_cameras; }
+
+		void render_octree(camera& camera, octree& octree, math::mat4& modelMatrix);
+		void render_frustum(camera& camera, frustum& frustum);
+
 		inline instancer& get_instancer() { return *m_instancer; }
 	private:
 		float64_t m_fixed_delta_time = 0.005;
@@ -81,6 +90,8 @@ namespace spark
 		std::chrono::time_point <std::chrono::high_resolution_clock> m_last_frame_time_point = std::chrono::high_resolution_clock::now();
 
 		std::unique_ptr <instancer> m_instancer = std::make_unique<instancer>();
+
+		std::vector <std::unique_ptr<camera>> m_cameras;
 	};
 }
 

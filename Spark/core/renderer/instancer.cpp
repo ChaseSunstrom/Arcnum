@@ -1,6 +1,7 @@
 #include "../app/app.hpp"
 
 #include "instancer.hpp"
+#include "../user/camera.hpp"
 
 namespace spark
 {
@@ -50,16 +51,8 @@ namespace spark
 		}
 	}
 
-	void instancer::bind_renderables(const std::string& mesh_name, const std::string& material_name)
+	void instancer::bind_renderables(const std::vector<std::unique_ptr<camera>>& cameras, const std::string& mesh_name, const std::string& material_name)
 	{
-		window_data& win = application::get_window().get_window_data();
-
-		glm::mat4 default_projection = glm::perspective(glm::radians(45.0f), (float)win.m_width / (float)win.m_height, 0.1f, 100.0f);
-		glm::mat4 default_view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), // Camera is at (0,0,3), in World Space
-											 glm::vec3(0.0f, 0.0f, 0.0f), // and looks at the origin
-											 glm::vec3(0.0f, 1.0f, 0.0f)  // Head is up (set to 0,-1,0 to look upside-down)
-		);
-
 
 		auto& material_map = m_renderables[mesh_name];
 		auto& trans_struct = material_map[material_name];
@@ -75,70 +68,56 @@ namespace spark
 		GLint loc_projection = glGetUniformLocation(shader_program_id, "projection");
 		GLint loc_view = glGetUniformLocation(shader_program_id, "view");
 
-		// Set the projection and view matrices
-		glUniformMatrix4fv(loc_projection, 1, GL_FALSE, glm::value_ptr(default_projection));
-		glUniformMatrix4fv(loc_view, 1, GL_FALSE, glm::value_ptr(default_view));
+		for (auto& camera : cameras)
+		{
+			// Set the projection and view matrices
+			glUniformMatrix4fv(loc_projection, 1, GL_FALSE, glm::value_ptr(camera->get_projection_matrix()));
+			glUniformMatrix4fv(loc_view, 1, GL_FALSE, glm::value_ptr(camera->get_view_matrix()));
 
-		material& mat = mat_man.get_material(material_name);
-		set_uniform(mat, shader_program_id);
+			material& mat = mat_man.get_material(material_name);
+			set_uniform(mat, shader_program_id);
 
-		mesh_manager& mesh_man = application::get_mesh_manager();
-		auto vao_id = mesh_man.get_mesh(mesh_name).m_mesh.get_vao();
-		glBindVertexArray(vao_id);
+			mesh_manager& mesh_man = application::get_mesh_manager();
+			auto vao_id = mesh_man.get_mesh(mesh_name).m_mesh.get_vao();
+			glBindVertexArray(vao_id);
+		}
 
 		trans_struct->update(); // This method binds and updates the VBO as needed
 	}
 
-	void instancer::render_instanced()
+	void instancer::render_instanced(const std::vector<std::unique_ptr<camera>>& cameras, scene& scene)
 	{
-		window_data& win = application::get_window().get_window_data();
-		mesh_manager& mesh_man = application::get_mesh_manager();
-		
-		glm::mat4 default_projection = glm::perspective(glm::radians(45.0f), (float)win.m_width / (float)win.m_height, 0.1f, 100.0f);
-		glm::mat4 default_view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), // Camera is at (0,0,3), in World Space
-											 glm::vec3(0.0f, 0.0f, 0.0f), // and looks at the origin
-											 glm::vec3(0.0f, 1.0f, 0.0f)  // Head is up (set to 0,-1,0 to look upside-down)
-		);
-		frustum view_frustum(default_projection * default_view);
-
-		for (auto& mesh_item : m_renderables)
+		for (auto& camera : cameras)
 		{
-			const auto& mesh_name = mesh_item.first;
+			// Assuming you have a way to access the scene's octree
+			octree& scene_octree = scene.get_octree();
 
-			for (auto& material_item : mesh_item.second)
+			for (auto& mesh_item : m_renderables)
 			{
-				const auto& material_name = material_item.first;
-				auto& trans_struct = material_item.second;
+				const auto& mesh_name = mesh_item.first;
 
-				// Filter the transforms based on frustum culling.
-				std::vector<math::mat4> visible_transforms;
-				for (auto& transform : trans_struct->m_data)
+				for (auto& material_item : mesh_item.second)
 				{
-					math::vec3 center = math::vec3(transform[3]);
-					float radius = 0.0f;
+					const auto& material_name = material_item.first;
+					auto& trans_struct = material_item.second;
 
-					// Check if the bounding volume is inside the view frustum.
-					if (view_frustum.is_inside(center, radius))
+					std::vector<math::mat4> visible_transforms;
+					scene_octree.collect_visible(*camera->m_frustum, visible_transforms);
+
+					if (!visible_transforms.empty())
 					{
-						visible_transforms.push_back(transform);
+						glBindBuffer(GL_ARRAY_BUFFER, trans_struct->m_vbo);
+						glBufferData(GL_ARRAY_BUFFER, visible_transforms.size() * sizeof(math::mat4), visible_transforms.data(), GL_DYNAMIC_DRAW);
+
+						bind_renderables(cameras, mesh_name, material_name); // Prepare mesh and material for rendering
+
+						auto index_count = static_cast<GLsizei>(application::get_mesh_manager().get_mesh(mesh_name).m_mesh.get_index_count());
+
+						glDrawElementsInstanced(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, 0, visible_transforms.size());
 					}
-				}
-
-				// Now render only the visible transforms.
-				if (!visible_transforms.empty())
-				{
-					// Update the transform data with only the visible ones.
-					glBindBuffer(GL_ARRAY_BUFFER, trans_struct->m_vbo);
-					glBufferData(GL_ARRAY_BUFFER, visible_transforms.size() * sizeof(math::mat4), visible_transforms.data(), GL_DYNAMIC_DRAW);
-
-					bind_renderables(mesh_name, material_name); // Prepare mesh and material for rendering
-
-					mesh_manager& mesh_man = application::get_mesh_manager();
-					auto index_count = static_cast<GLsizei>(mesh_man.get_mesh(mesh_name).m_mesh.get_index_count());
-
-					glDrawElementsInstanced(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, 0, visible_transforms.size());
 				}
 			}
 		}
 	}
+
 }

@@ -27,9 +27,10 @@ namespace spark
 		void add_renderable(const scene& scene, const std::string& mesh_name, const std::string& material_name, transform_component& transform);
 		void add_renderable(const scene& scene, const std::string& mesh_name, const std::string& material_name, std::vector<transform_component>& transforms);
 
-		void bind_renderables(const std::string& mesh_name, const std::string& material_name);
+		void bind_renderables(const std::vector<std::unique_ptr<camera>>& cameras, const std::string& mesh_name, const std::string& material_name);
 
-		void render_instanced();
+		// Placeholder to take in cameras for now
+		void render_instanced(const std::vector<std::unique_ptr<camera>>& cameras, scene& scene);
 	private:
 		// stores all current renderable entities:
 		// mesh_name -> material_name -> mat_vbo

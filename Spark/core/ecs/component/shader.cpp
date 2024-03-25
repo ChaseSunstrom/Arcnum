@@ -142,12 +142,16 @@ namespace spark
 
 	GLuint shader_manager::get_shader(const std::string& concat_paths)
 	{
+
 		return m_shaders[concat_paths];
 	}
 
 	GLuint shader_manager::get_shader(const std::string& vertex_path, const std::string& fragment_path)
 	{
-		std::string name = concat_paths(vertex_path, fragment_path);
+		std::filesystem::path full_vertex = std::filesystem::absolute(vertex_path);
+		std::filesystem::path full_fragment = std::filesystem::absolute(fragment_path);
+
+		std::string name = concat_paths(full_vertex.string() , full_fragment.string());
 		return m_shaders[name];
 	}
 

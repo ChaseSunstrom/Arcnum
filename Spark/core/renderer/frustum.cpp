@@ -47,13 +47,13 @@ namespace spark
             plane.m_normal /= length;
             plane.m_distance /= length;
 
-            //SPARK_INFO("Plane: " << plane.m_normal.x << ", " << plane.m_normal.y << ", " << plane.m_normal.z << ", " << plane.m_distance);
+            SPARK_INFO("Plane: " << plane.m_normal.x << ", " << plane.m_normal.y << ", " << plane.m_normal.z << ", " << plane.m_distance);
         }
     }
     std::array<glm::vec3, 8> frustum::get_corners() const
     {
         // Define an array to hold the corners
-        std::array<glm::vec3, 8> corners;
+        std::array<glm::vec3, 8> corners = std::array<glm::vec3, 8>();
 
         // The inverse of the view-projection matrix will take points from
         // clip space back to world space.

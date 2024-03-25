@@ -3,21 +3,51 @@
 
 namespace spark
 {
-    void renderer::render_octree(camera& camera, octree& octree, math::mat4& modelMatrix)
+    void render_node(const octree& node, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix, GLuint shaderProgram)
     {
-        static GLuint vao = 0;
-        static GLuint vbo = 0;
+        std::vector<glm::vec3> vertices;
+        node.get_node_edges(vertices); // Get the edges of the current node
 
-        if (vao == 0 && vbo == 0)
+        // Bind and buffer data for the current node
+        GLuint vao, vbo;
+        glGenVertexArrays(1, &vao);
+        glGenBuffers(1, &vbo);
+
+        glBindVertexArray(vao);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), vertices.data(), GL_STATIC_DRAW);
+
+        // Set up the vertex attributes (position)
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        // Render the lines
+        glDrawArrays(GL_LINES, 0, vertices.size());
+
+        // Clean up
+        glBindVertexArray(0);
+        glDeleteBuffers(1, &vbo);
+        glDeleteVertexArrays(1, &vao);
+
+        // Recursively render children if this is not a leaf node
+        if (!node.m_is_leaf)
         {
-            // Only initialize once
-            glGenVertexArrays(1, &vao);
-            glGenBuffers(1, &vbo);
+            for (const auto& child : node.m_children)
+            {
+                if (child)
+                {
+                    render_node(*child, viewMatrix, projectionMatrix, shaderProgram); // Recursively render the child
+                }
+            }
         }
+    }
 
+    void renderer::render_octree(camera& camera, octree& root_node, math::mat4& modelMatrix)
+    {
         shader_manager& shader_man = application::get_shader_manager();
-        GLuint shaderProgram = shader_man.get_shader("C:\\Users\\Chase\\source\\repos\\Arcnum\\Spark\\shaders\\line.vertC:\\Users\\Chase\\source\\repos\\Arcnum\\Spark\\shaders\\line.frag");
-        // Bind shader and set uniforms
+        GLuint shaderProgram = shader_man.get_shader("Spark/shaders/line.vert", "Spark/shaders/line.frag");
+
+        // Use shader and set uniforms
         glUseProgram(shaderProgram);
 
         glm::mat4 viewMatrix = camera.get_view_matrix();
@@ -33,26 +63,13 @@ namespace spark
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
         glUniform3f(lineColorLoc, 0.0f, 0.0f, 1.0f); // Green lines
 
-        glBindVertexArray(vao);
+        // Start the recursive rendering process from the root node
+        render_node(root_node, viewMatrix, projectionMatrix, shaderProgram);
 
-        std::vector<glm::vec3> vertices;
-        octree.get_node_edges(vertices); // Assume this method gives us the edges of the octree
-
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), vertices.data(), GL_STATIC_DRAW);
-
-        // Set up the vertex attributes (position)
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
-        glEnableVertexAttribArray(0);
-
-        glDrawArrays(GL_LINES, 0, vertices.size()); // Render the lines
-
-        // If octree is dynamic and changes every frame, you can delete VAO and VBO here
-        // Otherwise, keep them for performance and delete them at the end of the program or when the octree is no longer needed
-
-        glBindVertexArray(0);
+        // Clean up
         glUseProgram(0);
     }
+
 
 
     void renderer::render_frustum(camera& camera, frustum& frustum)
@@ -68,8 +85,8 @@ namespace spark
         }
 
         shader_manager& shader_man = application::get_shader_manager();
-        GLuint shaderProgram = shader_man.get_shader("C:\\Users\\Chase\\source\\repos\\Arcnum\\Spark\\shaders\\line.vertC:\\Users\\Chase\\source\\repos\\Arcnum\\Spark\\shaders\\line.frag");
-
+        GLuint shaderProgram = shader_man.get_shader("Spark/shaders/line.vert", "Spark/shaders/line.frag");
+        
         // Bind shader and set uniforms
         glUseProgram(shaderProgram);
 
@@ -83,22 +100,27 @@ namespace spark
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f))); // Model matrix is identity
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix));
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-        glUniform3f(lineColorLoc, 0.0f, 1.0f, 0.0f); // Red lines
+        glUniform3f(lineColorLoc, 0.0f, 1.0f, 0.0f);
 
         glBindVertexArray(vao);
 
         std::vector<glm::vec3> vertices;
         auto corners = frustum.get_corners();
 
-        // Create lines between the corner points
-        for (size_t i = 0; i < corners.size(); ++i)
+        // Define indices for the frustum corners in the order of near plane to far plane
+        const int indices[] = {
+            0, 1, 1, 2, 2, 3, 3, 0, // near plane
+            4, 5, 5, 6, 6, 7, 7, 4, // far plane
+            0, 4, 1, 5, 2, 6, 3, 7  // sides
+        };
+
+        // Create lines between the corner points using the indices
+        for (int i = 0; i < 24; i += 2)
         {
-            for (size_t j = i + 1; j < corners.size(); ++j)
-            {
-                vertices.push_back(corners[i]);
-                vertices.push_back(corners[j]);
-            }
+            vertices.push_back(corners[indices[i]]);
+            vertices.push_back(corners[indices[i + 1]]);
         }
+
 
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), vertices.data(), GL_DYNAMIC_DRAW);

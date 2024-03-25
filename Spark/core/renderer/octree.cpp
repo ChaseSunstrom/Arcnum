@@ -6,55 +6,105 @@ namespace spark
 	{
 		if (!is_inside(point))
 		{
-			// Calculate the new bounds required to include the point
-			math::vec3 direction = normalize(point - m_center);
-			while (!is_inside(point))
-			{
-				// Expand the root node size
-				m_size *= 2;
-				// Adjust the center based on the direction to the point
-				m_center += direction * (m_size / 4);
-			}
-			// If the root node has children, re-insert objects to maintain the octree integrity
-			if (!m_is_leaf)
-			{
-				std::vector<transform_component*> objects(std::move(m_transforms));
-				for (auto* obj : objects)
-				{
-					insert(obj);
-				}
-			}
+			grow(point); // Grow the octree to include the point
 		}
 
 		if (m_is_leaf && m_transforms.size() >= m_max_components)
 		{
-			subdivide();
+			subdivide(); // Subdivide if this node reaches the maximum capacity
 		}
 	}
 
-	void octree::grow(const math::vec3& point)
+	void octree::redistribute_if_necessary()
 	{
-		math::vec3 direction = point - m_center;
-		direction = normalize(direction);
+		// Only redistribute if this node is the root node
+		if (m_parent != nullptr)
+			return;
 
-		while (!is_inside(point))
+		// Redistribute objects to children if the root node has objects and has grown
+		if (m_transforms.size() > 0)
 		{
-			m_size *= 2;
-			m_center += direction * (m_size / 4);
+			subdivide(); // This will create children nodes.
 		}
+	}
 
+
+	math::vec3 octree::calculate_nearest_octant_center(const math::vec3& point) const
+	{
+		// Direction vectors to choose the nearest octant
+		math::vec3 direction(
+			(point.x < m_center.x) ? -1.0f : 1.0f,
+			(point.y < m_center.y) ? -1.0f : 1.0f,
+			(point.z < m_center.z) ? -1.0f : 1.0f);
+
+		// Calculate new center to include the point. 
+		// We are moving the center by half the width of the new, larger octree.
+		math::vec3 new_center = m_center + direction * (m_size / 2.0f);
+
+		// The point should be inside the new octree bounds, considering its full size, not just half.
+		// We check against the full size since the point can be anywhere in the octant.
+		bool is_inside_new_bounds =
+			std::abs(point.x - new_center.x) <= (m_size / 2.0f) &&
+			std::abs(point.y - new_center.y) <= (m_size / 2.0f) &&
+			std::abs(point.z - new_center.z) <= (m_size / 2.0f);
+
+		assert(is_inside_new_bounds);
+
+		return new_center;
+	}
+
+	math::vec3 octree::calculate_min_point() const
+	{
+		math::vec3 min_point = m_center;
+		min_point -= m_size / 2.0f;
+		return min_point;
+	}
+
+	math::vec3 octree::calculate_max_point() const
+	{
+		math::vec3 max_point = m_center;
+		max_point += m_size / 2.0f;
+		return max_point;
+	}
+
+	void octree::grow(const math::vec3& position)
+	{
+		// Only update the root node's size and center
+		if (m_parent != nullptr)
+			return;
+
+		// Find the minimum and maximum points of all existing nodes
+		math::vec3 min_point = m_center - m_size / 2.0f;
+		math::vec3 max_point = m_center + m_size / 2.0f;
+
+		// Recursively find the minimum and maximum points considering all nodes
+		find_min_max_points(min_point, max_point);
+
+		// Calculate the new size and center to encompass all nodes
+		math::vec3 new_center = (min_point + max_point) / 2.0f;
+		float new_size = math::distance(min_point, max_point);
+
+		// Update the root node's size and center
+		m_size = new_size;
+		m_center = new_center;
+	}
+
+	void octree::find_min_max_points(math::vec3& min_point, math::vec3& max_point) const
+	{
+		// Iterate over all nodes to find the minimum and maximum points
+		min_point = math::min(min_point, m_center - m_size / 2.0f);
+		max_point = math::max(max_point, m_center + m_size / 2.0f);
+
+		// Recursively find min and max points in child nodes
 		if (!m_is_leaf)
 		{
-			for (auto* transform : m_transforms)
+			for (const auto& child : m_children)
 			{
-				int32_t child_index = determine_child(transform->m_transform[3]);
-				if (!m_children[child_index])
+				if (child)
 				{
-					m_children[child_index] = std::make_unique<octree>(calculate_child_center(child_index), m_size / 2);
+					child->find_min_max_points(min_point, max_point);
 				}
-				m_children[child_index]->insert(transform);
 			}
-			m_transforms.clear();
 		}
 	}
 
@@ -70,32 +120,85 @@ namespace spark
 
 	void octree::subdivide()
 	{
-		if (!m_is_leaf || m_depth >= m_max_depth) // Check current depth before subdividing.
+		if (!m_is_leaf || m_depth >= m_max_depth)
 			return;
 
+		// Update leaf status
 		m_is_leaf = false;
 
-		float32_t half_size = m_size / 2.0f;
-
+		// Calculate child centers
+		float32_t quarter_size = m_size / 4.0f;
+		math::vec3 child_centers[8];
 		for (int32_t i = 0; i < 8; ++i)
 		{
-			math::vec3 child_center = calculate_child_center(i);
-			// Pass depth + 1 to the newly created children.
-			m_children[i] = std::make_unique<octree>(child_center, half_size, m_depth + 1);
+			child_centers[i] = calculate_child_center(i);
 		}
 
-		redistribute(); // Move existing transforms to the appropriate child nodes.
+		// Create children nodes
+		for (int32_t i = 0; i < 8; ++i)
+		{
+			m_children[i] = std::make_unique<octree>(child_centers[i], m_size / 2.0f, m_depth + 1, this);
+		}
+
+		// Redistribute objects to children
+		for (auto it = m_transforms.begin(); it != m_transforms.end();)
+		{
+			int32_t child_index = determine_child((*it)->m_transform[3]);
+			if (m_children[child_index])
+			{
+				m_children[child_index]->insert(*it);
+				it = m_transforms.erase(it);
+			}
+			else
+			{
+				++it;
+			}
+		}
 	}
 
+	void octree::redistribute_to_parent()
+	{
+		// Check if this node is the root node (i.e., has no parent).
+		if (m_parent == nullptr)
+		{
+			// The current node is the root; redistribute its objects to its children.
+			redistribute();
+		}
+		else
+		{
+			// The current node is not the root; move the objects up to the parent.
+			std::vector<transform_component*> tmp_transforms = std::move(m_transforms);
+			for (auto* transform : tmp_transforms)
+			{
+				// Insert the objects into the parent node, which will place them into the correct child.
+				m_parent->insert(transform);
+			}
+			// Now that the objects have been moved to the parent, clear the current node's objects.
+			m_transforms.clear();
+		}
+	}
 
 	void octree::redistribute()
 	{
-		std::vector<transform_component*> tmp_transforms = std::move(m_transforms);
-		for (auto* transform : tmp_transforms)
+		if (m_is_leaf)
 		{
-			math::vec3 position = math::vec3(transform->m_transform[3]);
-			int32_t child_index = determine_child(position);
-			m_children[child_index]->insert(transform);
+			// Do not redistribute if this is a leaf, there are no children to redistribute to.
+			return;
+		}
+
+		// Redistribute objects to children
+		for (auto it = m_transforms.begin(); it != m_transforms.end();)
+		{
+			int32_t child_index = determine_child((*it)->m_transform[3]);
+			if (m_children[child_index])
+			{
+				m_children[child_index]->insert(*it);
+				it = m_transforms.erase(it);
+			}
+			else
+			{
+				++it;
+			}
 		}
 	}
 
@@ -110,7 +213,6 @@ namespace spark
 		{
 			if (m_transforms.size() < m_max_components)
 				m_transforms.emplace_back(transform);
-			
 			else
 			{
 				subdivide();

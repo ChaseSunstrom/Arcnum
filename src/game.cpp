@@ -61,7 +61,7 @@ void on_start()
 
 	// Create entity
     
-    for (int i = 0; i < 10000; i++)
+    for (int i = 0; i < 10; i++)
     {
         spark::transform_component trans = spark::transform_component(spark::math::vec3(i, i, i));
 
@@ -71,7 +71,16 @@ void on_start()
             spark::material_component("material")
         );
 
+        spark::transform_component trans2 = spark::transform_component(spark::math::vec3(-i, -i, -i));
+
+        spark::entity ent2 = ecs.create_entity(
+            trans2,
+            spark::mesh_component("square"),
+            spark::material_component("material")
+        );
+
         renderer.get_instancer().add_renderable(cur_scene, "square", "material", trans);
+        renderer.get_instancer().add_renderable(cur_scene, "square", "material", trans2);
     }
 }
 
@@ -85,7 +94,7 @@ void on_update()
     spark::camera& camera = *renderer.get_cameras()[0];
 
     camera.m_position = spark::math::vec3(0.0f, 0.0f, x);
-    x += 0.0001f;
+    x += 0.001f;
 
 }
 // required function

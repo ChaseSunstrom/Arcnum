@@ -13,7 +13,7 @@ namespace spark
 			   float32_t fov = 90.0f, 
 			   float32_t aspect_ratio = 1, 
 			   float32_t near_plane = 0.1f, 
-			   float32_t far_plane = 100.0f) :
+			   float32_t far_plane = 1000.0f) :
 			m_position(position), 
 			m_direction(direction), 
 			m_fov(fov), 

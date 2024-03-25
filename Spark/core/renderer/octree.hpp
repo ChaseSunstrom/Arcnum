@@ -10,14 +10,21 @@ namespace spark
 {
 	struct octree
 	{
-		octree(const math::vec3& center, float32_t size, int32_t depth = 0) :
-			m_center(center), m_size(size), m_is_leaf(true), m_depth(depth)
+		octree(const math::vec3& center, float32_t size, int32_t depth = 0, octree* parent = nullptr) :
+			m_center(center), m_size(size), m_is_leaf(true), m_depth(depth), m_parent(parent)
 		{}
 
 		void insert(transform_component* transform);
 		void add_all_transforms(std::vector<math::mat4>& transforms) const;
 		void subdivide();
 		void redistribute();
+		void redistribute_if_necessary();
+		void redistribute_to_parent(); 
+		math::vec3 calculate_min_point() const;
+		math::vec3 calculate_max_point() const;
+		void find_min_max_points(math::vec3& min_point, math::vec3& max_point) const;
+		float calculate_new_size(const math::vec3& point) const;
+		math::vec3 calculate_new_center(const math::vec3& point, float new_size) const;
 		void get_node_edges(std::vector<glm::vec3>& lines) const;
 		void ensure_contains(const math::vec3& point);
 		bool is_inside(const math::vec3& point) const;
@@ -30,9 +37,11 @@ namespace spark
 		void collect_visible(const frustum& frustum, std::vector<math::mat4>& visible) const;
 		void grow(const math::vec3& position);
 		math::vec3 calculate_child_center(int32_t child_index) const;
+		math::vec3 calculate_nearest_octant_center(const math::vec3& point) const;
 
 		math::vec3 m_center;
 		float32_t m_size;
+		octree* m_parent;
 		std::vector<transform_component*> m_transforms;
 		std::array<std::unique_ptr<octree>, 8> m_children;
 		bool m_is_leaf;

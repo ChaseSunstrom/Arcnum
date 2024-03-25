@@ -61,7 +61,7 @@ void on_start()
 
 	// Create entity
     
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 50; i++)
     {
         spark::transform_component trans = spark::transform_component(spark::math::vec3(i, i, i));
 
@@ -94,8 +94,7 @@ void on_update()
     spark::camera& camera = *renderer.get_cameras()[0];
 
     camera.m_position = spark::math::vec3(0.0f, 0.0f, x);
-    x += 0.001f;
-
+    x += 0.01f;
 }
 // required function
 // will recieve events from everything, it is automatically subscribed to recieve

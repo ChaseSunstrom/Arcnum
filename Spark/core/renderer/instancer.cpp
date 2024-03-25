@@ -102,19 +102,18 @@ namespace spark
 					auto& trans_struct = material_item.second;
 
 					std::vector<math::mat4> visible_transforms;
-					scene_octree.collect_visible(*camera->m_frustum, visible_transforms);
+					
+					visible_transforms = m_renderables[mesh_name][material_name]->m_data;
 
-					if (!visible_transforms.empty())
-					{
-						glBindBuffer(GL_ARRAY_BUFFER, trans_struct->m_vbo);
-						glBufferData(GL_ARRAY_BUFFER, visible_transforms.size() * sizeof(math::mat4), visible_transforms.data(), GL_DYNAMIC_DRAW);
+					glBindBuffer(GL_ARRAY_BUFFER, trans_struct->m_vbo);
+					glBufferData(GL_ARRAY_BUFFER, visible_transforms.size() * sizeof(math::mat4), visible_transforms.data(), GL_DYNAMIC_DRAW);
 
-						bind_renderables(cameras, mesh_name, material_name); // Prepare mesh and material for rendering
+					bind_renderables(cameras, mesh_name, material_name); // Prepare mesh and material for rendering
 
-						auto index_count = static_cast<GLsizei>(application::get_mesh_manager().get_mesh(mesh_name).m_mesh.get_index_count());
+					auto index_count = static_cast<GLsizei>(application::get_mesh_manager().get_mesh(mesh_name).m_mesh.get_index_count());
 
-						glDrawElementsInstanced(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, 0, visible_transforms.size());
-					}
+					glDrawElementsInstanced(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, 0, visible_transforms.size());
+
 				}
 			}
 		}

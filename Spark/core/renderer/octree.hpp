@@ -18,6 +18,7 @@ namespace spark
 		void add_all_transforms(std::vector<math::mat4>& transforms) const;
 		void subdivide();
 		void redistribute();
+		void redistribute_to_children();
 		void redistribute_if_necessary();
 		void redistribute_to_parent(); 
 		math::vec3 calculate_min_point() const;

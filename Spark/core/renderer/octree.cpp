@@ -87,7 +87,11 @@ namespace spark
 		// Update the root node's size and center
 		m_size = new_size;
 		m_center = new_center;
+
+		// Redistribute objects to children and clear the current node's objects
+		redistribute_to_children();
 	}
+
 
 	void octree::find_min_max_points(math::vec3& min_point, math::vec3& max_point) const
 	{
@@ -175,6 +179,37 @@ namespace spark
 			}
 			// Now that the objects have been moved to the parent, clear the current node's objects.
 			m_transforms.clear();
+		}
+	}
+	
+	void octree::redistribute_to_children()
+	{
+		// Check if the node has been subdivided
+		if (!m_is_leaf)
+		{
+			// Redistribute objects to children nodes
+			for (auto it = m_transforms.begin(); it != m_transforms.end();)
+			{
+				int32_t child_index = determine_child((*it)->m_transform[3]);
+				if (m_children[child_index])
+				{
+					m_children[child_index]->insert(*it);
+					it = m_transforms.erase(it);
+				}
+				else
+				{
+					++it;
+				}
+			}
+
+			// Recursively redistribute objects to children nodes
+			for (auto& child : m_children)
+			{
+				if (child)
+				{
+					child->redistribute_to_children();
+				}
+			}
 		}
 	}
 

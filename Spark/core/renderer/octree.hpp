@@ -17,8 +17,11 @@ namespace spark
 		void insert(transform_component* transform);
 		void add_all_transforms(std::vector<math::mat4>& transforms) const;
 		void subdivide();
+		void adjust_children();
 		void redistribute();
+		void merge(std::unique_ptr<octree>&& old_child);
 		void redistribute_to_children();
+		void reposition_children();
 		void redistribute_if_necessary();
 		void redistribute_to_parent(); 
 		math::vec3 calculate_min_point() const;
@@ -29,8 +32,10 @@ namespace spark
 		void get_node_edges(std::vector<glm::vec3>& lines) const;
 		void ensure_contains(const math::vec3& point);
 		bool is_inside(const math::vec3& point) const;
+		bool is_inside(const math::vec3& point, const math::vec3& center, float half_size) const;
 		bool is_inside(const math::vec3& point, float32_t size) const;
 		bool is_inside(const math::vec3& point, const math::vec3& min, const math::vec3& max) const;
+		bool is_inside(const math::vec3& point, float size, const math::vec3& center, float half_size) const;
 		bool intersects(const frustum& frustum) const;
 		bool contains_frustum(const frustum& frustum) const;
 		int32_t determine_child(const math::vec3& point) const;

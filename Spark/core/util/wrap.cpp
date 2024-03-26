@@ -266,40 +266,40 @@ namespace spark
 		glUniform1d(loc, value);
 	}
 
-	void set_uniform(const std::string& name, const glm::mat2& value, GLuint shader_program)
+	void set_uniform(const std::string& name, const math::mat2& value, GLuint shader_program)
 	{
 		GLint loc = glGetUniformLocation(shader_program, name.c_str());
-		glUniformMatrix2fv(loc, 1, GL_FALSE, glm::value_ptr(value));
+		glUniformMatrix2fv(loc, 1, GL_FALSE, math::value_ptr(value));
 	}
 
-	void set_uniform(const std::string& name, const glm::mat3& value, GLuint shader_program)
+	void set_uniform(const std::string& name, const math::mat3& value, GLuint shader_program)
 	{
 		GLint loc = glGetUniformLocation(shader_program, name.c_str());
-		glUniformMatrix3fv(loc, 1, GL_FALSE, glm::value_ptr(value));
+		glUniformMatrix3fv(loc, 1, GL_FALSE, math::value_ptr(value));
 	}
 
-	void set_uniform(const std::string& name, const glm::mat4& value, GLuint shader_program)
+	void set_uniform(const std::string& name, const math::mat4& value, GLuint shader_program)
 	{
 		GLint loc = glGetUniformLocation(shader_program, name.c_str());
-		glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(value));
+		glUniformMatrix4fv(loc, 1, GL_FALSE, math::value_ptr(value));
 	}
 
-	void set_uniform(const std::string& name, const glm::vec2& value, GLuint shader_program)
+	void set_uniform(const std::string& name, const math::vec2& value, GLuint shader_program)
 	{
 		GLint loc = glGetUniformLocation(shader_program, name.c_str());
-		glUniform2fv(loc, 1, glm::value_ptr(value));
+		glUniform2fv(loc, 1, math::value_ptr(value));
 	}
 
-	void set_uniform(const std::string& name, const glm::vec3& value, GLuint shader_program)
+	void set_uniform(const std::string& name, const math::vec3& value, GLuint shader_program)
 	{
 		GLint loc = glGetUniformLocation(shader_program, name.c_str());
-		glUniform3fv(loc, 1, glm::value_ptr(value));
+		glUniform3fv(loc, 1, math::value_ptr(value));
 	}
 
-	void set_uniform(const std::string& name, const glm::vec4& value, GLuint shader_program)
+	void set_uniform(const std::string& name, const math::vec4& value, GLuint shader_program)
 	{
 		GLint loc = glGetUniformLocation(shader_program, name.c_str());
-		glUniform4fv(loc, 1, glm::value_ptr(value));
+		glUniform4fv(loc, 1, math::value_ptr(value));
 	}
 
 	void set_uniform(const std::string& name, const bool value, GLuint shader_program)

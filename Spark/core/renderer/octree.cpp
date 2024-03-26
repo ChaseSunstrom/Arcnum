@@ -33,7 +33,6 @@ namespace spark
 		}
 	}
 
-
 	math::vec3 octree::calculate_nearest_octant_center(const math::vec3& point) const
 	{
 		// Direction vectors to choose the nearest octant
@@ -109,7 +108,6 @@ namespace spark
 			}
 		}
 	}
-
 
 	void octree::adjust_children()
 	{
@@ -384,7 +382,7 @@ namespace spark
 	{
 		for (const auto& plane : frustum.m_planes)
 		{
-			glm::vec3 closestPoint;
+			math::vec3 closestPoint;
 			closestPoint.x = plane.m_normal.x > 0 ? m_center.x - m_size / 2 : m_center.x + m_size / 2;
 			closestPoint.y = plane.m_normal.y > 0 ? m_center.y - m_size / 2 : m_center.y + m_size / 2;
 			closestPoint.z = plane.m_normal.z > 0 ? m_center.z - m_size / 2 : m_center.z + m_size / 2;
@@ -397,21 +395,21 @@ namespace spark
 		return true; // Intersects or is completely inside the frustum
 	}
 
-	void octree::get_node_edges(std::vector<glm::vec3>& lines) const
+	void octree::get_node_edges(std::vector<math::vec3>& lines) const
 	{
-		glm::vec3 min_corner = m_center - glm::vec3(m_size / 2.0f);
-		glm::vec3 max_corner = m_center + glm::vec3(m_size / 2.0f);
+		math::vec3 min_corner = m_center - math::vec3(m_size / 2.0f);
+		math::vec3 max_corner = m_center + math::vec3(m_size / 2.0f);
 
 		// 8 corners of the AABB
-		glm::vec3 corners[8] = {
-			glm::vec3(min_corner.x, min_corner.y, min_corner.z),
-			glm::vec3(max_corner.x, min_corner.y, min_corner.z),
-			glm::vec3(max_corner.x, max_corner.y, min_corner.z),
-			glm::vec3(min_corner.x, max_corner.y, min_corner.z),
-			glm::vec3(min_corner.x, min_corner.y, max_corner.z),
-			glm::vec3(max_corner.x, min_corner.y, max_corner.z),
-			glm::vec3(max_corner.x, max_corner.y, max_corner.z),
-			glm::vec3(min_corner.x, max_corner.y, max_corner.z)
+		math::vec3 corners[8] = {
+			math::vec3(min_corner.x, min_corner.y, min_corner.z),
+			math::vec3(max_corner.x, min_corner.y, min_corner.z),
+			math::vec3(max_corner.x, max_corner.y, min_corner.z),
+			math::vec3(min_corner.x, max_corner.y, min_corner.z),
+			math::vec3(min_corner.x, min_corner.y, max_corner.z),
+			math::vec3(max_corner.x, min_corner.y, max_corner.z),
+			math::vec3(max_corner.x, max_corner.y, max_corner.z),
+			math::vec3(min_corner.x, max_corner.y, max_corner.z)
 		};
 
 		// 12 edges of the AABB, each edge consists of 2 points

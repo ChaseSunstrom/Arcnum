@@ -133,36 +133,48 @@ namespace spark
 			}
 		}
 
+		static void shutdown()
+		{
+			{
+				std::unique_lock<std::mutex> lock(s_queue_mutex);
+				s_stop = true;
+			}
+			s_condition.notify_all(); // Wake up all threads to let them exit
+		}
 	private:
 		static void worker_thread(std::shared_ptr<thread_control_block> tcb, uint32_t index)
 		{
 			tcb->thread_id = std::this_thread::get_id();
 
-			while (!s_stop)
+			while (true)
 			{
 				std::function<void()> task;
 				{
 					std::unique_lock<std::mutex> lock(s_queue_mutex);
-					if (!s_tasks_queues[index].m_queue.empty())
+					s_condition.wait(lock, [index]
+									 {
+										 return s_stop || !s_tasks_queues[index].m_queue.empty();
+									 });
+
+					if (s_stop && s_tasks_queues[index].m_queue.empty())
 					{
-						std::lock_guard<std::mutex> queue_lock(s_tasks_queues[index].m_mutex);
-						auto& queue = s_tasks_queues[index].m_queue;
-						task = std::move(queue.top().second);
-						queue.pop();
-						s_active_tasks--;
+						return; // Exit the thread if the pool is stopped and no tasks are left
 					}
+
+					std::lock_guard<std::mutex> queue_lock(s_tasks_queues[index].m_mutex);
+					auto& queue = s_tasks_queues[index].m_queue;
+					task = std::move(queue.top().second);
+					queue.pop();
+					s_active_tasks--;
 				}
 
 				if (task)
 				{
 					task(); // Execute the task
 				}
-				else
-				{
-					std::this_thread::yield(); // Yield if no task was found
-				}
 			}
 		}
+
 	private:
 		struct task_queue
 		{

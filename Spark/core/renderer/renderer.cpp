@@ -3,9 +3,9 @@
 
 namespace spark
 {
-    void render_node(const octree& node, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix, GLuint shaderProgram)
+    void render_node(const octree& node, const math::mat4& viewMatrix, const math::mat4& projectionMatrix, GLuint shaderProgram)
     {
-        std::vector<glm::vec3> vertices;
+        std::vector<math::vec3> vertices;
         node.get_node_edges(vertices); // Get the edges of the current node
 
         // Bind and buffer data for the current node
@@ -15,10 +15,10 @@ namespace spark
 
         glBindVertexArray(vao);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), vertices.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(math::vec3), vertices.data(), GL_STATIC_DRAW);
 
         // Set up the vertex attributes (position)
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(math::vec3), (void*)0);
         glEnableVertexAttribArray(0);
 
         // Render the lines
@@ -50,17 +50,17 @@ namespace spark
         // Use shader and set uniforms
         glUseProgram(shaderProgram);
 
-        glm::mat4 viewMatrix = camera.get_view_matrix();
-        glm::mat4 projectionMatrix = camera.get_projection_matrix();
+        math::mat4 viewMatrix = camera.get_view_matrix();
+        math::mat4 projectionMatrix = camera.get_projection_matrix();
 
         GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
         GLint viewLoc = glGetUniformLocation(shaderProgram, "view");
         GLint projectionLoc = glGetUniformLocation(shaderProgram, "projection");
         GLint lineColorLoc = glGetUniformLocation(shaderProgram, "lineColor");
 
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix));
-        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, math::value_ptr(modelMatrix));
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, math::value_ptr(viewMatrix));
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, math::value_ptr(projectionMatrix));
         glUniform3f(lineColorLoc, 0.0f, 0.0f, 1.0f); // Green lines
 
         // Start the recursive rendering process from the root node
@@ -90,21 +90,21 @@ namespace spark
         // Bind shader and set uniforms
         glUseProgram(shaderProgram);
 
-        glm::mat4 viewMatrix = camera.get_view_matrix();
-        glm::mat4 projectionMatrix = camera.get_projection_matrix();
+        math::mat4 viewMatrix = camera.get_view_matrix();
+        math::mat4 projectionMatrix = camera.get_projection_matrix();
 
         GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
         GLint viewLoc = glGetUniformLocation(shaderProgram, "view");
         GLint projectionLoc = glGetUniformLocation(shaderProgram, "projection");
         GLint lineColorLoc = glGetUniformLocation(shaderProgram, "lineColor");
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f))); // Model matrix is identity
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(viewMatrix));
-        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, math::value_ptr(math::mat4(1.0f))); // Model matrix is identity
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, math::value_ptr(viewMatrix));
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, math::value_ptr(projectionMatrix));
         glUniform3f(lineColorLoc, 0.0f, 1.0f, 0.0f);
 
         glBindVertexArray(vao);
 
-        std::vector<glm::vec3> vertices;
+        std::vector<math::vec3> vertices;
         auto corners = frustum.get_corners();
 
         // Define indices for the frustum corners in the order of near plane to far plane
@@ -123,10 +123,10 @@ namespace spark
 
 
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), vertices.data(), GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(math::vec3), vertices.data(), GL_DYNAMIC_DRAW);
 
         // Set up the vertex attributes (position)
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(math::vec3), (void*)0);
         glEnableVertexAttribArray(0);
 
         // Draw the frustum lines

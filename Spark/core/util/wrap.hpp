@@ -100,17 +100,17 @@ namespace spark
 
 	void set_uniform(const std::string& name, const float64_t value, GLuint shader_program);
 
-	void set_uniform(const std::string& name, const glm::mat2& value, GLuint shader_program);
+	void set_uniform(const std::string& name, const math::mat2& value, GLuint shader_program);
 
-	void set_uniform(const std::string& name, const glm::mat3& value, GLuint shader_program);
+	void set_uniform(const std::string& name, const math::mat3& value, GLuint shader_program);
 
-	void set_uniform(const std::string& name, const glm::mat4& value, GLuint shader_program);
+	void set_uniform(const std::string& name, const math::mat4& value, GLuint shader_program);
 
-	void set_uniform(const std::string& name, const glm::vec2& value, GLuint shader_program);
+	void set_uniform(const std::string& name, const math::vec2& value, GLuint shader_program);
 
-	void set_uniform(const std::string& name, const glm::vec3& value, GLuint shader_program);
+	void set_uniform(const std::string& name, const math::vec3& value, GLuint shader_program);
 
-	void set_uniform(const std::string& name, const glm::vec4& value, GLuint shader_program);
+	void set_uniform(const std::string& name, const math::vec4& value, GLuint shader_program);
 
 	void set_uniform(const std::string& name, const bool value, GLuint shader_program);
 

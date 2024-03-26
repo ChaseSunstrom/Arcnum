@@ -27,7 +27,7 @@ namespace spark
 		frustum(const math::mat4& pv_matrix);
 		void update(const math::mat4& view_projection_matrix);
 		bool is_inside(const math::vec3& center, float32_t size) const;
-		std::array<glm::vec3, 8> get_corners() const;
+		std::array<math::vec3, 8> get_corners() const;
 
 		std::array<plane, 6> m_planes;
 		math::mat4 m_view_projection;

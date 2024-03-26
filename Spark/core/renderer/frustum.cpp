@@ -12,72 +12,72 @@ namespace spark
     {
         // Left Plane
         m_planes[0] = plane(
-            glm::vec3(pv_matrix[0][3] + pv_matrix[0][0], pv_matrix[1][3] + pv_matrix[1][0], pv_matrix[2][3] + pv_matrix[2][0]),
+            math::vec3(pv_matrix[0][3] + pv_matrix[0][0], pv_matrix[1][3] + pv_matrix[1][0], pv_matrix[2][3] + pv_matrix[2][0]),
             pv_matrix[3][3] + pv_matrix[3][0]);
 
         // Right Plane
         m_planes[1] = plane(
-            glm::vec3(pv_matrix[0][3] - pv_matrix[0][0], pv_matrix[1][3] - pv_matrix[1][0], pv_matrix[2][3] - pv_matrix[2][0]),
+            math::vec3(pv_matrix[0][3] - pv_matrix[0][0], pv_matrix[1][3] - pv_matrix[1][0], pv_matrix[2][3] - pv_matrix[2][0]),
             pv_matrix[3][3] - pv_matrix[3][0]);
 
         // Bottom Plane
         m_planes[2] = plane(
-            glm::vec3(pv_matrix[0][3] + pv_matrix[0][1], pv_matrix[1][3] + pv_matrix[1][1], pv_matrix[2][3] + pv_matrix[2][1]),
+            math::vec3(pv_matrix[0][3] + pv_matrix[0][1], pv_matrix[1][3] + pv_matrix[1][1], pv_matrix[2][3] + pv_matrix[2][1]),
             pv_matrix[3][3] + pv_matrix[3][1]);
 
         // Top Plane
         m_planes[3] = plane(
-            glm::vec3(pv_matrix[0][3] - pv_matrix[0][1], pv_matrix[1][3] - pv_matrix[1][1], pv_matrix[2][3] - pv_matrix[2][1]),
+            math::vec3(pv_matrix[0][3] - pv_matrix[0][1], pv_matrix[1][3] - pv_matrix[1][1], pv_matrix[2][3] - pv_matrix[2][1]),
             pv_matrix[3][3] - pv_matrix[3][1]);
 
         // Near Plane
         m_planes[4] = plane(
-            glm::vec3(pv_matrix[0][3] + pv_matrix[0][2], pv_matrix[1][3] + pv_matrix[1][2], pv_matrix[2][3] + pv_matrix[2][2]),
+            math::vec3(pv_matrix[0][3] + pv_matrix[0][2], pv_matrix[1][3] + pv_matrix[1][2], pv_matrix[2][3] + pv_matrix[2][2]),
             pv_matrix[3][3] + pv_matrix[3][2]);
 
         // Far Plane
         m_planes[5] = plane(
-            glm::vec3(pv_matrix[0][3] - pv_matrix[0][2], pv_matrix[1][3] - pv_matrix[1][2], pv_matrix[2][3] - pv_matrix[2][2]),
+            math::vec3(pv_matrix[0][3] - pv_matrix[0][2], pv_matrix[1][3] - pv_matrix[1][2], pv_matrix[2][3] - pv_matrix[2][2]),
             pv_matrix[3][3] - pv_matrix[3][2]);
 
         // Normalize all planes
         for (auto& plane : m_planes)
         {
-            float length = glm::length(plane.m_normal);
+            float length = math::length(plane.m_normal);
             plane.m_normal /= length;
             plane.m_distance /= length;
 
             SPARK_INFO("Plane: " << plane.m_normal.x << ", " << plane.m_normal.y << ", " << plane.m_normal.z << ", " << plane.m_distance);
         }
     }
-    std::array<glm::vec3, 8> frustum::get_corners() const
+    std::array<math::vec3, 8> frustum::get_corners() const
     {
         // Define an array to hold the corners
-        std::array<glm::vec3, 8> corners = std::array<glm::vec3, 8>();
+        std::array<math::vec3, 8> corners = std::array<math::vec3, 8>();
 
         // The inverse of the view-projection matrix will take points from
         // clip space back to world space.
-        glm::mat4 invVP = glm::inverse(m_view_projection);
+        math::mat4 invVP = math::inverse(m_view_projection);
 
         // Define the NDC (Normalized Device Coordinates) frustum corners
-        std::array<glm::vec4, 8> ndcCorners = {
-            glm::vec4(-1.0f,  1.0f, -1.0f, 1.0f), // near top left
-            glm::vec4(1.0f,  1.0f, -1.0f, 1.0f), // near top right
-            glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f), // near bottom left
-            glm::vec4(1.0f, -1.0f, -1.0f, 1.0f), // near bottom right
-            glm::vec4(-1.0f,  1.0f,  1.0f, 1.0f), // far top left
-            glm::vec4(1.0f,  1.0f,  1.0f, 1.0f), // far top right
-            glm::vec4(-1.0f, -1.0f,  1.0f, 1.0f), // far bottom left
-            glm::vec4(1.0f, -1.0f,  1.0f, 1.0f)  // far bottom right
+        std::array<math::vec4, 8> ndcCorners = {
+            math::vec4(-1.0f,  1.0f, -1.0f, 1.0f), // near top left
+            math::vec4(1.0f,  1.0f, -1.0f, 1.0f), // near top right
+            math::vec4(-1.0f, -1.0f, -1.0f, 1.0f), // near bottom left
+            math::vec4(1.0f, -1.0f, -1.0f, 1.0f), // near bottom right
+            math::vec4(-1.0f,  1.0f,  1.0f, 1.0f), // far top left
+            math::vec4(1.0f,  1.0f,  1.0f, 1.0f), // far top right
+            math::vec4(-1.0f, -1.0f,  1.0f, 1.0f), // far bottom left
+            math::vec4(1.0f, -1.0f,  1.0f, 1.0f)  // far bottom right
         };
 
         // Transform the NDC corners back to world space
         for (int i = 0; i < ndcCorners.size(); ++i)
         {
             // Transform the NDC corners to world space
-            glm::vec4 worldSpaceCorner = invVP * ndcCorners[i];
+            math::vec4 worldSpaceCorner = invVP * ndcCorners[i];
             // Perform perspective divide to get the 3D world space coordinates
-            corners[i] = glm::vec3(worldSpaceCorner) / worldSpaceCorner.w;
+            corners[i] = math::vec3(worldSpaceCorner) / worldSpaceCorner.w;
         }
 
         return corners;

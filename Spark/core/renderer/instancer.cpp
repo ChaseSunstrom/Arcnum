@@ -71,8 +71,8 @@ namespace spark
 		for (auto& camera : cameras)
 		{
 			// Set the projection and view matrices
-			glUniformMatrix4fv(loc_projection, 1, GL_FALSE, glm::value_ptr(camera->get_projection_matrix()));
-			glUniformMatrix4fv(loc_view, 1, GL_FALSE, glm::value_ptr(camera->get_view_matrix()));
+			glUniformMatrix4fv(loc_projection, 1, GL_FALSE, math::value_ptr(camera->get_projection_matrix()));
+			glUniformMatrix4fv(loc_view, 1, GL_FALSE, math::value_ptr(camera->get_view_matrix()));
 
 			material& mat = mat_man.get_material(material_name);
 			set_uniform(mat, shader_program_id);
@@ -89,7 +89,6 @@ namespace spark
 	{
 		for (auto& camera : cameras)
 		{
-			// Assuming you have a way to access the scene's octree
 			octree& scene_octree = scene.get_octree();
 
 			for (auto& mesh_item : m_renderables)
@@ -101,19 +100,16 @@ namespace spark
 					const auto& material_name = material_item.first;
 					auto& trans_struct = material_item.second;
 
-					std::vector<math::mat4> visible_transforms;
-					
-					visible_transforms = m_renderables[mesh_name][material_name]->m_data;
+					std::vector<math::mat4> visible_transforms = m_renderables[mesh_name][material_name]->m_data;
 
 					glBindBuffer(GL_ARRAY_BUFFER, trans_struct->m_vbo);
 					glBufferData(GL_ARRAY_BUFFER, visible_transforms.size() * sizeof(math::mat4), visible_transforms.data(), GL_DYNAMIC_DRAW);
 
 					bind_renderables(cameras, mesh_name, material_name); // Prepare mesh and material for rendering
 
-					auto index_count = static_cast<GLsizei>(application::get_mesh_manager().get_mesh(mesh_name).m_mesh.get_index_count());
+					auto vertices = application::get_mesh_manager().get_mesh(mesh_name).m_mesh.m_vertices;
 
-					glDrawElementsInstanced(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, 0, visible_transforms.size());
-
+					glDrawArraysInstanced(GL_TRIANGLES, 0, vertices.size(), visible_transforms.size());
 				}
 			}
 		}

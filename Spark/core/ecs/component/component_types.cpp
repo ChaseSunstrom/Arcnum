@@ -10,19 +10,14 @@ namespace spark
 {
 	mesh::mesh()
 	{
-		m_index_count = m_indices.size();
-
 		create_mesh();
 	}
 
 	mesh::mesh(
-		const std::vector <vertex>& vertices, const std::vector <GLuint>& indices
+		const std::vector <vertex>& vertices
 	)
 	{
 		m_vertices = vertices;
-		m_indices = indices;
-
-		m_index_count = m_indices.size();
 
 		create_mesh();
 	}
@@ -37,11 +32,6 @@ namespace spark
 		generate_vertex_buffer(m_vbo);
 		bind_vertex_buffer(m_vbo);
 		buffer_vertex_data<vertex>(m_vbo, m_vertices);
-
-		// Generate and bind IBO
-		generate_index_buffer(m_ibo);
-		bind_index_buffer(m_ibo);
-		buffer_index_data(m_ibo, m_indices);
 
 		set_vertex_attribute_ptr(0, 3, GL_FLOAT, sizeof vertex, (void*)0);
 		enable_vertex_attribute_ptr(0);
@@ -59,23 +49,10 @@ namespace spark
 		bind_vertex_array(0);
 	}
 
-	void mesh::update(
-		const std::vector <vertex>& vertices, const std::vector <GLuint>& indices
-	)
-	{
-		bind_vertex_buffer(m_vbo);
-		buffer_vertex_subdata<vertex>(m_vbo, vertices);
-
-		if (!indices.empty())
-		{
-			buffer_index_subdata(m_ibo, indices);
-		}
-	}
 
 	mesh::~mesh()
 	{
 		delete_vertex_buffer(m_vbo);
-		delete_index_buffer(m_ibo);
 		delete_vertex_array(m_vao);
 	}
 

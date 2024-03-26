@@ -10,7 +10,7 @@ namespace spark
 		dir_light_component() = default;
 
 		dir_light_component(
-				glm::vec3 direction, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular) :
+				math::vec3 direction, math::vec3 ambient, math::vec3 diffuse, math::vec3 specular) :
 				m_direction(direction), m_ambient(ambient), m_diffuse(diffuse), m_specular(specular) { }
 
 		bool operator!=(const dir_light_component& other) const
@@ -19,13 +19,13 @@ namespace spark
 			       m_specular != other.m_specular;
 		}
 
-		glm::vec3 m_direction;
+		math::vec3 m_direction;
 
-		glm::vec3 m_ambient;
+		math::vec3 m_ambient;
 
-		glm::vec3 m_diffuse;
+		math::vec3 m_diffuse;
 
-		glm::vec3 m_specular;
+		math::vec3 m_specular;
 	};
 
 	struct point_light_component
@@ -33,13 +33,13 @@ namespace spark
 		point_light_component() = default;
 
 		point_light_component(
-				glm::vec3 position,
+				math::vec3 position,
 				float32_t constant,
 				float32_t linear,
 				float32_t quadratic,
-				glm::vec3 ambient,
-				glm::vec3 diffuse,
-				glm::vec3 specular) :
+				math::vec3 ambient,
+				math::vec3 diffuse,
+				math::vec3 specular) :
 				m_position(position), m_constant(constant), m_linear(linear), m_quadratic(quadratic), m_ambient(ambient), m_diffuse(
 				diffuse), m_specular(specular) { }
 
@@ -50,7 +50,7 @@ namespace spark
 			       m_specular != other.m_specular;
 		}
 
-		glm::vec3 m_position;
+		math::vec3 m_position;
 
 		float32_t m_constant;
 
@@ -58,11 +58,11 @@ namespace spark
 
 		float32_t m_quadratic;
 
-		glm::vec3 m_ambient;
+		math::vec3 m_ambient;
 
-		glm::vec3 m_diffuse;
+		math::vec3 m_diffuse;
 
-		glm::vec3 m_specular;
+		math::vec3 m_specular;
 	};
 
 	struct spot_light_component
@@ -70,16 +70,16 @@ namespace spark
 		spot_light_component() = default;
 
 		spot_light_component(
-				glm::vec3 position,
-				glm::vec3 direction,
+				math::vec3 position,
+				math::vec3 direction,
 				float32_t cut_off,
 				float32_t outer_cut_off,
 				float32_t constant,
 				float32_t linear,
 				float32_t quadratic,
-				glm::vec3 ambient,
-				glm::vec3 diffuse,
-				glm::vec3 specular) :
+				math::vec3 ambient,
+				math::vec3 diffuse,
+				math::vec3 specular) :
 				m_position(position), m_direction(direction), m_cut_off(cut_off), m_outer_cut_off(outer_cut_off), m_constant(
 				constant), m_linear(linear), m_quadratic(quadratic), m_ambient(ambient), m_diffuse(diffuse), m_specular(
 				specular) { }
@@ -92,9 +92,9 @@ namespace spark
 			       m_diffuse != other.m_diffuse || m_specular != other.m_specular;
 		}
 
-		glm::vec3 m_position;
+		math::vec3 m_position;
 
-		glm::vec3 m_direction;
+		math::vec3 m_direction;
 
 		float32_t m_cut_off;
 
@@ -106,11 +106,11 @@ namespace spark
 
 		float32_t m_quadratic;
 
-		glm::vec3 m_ambient;
+		math::vec3 m_ambient;
 
-		glm::vec3 m_diffuse;
+		math::vec3 m_diffuse;
 
-		glm::vec3 m_specular;
+		math::vec3 m_specular;
 	};
 }
 

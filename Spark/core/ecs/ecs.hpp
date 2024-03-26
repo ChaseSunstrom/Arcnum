@@ -181,6 +181,10 @@ namespace spark
 			m_component_manager->destroy_component_array(entity);
 		}
 
+		component_manager& get_component_manager() { return *m_component_manager; }
+		entity_manager& get_entity_manager() { return *m_entity_manager; }
+		system_manager& get_system_manager() { return *m_system_manager; }
+
 		template <typename... Components>
 		entity create_entity(Components&& ... components)
 		{

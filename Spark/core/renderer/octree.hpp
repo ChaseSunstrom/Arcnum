@@ -29,7 +29,7 @@ namespace spark
 		void find_min_max_points(math::vec3& min_point, math::vec3& max_point) const;
 		float calculate_new_size(const math::vec3& point) const;
 		math::vec3 calculate_new_center(const math::vec3& point, float new_size) const;
-		void get_node_edges(std::vector<glm::vec3>& lines) const;
+		void get_node_edges(std::vector<math::vec3>& lines) const;
 		void ensure_contains(const math::vec3& point);
 		bool is_inside(const math::vec3& point) const;
 		bool is_inside(const math::vec3& point, const math::vec3& center, float half_size) const;

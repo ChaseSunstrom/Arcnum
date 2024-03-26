@@ -35,18 +35,18 @@ namespace spark
 			const math::vec3& scale = math::vec3(1.0f)
 		)
 		{
-			glm::mat4 mat = glm::mat4(1.0f); // Start with identity matrix
+			math::mat4 mat = math::mat4(1.0f); // Start with identity matrix
 
 			// Apply translation
-			mat = glm::translate(mat, position);
+			mat = math::translate(mat, position);
 
 			// Apply rotations around the Z, Y, and X axes, in that order
-			mat = glm::rotate(mat, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-			mat = glm::rotate(mat, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-			mat = glm::rotate(mat, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+			mat = math::rotate(mat, math::radians(rotation.z), math::vec3(0.0f, 0.0f, 1.0f));
+			mat = math::rotate(mat, math::radians(rotation.y), math::vec3(0.0f, 1.0f, 0.0f));
+			mat = math::rotate(mat, math::radians(rotation.x), math::vec3(1.0f, 0.0f, 0.0f));
 
 			// Apply scaling
-			mat = glm::scale(mat, scale);
+			mat = math::scale(mat, scale);
 			m_transform = mat;
 		}
 
@@ -100,23 +100,16 @@ namespace spark
 	{
 		mesh();
 
-		mesh(const std::vector <vertex>& vertices, const std::vector<GLuint>& indices);
+		mesh(const std::vector <vertex>& vertices);
 
 		~mesh();
 
 		mesh(mesh&& other) noexcept :
 			m_vertices(std::move(other.m_vertices)),
-			m_indices(std::move(other.m_indices)),
-			m_vao(other.m_vao),
-			m_vbo(other.m_vbo),
-			m_ibo(other.m_ibo),
-			m_index_count(other.m_index_count)
+			m_vao(other.m_vao)
 		{
 			// Transfer ownership
 			other.m_vao = 0;
-			other.m_vbo = 0;
-			other.m_ibo = 0;
-			other.m_index_count = 0;
 		}
 
 		void bind();
@@ -132,32 +125,10 @@ namespace spark
 			return m_vao;
 		}
 
-		GLuint get_vbo()
-		{
-			return m_vbo;
-		}
-
-		GLuint get_ibo()
-		{
-			return m_ibo;
-		}
-
-		GLsizei get_index_count()
-		{
-			return m_index_count;
-		}
-
 		std::vector <vertex> m_vertices = std::vector<vertex>();
-
-		std::vector <GLuint> m_indices = std::vector<GLuint>();
 	private:
 		GLuint m_vao = 0;
-
 		GLuint m_vbo = 0;
-
-		GLuint m_ibo = 0;
-
-		int32_t m_index_count = 0;
 	};
 
 	struct instanced_mesh
@@ -349,9 +320,9 @@ namespace spark
 
 		~mesh_manager() = default;
 
-		instanced_mesh& create_mesh(const std::string& name, const std::vector <vertex>& vertices, const std::vector <GLuint>& indices)
+		instanced_mesh& create_mesh(const std::string& name, const std::vector <vertex>& vertices)
 		{
-			m_meshes[name] = std::make_unique<instanced_mesh>(mesh(vertices, indices));
+			m_meshes[name] = std::make_unique<instanced_mesh>(mesh(vertices));
 			return *m_meshes[name];
 		}
 

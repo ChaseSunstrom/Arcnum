@@ -44,7 +44,7 @@ namespace spark
 
     void renderer::render_octree(camera& camera, octree& root_node, math::mat4& modelMatrix)
     {
-        shader_manager& shader_man = application::get_shader_manager();
+        shader_manager& shader_man = engine::get<shader_manager>();
         GLuint shaderProgram = shader_man.get_shader("Spark/shaders/line.vert", "Spark/shaders/line.frag");
 
         // Use shader and set uniforms
@@ -84,7 +84,7 @@ namespace spark
             glGenBuffers(1, &vbo);
         }
 
-        shader_manager& shader_man = application::get_shader_manager();
+        shader_manager& shader_man = engine::get<shader_manager>();
         GLuint shaderProgram = shader_man.get_shader("Spark/shaders/line.vert", "Spark/shaders/line.frag");
         
         // Bind shader and set uniforms

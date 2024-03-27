@@ -26,10 +26,11 @@ namespace spark
 	class shader_manager
 	{
 	public:
-		shader_manager() = default;
-
-		~shader_manager();
-
+		static shader_manager& get()
+		{
+			static shader_manager instance;
+			return instance;
+		}
 		// Tuple to allow the user to get the concated paths of the vertex and
 		// fragment shaders
 		std::tuple<std::string, GLuint> load_shader(
@@ -49,6 +50,10 @@ namespace spark
 		void delete_shader(const std::string& concat_paths);
 
 	private:
+		shader_manager() = default;
+
+		~shader_manager();
+
 		GLuint compile_shader(const std::string& shader_code, GLenum shader_type);
 
 		inline std::string concat_paths(const std::string& vertex_path,

@@ -19,6 +19,8 @@ namespace spark
 
 		static bool on_event(std::shared_ptr <event> event);
 
+		static void on_shutdown();
+
 		static void set_window_title(const std::string& title);
 
 		static void add_scene(const std::string& name, const scene_config& config);
@@ -26,49 +28,8 @@ namespace spark
 		static void set_delta_time(uint64_t delta_time);
 
 		static uint64_t get_delta_time();
-
-		static renderer& get_renderer();
-
-		static window& get_window();
-
-		static mesh_manager& get_mesh_manager();
-
-		static material_manager& get_material_manager();
-
-		static shader_manager& get_shader_manager();
-
-		static texture_manager& get_texture_manager();
-
-		static ecs& get_ecs();
-
-		static audio_manager& get_audio_manager();
-
-		static scene& get_scene(const std::string& name);
-
-		static scene& get_current_scene();
-
 	private:
 		static uint64_t s_delta_time;
-
-		static std::unique_ptr <window> s_window;
-
-		static std::unique_ptr <renderer> s_renderer;
-
-		static std::unique_ptr <scene_manager> s_scene_manager;
-
-		static std::unique_ptr<mesh_manager> s_mesh_manager;
-		
-		static std::unique_ptr<material_manager> s_material_manager;
-		
-		static std::unique_ptr<shader_manager> s_shader_manager;
-		
-		static std::unique_ptr<audio_manager> s_audio_manager;
-
-		static std::unique_ptr <layer_stack> s_layer_stack;
-
-		static std::unique_ptr <texture_manager> s_texture_manager;
-
-		static std::unique_ptr<ecs> s_ecs;
 	};
 }
 

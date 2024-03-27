@@ -12,32 +12,30 @@ namespace spark
 	class system
 	{
 	public:
-		system(component_manager& component_manager) :
-			m_component_manager(component_manager) {}
-
 		virtual ~system() = default;
 
-		virtual void on_init() {}
+		virtual void on_init()
+		{}
 
-		virtual void on_start() {}
+		virtual void on_start()
+		{}
 
-		virtual void on_update(float64_t delta_time) {}
+		virtual void on_update(float64_t delta_time)
+		{}
 
-		virtual void on_shutdown() {}
+		virtual void on_shutdown()
+		{}
 	private:
-		component_manager& m_component_manager;
+		component_manager& m_component_manager = component_manager::get();
 	};
 
 	class system_manager
 	{
 	public:
-		system_manager(component_manager& component_manager) :
-				m_component_manager(component_manager) { }
-
-
-		~system_manager()
+		static system_manager& get()
 		{
-			shutdown_systems();
+			static system_manager instance;
+			return instance;
 		}
 
 		template <typename T, typename... Args>
@@ -67,7 +65,7 @@ namespace spark
 			return s;
 		}
 
-		 void start_systems()
+		void start_systems()
 		{
 			for (auto& system : m_start_systems)
 			{
@@ -77,33 +75,39 @@ namespace spark
 
 		void update_systems(float64_t delta_time)
 		{
-			for (auto& system: m_update_systems)
+			for (auto& system : m_update_systems)
 			{
 				thread_pool::enqueue(task_priority::HIGH, true,
-					[system = system.get(), delta_time] 
-					{
-						system->on_update(delta_time);
-					});
+									 [system = system.get(), delta_time]
+									 {
+										 system->on_update(delta_time);
+									 });
 			}
 		}
 
-		 void shutdown_systems()
+		void shutdown_systems()
 		{
 			for (auto& system : m_shutdown_systems)
 			{
 				system->on_shutdown();
 			}
 		}
+	private:
+		system_manager() = default;
 
+		~system_manager()
+		{
+			shutdown_systems();
+		}
 	private:
 		std::vector<std::unique_ptr<system>> m_start_systems = std::vector<std::unique_ptr<system>>();
 
 		std::vector<std::unique_ptr<system>> m_update_systems = std::vector<std::unique_ptr<system>>();
 
 		std::vector<std::unique_ptr<system>> m_shutdown_systems =
-				std::vector<std::unique_ptr<system>>();
+			std::vector<std::unique_ptr<system>>();
 
-		component_manager& m_component_manager;
+		component_manager& m_component_manager = component_manager::get();
 	};
 }
 

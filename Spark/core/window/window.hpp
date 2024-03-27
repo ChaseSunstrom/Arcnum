@@ -35,11 +35,7 @@ namespace spark
 	class window
 	{
 	public:
-		window();
-
-		window(std::string title, bool vsync, uint32_t height, uint32_t width);
-
-		~window();
+		static window& get();
 
 		void on_update();
 
@@ -50,6 +46,8 @@ namespace spark
 		bool running();
 
 		void set_window_title(const std::string& title);
+
+		GLFWwindow* get_window() { return m_window; }
 
 		window_data& get_window_data() { return *m_window_data; }
 
@@ -71,7 +69,10 @@ namespace spark
 		static void mouse_move_event_callback(GLFWwindow* window, float64_t x, float64_t y);
 
 		// ==============================================================================
+	private:
+		window();
 
+		~window();
 	private:
 		GLFWwindow* m_window;
 

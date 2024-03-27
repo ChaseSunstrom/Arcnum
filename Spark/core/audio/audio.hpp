@@ -11,14 +11,13 @@ namespace spark
 	{
 	public:
 
-		audio_manager() = default;
-
-		~audio_manager()
+		static audio_manager& get()
 		{
-			m_engine->drop();
+			static audio_manager instance;
+			return instance;
 		}
 
-		 sound& create_sound(
+		sound& create_sound(
 			const std::string& name,
 			const std::filesystem::path& source,
 			bool loops = false,
@@ -30,7 +29,7 @@ namespace spark
 			return *m_sounds[name];
 		}
 
-		 sound& create_sound(
+		sound& create_sound(
 			const std::string& name,
 			const std::filesystem::path& source,
 			const math::vec3& position,
@@ -46,9 +45,12 @@ namespace spark
 			return *m_sounds[name];
 		}
 
-		 sound& get_sound(const std::string& name) { return *m_sounds[name]; }
+		sound& get_sound(const std::string& name)
+		{
+			return *m_sounds[name];
+		}
 
-		 void play_sound(const std::string& name, bool loops = false)
+		void play_sound(const std::string& name, bool loops = false)
 		{
 			sound& s = *m_sounds[name];
 
@@ -64,7 +66,7 @@ namespace spark
 			}
 		}
 
-		 void play_sound(const std::string& name, const math::vec3& position, bool loops = false)
+		void play_sound(const std::string& name, const math::vec3& position, bool loops = false)
 		{
 			sound& s = *m_sounds[name];
 
@@ -81,53 +83,63 @@ namespace spark
 			}
 		}
 
-		 void pause_sound(const std::string& name)
+		void pause_sound(const std::string& name)
 		{
 			m_sounds[name]->pause();
 		}
 
-		 void resume_sound(const std::string& name)
+		void resume_sound(const std::string& name)
 		{
 			m_sounds[name]->resume();
 		}
 
-		 void loop_sound(const std::string& name)
+		void loop_sound(const std::string& name)
 		{
 			m_sounds[name]->loop();
 		}
 
-		 void stop_sound(const std::string& name)
+		void stop_sound(const std::string& name)
 		{
 			m_sounds[name]->stop();
 		}
 
-		 void stop_all()
+		void stop_all()
 		{
 			m_engine->stopAllSounds();
 		}
 
-		 void set_sound_pan(const std::string& name, float32_t pan)
+		void set_sound_pan(const std::string& name, float32_t pan)
 		{
 			m_sounds[name]->set_pan(pan);
 
 			m_engine->update();
 		}
 
-		 void set_sound_volume(const std::string& name, float32_t volume)
+		void set_sound_volume(const std::string& name, float32_t volume)
 		{
 			m_sounds[name]->set_volume(volume);
 
 			m_engine->update();
 		}
 
-		 void set_sound_position(const std::string& name, const math::vec3& position)
+		void set_sound_position(const std::string& name, const math::vec3& position)
 		{
 			m_sounds[name]->set_position(position);
 
 			m_engine->update();
 		}
 
-		 ISoundEngine* get_engine() const { return m_engine; }
+		ISoundEngine* get_engine() const
+		{
+			return m_engine;
+		}
+	private:
+		audio_manager() = default;
+
+		~audio_manager()
+		{
+			m_engine->drop();
+		}
 	private:
 		ISoundEngine* m_engine = createIrrKlangDevice();
 		std::unordered_map<std::string, std::unique_ptr<sound>> m_sounds;
@@ -137,7 +149,8 @@ namespace spark
 	{
 		audio_component() = default;
 		audio_component(const std::string& name, const std::function<bool(component_manager&)>& play_condition) :
-			m_name(name), m_play_condition(play_condition) {}
+			m_name(name), m_play_condition(play_condition)
+		{}
 
 		std::string m_name;
 		std::function<bool(component_manager&)> m_play_condition;
@@ -147,8 +160,9 @@ namespace spark
 	{
 	public:
 		audio_system(component_manager& component_manager, std::vector<audio_component>* audio_components) :
-			system(component_manager), m_component_manager(component_manager), m_audio_components(*audio_components) { }
-		
+			system(), m_component_manager(component_manager), m_audio_components(*audio_components)
+		{}
+
 		void on_update(float64_t delta_time);
 	private:
 		std::vector<audio_component>& m_audio_components;

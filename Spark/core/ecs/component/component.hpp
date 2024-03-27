@@ -117,10 +117,11 @@ namespace spark
 	class component_manager
 	{
 	public:
-		component_manager() = default;
-
-		~component_manager() = default;
-
+		static component_manager& get()
+		{
+			static component_manager instance;
+			return instance;
+		}
 		template <typename T>
 		component_array<T>& get_component_array()
 		{
@@ -215,6 +216,11 @@ namespace spark
 
 			return false;
 		}
+	private:
+
+		component_manager() = default;
+
+		~component_manager() = default;
 
 	private:
 		std::unordered_map <std::type_index, std::unique_ptr<component_array_base>> m_components;

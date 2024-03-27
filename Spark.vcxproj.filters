@@ -43,6 +43,9 @@
     <Filter Include="tests">
       <UniqueIdentifier>{78756B10-E489-93C1-AD0B-372119DF8FF2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ui">
+      <UniqueIdentifier>{C3795900-AF05-880B-18B4-880B045F880B}</UniqueIdentifier>
+    </Filter>
     <Filter Include="user">
       <UniqueIdentifier>{842E9F7C-7065-A00D-1952-861005681C0F}</UniqueIdentifier>
     </Filter>
@@ -90,6 +93,7 @@
     <ClInclude Include="Spark\core\ecs\system\system.hpp">
       <Filter>ecs\system</Filter>
     </ClInclude>
+    <ClInclude Include="Spark\core\engine.hpp" />
     <ClInclude Include="Spark\core\events\event.hpp">
       <Filter>events</Filter>
     </ClInclude>
@@ -123,10 +127,19 @@
     <ClInclude Include="Spark\core\physics\gravity.hpp">
       <Filter>physics</Filter>
     </ClInclude>
+    <ClInclude Include="Spark\core\renderer\frustum.hpp">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\renderer\instancer.hpp">
+      <Filter>renderer</Filter>
+    </ClInclude>
     <ClInclude Include="Spark\core\renderer\layer.hpp">
       <Filter>renderer</Filter>
     </ClInclude>
     <ClInclude Include="Spark\core\renderer\layer_stack.hpp">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\renderer\octree.hpp">
       <Filter>renderer</Filter>
     </ClInclude>
     <ClInclude Include="Spark\core\renderer\renderer.hpp">
@@ -145,6 +158,9 @@
       <Filter>tests</Filter>
     </ClInclude>
     <ClInclude Include="Spark\core\types.hpp" />
+    <ClInclude Include="Spark\core\ui\ui.hpp">
+      <Filter>ui</Filter>
+    </ClInclude>
     <ClInclude Include="Spark\core\user\camera.hpp">
       <Filter>user</Filter>
     </ClInclude>
@@ -166,9 +182,15 @@
     <ClInclude Include="Spark\core\window\window.hpp">
       <Filter>window</Filter>
     </ClInclude>
-    <ClInclude Include="Spark\core\renderer\instancer.hpp" />
-    <ClInclude Include="Spark\core\renderer\frustum.hpp" />
-    <ClInclude Include="Spark\core\renderer\octree.hpp" />
+    <ClInclude Include="Spark\include\IMGUI\imconfig.h" />
+    <ClInclude Include="Spark\include\IMGUI\imgui.h" />
+    <ClInclude Include="Spark\include\IMGUI\imgui_impl_glfw.h" />
+    <ClInclude Include="Spark\include\IMGUI\imgui_impl_opengl3.h" />
+    <ClInclude Include="Spark\include\IMGUI\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="Spark\include\IMGUI\imgui_internal.h" />
+    <ClInclude Include="Spark\include\IMGUI\imstb_rectpack.h" />
+    <ClInclude Include="Spark\include\IMGUI\imstb_textedit.h" />
+    <ClInclude Include="Spark\include\IMGUI\imstb_truetype.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spark\core\app\app.cpp">
@@ -198,6 +220,15 @@
     <ClCompile Include="Spark\core\physics\aabb.cpp">
       <Filter>physics</Filter>
     </ClCompile>
+    <ClCompile Include="Spark\core\renderer\frustum.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Spark\core\renderer\instancer.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Spark\core\renderer\octree.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
     <ClCompile Include="Spark\core\renderer\renderer.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
@@ -214,14 +245,13 @@
     <ClCompile Include="Spark\core\window\window.cpp">
       <Filter>window</Filter>
     </ClCompile>
-    <ClCompile Include="Spark\core\renderer\instancer.cpp" />
-    <ClCompile Include="Spark\core\renderer\frustum.cpp" />
-    <ClCompile Include="Spark\core\renderer\octree.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Spark\shaders\material.frag" />
-    <None Include="Spark\shaders\lighting.frag" />
-    <None Include="Spark\shaders\line.vert" />
-    <None Include="Spark\shaders\line.frag" />
+    <ClCompile Include="Spark\core\ui\ui.cpp" />
+    <ClCompile Include="Spark\include\IMGUI\imgui.cpp" />
+    <ClCompile Include="Spark\include\IMGUI\imgui_demo.cpp" />
+    <ClCompile Include="Spark\include\IMGUI\imgui_draw.cpp" />
+    <ClCompile Include="Spark\include\IMGUI\imgui_impl_glfw.cpp" />
+    <ClCompile Include="Spark\include\IMGUI\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="Spark\include\IMGUI\imgui_tables.cpp" />
+    <ClCompile Include="Spark\include\IMGUI\imgui_widgets.cpp" />
   </ItemGroup>
 </Project>

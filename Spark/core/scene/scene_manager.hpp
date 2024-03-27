@@ -12,13 +12,11 @@ namespace spark
 	class scene_manager
 	{
 	public:
-		scene_manager() = default;
-
-		scene_manager(renderer& renderer) :
-			m_renderer(renderer)
-		{}
-
-		~scene_manager() = default;
+		static scene_manager& get()
+		{
+			static scene_manager instance(renderer::get());
+			return instance;
+		}
 
 		void add_scene(const std::string& name, std::unique_ptr <scene> scene)
 		{
@@ -62,7 +60,12 @@ namespace spark
 		{
 			return m_scenes_vector;
 		}
+	private:
+		scene_manager(renderer& renderer) :
+			m_renderer(renderer)
+		{}
 
+		~scene_manager() = default;
 	private:
 		std::unordered_map <std::string, std::unique_ptr<scene>> m_scenes =
 			std::unordered_map <std::string, std::unique_ptr<scene>>();

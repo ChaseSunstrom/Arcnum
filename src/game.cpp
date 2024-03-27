@@ -3,6 +3,69 @@
 
 #include <core/net/chat_message.hpp>
 
+
+std::vector<spark::vertex> vertices = {
+		spark::vertex(spark::math::vec3(-0.5f, -0.5f, -0.5f)),
+		spark::vertex(spark::math::vec3(0.5f, -0.5f, -0.5f)),
+		spark::vertex(spark::math::vec3(0.5f,  0.5f, -0.5f)),
+		spark::vertex(spark::math::vec3(0.5f,  0.5f, -0.5f)),
+		spark::vertex(spark::math::vec3(-0.5f,  0.5f, -0.5f)),
+		spark::vertex(spark::math::vec3(-0.5f, -0.5f, -0.5f)),
+		spark::vertex(spark::math::vec3(-0.5f, -0.5f,  0.5f)),
+		spark::vertex(spark::math::vec3(0.5f, -0.5f,  0.5f)),
+		spark::vertex(spark::math::vec3(0.5f,  0.5f,  0.5f)),
+		spark::vertex(spark::math::vec3(0.5f,  0.5f,  0.5f)),
+		spark::vertex(spark::math::vec3(-0.5f,  0.5f,  0.5f)),
+		spark::vertex(spark::math::vec3(-0.5f, -0.5f,  0.5f)),
+		spark::vertex(spark::math::vec3(-0.5f,  0.5f,  0.5f)),
+		spark::vertex(spark::math::vec3(-0.5f,  0.5f, -0.5f)),
+		spark::vertex(spark::math::vec3(-0.5f, -0.5f, -0.5f)),
+		spark::vertex(spark::math::vec3(-0.5f, -0.5f, -0.5f)),
+		spark::vertex(spark::math::vec3(-0.5f, -0.5f,  0.5f)),
+		spark::vertex(spark::math::vec3(-0.5f,  0.5f,  0.5f)),
+		spark::vertex(spark::math::vec3(0.5f,  0.5f,  0.5f)),
+		spark::vertex(spark::math::vec3(0.5f,  0.5f, -0.5f)),
+		spark::vertex(spark::math::vec3(0.5f, -0.5f, -0.5f)),
+		spark::vertex(spark::math::vec3(0.5f, -0.5f, -0.5f)),
+		spark::vertex(spark::math::vec3(0.5f, -0.5f,  0.5f)),
+		spark::vertex(spark::math::vec3(0.5f,  0.5f,  0.5f)),
+		spark::vertex(spark::math::vec3(-0.5f, -0.5f, -0.5f)),
+		spark::vertex(spark::math::vec3(0.5f, -0.5f, -0.5f)),
+		spark::vertex(spark::math::vec3(0.5f, -0.5f,  0.5f)),
+		spark::vertex(spark::math::vec3(0.5f, -0.5f,  0.5f)),
+		spark::vertex(spark::math::vec3(-0.5f, -0.5f,  0.5f)),
+		spark::vertex(spark::math::vec3(-0.5f, -0.5f, -0.5f)),
+		spark::vertex(spark::math::vec3(-0.5f,  0.5f, -0.5f)),
+		spark::vertex(spark::math::vec3(0.5f,  0.5f, -0.5f)),
+		spark::vertex(spark::math::vec3(0.5f,  0.5f,  0.5f)),
+		spark::vertex(spark::math::vec3(0.5f,  0.5f,  0.5f)),
+		spark::vertex(spark::math::vec3(-0.5f,  0.5f,  0.5f)),
+		spark::vertex(spark::math::vec3(-0.5f,  0.5f, -0.5f))
+};
+
+void add_cube_entity(const spark::math::vec3& position)
+{
+	auto& _ecs = spark::engine::get<spark::ecs>();
+	auto& _mesh_manager = spark::engine::get<spark::mesh_manager>();
+	auto& _material_manager = spark::engine::get<spark::material_manager>();
+	auto& _renderer = spark::engine::get<spark::renderer>();
+	auto& _scene_manager = spark::engine::get<spark::scene_manager>();
+	spark::scene& cur_scene = _scene_manager.get_current_scene();
+
+	
+	std::string materialName = "material";
+
+	spark::transform_component trans = spark::transform_component(position);
+	spark::entity ent = _ecs.create_entity(
+		trans,
+		spark::mesh_component("square"), // Assuming "square" mesh exists
+		spark::material_component(materialName) // Assumes material exists
+	);
+
+	// Assuming the renderer and scene setup allows adding renderables like this
+	_renderer.get_instancer().add_renderable(cur_scene, "square", materialName, trans);
+}
+
 void on_start()
 {
 	spark::application::set_window_title("Arcnum");
@@ -31,116 +94,61 @@ void on_start()
 									}
 								});
 
-	spark::renderer& renderer = spark::application::get_renderer();
+	auto& _renderer = spark::engine::get<spark::renderer>();
+	auto& _audio_manager = spark::engine::get<spark::audio_manager>();
+	auto& _material_manager = spark::engine::get<spark::material_manager>();
+	auto& _mesh_manager = spark::engine::get<spark::mesh_manager>();
+	auto& _component_manager = spark::engine::get<spark::component_manager>();
+	auto& _scene_manager = spark::engine::get<spark::scene_manager>();
+	auto& _ui_manager = spark::engine::get<spark::ui_manager>();
+	auto& _shader_manager = spark::engine::get<spark::shader_manager>();
+	auto& _ecs = spark::engine::get<spark::ecs>();
 
-	spark::texture_manager& tex_man = spark::application::get_texture_manager();
-	spark::audio_manager& audio_man = spark::application::get_audio_manager();
-	spark::material_manager& mat_man = spark::application::get_material_manager();
-	spark::mesh_manager& mesh_man = spark::application::get_mesh_manager();
+	spark::scene& cur_scene = _scene_manager.get_current_scene();
 
-	spark::scene& cur_scene = spark::application::get_current_scene();
-	audio_man.create_sound("retro", "assets/sfx/retro.wav");
-
-	spark::ecs& ecs = spark::application::get_ecs();
-	spark::component_manager& comp_man = ecs.get_component_manager();
+	_audio_manager.create_sound("retro", "assets/sfx/retro.wav");
 
 
-
-
-	spark::shader_manager& shader_man = spark::application::get_shader_manager();
-
-	auto [vert, frag] = shader_man.load_shader({ "Spark/shaders/line.vert", "Spark/shaders/line.frag" });
+	auto [vert, frag] = _shader_manager.load_shader({ "Spark/shaders/line.vert", "Spark/shaders/line.frag" });
 	SPARK_INFO("Shaders: " << vert);
 	cur_scene.set_background_color(spark::math::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 
-	std::vector<spark::vertex> vertices = {
-			spark::vertex(spark::math::vec3(-0.5f, -0.5f, -0.5f)),
-			spark::vertex(spark::math::vec3(0.5f, -0.5f, -0.5f)),
-			spark::vertex(spark::math::vec3(0.5f,  0.5f, -0.5f)),
-			spark::vertex(spark::math::vec3(0.5f,  0.5f, -0.5f)),
-			spark::vertex(spark::math::vec3(-0.5f,  0.5f, -0.5f)),
-			spark::vertex(spark::math::vec3(-0.5f, -0.5f, -0.5f)),
-			spark::vertex(spark::math::vec3(-0.5f, -0.5f,  0.5f)),
-			spark::vertex(spark::math::vec3(0.5f, -0.5f,  0.5f)),
-			spark::vertex(spark::math::vec3(0.5f,  0.5f,  0.5f)),
-			spark::vertex(spark::math::vec3(0.5f,  0.5f,  0.5f)),
-			spark::vertex(spark::math::vec3(-0.5f,  0.5f,  0.5f)),
-			spark::vertex(spark::math::vec3(-0.5f, -0.5f,  0.5f)),
-			spark::vertex(spark::math::vec3(-0.5f,  0.5f,  0.5f)),
-			spark::vertex(spark::math::vec3(-0.5f,  0.5f, -0.5f)),
-			spark::vertex(spark::math::vec3(-0.5f, -0.5f, -0.5f)),
-			spark::vertex(spark::math::vec3(-0.5f, -0.5f, -0.5f)),
-			spark::vertex(spark::math::vec3(-0.5f, -0.5f,  0.5f)),
-			spark::vertex(spark::math::vec3(-0.5f,  0.5f,  0.5f)),
-			spark::vertex(spark::math::vec3(0.5f,  0.5f,  0.5f)),
-			spark::vertex(spark::math::vec3(0.5f,  0.5f, -0.5f)),
-			spark::vertex(spark::math::vec3(0.5f, -0.5f, -0.5f)),
-			spark::vertex(spark::math::vec3(0.5f, -0.5f, -0.5f)),
-			spark::vertex(spark::math::vec3(0.5f, -0.5f,  0.5f)),
-			spark::vertex(spark::math::vec3(0.5f,  0.5f,  0.5f)),
-			spark::vertex(spark::math::vec3(-0.5f, -0.5f, -0.5f)),
-			spark::vertex(spark::math::vec3(0.5f, -0.5f, -0.5f)),
-			spark::vertex(spark::math::vec3(0.5f, -0.5f,  0.5f)),
-			spark::vertex(spark::math::vec3(0.5f, -0.5f,  0.5f)),
-			spark::vertex(spark::math::vec3(-0.5f, -0.5f,  0.5f)),
-			spark::vertex(spark::math::vec3(-0.5f, -0.5f, -0.5f)),
-			spark::vertex(spark::math::vec3(-0.5f,  0.5f, -0.5f)),
-			spark::vertex(spark::math::vec3(0.5f,  0.5f, -0.5f)),
-			spark::vertex(spark::math::vec3(0.5f,  0.5f,  0.5f)),
-			spark::vertex(spark::math::vec3(0.5f,  0.5f,  0.5f)),
-			spark::vertex(spark::math::vec3(-0.5f,  0.5f,  0.5f)),
-			spark::vertex(spark::math::vec3(-0.5f,  0.5f, -0.5f))
-	};
 
 
 	// Create material and mesh
-	//spark::texture& tex = tex_man.create_texture("tex", "assets/sprites/grass.jpg", spark::texture_type::TWO_D);
-	spark::instanced_mesh& mesh = mesh_man.create_mesh("square", vertices);
-	std::default_random_engine random_engine; // Consider seeding with a variable for reproducibility
+	spark::texture& grass = _material_manager.create_texture("grass", "assets/sprites/grass.jpg", spark::texture_type::TWO_D);
+	spark::texture& sand = _material_manager.create_texture("sand", "assets/sprites/sand.jpeg", spark::texture_type::TWO_D);
+	spark::material& material = _material_manager.create_material("material", {}, spark::math::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	spark::mesh& mesh = _mesh_manager.create_mesh("square", vertices);
+	std::default_random_engine random_engine; 
 	std::uniform_real_distribution<spark::float32_t> distribution(0.0f, 1.0f);
 
 	// Create entity
 
-	for (int i = 0; i < 5; i++)
-	{
-		for (int j = 0; j < 5; j++)
-		{
-			for (int k = 0; k < 5; k++)
-			{
-				std::string name = "material" + std::to_string(i + j + k);
-				// Generate random colors for the rainbow effect
-				spark::math::vec4 random_color(distribution(random_engine), distribution(random_engine), distribution(random_engine), 1.0f);
-				spark::material& mat = mat_man.create_material(name, {}, random_color);
+	_ui_manager.create_component<spark::button_component>("", "Spawn Cube", []()
+														 {
+															 static std::random_device rd; // Obtain a random number from hardware
+															 static std::mt19937 eng(rd()); // Seed the generator
+															 static std::uniform_real_distribution<> distr(-3.0, 3.0); // Define the range
 
-				spark::transform_component trans = spark::transform_component(spark::math::vec3(std::sin(i) * distribution(random_engine) * 2, std::cos(k) * 2 * distribution(random_engine), std::tan(j) * 2 * distribution(random_engine)) * distribution(random_engine));
+															 // Generate a random position
+															 spark::math::vec3 random_position(distr(eng), distr(eng), distr(eng));
 
-				spark::entity ent = ecs.create_entity(
-					trans,
-					spark::mesh_component("square"),
-					spark::material_component(name), // Ensure to reference the correct material name
-					spark::audio_component("retro", [](spark::component_manager&) -> bool
-										   {
-											   return true;
-										   })
-				);
-
-				renderer.get_instancer().add_renderable(cur_scene, "square", name, trans);
-			}
-		}
-	}
+															 // Assuming a function or mechanism to add a cube entity
+															 add_cube_entity(random_position);
+														 });
 }
 
 void on_update()
 {
 	static float x = 3; // Static to keep its value between calls
 
-	spark::scene& cur_scene = spark::application::get_current_scene();
-	spark::material_manager& mat_man = spark::application::get_material_manager();
-	spark::renderer& renderer = spark::application::get_renderer();
-	spark::camera& camera = *renderer.get_cameras()[0];
+	auto& _renderer = spark::engine::get<spark::renderer>();
+	
+	spark::camera& camera = *_renderer.get_cameras()[0];
 
 	camera.m_position = spark::math::vec3(0.0f, 0.0f, x);
-	x += 0.1f;
+	x += 0.01f;
 }
 
 // required function

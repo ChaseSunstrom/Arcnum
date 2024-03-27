@@ -20,6 +20,7 @@
 #include <core/lighting/light.hpp>
 #include <core/audio/sound.hpp>
 #include <core/net/udp.hpp>
+#include <core/ui/ui.hpp>
 #include <core/net/tcp.hpp>
 #include <core/net/net_common.hpp>
 

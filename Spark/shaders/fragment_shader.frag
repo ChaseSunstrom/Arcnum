@@ -11,7 +11,9 @@ uniform Material material;
 
 void main() {
     vec4 material_color = material.color;
-    FragColor = vec4(material_color.x, material_color.y, material_color.z, material_color.w);
+    vec4 text = texture(material.texture, TexCoords);
+    vec4 result = text * material_color;
+    FragColor = result;
 }
 
 

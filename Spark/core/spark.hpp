@@ -15,6 +15,7 @@
 
 #include "std_include.hpp"
 #include "types.hpp"
+#include "engine.hpp"
 
 #ifdef _MSC_VER
 	#pragma warning(disable : 4996)

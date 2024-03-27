@@ -94,13 +94,21 @@ namespace spark
 
 	void texture::load_texture(const std::filesystem::path& path, const std::vector <std::pair<GLenum, GLenum>>& params)
 	{
-		m_image_data = stbi_load(path.string().c_str(), &m_width, &m_height, &m_nr_channels, 0);
+		std::filesystem::path full_path = std::filesystem::absolute(path);
+		m_image_data = stbi_load(full_path.string().c_str(), &m_width, &m_height, &m_nr_channels, 0);
 		if (!m_image_data)
 		{
 			throw std::runtime_error("Failed to load texture");
 		}
 
-		GLenum format = GL_RGB; // Default format, adjust based on m_nr_channels if needed
+		GLenum format = GL_RGB;
+		if (m_nr_channels == 1)
+			format = GL_RED;
+		else if (m_nr_channels == 3)
+			format = GL_RGB;
+		else if (m_nr_channels == 4)
+			format = GL_RGBA;
+
 		GLenum target = (m_type == texture_type::TWO_D) ? GL_TEXTURE_2D : GL_TEXTURE_3D;
 
 		bind(); // Bind before setting texture parameters and uploading data
@@ -137,30 +145,6 @@ namespace spark
 		bind_texture((m_type == texture_type::TWO_D) ? GL_TEXTURE_2D : GL_TEXTURE_3D, m_texture);
 	}
 
-	void material_manager::load_material(
-		const std::string& name, std::unique_ptr<material> material
-	)
-	{
-		m_materials[name] = std::move(material);
-	}
-
-	material& material_manager::get_material(const std::string& name)
-	{
-		return *m_materials[name];
-	}
-
-	void material_manager::destroy_material(const std::string& name)
-	{
-		m_materials.erase(name);
-	}
-
-	void texture_manager::load_texture(
-		const std::string& name, const texture& texture
-	)
-	{
-		m_textures[name] = texture;
-	}
-
 	void texture_manager::destroy_texture(const std::string& name)
 	{
 		m_textures.erase(name);
@@ -168,7 +152,7 @@ namespace spark
 
 	texture& texture_manager::get_texture(const std::string& name)
 	{
-		return m_textures[name];
+		return *m_textures[name];
 	}
 
 	void set_uniform(const material& material, GLuint shader_program)
@@ -190,20 +174,25 @@ namespace spark
 
 		// Automatically bind textures to texture units and set the corresponding
 		// uniforms=
-		//active_texture(GL_TEXTURE0 + texture_unit);       // Activate texture unit
-		//bind_texture(texture_type, material.m_diffuse);  // Bind the diffuse texture
+		active_texture(GL_TEXTURE0 + texture_unit);       // Activate texture unit
+		bind_texture(texture_type, material.m_diffuse);  // Bind the diffuse texture
 		set_uniform(uniform_name + ".diffuse", texture_unit, shader_program);  // Set the sampler to use this texture unit
 		texture_unit++;               // Move to the next texture unit
 
-		/*active_texture(GL_TEXTURE0 + texture_unit);
+		active_texture(GL_TEXTURE0 + texture_unit);
 		bind_texture(texture_type, material.m_specular);
-		*/
+		
 		set_uniform(uniform_name + ".specular", texture_unit, shader_program);
 		texture_unit++;
 
-		//active_texture(GL_TEXTURE0 + texture_unit);
-		//bind_texture(texture_type, material.m_ambient);
+		active_texture(GL_TEXTURE0 + texture_unit);
+		bind_texture(texture_type, material.m_ambient);
 		set_uniform(uniform_name + ".ambient", texture_unit, shader_program);
+		texture_unit++;
+
+		active_texture(GL_TEXTURE0 + texture_unit);
+		bind_texture(texture_type, material.m_texture.m_texture);
+		set_uniform(uniform_name + ".texture", texture_unit, shader_program);
 		texture_unit++;
 
 		// Set other material properties	

@@ -25,6 +25,7 @@ namespace spark
 		test::core_test_main();
 #else
 		application::on_start();
+		application::on_shutdown();
 #endif
 	}
 }

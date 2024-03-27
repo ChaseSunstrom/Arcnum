@@ -59,7 +59,7 @@ namespace spark
 
 		if (!trans_struct) return; // Safeguard against null pointer
 
-		material_manager& mat_man = application::get_material_manager();
+		material_manager& mat_man = engine::get<material_manager>();
 		auto shader_program_id = mat_man.get_material(material_name).m_shader_program;
 
 		glUseProgram(shader_program_id); // Ensure the shader program is active
@@ -77,8 +77,8 @@ namespace spark
 			material& mat = mat_man.get_material(material_name);
 			set_uniform(mat, shader_program_id);
 
-			mesh_manager& mesh_man = application::get_mesh_manager();
-			auto vao_id = mesh_man.get_mesh(mesh_name).m_mesh.get_vao();
+			mesh_manager& mesh_man = engine::get<mesh_manager>();
+			auto vao_id = mesh_man.get_mesh(mesh_name).get_vao();
 			glBindVertexArray(vao_id);
 		}
 
@@ -107,7 +107,7 @@ namespace spark
 
 					bind_renderables(cameras, mesh_name, material_name); // Prepare mesh and material for rendering
 
-					auto vertices = application::get_mesh_manager().get_mesh(mesh_name).m_mesh.m_vertices;
+					auto vertices = engine::get<mesh_manager>().get_mesh(mesh_name).m_vertices;
 
 					glDrawArraysInstanced(GL_TRIANGLES, 0, vertices.size(), visible_transforms.size());
 				}

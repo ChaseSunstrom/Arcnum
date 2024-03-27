@@ -3,6 +3,7 @@
 #include "../events/sub.hpp"
 #include "../events/event.hpp"
 #include "../logging/log.hpp"
+#include "../ui/ui.hpp"
 
 namespace spark
 {
@@ -42,15 +43,15 @@ namespace spark
 		glfwSetScrollCallback(m_window, mouse_scroll_event_callback);
 	}
 
+	window& window::get()
+	{
+		static window instance;
+		return instance;
+	}
+
 	window::window()
 	{
 		m_window_data = std::make_unique<window_data>();
-		init_gl();
-	}
-
-	window::window(std::string title, bool vsync, uint32_t height, uint32_t width)
-	{
-		m_window_data = std::make_unique<window_data>(title, vsync, height, width, window::event_callback);
 		init_gl();
 	}
 
@@ -61,8 +62,13 @@ namespace spark
 
 	void window::on_update()
 	{
-		glfwSwapBuffers(m_window);
 		glfwPollEvents();
+
+		auto& _ui = ui_manager::get();
+
+		_ui.on_update();
+
+		glfwSwapBuffers(m_window);
 	}
 
 	bool window::running()

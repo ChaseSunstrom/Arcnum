@@ -58,16 +58,17 @@ void add_cube_entity(const spark::math::vec3& position)
 	spark::transform_component trans = spark::transform_component(position);
 	spark::entity ent = _ecs.create_entity(
 		trans,
-		spark::mesh_component("square"), // Assuming "square" mesh exists
-		spark::material_component(materialName) // Assumes material exists
+		spark::mesh_component("square"),
+		spark::material_component(materialName) 
 	);
 
-	// Assuming the renderer and scene setup allows adding renderables like this
 	_renderer.get_instancer().add_renderable(cur_scene, "square", materialName, trans);
 }
 
 void on_start()
 {
+	std::cout << "SIZE OF THEME: " << sizeof(spark::ui_theme) << std::endl;
+
 	spark::application::set_window_title("Arcnum");
 
 	spark::thread_pool::enqueue(spark::task_priority::HIGH, false, []()
@@ -148,7 +149,7 @@ void on_update()
 	spark::camera& camera = *_renderer.get_cameras()[0];
 
 	camera.m_position = spark::math::vec3(0.0f, 0.0f, x);
-	x += 0.01f;
+	x += 0.0001f;
 }
 
 // required function
@@ -156,7 +157,10 @@ void on_update()
 // every event
 bool on_event(std::shared_ptr<spark::event> event)
 {
-	SPARK_INFO(event->m_type);
+	switch (event->m_type)
+	{
+		case spark::
+	}
 	return true;
 }
 

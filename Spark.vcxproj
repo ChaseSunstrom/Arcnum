@@ -137,6 +137,7 @@
     <ClInclude Include="Spark\core\user\camera.hpp" />
     <ClInclude Include="Spark\core\user\control.hpp" />
     <ClInclude Include="Spark\core\util\file.hpp" />
+    <ClInclude Include="Spark\core\util\macros.hpp" />
     <ClInclude Include="Spark\core\util\memory.hpp" />
     <ClInclude Include="Spark\core\util\thread_pool.hpp" />
     <ClInclude Include="Spark\core\util\wrap.hpp" />
@@ -168,6 +169,7 @@
     <ClCompile Include="Spark\core\spark_main.cpp" />
     <ClCompile Include="Spark\core\tests\test.cpp" />
     <ClCompile Include="Spark\core\ui\ui.cpp" />
+    <ClCompile Include="Spark\core\user\control.cpp" />
     <ClCompile Include="Spark\core\util\file.cpp" />
     <ClCompile Include="Spark\core\util\wrap.cpp" />
     <ClCompile Include="Spark\core\window\window.cpp" />

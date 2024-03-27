@@ -6,22 +6,6 @@
 namespace spark
 {
 
-// Macros instead of enums to allow for any event type
-#define NO_EVENT 0
-#define APP_UPDATE_EVENT 1
-#define APP_TICK_EVENT 2
-#define APP_RENDER_EVENT 3
-#define WINDOW_CLOSED_EVENT 4
-#define WINDOW_RESIZED_EVENT 5
-#define WINDOW_MOVED_EVENT 6
-#define KEY_PRESSED_EVENT 7
-#define KEY_RELEASED_EVENT 8
-#define KEY_REPEAT_EVENT 9
-#define MOUSE_PRESSED_EVENT 10
-#define MOUSE_RELEASED_EVENT 11
-#define MOUSE_MOVE_EVENT 12
-#define MOUSE_SCROLLED_EVENT 13
-
 	struct event
 	{
 		event() = default;

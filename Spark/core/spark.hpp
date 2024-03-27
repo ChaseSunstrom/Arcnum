@@ -17,6 +17,8 @@
 #include "types.hpp"
 #include "engine.hpp"
 
+#include "util/macros.hpp"
+
 #ifdef _MSC_VER
 	#pragma warning(disable : 4996)
 #endif

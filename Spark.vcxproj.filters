@@ -170,6 +170,9 @@
     <ClInclude Include="Spark\core\util\file.hpp">
       <Filter>util</Filter>
     </ClInclude>
+    <ClInclude Include="Spark\core\util\macros.hpp">
+      <Filter>util</Filter>
+    </ClInclude>
     <ClInclude Include="Spark\core\util\memory.hpp">
       <Filter>util</Filter>
     </ClInclude>
@@ -182,16 +185,6 @@
     <ClInclude Include="Spark\core\window\window.hpp">
       <Filter>window</Filter>
     </ClInclude>
-    <ClInclude Include="Spark\include\IMGUI\imconfig.h" />
-    <ClInclude Include="Spark\include\IMGUI\imgui.h" />
-    <ClInclude Include="Spark\include\IMGUI\imgui_impl_glfw.h" />
-    <ClInclude Include="Spark\include\IMGUI\imgui_impl_opengl3.h" />
-    <ClInclude Include="Spark\include\IMGUI\imgui_impl_opengl3_loader.h" />
-    <ClInclude Include="Spark\include\IMGUI\imgui_internal.h" />
-    <ClInclude Include="Spark\include\IMGUI\imstb_rectpack.h" />
-    <ClInclude Include="Spark\include\IMGUI\imstb_textedit.h" />
-    <ClInclude Include="Spark\include\IMGUI\imstb_truetype.h" />
-    <ClInclude Include="Spark\core\util\macros.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spark\core\app\app.cpp">
@@ -237,6 +230,12 @@
     <ClCompile Include="Spark\core\tests\test.cpp">
       <Filter>tests</Filter>
     </ClCompile>
+    <ClCompile Include="Spark\core\ui\ui.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Spark\core\user\control.cpp">
+      <Filter>user</Filter>
+    </ClCompile>
     <ClCompile Include="Spark\core\util\file.cpp">
       <Filter>util</Filter>
     </ClCompile>
@@ -246,14 +245,5 @@
     <ClCompile Include="Spark\core\window\window.cpp">
       <Filter>window</Filter>
     </ClCompile>
-    <ClCompile Include="Spark\core\ui\ui.cpp" />
-    <ClCompile Include="Spark\include\IMGUI\imgui.cpp" />
-    <ClCompile Include="Spark\include\IMGUI\imgui_demo.cpp" />
-    <ClCompile Include="Spark\include\IMGUI\imgui_draw.cpp" />
-    <ClCompile Include="Spark\include\IMGUI\imgui_impl_glfw.cpp" />
-    <ClCompile Include="Spark\include\IMGUI\imgui_impl_opengl3.cpp" />
-    <ClCompile Include="Spark\include\IMGUI\imgui_tables.cpp" />
-    <ClCompile Include="Spark\include\IMGUI\imgui_widgets.cpp" />
-    <ClCompile Include="Spark\core\user\control.cpp" />
   </ItemGroup>
 </Project>

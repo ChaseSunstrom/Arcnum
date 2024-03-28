@@ -43,6 +43,12 @@ project "Arcnum"
         "opengl32.lib",
         "irrKlang",
     }
+
+    postbuildcommands {
+    -- Copy .dll files from Spark/lib to the appropriate bin/{buildcfg} directory
+    "{COPY} %{wks.location}Spark/lib/*.dll bin/%{cfg.buildcfg}"
+}
+
     filter "configurations:Debug"
         defines { "DEBUG" }
         symbols "On"
@@ -66,7 +72,7 @@ project "Spark"
     language "C++"
     targetdir "bin/%{cfg.buildcfg}/lib"
     cppdialect "C++20"
-    files { "Spark/core/**.cpp", "Spark/core/**.hpp", "Spark/core/**.h" }
+    files { "Spark/core/**.cpp", "Spark/core/**.hpp", "Spark/core/**.h", "Spark/include/IMGUI/**.cpp", "Spark/include/IMGUI/**.h" }
     includedirs {
         "Spark/include",
         "Spark/include/BOOST",

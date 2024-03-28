@@ -70,6 +70,9 @@
       <AdditionalDependencies>glfw3.lib;glew32.lib;opengl32.lib;irrKlang.lib;libboost_system-vc143-mt-gd-x64-1_84.lib;libboost_serialization-vc143-mt-gd-x64-1_84.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>Spark\lib;Spark\lib\BOOST;Spark\lib\IRRKLANG;Spark\lib\GLEW;Spark\lib\GLFW;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>IF EXIST $(SolutionDir)Spark\lib\*.dll\ (xcopy /Q /E /Y /I $(SolutionDir)Spark\lib\*.dll bin\Debug &gt; nul) ELSE (xcopy /Q /Y /I $(SolutionDir)Spark\lib\*.dll bin\Debug &gt; nul)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -92,6 +95,9 @@
       <AdditionalDependencies>glfw3.lib;glew32.lib;opengl32.lib;irrKlang.lib;libboost_system-vc143-mt-x64-1_84.lib;libboost_serialization-vc143-mt-x64-1_84.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>Spark\lib;Spark\lib\BOOST;Spark\lib\IRRKLANG;Spark\lib\GLEW;Spark\lib\GLFW;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>IF EXIST $(SolutionDir)Spark\lib\*.dll\ (xcopy /Q /E /Y /I $(SolutionDir)Spark\lib\*.dll bin\Release &gt; nul) ELSE (xcopy /Q /Y /I $(SolutionDir)Spark\lib\*.dll bin\Release &gt; nul)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\core_include.hpp" />

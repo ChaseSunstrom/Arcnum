@@ -13,6 +13,8 @@ namespace spark
 		event(int32_t type) :
 				m_type(type) { }
 
+		virtual ~event() = default;
+
 		bool m_handled = false;
 
 		int32_t m_type = NO_EVENT;

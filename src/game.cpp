@@ -67,6 +67,10 @@ void add_cube_entity(const spark::math::vec3& position)
 
 void on_start()
 {
+	static char message_buffer[1024] = "";
+
+	auto& _ui_manager = spark::engine::get<spark::ui_manager>();
+
 	std::cout << "SIZE OF THEME: " << sizeof(spark::ui_theme) << std::endl;
 
 	spark::application::set_window_title("Arcnum");
@@ -78,22 +82,28 @@ void on_start()
 								});
 
 
-	spark::thread_pool::enqueue(spark::task_priority::HIGH, false, []()
-								{
-									spark::net::udp_client client("127.0.0.1", "8080");
-									// Needs to be ran in a seprate thread
-									spark::thread_pool::enqueue(spark::task_priority::HIGH, false, [&client]()
-																{
-																	client.run();
-																});
+	auto client = std::make_shared<spark::net::udp_client>("127.0.0.1", "8080");
 
-									std::string line;
-									while (std::getline(std::cin, line))
-									{
-										spark::net::chat_message msg(line);
-										client.send(msg);
-									}
-								});
+	spark::thread_pool::enqueue(spark::task_priority::HIGH, false, [client]()
+		{
+			client->run();
+		});
+
+	_ui_manager.create_component<spark::text_input_component>("", "Message", "Message", message_buffer, sizeof(message_buffer));
+	_ui_manager.create_component<spark::multi_text_component>("", "Text", std::vector<std::string>{ "Text" });
+
+	_ui_manager.create_component<spark::button_component>("", "Send", "Send", [client]()
+		{
+			std::string message(message_buffer); // Convert buffer to std::string
+			if (!message.empty())
+			{
+				spark::net::chat_message msg(message);
+				client->send(msg); // Use pointer dereference to access member
+
+				memset(message_buffer, 0, sizeof(message_buffer));
+			}
+		});
+
 
 	auto& _renderer = spark::engine::get<spark::renderer>();
 	auto& _audio_manager = spark::engine::get<spark::audio_manager>();
@@ -101,7 +111,6 @@ void on_start()
 	auto& _mesh_manager = spark::engine::get<spark::mesh_manager>();
 	auto& _component_manager = spark::engine::get<spark::component_manager>();
 	auto& _scene_manager = spark::engine::get<spark::scene_manager>();
-	auto& _ui_manager = spark::engine::get<spark::ui_manager>();
 	auto& _shader_manager = spark::engine::get<spark::shader_manager>();
 	auto& _ecs = spark::engine::get<spark::ecs>();
 
@@ -126,18 +135,19 @@ void on_start()
 
 	// Create entity
 
-	_ui_manager.create_component<spark::button_component>("", "Spawn Cube", []()
-														 {
-															 static std::random_device rd; // Obtain a random number from hardware
-															 static std::mt19937 eng(rd()); // Seed the generator
-															 static std::uniform_real_distribution<> distr(-3.0, 3.0); // Define the range
+	_ui_manager.create_component<spark::button_component>("", "Spawn Cube", "Spawn", std::function<void()>([]()
+		{
+			static std::random_device rd; // Obtain a random number from hardware
+			static std::mt19937 eng(rd()); // Seed the generator
+			static std::uniform_real_distribution<> distr(-3.0, 3.0); // Define the range
 
-															 // Generate a random position
-															 spark::math::vec3 random_position(distr(eng), distr(eng), distr(eng));
+			// Generate a random position
+			spark::math::vec3 random_position(distr(eng), distr(eng), distr(eng));
 
-															 // Assuming a function or mechanism to add a cube entity
-															 add_cube_entity(random_position);
-														 });
+			// Assuming a function or mechanism to add a cube entity
+			add_cube_entity(random_position);
+		}));
+
 }
 
 void on_update()
@@ -159,7 +169,23 @@ bool on_event(std::shared_ptr<spark::event> event)
 {
 	switch (event->m_type)
 	{
-		case spark::
+	case UDP_SERVER_RECEIVE_EVENT:
+	{
+		auto& _ui_manager = spark::engine::get<spark::ui_manager>();
+
+		auto received_event = std::dynamic_pointer_cast<spark::net::udp_server_receive_event>(event);
+		if (received_event) 
+		{
+			std::string message = dynamic_cast<spark::net::chat_message*>(&*received_event->m_packet)->m_message; // Convert packet to string
+
+			// Find the text component meant to display messages
+			auto text_comp = _ui_manager.find_component_by_id<spark::multi_text_component>("Text");
+			if (text_comp) 
+			{
+				text_comp->add_text(message); // Update the text component with the new message
+			}
+		}
+	}
 	}
 	return true;
 }

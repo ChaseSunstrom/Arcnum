@@ -13,14 +13,20 @@ namespace spark
 	{
 	public:
 		virtual ~ui_component() = default;
-		virtual void draw() = 0; // Each component must implement its own draw method
+		virtual void draw() = 0;
+	public:
+		explicit ui_component(const std::string& id = "") : m_id(id) {}
+		std::string get_id() const { return m_id; }
+		void set_id(const std::string& id) { m_id = id; }
+	protected:
+		std::string m_id; // Unique identifier for each component
 	};
 
 	class button_component : public ui_component
 	{
 	public:
-		button_component(const std::string& label, std::function<void()> on_click)
-			: m_label(label), m_on_click(std::move(on_click))
+		button_component(const std::string& id, const std::string& label, std::function<void()> on_click)
+			: ui_component(id), m_label(label), m_on_click(std::move(on_click))
 		{}
 
 		void draw() override
@@ -38,23 +44,30 @@ namespace spark
 	class text_component : public ui_component
 	{
 	public:
-		text_component(const std::string& text) : m_text(text)
-		{}
+		text_component(const std::string& id, const std::string& text)
+			: ui_component(id), m_text(text) {}
+
+		void update_text(const std::string& new_text)
+		{
+			m_text = new_text;
+		}
 
 		void draw() override
 		{
 			ImGui::Text("%s", m_text.c_str());
 		}
+
 	private:
-		std::string m_text;
+		std::string m_text; // Text to be displayed
 	};
+
 
 	class slider_float_component : public ui_component
 	{
-		
+
 	public:
-		slider_float_component(const std::string& label, float* value, float min, float max)
-			: m_label(label), m_value(value), m_min(min), m_max(max)
+		slider_float_component(const std::string& id, const std::string& label, float* value, float min, float max)
+			: ui_component(id), m_label(label), m_value(value), m_min(min), m_max(max)
 		{}
 
 		void draw() override
@@ -71,8 +84,8 @@ namespace spark
 	class list_box_component : public ui_component
 	{
 	public:
-		list_box_component(const std::string& label, int32_t* current_item, std::vector<std::string> items)
-			: m_label(label), m_current_item(current_item), m_items(std::move(items))
+		list_box_component(const std::string& id, const std::string& label, int32_t* current_item, std::vector<std::string> items)
+			: ui_component(id), m_label(label), m_current_item(current_item), m_items(std::move(items))
 		{}
 
 		void draw() override
@@ -102,8 +115,8 @@ namespace spark
 	class tree_component : public ui_component
 	{
 	public:
-		tree_component(const std::string& label, std::function<void()> content)
-			: m_label(label), m_content(std::move(content))
+		tree_component(const std::string& id, const std::string& label, std::function<void()> content)
+			: ui_component(id), m_label(label), m_content(std::move(content))
 		{}
 
 		void draw() override
@@ -123,8 +136,8 @@ namespace spark
 	class color_picker_component : public ui_component
 	{
 	public:
-		color_picker_component(const std::string& label, float32_t* color)
-			: m_label(label), m_color(color)
+		color_picker_component(const std::string& id, const std::string& label, float32_t* color)
+			: ui_component(id), m_label(label), m_color(color)
 		{}
 
 		void draw() override
@@ -140,8 +153,8 @@ namespace spark
 	class radio_button_component : public ui_component
 	{
 	public:
-		radio_button_component(const std::string& label, int32_t* selected, std::vector<std::string> options)
-			: m_label(label), m_selected(selected), m_options(std::move(options))
+		radio_button_component(const std::string& id, const std::string& label, int32_t* selected, std::vector<std::string> options)
+			: ui_component(id), m_label(label), m_selected(selected), m_options(std::move(options))
 		{}
 
 		void draw() override
@@ -159,16 +172,25 @@ namespace spark
 		std::vector<std::string> m_options;
 	};
 
-	class window_component : public ui_component
+	class window_component : public ui_component 
 	{
 	public:
-		window_component(const std::string& title, const ImVec2& position = ImVec2(), const ImVec2& size = ImVec2(), bool* p_open = nullptr)
-			: m_title(title), m_position(position), m_size(size), m_p_open(p_open)
-		{}
+		using ui_component::ui_component; // Inherit constructor
 
-		void add_child(std::unique_ptr<ui_component>&& child)
+		void add_child(std::shared_ptr<ui_component> child) 
 		{
-			m_children.push_back(std::move(child));
+			m_children[child->get_id()] = std::move(child);
+		}
+
+		template<typename T>
+		T* find_component_by_id(const std::string& id) 
+		{
+			auto it = m_children.find(id);
+			if (it != m_children.end()) {
+				// Attempt to dynamically cast the found component to the requested type
+				return dynamic_cast<T*>(it->second.get());
+			}
+			return nullptr; // Return nullptr if not found
 		}
 
 		void draw() override
@@ -183,14 +205,15 @@ namespace spark
 
 			for (auto& child : m_children)
 			{
-				child->draw();
+				child.second->draw();
 			}
 
 			ImGui::End();
 		}
+
 	private:
 		std::string m_title;
-		std::vector<std::unique_ptr<ui_component>> m_children;
+		std::unordered_map<std::string, std::shared_ptr<ui_component>> m_children;
 		ImVec2 m_position;
 		ImVec2 m_size;
 		bool* m_p_open = nullptr;
@@ -199,8 +222,8 @@ namespace spark
 	class toggle_switch_component : public ui_component
 	{
 	public:
-		toggle_switch_component(const std::string& label, bool* value)
-			: m_label(label), m_value(value)
+		toggle_switch_component(const std::string& id, const std::string& label, bool* value)
+			: ui_component(id), m_label(label), m_value(value)
 		{}
 
 		void draw() override
@@ -218,11 +241,44 @@ namespace spark
 		bool* m_value;
 	};
 
+	class multi_text_component : public ui_component
+	{
+	public:
+		explicit multi_text_component(const std::string& id, const std::vector<std::string>& multi_text)
+			: ui_component(id), m_text_lines(multi_text) {}
+
+		void add_text(const std::string& text) 
+		{
+			m_text_lines.push_back(text);
+		}
+
+		void clear_text() 
+		{
+			m_text_lines.clear();
+		}
+
+		void draw() override 
+		{
+			if (ImGui::BeginChild(m_id.c_str(), ImVec2(0, 0), true)) 
+			{
+				for (const auto& line : m_text_lines) 
+				{
+					ImGui::TextUnformatted(line.c_str());
+				}
+				ImGui::SetScrollHereY(1.0f); // Scrolls to the bottom
+			}
+			ImGui::EndChild();
+		}
+
+	private:
+		std::vector<std::string> m_text_lines;
+	};
+
 	class dropdown_component : public ui_component
 	{
 	public:
-		dropdown_component(const std::string& label, int32_t* current_item, std::vector<std::string> items)
-			: m_label(label), m_current_item(current_item), m_items(std::move(items))
+		dropdown_component(const std::string& id, const std::string& label, int32_t* current_item, std::vector<std::string> items)
+			: ui_component(id), m_label(label), m_current_item(current_item), m_items(std::move(items))
 		{
 			for (auto& item : m_items)
 			{
@@ -261,8 +317,8 @@ namespace spark
 	class progress_bar_component : public ui_component
 	{
 	public:
-		progress_bar_component(const std::string& label, float32_t value, const ImVec2& size = ImVec2(-1, 0))
-			: m_label(label), m_value(value), m_size(size)
+		progress_bar_component(const std::string& id, const std::string& label, float32_t value, const ImVec2& size = ImVec2(-1, 0))
+			: ui_component(id), m_label(label), m_value(value), m_size(size)
 		{}
 
 		void draw() override
@@ -280,8 +336,8 @@ namespace spark
 	class text_input_component : public ui_component
 	{
 	public:
-		text_input_component(const std::string& label, char* buffer, size_t buffer_size)
-			: m_label(label), m_buffer(buffer), m_buffer_size(buffer_size)
+		text_input_component(const std::string& id, const std::string& label, char* buffer, size_t buffer_size)
+			: ui_component(id), m_label(label), m_buffer(buffer), m_buffer_size(buffer_size)
 		{}
 
 		void draw() override
@@ -298,8 +354,8 @@ namespace spark
 	class checkbox_component : public ui_component
 	{
 	public:
-		checkbox_component(const std::string& label, bool* value)
-			: m_label(label), m_value(value)
+		checkbox_component(const std::string& id, const std::string& label, bool* value)
+			: ui_component(id), m_label(label), m_value(value)
 		{}
 
 		void draw() override
@@ -315,8 +371,8 @@ namespace spark
 	{
 
 	public:
-		slider_int_component(const std::string& label, int32_t* value, int32_t min, int32_t max)
-			: m_label(label), m_value(value), m_min(min), m_max(max)
+		slider_int_component(const std::string& id, const std::string& label, int32_t* value, int32_t min, int32_t max)
+			: ui_component(id), m_label(label), m_value(value), m_min(min), m_max(max)
 		{}
 
 		void draw() override
@@ -497,37 +553,52 @@ namespace spark
 	class ui_manager
 	{
 	public:
-		static ui_manager& get()
-		{
+		static ui_manager& get() {
 			static ui_manager instance;
 			return instance;
 		}
 
-		template <typename... Args>
-		void create_window(const std::string& name, Args&&... args)
-		{
-			auto window = std::make_unique<window_component>(std::forward<Args>(args)...);
-			m_windows[name] = std::move(window);
-		}
-
-		// Modified to optionally add components to windows
 		template <typename T, typename... Args>
-		void create_component(const std::string& name = "", const std::string& label = "", Args&&... args)
-		{
-			auto component = std::make_unique<T>(label, std::forward<Args>(args)...);
-			if (!name.empty() && m_windows.find(name) != m_windows.end())
+		void create_component(const std::string& window_name, const std::string& id, Args&&... args) {
+			auto component = std::make_unique<T>(id, std::forward<Args>(args)...);
+
+			// If the component is meant to be added to a window, ensure that window exists and add the component to it.
+			if (!window_name.empty() && m_windows.find(window_name) != m_windows.end()) 
 			{
-				m_windows[name]->add_child(std::move(component));
+				m_windows[window_name]->add_child(std::move(component));
 			}
-			else
+			else 
 			{
-				m_components.push_back(std::move(component));
+				// For components not associated with a specific window, add them directly to a global list.
+				m_global_components[id] = std::move(component);
 			}
 		}
 
-		void set_theme(const ui_theme& theme)
-		{
+		void set_theme(const ui_theme& theme) {
 			theme.apply();
+		}
+
+		template<typename T>
+		T* find_component_by_id(const std::string& id) 
+		{
+			// First, check in global components.
+			auto it_global = m_global_components.find(id);
+			if (it_global != m_global_components.end()) 
+			{
+				return dynamic_cast<T*>(it_global->second.get());
+			}
+
+			// If not found, search within each window.
+			for (auto& window_pair : m_windows) 
+			{
+				auto* it_window = window_pair.second->find_component_by_id<T>(id);
+				if (it_window) 
+				{
+					return dynamic_cast<T*>(it_window);
+				}
+			}
+
+			return nullptr; // Return nullptr if not found in any scope.
 		}
 
 		void on_start(GLFWwindow* window);
@@ -538,17 +609,26 @@ namespace spark
 		ui_manager() = default;
 		~ui_manager() = default;
 
-		void draw_components()
+		void draw_components() 
 		{
-			for (auto& component : m_components)
+			// Draw global components
+			for (auto& [id, component] : m_global_components) 
 			{
 				component->draw();
 			}
+
+			// Draw components within each window
+			for (auto& [window_name, window] : m_windows) 
+			{
+				window->draw();
+			}
 		}
+
 	private:
-		std::vector<std::unique_ptr<ui_component>> m_components;
-		std::unordered_map<std::string, std::unique_ptr<window_component>> m_windows;
+		std::unordered_map<std::string, std::unique_ptr<ui_component>> m_global_components; // Global components not tied to a specific window
+		std::unordered_map<std::string, std::unique_ptr<window_component>> m_windows; // Windows and their components
 	};
+
 }
 
 #endif

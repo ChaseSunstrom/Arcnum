@@ -142,6 +142,15 @@
     <ClInclude Include="Spark\core\util\thread_pool.hpp" />
     <ClInclude Include="Spark\core\util\wrap.hpp" />
     <ClInclude Include="Spark\core\window\window.hpp" />
+    <ClInclude Include="Spark\include\IMGUI\imconfig.h" />
+    <ClInclude Include="Spark\include\IMGUI\imgui.h" />
+    <ClInclude Include="Spark\include\IMGUI\imgui_impl_glfw.h" />
+    <ClInclude Include="Spark\include\IMGUI\imgui_impl_opengl3.h" />
+    <ClInclude Include="Spark\include\IMGUI\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="Spark\include\IMGUI\imgui_internal.h" />
+    <ClInclude Include="Spark\include\IMGUI\imstb_rectpack.h" />
+    <ClInclude Include="Spark\include\IMGUI\imstb_textedit.h" />
+    <ClInclude Include="Spark\include\IMGUI\imstb_truetype.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spark\core\app\app.cpp" />
@@ -164,6 +173,13 @@
     <ClCompile Include="Spark\core\util\file.cpp" />
     <ClCompile Include="Spark\core\util\wrap.cpp" />
     <ClCompile Include="Spark\core\window\window.cpp" />
+    <ClCompile Include="Spark\include\IMGUI\imgui.cpp" />
+    <ClCompile Include="Spark\include\IMGUI\imgui_demo.cpp" />
+    <ClCompile Include="Spark\include\IMGUI\imgui_draw.cpp" />
+    <ClCompile Include="Spark\include\IMGUI\imgui_impl_glfw.cpp" />
+    <ClCompile Include="Spark\include\IMGUI\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="Spark\include\IMGUI\imgui_tables.cpp" />
+    <ClCompile Include="Spark\include\IMGUI\imgui_widgets.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

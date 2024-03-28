@@ -175,7 +175,10 @@ namespace spark
 	class window_component : public ui_component 
 	{
 	public:
-		using ui_component::ui_component; // Inherit constructor
+		window_component(const std::string& id, const std::string& title)
+			: ui_component(id), m_title(title), m_p_open(nullptr), m_position(ImVec2(0.0f, 0.0f)), m_size(ImVec2(300.0f, 300.0f)) {}
+		window_component(const std::string& id, const std::string& title, bool* p_open, const ImVec2& position, const ImVec2& size)
+			: ui_component(id), m_title(title), m_p_open(p_open), m_position(position), m_size(size) {}
 
 		void add_child(std::shared_ptr<ui_component> child) 
 		{
@@ -203,6 +206,7 @@ namespace spark
 				return;
 			}
 
+			//ImGui::Begin(m_title.c_str(), m_p_open);
 			for (auto& child : m_children)
 			{
 				child.second->draw();
@@ -211,6 +215,11 @@ namespace spark
 			ImGui::End();
 		}
 
+		std::unordered_map<std::string, std::shared_ptr<ui_component>>& get_children() { return m_children; }
+		std::string get_title() const { return m_title; }
+		ImVec2 get_position() const { return m_position; }
+		ImVec2 get_size() const { return m_size; }
+		bool* get_p_open() const { return m_p_open; }
 	private:
 		std::string m_title;
 		std::unordered_map<std::string, std::shared_ptr<ui_component>> m_children;
@@ -574,7 +583,14 @@ namespace spark
 			}
 		}
 
-		void set_theme(const ui_theme& theme) {
+		void add_window(std::unique_ptr<window_component> window)
+		{
+			std::string name = window->get_title();
+			m_windows[name] = std::move(window);
+		}
+
+		void set_theme(const ui_theme& theme) 
+		{
 			theme.apply();
 		}
 

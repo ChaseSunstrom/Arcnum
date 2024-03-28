@@ -20,16 +20,12 @@ namespace spark
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-		draw_components();
 
-		for (auto& [name, window] : m_windows)
-		{
-			window->draw();
-		}
+		draw_components(); // This will draw global components and each window's components
 
 		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
-
 	void ui_manager::on_end_update()
 	{
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

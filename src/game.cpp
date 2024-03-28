@@ -65,45 +65,91 @@ void add_cube_entity(const spark::math::vec3& position)
 	_renderer.get_instancer().add_renderable(cur_scene, "square", materialName, trans);
 }
 
+static std::shared_ptr<spark::net::udp_server> g_server_instance;
+static std::shared_ptr<spark::net::udp_client> g_client_instance;
+
+void setup_server_ui(spark::window_component& server_window) {
+	static char server_ip[128] = "127.0.0.1";
+	static char server_port[6] = "8080";
+
+	server_window.add_child(std::make_shared<spark::text_input_component>("ServerIP", "Server IP", server_ip, sizeof(server_ip)));
+	server_window.add_child(std::make_shared<spark::text_input_component>("ServerPort", "Server Port", server_port, sizeof(server_port)));
+
+	server_window.add_child(std::make_shared<spark::button_component>( "HostServer", "Host Server", [&]()
+		{
+			if (!g_server_instance) 
+			{
+				g_server_instance = std::make_shared<spark::net::udp_server>(server_ip, server_port);
+				spark::thread_pool::enqueue(spark::task_priority::HIGH, false, []()
+					{
+						g_server_instance->run();
+					});
+			}
+		}));
+}
+
+void setup_client_ui(spark::window_component& client_window) {
+	static char client_ip[128] = "127.0.0.1";
+	static char client_port[6] = "8080";
+	static char message_buffer[1024] = "";
+
+	client_window.add_child(std::make_shared<spark::text_input_component>("ClientIP", "Server IP", client_ip, sizeof(client_ip)));
+	client_window.add_child(std::make_shared<spark::text_input_component>("ClientPort", "Server Port", client_port, sizeof(client_port)));
+	client_window.add_child(std::make_shared<spark::text_input_component>("Message", "Message", message_buffer, sizeof(message_buffer)));
+
+	client_window.add_child(std::make_shared<spark::button_component>("Connect", "Connect", [&]()
+		{
+			SPARK_INFO("Attempting to connect with IP: " + std::string(client_ip) + " and Port: " + std::string(client_port));
+			if (!g_client_instance) {
+				g_client_instance = std::make_shared<spark::net::udp_client>(client_ip, client_port);
+				// Additional logs can be placed here or inside the run method.
+				SPARK_INFO("Connected!");
+				spark::thread_pool::enqueue(spark::task_priority::HIGH, false, []()
+					{
+						g_client_instance->run();
+					});
+			}
+		}));
+
+
+	client_window.add_child(std::make_shared<spark::button_component>( "SendMessage", "Send Message", [&]()
+		{
+			if (g_client_instance) {
+				spark::net::chat_message msg(message_buffer);
+				g_client_instance->send(msg);
+				memset(message_buffer, 0, sizeof(message_buffer)); // Clear the message buffer after sending
+			}
+		}));
+}
+
+
 void on_start()
 {
 	static char message_buffer[1024] = "";
-
+	static char server_ip[128] = "127.0.0.1";
+	static char server_port[6] = "8080";
+	static char client_ip[128] = "127.0.0.1";
+	static char client_port[6] = "8080";
+	
 	auto& _ui_manager = spark::engine::get<spark::ui_manager>();
 
 	std::cout << "SIZE OF THEME: " << sizeof(spark::ui_theme) << std::endl;
 
 	spark::application::set_window_title("Arcnum");
 
-	spark::thread_pool::enqueue(spark::task_priority::HIGH, false, []()
-								{
-									spark::net::udp_server server("127.0.0.1", "8080");
-									server.run();
-								});
+	// Setup the window for server controls
+	auto server_window = std::make_unique<spark::window_component>("ServerWindow", "Server Controls");
+	auto& ref_server_window = *server_window;
+	_ui_manager.add_window(std::move(server_window));
+	setup_server_ui(ref_server_window);
 
+	// Setup the window for client controls
+	auto client_window = std::make_unique<spark::window_component>("ClientWindow", "Client Controls");
+	auto& ref_client_window = *client_window;
+	_ui_manager.add_window(std::move(client_window));
+	setup_client_ui(ref_client_window);
 
-	auto client = std::make_shared<spark::net::udp_client>("127.0.0.1", "8080");
-
-	spark::thread_pool::enqueue(spark::task_priority::HIGH, false, [client]()
-		{
-			client->run();
-		});
-
-	_ui_manager.create_component<spark::text_input_component>("", "Message", "Message", message_buffer, sizeof(message_buffer));
 	_ui_manager.create_component<spark::multi_text_component>("", "Text", std::vector<std::string>{ "Text" });
-
-	_ui_manager.create_component<spark::button_component>("", "Send", "Send", [client]()
-		{
-			std::string message(message_buffer); // Convert buffer to std::string
-			if (!message.empty())
-			{
-				spark::net::chat_message msg(message);
-				client->send(msg); // Use pointer dereference to access member
-
-				memset(message_buffer, 0, sizeof(message_buffer));
-			}
-		});
-
 
 	auto& _renderer = spark::engine::get<spark::renderer>();
 	auto& _audio_manager = spark::engine::get<spark::audio_manager>();
@@ -118,12 +164,9 @@ void on_start()
 
 	_audio_manager.create_sound("retro", "assets/sfx/retro.wav");
 
-
 	auto [vert, frag] = _shader_manager.load_shader({ "Spark/shaders/line.vert", "Spark/shaders/line.frag" });
 	SPARK_INFO("Shaders: " << vert);
 	cur_scene.set_background_color(spark::math::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-
-
 
 	// Create material and mesh
 	spark::texture& grass = _material_manager.create_texture("grass", "assets/sprites/grass.jpg", spark::texture_type::TWO_D);

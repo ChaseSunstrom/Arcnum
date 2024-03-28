@@ -59,7 +59,7 @@ namespace spark
 		case key::TAB: return "TAB";
 		case key::BACKSPACE: return "BACKSPACE";
 		case key::INSERT: return "INSERT";
-		case key::DELETE: return "DELETE";
+		case key::DELETE_KEY: return "DELETE";
 		case key::RIGHT: return "RIGHT";
 		case key::LEFT: return "LEFT";
 		case key::DOWN: return "DOWN";
@@ -163,7 +163,7 @@ namespace spark
 		case controller_button::DPAD_RIGHT: return "DPAD_RIGHT";
 		case controller_button::DPAD_DOWN: return "DPAD_DOWN";
 		case controller_button::DPAD_LEFT: return "DPAD_LEFT";
-			// No need for separate cases for CROSS, CIRCLE, SQUARE, and TRIANGLE as they are aliases
+		// No need for separate cases for CROSS, CIRCLE, SQUARE, and TRIANGLE as they are aliases
 		default: return "UNKNOWN CONTROLLER BUTTON";
 		}
 	}

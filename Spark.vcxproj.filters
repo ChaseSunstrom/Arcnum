@@ -231,6 +231,7 @@
     <ClInclude Include="Spark\include\IMGUI\imstb_truetype.h">
       <Filter>include\IMGUI</Filter>
     </ClInclude>
+    <ClInclude Include="Spark\core\ecs\geometry\basic.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spark\core\app\app.cpp">

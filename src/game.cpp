@@ -97,27 +97,25 @@ void setup_client_ui(spark::window_component& client_window) {
 	client_window.add_child(std::make_shared<spark::text_input_component>("ClientPort", "Server Port", client_port, sizeof(client_port)));
 	client_window.add_child(std::make_shared<spark::text_input_component>("Message", "Message", message_buffer, sizeof(message_buffer)));
 
+	client_window.add_child(std::make_shared<spark::button_component>( "SendMessage", "Send Message", [&]()
+		{
+			if (g_client_instance) 
+			{
+				spark::net::chat_message msg(message_buffer);
+				g_client_instance->send(msg);
+				memset(message_buffer, 0, sizeof(message_buffer)); // Clear the message buffer after sending
+			}
+		}));
+
 	client_window.add_child(std::make_shared<spark::button_component>("Connect", "Connect", [&]()
 		{
-			SPARK_INFO("Attempting to connect with IP: " + std::string(client_ip) + " and Port: " + std::string(client_port));
-			if (!g_client_instance) {
+			if (!g_client_instance)
+			{
 				g_client_instance = std::make_shared<spark::net::udp_client>(client_ip, client_port);
-				// Additional logs can be placed here or inside the run method.
-				SPARK_INFO("Connected!");
 				spark::thread_pool::enqueue(spark::task_priority::HIGH, false, []()
 					{
 						g_client_instance->run();
 					});
-			}
-		}));
-
-
-	client_window.add_child(std::make_shared<spark::button_component>( "SendMessage", "Send Message", [&]()
-		{
-			if (g_client_instance) {
-				spark::net::chat_message msg(message_buffer);
-				g_client_instance->send(msg);
-				memset(message_buffer, 0, sizeof(message_buffer)); // Clear the message buffer after sending
 			}
 		}));
 }
@@ -125,12 +123,6 @@ void setup_client_ui(spark::window_component& client_window) {
 
 void on_start()
 {
-	static char message_buffer[1024] = "";
-	static char server_ip[128] = "127.0.0.1";
-	static char server_port[6] = "8080";
-	static char client_ip[128] = "127.0.0.1";
-	static char client_port[6] = "8080";
-	
 	auto& _ui_manager = spark::engine::get<spark::ui_manager>();
 
 	std::cout << "SIZE OF THEME: " << sizeof(spark::ui_theme) << std::endl;
@@ -149,7 +141,7 @@ void on_start()
 	_ui_manager.add_window(std::move(client_window));
 	setup_client_ui(ref_client_window);
 
-	_ui_manager.create_component<spark::multi_text_component>("", "Text", std::vector<std::string>{ "Text" });
+	_ui_manager.create_component<spark::multi_text_component>("", "Text", std::vector<std::string>{ });
 
 	auto& _renderer = spark::engine::get<spark::renderer>();
 	auto& _audio_manager = spark::engine::get<spark::audio_manager>();
@@ -212,6 +204,36 @@ bool on_event(std::shared_ptr<spark::event> event)
 {
 	switch (event->m_type)
 	{
+	case KEY_PRESSED_EVENT:
+	{
+		auto received_event = std::dynamic_pointer_cast<spark::key_pressed_event>(event);
+
+		if (received_event)
+		{
+			SPARK_INFO("[ KEY PRESSED ]: " << spark::to_string(spark::key(received_event->m_key_code)));
+		}
+	}
+
+	case KEY_REPEAT_EVENT:
+	{
+		auto received_event = std::dynamic_pointer_cast<spark::key_repeat_event>(event);
+
+		if (received_event)
+		{
+			SPARK_INFO("[ KEY HELD ]: " << spark::to_string(spark::key(received_event->m_key_code)));
+		}
+	}
+
+	case KEY_RELEASED_EVENT:
+	{
+		auto received_event = std::dynamic_pointer_cast<spark::key_released_event>(event);
+
+		if (received_event)
+		{
+			SPARK_INFO("[ KEY RELEASED ]: " << spark::to_string(spark::key(received_event->m_key_code)));
+		}
+	}
+
 	case UDP_SERVER_RECEIVE_EVENT:
 	{
 		auto& _ui_manager = spark::engine::get<spark::ui_manager>();

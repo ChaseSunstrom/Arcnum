@@ -23,5 +23,6 @@
 #include <core/ui/ui.hpp>
 #include <core/net/tcp.hpp>
 #include <core/net/net_common.hpp>
+#include <core/user/control.hpp>
 
 #endif // CORE_INCLUDE_HPP

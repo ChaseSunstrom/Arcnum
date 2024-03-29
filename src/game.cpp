@@ -4,44 +4,6 @@
 #include <core/net/chat_message.hpp>
 
 
-std::vector<spark::vertex> vertices = {
-		spark::vertex(spark::math::vec3(-0.5f, -0.5f, -0.5f)),
-		spark::vertex(spark::math::vec3(0.5f, -0.5f, -0.5f)),
-		spark::vertex(spark::math::vec3(0.5f,  0.5f, -0.5f)),
-		spark::vertex(spark::math::vec3(0.5f,  0.5f, -0.5f)),
-		spark::vertex(spark::math::vec3(-0.5f,  0.5f, -0.5f)),
-		spark::vertex(spark::math::vec3(-0.5f, -0.5f, -0.5f)),
-		spark::vertex(spark::math::vec3(-0.5f, -0.5f,  0.5f)),
-		spark::vertex(spark::math::vec3(0.5f, -0.5f,  0.5f)),
-		spark::vertex(spark::math::vec3(0.5f,  0.5f,  0.5f)),
-		spark::vertex(spark::math::vec3(0.5f,  0.5f,  0.5f)),
-		spark::vertex(spark::math::vec3(-0.5f,  0.5f,  0.5f)),
-		spark::vertex(spark::math::vec3(-0.5f, -0.5f,  0.5f)),
-		spark::vertex(spark::math::vec3(-0.5f,  0.5f,  0.5f)),
-		spark::vertex(spark::math::vec3(-0.5f,  0.5f, -0.5f)),
-		spark::vertex(spark::math::vec3(-0.5f, -0.5f, -0.5f)),
-		spark::vertex(spark::math::vec3(-0.5f, -0.5f, -0.5f)),
-		spark::vertex(spark::math::vec3(-0.5f, -0.5f,  0.5f)),
-		spark::vertex(spark::math::vec3(-0.5f,  0.5f,  0.5f)),
-		spark::vertex(spark::math::vec3(0.5f,  0.5f,  0.5f)),
-		spark::vertex(spark::math::vec3(0.5f,  0.5f, -0.5f)),
-		spark::vertex(spark::math::vec3(0.5f, -0.5f, -0.5f)),
-		spark::vertex(spark::math::vec3(0.5f, -0.5f, -0.5f)),
-		spark::vertex(spark::math::vec3(0.5f, -0.5f,  0.5f)),
-		spark::vertex(spark::math::vec3(0.5f,  0.5f,  0.5f)),
-		spark::vertex(spark::math::vec3(-0.5f, -0.5f, -0.5f)),
-		spark::vertex(spark::math::vec3(0.5f, -0.5f, -0.5f)),
-		spark::vertex(spark::math::vec3(0.5f, -0.5f,  0.5f)),
-		spark::vertex(spark::math::vec3(0.5f, -0.5f,  0.5f)),
-		spark::vertex(spark::math::vec3(-0.5f, -0.5f,  0.5f)),
-		spark::vertex(spark::math::vec3(-0.5f, -0.5f, -0.5f)),
-		spark::vertex(spark::math::vec3(-0.5f,  0.5f, -0.5f)),
-		spark::vertex(spark::math::vec3(0.5f,  0.5f, -0.5f)),
-		spark::vertex(spark::math::vec3(0.5f,  0.5f,  0.5f)),
-		spark::vertex(spark::math::vec3(0.5f,  0.5f,  0.5f)),
-		spark::vertex(spark::math::vec3(-0.5f,  0.5f,  0.5f)),
-		spark::vertex(spark::math::vec3(-0.5f,  0.5f, -0.5f))
-};
 
 void add_cube_entity(const spark::math::vec3& position)
 {
@@ -52,15 +14,7 @@ void add_cube_entity(const spark::math::vec3& position)
 	auto& _scene_manager = spark::engine::get<spark::scene_manager>();
 	spark::scene& cur_scene = _scene_manager.get_current_scene();
 
-	
-	std::string materialName = "material";
 
-	spark::transform_component trans = spark::transform_component(position);
-	spark::entity ent = _ecs.create_entity(
-		trans,
-		spark::mesh_component("square"),
-		spark::material_component(materialName) 
-	);
 
 	_renderer.get_instancer().add_renderable(cur_scene, "square", materialName, trans);
 }

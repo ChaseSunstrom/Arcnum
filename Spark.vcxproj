@@ -108,6 +108,7 @@
     <ClInclude Include="Spark\core\ecs\entity\entity.hpp" />
     <ClInclude Include="Spark\core\ecs\entity\entity_type.hpp" />
     <ClInclude Include="Spark\core\ecs\geometry\basic.hpp" />
+    <ClInclude Include="Spark\core\ecs\observer.hpp" />
     <ClInclude Include="Spark\core\ecs\system\system.hpp" />
     <ClInclude Include="Spark\core\engine.hpp" />
     <ClInclude Include="Spark\core\events\event.hpp" />

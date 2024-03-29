@@ -232,6 +232,7 @@
       <Filter>include\IMGUI</Filter>
     </ClInclude>
     <ClInclude Include="Spark\core\ecs\geometry\basic.hpp" />
+    <ClInclude Include="Spark\core\ecs\observer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spark\core\app\app.cpp">

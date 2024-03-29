@@ -18,7 +18,7 @@ namespace spark
 		std::vector<math::mat4> m_data;
 	};
 
-	class instancer
+	class instancer : public observer
 	{
 	public:
 		instancer() = default;
@@ -31,6 +31,10 @@ namespace spark
 
 		// Placeholder to take in cameras for now
 		void render_instanced(const std::vector<std::unique_ptr<camera>>& cameras, scene& scene);
+
+		void remove_renderable_for_entity(entity e);
+
+		void on_notify(std::shared_ptr<event> event) override;
 	private:
 		// stores all current renderable entities:
 		// mesh_name -> material_name -> mat_vbo

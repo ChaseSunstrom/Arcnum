@@ -85,6 +85,87 @@ namespace spark
 		trans_struct->update(); // This method binds and updates the VBO as needed
 	}
 
+	void instancer::on_notify(std::shared_ptr<event> event)
+	{
+		auto& _ecs = engine::get<ecs>();
+		auto& _scene = engine::get<scene_manager>().get_current_scene();
+
+		switch (event->m_type)
+		{
+		case ENTITY_CREATED_EVENT:
+		{
+			auto _entity_created_event = std::static_pointer_cast<entity_created_event>(event);
+			auto& entity = _entity_created_event->m_entity;
+
+			if (_ecs.has_component<transform_component>(entity) &&
+				_ecs.has_component<mesh_component>(entity) &&
+				_ecs.has_component<material_component>(entity))
+			{
+				std::string mesh_name = _entity_created_event->get_component<mesh_component>().m_mesh_name;
+				std::string material_name = _entity_created_event->get_component<material_component>().m_material_name;
+				transform_component transform = _entity_created_event->get_component<transform_component>();
+
+				add_renderable(_scene, mesh_name, material_name, transform);
+			}
+
+			break;
+		}
+		case ENTITY_UPDATED_EVENT:
+		{
+			auto _entity_updated_event = std::static_pointer_cast<entity_updated_event>(event);
+			auto& _entity = _entity_updated_event->m_entity;
+
+			_ecs.remove_if([&_entity](const entity& ent)
+				{
+					return ent == _entity;
+				});
+		}
+		case ENTITY_DESTROYED_EVENT:
+		{
+
+		}
+		}
+	}
+
+	void instancer::remove_renderable_for_entity(entity e) {
+		// Iterate through all mesh-material pairs
+
+		auto& _ecs = engine::get<ecs>();
+
+		auto& _transform_component =	_ecs.get_component<transform_component>(e);
+
+		for (auto& mesh_pair : m_renderables) {
+			for (auto& material_pair : mesh_pair.second) {
+				// Iterate through all transforms associated with this mesh-material pair
+				auto& transforms = material_pair.second->m_data;
+				transforms.erase(
+					std::remove_if(transforms.begin(), transforms.end(),
+						[e, &_transform_component]()
+						{
+							// Assuming transform_component has a way to refer back to its entity
+							return transform.entity_id == e;
+						}),
+					transforms.end());
+
+				// If there are no more transforms left for this material, you might decide to remove the material entry altogether
+				if (transforms.empty()) {
+					material_pair.second.reset(); // Reset unique_ptr, effectively deleting it
+				}
+			}
+
+			// Optionally, clean up mesh entries with no materials left
+			auto& material_map = mesh_pair.second;
+			for (auto it = material_map.begin(); it != material_map.end(); ) {
+				if (!it->second) { // If the unique_ptr is reset
+					it = material_map.erase(it);
+				}
+				else {
+					++it;
+				}
+			}
+		}
+	}
+
 	void instancer::render_instanced(const std::vector<std::unique_ptr<camera>>& cameras, scene& scene)
 	{
 		for (auto& camera : cameras)

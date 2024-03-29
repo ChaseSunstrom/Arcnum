@@ -2,62 +2,53 @@
 #define SPARK_ECS_HPP
 
 #include "../spark.hpp"
-
-#include "component/component_types.hpp"
-#include "component/component.hpp"
-#include "entity/entity.hpp"
-#include "system/system.hpp"
 #include "../audio/audio.hpp"
 #include "../lighting/light.hpp"
+#include "observer.hpp"
+#include "component/component.hpp"
+#include "component/component_types.hpp"
+#include "entity/entity.hpp"
+#include "system/system.hpp"
 
 namespace spark
 {
-	class base_holder
+	struct entity_created_event : public event
 	{
-	public:
-		virtual ~base_holder() = default;
+		entity_created_event(entity entity, const std::unordered_map<std::type_index, component_info_base>& components)
+			: event(ENTITY_CREATED_EVENT), m_entity(entity), m_components(components)
+		{ }
+
+		template <typename T>
+		T get_component()
+		{
+			return static_cast<component_info<T>>(m_components[typeid(T)]).m_type;
+		}
+
+		entity m_entity;
+		std::unordered_map<std::type_index, component_info_base> m_components;
 	};
 
-	template<typename T>
-	class holder : public base_holder
+	struct entity_updated_event : public event
 	{
-	public:
-		explicit holder(component_manager& cm)
+		entity_updated_event(entity entity, const std::unordered_map<std::type_index, component_info_base>& components)
+			: event(ENTITY_UPDATED_EVENT), m_entity(entity), m_components(components) { }
+
+		template <typename T>
+		T get_component()
 		{
-			m_values = &cm.get_component_array<T>().get_array();
+			return static_cast<component_info<T>>(m_components[typeid(T)]).m_type;
 		}
 
-		// Stores a vector of the data
-		std::vector<T>* m_values;
+		entity m_entity;
+		std::unordered_map<std::type_index, component_info_base> m_components;
 	};
 
-	class group
+	struct entity_destroyed_event : public event
 	{
-	public:
-		group() = default;
+		entity_destroyed_event(entity entity) 
+			: event(ENTITY_DESTROYED_EVENT), m_entity(entity) {}
 
-		template<typename T>
-		void add(component_manager& cm)
-		{
-			m_map[std::type_index(typeid(T))] = std::make_unique<holder<T>>(cm);
-		}
-
-		template<typename T>
-		std::vector<T>* get() const
-		{
-			auto it = m_map.find(std::type_index(typeid(T)));
-			if (it != m_map.end())
-			{
-				// Safely downcast using static_cast since we know the derived type
-				holder<T>* _holder = static_cast<holder<T>*>(it->second.get());
-				return _holder->m_values; // Use m_values to reference the vector of components
-			}
-			return nullptr;
-		}
-
-	private:
-		std::unordered_map<std::type_index, std::unique_ptr<base_holder>> m_map;
-
+		entity m_entity;
 	};
 
 	class ecs
@@ -167,6 +158,23 @@ namespace spark
 		{
 			m_entity_manager.destroy_entity(entity);
 			m_component_manager.destroy_component_array(entity);
+
+			std::shared_ptr<entity_destroyed_event> event = std::make_shared<entity_destroyed_event>(entity);
+		}
+
+		void add_observer(observer* observer)
+		{
+			m_observers.push_back(std::move(observer));
+		}
+
+		void remove_observer(observer& _observer)
+		{
+			m_observers.erase(std::remove_if(m_observers.begin(), m_observers.end(),
+				[&_observer](const std::unique_ptr<observer>& o)
+				{
+					return o.get() == &_observer;
+				}),
+				m_observers.end());
 		}
 
 		template <typename... Components>
@@ -176,35 +184,49 @@ namespace spark
 
 			(add_component(entity, std::forward<Components>(components)), ...);
 
-			// Creates a group based off the components passed in
-			std::unique_ptr<group> _group = std::make_unique<group>();
-			([&_group, this](auto&& component)
-			 {
-				 using component_type = std::decay_t<decltype(component)>;
-				 _group->add<component_type>(this->m_component_manager);
-			 }(std::forward<Components>(components)), ...);  // ... is a fold expression
+			std::unordered_map<std::type_index, component_info_base> components_map;
 
-			// Store the group
-			m_groups.emplace_back(std::move(_group));
+			(components_map[typeid(Components)] = component_info<Components>(), ...);
+
+			std::shared_ptr<entity_created_event> event = std::make_shared<entity_created_event>(entity, components_map);
+
+			notify_observers(event);
 
 			return entity;
 		}
 
-		// Returns vectors of all components in the group
-		template <typename... Components>
-		std::tuple<std::vector<Components>*...> query_group_components()
+		template<typename Pred>
+		void remove_if(Pred predicate)
 		{
-			for (auto& grp : m_groups)
+			for (auto it = m_entity_manager.begin(); it != m_entity_manager.end(); )
 			{
-				// This will be true if all components exist in the group for the entity.
-				if ((... && (grp->get<Components>() != nullptr)))
+				if (predicate(*it))
 				{
-					return std::make_tuple(grp->get<Components>()...);
+					destroy_entity(*it);
+					it = m_entity_manager.erase(it);
+				}
+				else
+				{
+					++it;
 				}
 			}
+		}
 
-			// If no group with all the requested components is found, return a tuple of nullptrs.
-			return std::make_tuple(static_cast<Components*>(nullptr)...);
+		template<typename Pred, typename UpdateFunc>
+		void update_if(Pred predicate, UpdateFunc update_func)
+		{
+			for (auto& entity : m_entity_manager.get_all_entities())
+			{
+				if (predicate(entity))
+				{
+					// Assuming we want to update a specific component type for the matched entities
+					if (has_component<SomeComponent>(entity))
+					{
+						auto& comp = get_component<SomeComponent>(entity);
+						update_func(comp);
+					}
+				}
+			}
 		}
 
 		// ==============================================================================
@@ -226,8 +248,19 @@ namespace spark
 
 		~ecs() = default;
 
+		void notify_observers(std::shared_ptr<event> event)
+		{
+			thread_pool::enqueue(task_priority::VERY_HIGH, false, [this, event]()
+				{
+					for (auto& observer : m_observers)
+					{
+						observer->on_notify(event);
+					}
+				});
+		}
+
 	private:
-		std::vector<std::unique_ptr<group>> m_groups = std::vector<std::unique_ptr<group>>();
+		std::vector<observer*> m_observers;
 
 		component_manager& m_component_manager = component_manager::get();
 

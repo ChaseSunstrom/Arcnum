@@ -11,7 +11,7 @@ namespace spark
 		event() = default;
 
 		event(int32_t type) :
-				m_type(type) { }
+			m_type(type) { }
 
 		virtual ~event() = default;
 
@@ -26,12 +26,12 @@ namespace spark
 	using window_closed_event = event;
 
 	struct window_resized_event :
-			event
+		event
 	{
 		window_resized_event() = default;
 
 		window_resized_event(int32_t width, int32_t height) :
-				event(WINDOW_RESIZED_EVENT), m_width(width), m_height(height) { }
+			event(WINDOW_RESIZED_EVENT), m_width(width), m_height(height) { }
 
 		int32_t m_width;
 
@@ -39,12 +39,12 @@ namespace spark
 	};
 
 	struct window_moved_event :
-			event
+		event
 	{
 		window_moved_event() = default;
 
 		window_moved_event(int32_t x_pos, int32_t y_pos) :
-				event(WINDOW_MOVED_EVENT), m_x_pos(x_pos), m_y_pos(y_pos) { }
+			event(WINDOW_MOVED_EVENT), m_x_pos(x_pos), m_y_pos(y_pos) { }
 
 		int32_t m_x_pos;
 
@@ -52,65 +52,65 @@ namespace spark
 	};
 
 	struct key_pressed_event :
-			event
+		event
 	{
 		key_pressed_event() = default;
 
 		key_pressed_event(int32_t key_code) :
-				event(KEY_PRESSED_EVENT), m_key_code(key_code) { }
+			event(KEY_PRESSED_EVENT), m_key_code(key_code) { }
 
 		int32_t m_key_code;
 	};
 
 	struct key_released_event :
-			event
+		event
 	{
 		key_released_event(int32_t key_code) :
-				event(KEY_RELEASED_EVENT), m_key_code(key_code) { }
+			event(KEY_RELEASED_EVENT), m_key_code(key_code) { }
 
 		int32_t m_key_code;
 	};
 
 	struct key_repeat_event :
-			event
+		event
 	{
 		key_repeat_event() = default;
 
 		key_repeat_event(int32_t key_code) :
-				event(KEY_REPEAT_EVENT), m_key_code(key_code) { }
+			event(KEY_REPEAT_EVENT), m_key_code(key_code) { }
 
 		int32_t m_key_code;
 	};
 
 	struct mouse_pressed_event :
-			event
+		event
 	{
 		mouse_pressed_event() = default;
 
 		mouse_pressed_event(int32_t button) :
-				event(MOUSE_PRESSED_EVENT), m_button(button) { }
+			event(MOUSE_PRESSED_EVENT), m_button(button) { }
 
 		int32_t m_button;
 	};
 
 	struct mouse_released_event :
-			event
+		event
 	{
 		mouse_released_event() = default;
 
 		mouse_released_event(int32_t button) :
-				event(MOUSE_RELEASED_EVENT), m_button(button) { }
+			event(MOUSE_RELEASED_EVENT), m_button(button) { }
 
 		int32_t m_button;
 	};
 
 	struct mouse_moved_event :
-			event
+		event
 	{
 		mouse_moved_event() = default;
 
 		mouse_moved_event(float64_t x_pos, float64_t y_pos) :
-				event(MOUSE_MOVE_EVENT), m_x_pos(x_pos), m_y_pos(y_pos) { }
+			event(MOUSE_MOVE_EVENT), m_x_pos(x_pos), m_y_pos(y_pos) { }
 
 		float64_t m_x_pos;
 
@@ -118,12 +118,12 @@ namespace spark
 	};
 
 	struct mouse_scrolled_event :
-			event
+		event
 	{
 		mouse_scrolled_event() = default;
 
 		mouse_scrolled_event(float64_t x_offset, float64_t y_offset) :
-				event(MOUSE_SCROLLED_EVENT), m_x_offset(x_offset), m_y_offset(y_offset) { }
+			event(MOUSE_SCROLLED_EVENT), m_x_offset(x_offset), m_y_offset(y_offset) { }
 
 		float64_t m_x_offset;
 
@@ -138,7 +138,7 @@ namespace spark
 		event_dispatcher() = default;
 
 		event_dispatcher(std::shared_ptr <event> event) :
-				m_event(event) { }
+			m_event(event) { }
 
 		inline bool dispatch(std::function<bool(std::shared_ptr<event>)> fn)
 		{

@@ -110,6 +110,11 @@ namespace spark
 			return component_info<T>(m_component_array[entity]);
 		}
 
+		uint32_t size() const
+		{
+			return m_component_array.size();
+		}
+
 	private:
 		std::vector <T> m_component_array = std::vector<T>();
 	};
@@ -168,14 +173,15 @@ namespace spark
 		}
 
 		template <typename T>
-		T& operator[](entity entity)
+		T& get_component(entity entity)
 		{
 			if (__SPARK_ASSERT__(entity > get_component_array<T>().size()))
 			{
 				SPARK_FATAL("Entity index out of bounds.");
 			}
 
-			return get_component_array<T>()[entity];
+			// Because for some reason this MUST return a const& ????
+			return const_cast<T&>(get_component_array<T>()[entity]);
 		}
 
 		std::vector <component_info_base> get_all_components(entity entity)

@@ -5,51 +5,132 @@
 
 namespace spark
 {
-	void transforms::add_transform(math::mat4& transform)
+	void transforms::add_transform(const transform& transform)
 	{
 		m_data.emplace_back(transform);
 	}
 
-	void transforms::update()
+	void transforms::update() 
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-		glBufferData(GL_ARRAY_BUFFER, m_data.size() * sizeof(math::mat4), m_data.data(), GL_DYNAMIC_DRAW);
 
-		GLsizei vec4_size = sizeof(math::mat4) / 4;
-		for (GLuint i = 0; i < 4; ++i)
+		glBufferData(GL_ARRAY_BUFFER, m_data.size() * sizeof(transform), m_data.data(), GL_DYNAMIC_DRAW);
+
+		GLsizei vec4_size = sizeof(transform) / 4;
+		for (GLuint i = 0; i < 4; ++i) 
 		{
-			glEnableVertexAttribArray(3 + i);
-			glVertexAttribPointer(3 + i, 4, GL_FLOAT, GL_FALSE, 4 * vec4_size, (void*)(i * vec4_size));
-			glVertexAttribDivisor(3 + i, 1); // Instanced attribute
+			glEnableVertexAttribArray(3 + i); 
+
+			glVertexAttribPointer(3 + i, 4, GL_FLOAT, GL_FALSE, 4 * vec4_size, reinterpret_cast<void*>(i * vec4_size));
+
+			glVertexAttribDivisor(3 + i, 1);
 		}
 	}
 
-	void instancer::add_renderable(const scene& scene, const std::string& mesh_name, const std::string& material_name, transform_component& transform)
+	void transforms::update_render_transforms()
+	{
+		m_data.clear();
+		for (auto& [entity, transform] : m_entity_transforms)
+		{
+			m_data.emplace_back(transform);
+		}
+	}
+
+	void instancer::add_renderable(entity e, const scene& scene, const std::string& mesh_name, const std::string& material_name, const transform& _transform) 
 	{
 		auto& material_map = m_renderables[mesh_name];
-		if (!material_map[material_name])
+		if (!material_map[material_name]) 
 		{
 			material_map[material_name] = std::make_unique<transforms>();
 		}
+		material_map[material_name]->add_transform(_transform);
+		m_entity_mesh_materials[e] = { mesh_name, material_name };
 
-		material_map[material_name]->add_transform(transform.m_transform);
-		scene.get_octree().insert(&transform);
+		scene.get_octree().insert(const_cast<transform*>(&_transform));
 	}
-
-	void instancer::add_renderable(const scene& scene, const std::string& mesh_name, const std::string& material_name, std::vector<transform_component>& _transforms)
+	void instancer::remove_renderable_for_entity(entity e) 
 	{
-		auto& material_map = m_renderables[mesh_name];
-		if (!material_map[material_name])
+		auto [mesh_name, material_name] = m_entity_mesh_materials[e];
+		
+		auto& transform_storage = m_renderables[mesh_name][material_name];
+		if (transform_storage && transform_storage->m_entity_transforms.erase(e) > 0) 
 		{
-			material_map[material_name] = std::make_unique<transforms>();
-		}
-
-		for (auto& transform : _transforms)
-		{
-			material_map[material_name]->add_transform(transform.m_transform);
-			scene.get_octree().insert(&transform);
+			// If an entity was removed, refresh the rendering vector
+			transform_storage->update_render_transforms();
 		}
 	}
+
+	void instancer::on_notify(std::shared_ptr<event> event)
+	{
+		auto& _ecs = engine::get<ecs>();
+		auto& _scene = engine::get<scene_manager>().get_current_scene();
+
+		switch (event->m_type)
+		{
+		case ENTITY_CREATED_EVENT:
+		{
+			auto _entity_created_event = std::static_pointer_cast<entity_created_event>(event);
+			entity e = _entity_created_event->m_entity;
+			
+			if (_ecs.has_component<transform_component>(e) &&
+				_ecs.has_component<mesh_component>(e) &&
+				_ecs.has_component<material_component>(e))
+			{
+				auto mesh_name = _ecs.get_component<mesh_component>(e).m_mesh_name;
+				auto material_name = _ecs.get_component<material_component>(e).m_material_name;
+				auto& transform = _ecs.get_component<transform_component>(e);
+
+				add_renderable(e, _scene, mesh_name, material_name, transform);
+			}
+			break;
+		}
+		case ENTITY_UPDATED_EVENT:
+		{
+			auto _entity_updated_event = std::static_pointer_cast<entity_updated_event>(event);
+			entity e = _entity_updated_event->m_entity;
+			
+			update_renderable(e, _scene);
+			break;
+		}
+		case ENTITY_DESTROYED_EVENT:
+		{
+			auto _entity_destroyed_event = std::static_pointer_cast<entity_destroyed_event>(event);
+			entity e = _entity_destroyed_event->m_entity;
+
+			remove_renderable_for_entity(e);
+			break;
+		}
+		}
+	}
+
+	void instancer::update_renderable(entity e, scene& scene)
+	{
+		// Check if the entity exists in the map
+		if (m_entity_mesh_materials.find(e) != m_entity_mesh_materials.end()) 
+		{
+			// Get the mesh and material names associated with the entity
+			const auto& [mesh_name, material_name] = m_entity_mesh_materials[e];
+
+			// Check if the renderable object exists in the renderables map
+			if (m_renderables.find(mesh_name) != m_renderables.end() &&
+				m_renderables[mesh_name].find(material_name) != m_renderables[mesh_name].end()) {
+				// Update the transformation for the renderable object
+				auto& transform_storage = m_renderables[mesh_name][material_name];
+				if (transform_storage)
+				{
+					// Get the transform component from the ECS
+					auto& transform = engine::get<ecs>().get_component<transform_component>(e);
+
+					// Update the transform in the storage
+					transform_storage->m_entity_transforms[e] = transform;
+
+					// Notify the transform storage to update its render transforms
+					transform_storage->update_render_transforms();
+				}
+			}
+		}
+	}
+
 
 	void instancer::bind_renderables(const std::vector<std::unique_ptr<camera>>& cameras, const std::string& mesh_name, const std::string& material_name)
 	{
@@ -85,115 +166,22 @@ namespace spark
 		trans_struct->update(); // This method binds and updates the VBO as needed
 	}
 
-	void instancer::on_notify(std::shared_ptr<event> event)
-	{
-		auto& _ecs = engine::get<ecs>();
-		auto& _scene = engine::get<scene_manager>().get_current_scene();
-
-		switch (event->m_type)
-		{
-		case ENTITY_CREATED_EVENT:
-		{
-			auto _entity_created_event = std::static_pointer_cast<entity_created_event>(event);
-			auto& entity = _entity_created_event->m_entity;
-
-			if (_ecs.has_component<transform_component>(entity) &&
-				_ecs.has_component<mesh_component>(entity) &&
-				_ecs.has_component<material_component>(entity))
-			{
-				std::string mesh_name = _entity_created_event->get_component<mesh_component>().m_mesh_name;
-				std::string material_name = _entity_created_event->get_component<material_component>().m_material_name;
-				transform_component transform = _entity_created_event->get_component<transform_component>();
-
-				add_renderable(_scene, mesh_name, material_name, transform);
-			}
-
-			break;
-		}
-		case ENTITY_UPDATED_EVENT:
-		{
-			auto _entity_updated_event = std::static_pointer_cast<entity_updated_event>(event);
-			auto& _entity = _entity_updated_event->m_entity;
-
-			_ecs.remove_if([&_entity](const entity& ent)
-				{
-					return ent == _entity;
-				});
-		}
-		case ENTITY_DESTROYED_EVENT:
-		{
-
-		}
-		}
-	}
-
-	void instancer::remove_renderable_for_entity(entity e) {
-		// Iterate through all mesh-material pairs
-
-		auto& _ecs = engine::get<ecs>();
-
-		auto& _transform_component =	_ecs.get_component<transform_component>(e);
-
-		for (auto& mesh_pair : m_renderables) {
-			for (auto& material_pair : mesh_pair.second) {
-				// Iterate through all transforms associated with this mesh-material pair
-				auto& transforms = material_pair.second->m_data;
-				transforms.erase(
-					std::remove_if(transforms.begin(), transforms.end(),
-						[e, &_transform_component]()
-						{
-							// Assuming transform_component has a way to refer back to its entity
-							return transform.entity_id == e;
-						}),
-					transforms.end());
-
-				// If there are no more transforms left for this material, you might decide to remove the material entry altogether
-				if (transforms.empty()) {
-					material_pair.second.reset(); // Reset unique_ptr, effectively deleting it
-				}
-			}
-
-			// Optionally, clean up mesh entries with no materials left
-			auto& material_map = mesh_pair.second;
-			for (auto it = material_map.begin(); it != material_map.end(); ) {
-				if (!it->second) { // If the unique_ptr is reset
-					it = material_map.erase(it);
-				}
-				else {
-					++it;
-				}
-			}
-		}
-	}
-
 	void instancer::render_instanced(const std::vector<std::unique_ptr<camera>>& cameras, scene& scene)
 	{
-		for (auto& camera : cameras)
+		for (auto& [mesh_name, material_map] : m_renderables)
 		{
-			octree& scene_octree = scene.get_octree();
-
-			for (auto& mesh_item : m_renderables)
+			for (auto& [material_name, transforms_ptr] : material_map)
 			{
-				const auto& mesh_name = mesh_item.first;
+				// Bind the necessary resources for this mesh-material combination
+				bind_renderables(cameras, mesh_name, material_name);
 
-				for (auto& material_item : mesh_item.second)
-				{
-					const auto& material_name = material_item.first;
-					auto& trans_struct = material_item.second;
+				// Now update the instance transformation data
+				transforms_ptr->update();
 
-					std::vector<math::mat4> visible_transforms = m_renderables[mesh_name][material_name]->m_data;
-
-					glBindBuffer(GL_ARRAY_BUFFER, trans_struct->m_vbo);
-					glBufferData(GL_ARRAY_BUFFER, visible_transforms.size() * sizeof(math::mat4), visible_transforms.data(), GL_DYNAMIC_DRAW);
-
-					bind_renderables(cameras, mesh_name, material_name); // Prepare mesh and material for rendering
-
-					auto vertices = engine::get<mesh_manager>().get_mesh(mesh_name).m_vertices;
-
-					glDrawArraysInstanced(GL_TRIANGLES, 0, vertices.size(), visible_transforms.size());
-				}
+				// Perform the instanced draw call
+				auto& mesh = engine::get<mesh_manager>().get_mesh(mesh_name);
+				glDrawArraysInstanced(GL_TRIANGLES, 0, mesh.m_vertices.size(), transforms_ptr->m_data.size());
 			}
 		}
 	}
-
 }

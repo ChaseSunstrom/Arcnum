@@ -12,13 +12,14 @@ namespace spark
 	void application::on_start()
 	{
 		application::add_scene("Main Scene", scene_config(math::vec4(0)));
-		app_functions::s_on_start();
 
 		auto& _window = engine::get<window>();
 		auto& _ecs = engine::get<ecs>();
 		auto& _ui = engine::get<ui_manager>();
 
 		_ui.on_start(_window.get_window());
+
+		app_functions::s_on_start();
 
 		_ecs.start_systems();
 
@@ -60,10 +61,13 @@ namespace spark
 		_ui.on_shutdown();
 	}
 
-	bool application::on_event(std::shared_ptr <event> event)
+	void application::on_event(std::shared_ptr <event> event)
 	{
-		spark::event_dispatcher dispatcher(event);
-		return dispatcher.dispatch(app_functions::s_on_event);
+		thread_pool::enqueue(task_priority::CRITICAL, false, [event]()
+			{
+				spark::event_dispatcher dispatcher(event);
+				return dispatcher.dispatch(app_functions::s_on_event);
+			});
 	}
 
 	void application::set_window_title(const std::string& title)

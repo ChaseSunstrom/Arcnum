@@ -160,6 +160,7 @@
     <ClCompile Include="Spark\core\audio\audio.cpp" />
     <ClCompile Include="Spark\core\ecs\component\component_types.cpp" />
     <ClCompile Include="Spark\core\ecs\component\shader.cpp" />
+    <ClCompile Include="Spark\core\ecs\observer.cpp" />
     <ClCompile Include="Spark\core\events\sub.cpp" />
     <ClCompile Include="Spark\core\logging\log.cpp" />
     <ClCompile Include="Spark\core\net\packet.cpp" />

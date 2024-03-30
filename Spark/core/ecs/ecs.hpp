@@ -14,33 +14,33 @@ namespace spark
 {
 	struct entity_created_event : public event
 	{
-		entity_created_event(entity entity, const std::unordered_map<std::type_index, component_info_base>& components)
-			: event(ENTITY_CREATED_EVENT), m_entity(entity), m_components(components)
+		entity_created_event(entity entity, std::unordered_map<std::type_index, std::shared_ptr<component_info_base>>&& components_map)
+			: event(ENTITY_CREATED_EVENT), m_entity(entity) { }
+
+		template <typename T>
+		T get_component()
+		{
+			return static_cast<component_info<T>>(m_components[typeid(T)])->m_type;
+		}
+
+		entity m_entity;
+		std::unordered_map<std::type_index, std::shared_ptr<component_info_base>> m_components;
+	};
+
+	struct entity_updated_event : public event
+	{
+		entity_updated_event(entity entity, std::unordered_map<std::type_index, std::shared_ptr<component_info_base>> components)
+			: event(ENTITY_UPDATED_EVENT), m_entity(entity), m_components(components)
 		{ }
 
 		template <typename T>
 		T get_component()
 		{
-			return static_cast<component_info<T>>(m_components[typeid(T)]).m_type;
+			return static_cast<component_info<T>>(m_components[typeid(T)])->m_type;
 		}
 
 		entity m_entity;
-		std::unordered_map<std::type_index, component_info_base> m_components;
-	};
-
-	struct entity_updated_event : public event
-	{
-		entity_updated_event(entity entity, const std::unordered_map<std::type_index, component_info_base>& components)
-			: event(ENTITY_UPDATED_EVENT), m_entity(entity), m_components(components) { }
-
-		template <typename T>
-		T get_component()
-		{
-			return static_cast<component_info<T>>(m_components[typeid(T)]).m_type;
-		}
-
-		entity m_entity;
-		std::unordered_map<std::type_index, component_info_base> m_components;
+		std::unordered_map<std::type_index, std::shared_ptr<component_info_base>> m_components;
 	};
 
 	struct entity_destroyed_event : public event
@@ -90,7 +90,7 @@ namespace spark
 		template <typename T>
 		inline T& get_component(entity entity)
 		{
-			return m_component_manager[entity];
+			return m_component_manager.get_component<T>(entity);
 		}
 
 		template <typename T>
@@ -170,9 +170,9 @@ namespace spark
 		void remove_observer(observer& _observer)
 		{
 			m_observers.erase(std::remove_if(m_observers.begin(), m_observers.end(),
-				[&_observer](const std::unique_ptr<observer>& o)
+				[&_observer](observer* o)
 				{
-					return o.get() == &_observer;
+					return o == &_observer;
 				}),
 				m_observers.end());
 		}
@@ -180,53 +180,26 @@ namespace spark
 		template <typename... Components>
 		entity create_entity(Components&& ... components)
 		{
-			entity entity = m_entity_manager.create_entity();
+			entity new_entity = m_entity_manager.create_entity();
 
-			(add_component(entity, std::forward<Components>(components)), ...);
+			std::unordered_map<std::type_index, std::shared_ptr<component_info_base>> components_map;
 
-			std::unordered_map<std::type_index, component_info_base> components_map;
+			auto add_component = [this, &components_map, &new_entity](auto&& component)
+				{
+					using component_type = std::decay_t<decltype(component)>;
+					m_component_manager.add_component<component_type>(new_entity, component);
 
-			(components_map[typeid(Components)] = component_info<Components>(), ...);
+					components_map[typeid(component_type)] = std::make_shared<component_info<component_type>>(component);
+				};
 
-			std::shared_ptr<entity_created_event> event = std::make_shared<entity_created_event>(entity, components_map);
+			(add_component(std::forward<Components>(components)), ...);
+
+			std::shared_ptr<entity_created_event> event =
+				std::make_shared<entity_created_event>(new_entity, std::move(components_map));
 
 			notify_observers(event);
 
-			return entity;
-		}
-
-		template<typename Pred>
-		void remove_if(Pred predicate)
-		{
-			for (auto it = m_entity_manager.begin(); it != m_entity_manager.end(); )
-			{
-				if (predicate(*it))
-				{
-					destroy_entity(*it);
-					it = m_entity_manager.erase(it);
-				}
-				else
-				{
-					++it;
-				}
-			}
-		}
-
-		template<typename Pred, typename UpdateFunc>
-		void update_if(Pred predicate, UpdateFunc update_func)
-		{
-			for (auto& entity : m_entity_manager.get_all_entities())
-			{
-				if (predicate(entity))
-				{
-					// Assuming we want to update a specific component type for the matched entities
-					if (has_component<SomeComponent>(entity))
-					{
-						auto& comp = get_component<SomeComponent>(entity);
-						update_func(comp);
-					}
-				}
-			}
+			return new_entity;
 		}
 
 		// ==============================================================================
@@ -250,13 +223,10 @@ namespace spark
 
 		void notify_observers(std::shared_ptr<event> event)
 		{
-			thread_pool::enqueue(task_priority::VERY_HIGH, false, [this, event]()
-				{
-					for (auto& observer : m_observers)
-					{
-						observer->on_notify(event);
-					}
-				});
+			for (auto& observer : m_observers)
+			{
+				observer->on_notify(event);
+			}
 		}
 
 	private:

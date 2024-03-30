@@ -7,7 +7,12 @@ namespace spark
 {
 	struct triangle
 	{
-		static entity create(const std::string& material = "__default__", const math::vec3& position, const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f))
+		static entity create(const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f))
+		{
+			return create("__default__", position, rotation, size);
+		}
+
+		static entity create(const std::string& material, const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f))
 		{
 			auto& _ecs = engine::get<ecs>();
 			auto& _mesh_manager = engine::get<mesh_manager>();
@@ -33,7 +38,12 @@ namespace spark
 
 	struct square
 	{
-		static entity create(const std::string& material = "__default__", const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f))
+		static entity create(const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f))
+		{
+			return create("__default__", position, rotation, size);
+		}
+
+		static entity create(const std::string& material, const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f))
 		{
 			auto& _ecs = engine::get<ecs>();
 			auto& _mesh_manager = engine::get<mesh_manager>();
@@ -60,7 +70,12 @@ namespace spark
 
 	struct circle
 	{
-		static entity create(const std::string& material = "__default__", const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f))
+		static entity create(const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f))
+		{
+			return create("__default__", position, rotation, size);
+		}
+
+		static entity create(const std::string& material, const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f))
 		{
 			auto& _ecs = engine::get<ecs>();
 			auto& _mesh_manager = engine::get<mesh_manager>();
@@ -68,7 +83,7 @@ namespace spark
 
 			std::vector<vertex> vertices;
 
-			for (int32_t i = 0; i < 360; i++)
+			for (float32_t i = 0; i < 360; i++)
 			{
 				float32_t angle = math::radians(i);
 				vertices.push_back(vertex(math::vec3(size.x * cos(angle), size.y * sin(angle), 0.0f)));
@@ -86,36 +101,14 @@ namespace spark
 		}
 	};
 
-	struct rectangle
-	{
-		static entity create(const std::string& material = "__default__", const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f))
-		{
-			auto& _ecs = engine::get<ecs>();
-			auto& _mesh_manager = engine::get<mesh_manager>();
-			auto& _material_manager = engine::get<material_manager>();
-
-			std::vector<vertex> vertices = {
-				vertex(math::vec3(-size.x, -size.y, 0.0f)),
-				vertex(math::vec3(size.x, -size.y, 0.0f)),
-				vertex(math::vec3(size.x, size.y, 0.0f)),
-				vertex(math::vec3(-size.x, size.y, 0.0f)),
-			};
-
-			_mesh_manager.create_mesh("__rectangle__", vertices);
-
-			entity rectangle_entity = _ecs.create_entity(
-				mesh_component("__rectangle__"),
-				material_component(material),
-				transform_component(position, rotation)
-			);
-
-			return rectangle_entity;
-		}
-	};
-
 	struct line
 	{
-		static entity create(const std::string& material = "__default__", const math::vec3& start = math::vec3(0.0f), const math::vec3& end = math::vec3(1.0f))
+		static entity create(const math::vec3& start = math::vec3(0.0f), const math::vec3& end = math::vec3(1.0f))
+		{
+			return create("__default__", start, end);
+		}
+
+		static entity create(const std::string& material, const math::vec3& start = math::vec3(0.0f), const math::vec3& end = math::vec3(1.0f))
 		{
 			auto& _ecs = engine::get<ecs>();
 			auto& _mesh_manager = engine::get<mesh_manager>();
@@ -139,7 +132,12 @@ namespace spark
 
 	struct cube
 	{
-		static entity create(const std::string& material = "__default__", const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f))
+		static entity create(const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f))
+		{
+			return create("__default__", position, rotation, size);
+		}
+
+		static entity create(const std::string& material, const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f))
 		{
 			auto& _ecs = engine::get<ecs>();
 			auto& _mesh_manager = engine::get<mesh_manager>();
@@ -204,7 +202,12 @@ namespace spark
 
 	struct sphere
 	{
-		static entity create(const std::string& material = "__default__", const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f))
+		static entity create(const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f))
+		{
+			return create("__default__", position, rotation, size);
+		}
+
+		static entity create(const std::string& material, const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f))
 		{
 			auto& _ecs = engine::get<ecs>();
 			auto& _mesh_manager = engine::get<mesh_manager>();
@@ -212,9 +215,9 @@ namespace spark
 
 			std::vector<vertex> vertices;
 
-			for (int32_t i = 0; i < 360; i += 10)
+			for (float32_t i = 0; i < 360; i += 10)
 			{
-				for (int32_t j = 0; j < 360; j += 10)
+				for (float32_t j = 0; j < 360; j += 10)
 				{
 					float32_t x = size.x * cos(math::radians(i)) * sin(math::radians(j));
 					float32_t y = size.y * sin(math::radians(i)) * sin(math::radians(j));
@@ -238,7 +241,12 @@ namespace spark
 
 	struct capsule
 	{
-		static entity create(const std::string& material = "__default__", const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f))
+		static entity create(const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f))
+		{
+			return create("__default__", position, rotation, size);
+		}
+
+		static entity create(const std::string& material, const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f))
 		{
 			auto& _ecs = engine::get<ecs>();
 			auto& _mesh_manager = engine::get<mesh_manager>();
@@ -246,9 +254,9 @@ namespace spark
 
 			std::vector<vertex> vertices;
 
-			for (int32_t i = 0; i < 360; i += 10)
+			for (float32_t i = 0; i < 360; i += 10)
 			{
-				for (int32_t j = 0; j < 360; j += 10)
+				for (float32_t j = 0; j < 360; j += 10)
 				{
 					float32_t x = size.x * cos(math::radians(i)) * sin(math::radians(j));
 					float32_t y = size.y * sin(math::radians(i)) * sin(math::radians(j));
@@ -272,7 +280,12 @@ namespace spark
 
 	struct cone
 	{
-		static entity create(const std::string& material = "__default__", const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f))
+		static entity create(const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f))
+		{
+			return create("__default__", position, rotation, size);
+		}
+
+		static entity create(const std::string& material, const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f))
 		{
 			auto& _ecs = engine::get<ecs>();
 			auto& _mesh_manager = engine::get<mesh_manager>();
@@ -280,9 +293,9 @@ namespace spark
 
 			std::vector<vertex> vertices;
 
-			for (int32_t i = 0; i < 360; i += 10)
+			for (float32_t i = 0; i < 360; i += 10)
 			{
-				for (int32_t j = 0; j < 360; j += 10)
+				for (float32_t j = 0; j < 360; j += 10)
 				{
 					float32_t x = size.x * cos(math::radians(i)) * sin(math::radians(j));
 					float32_t y = size.y * sin(math::radians(i)) * sin(math::radians(j));
@@ -306,7 +319,12 @@ namespace spark
 
 	struct cylinder
 	{
-		static entity create(const std::string& material = "__default__", const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f))
+		static entity create(const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f))
+		{
+			return create("__default__", position, rotation, size);
+		}
+
+		static entity create(const std::string& material, const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f))
 		{
 			auto& _ecs = engine::get<ecs>();
 			auto& _mesh_manager = engine::get<mesh_manager>();
@@ -314,9 +332,9 @@ namespace spark
 
 			std::vector<vertex> vertices;
 
-			for (int32_t i = 0; i < 360; i += 10)
+			for (float32_t i = 0; i < 360; i += 10)
 			{
-				for (int32_t j = 0; j < 360; j += 10)
+				for (float32_t j = 0; j < 360; j += 10)
 				{
 					float32_t x = size.x * cos(math::radians(i)) * sin(math::radians(j));
 					float32_t y = size.y * sin(math::radians(i)) * sin(math::radians(j));

@@ -17,7 +17,7 @@ namespace spark
 
 		static void on_update();
 
-		static bool on_event(std::shared_ptr <event> event);
+		static void on_event(std::shared_ptr <event> event);
 
 		static void on_shutdown();
 

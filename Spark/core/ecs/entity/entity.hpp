@@ -33,6 +33,7 @@ namespace spark
 		}
 
 
+
 		void destroy_entity(entity e)
 		{
 			m_recycled_ids.push(e);

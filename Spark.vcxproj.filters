@@ -316,5 +316,6 @@
     <ClCompile Include="Spark\include\IMGUI\imgui_widgets.cpp">
       <Filter>include\IMGUI</Filter>
     </ClCompile>
+    <ClCompile Include="Spark\core\ecs\observer.cpp" />
   </ItemGroup>
 </Project>

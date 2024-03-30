@@ -348,6 +348,11 @@ namespace spark
 			int32_t ambient = 1,
 			float32_t shininess = 0)
 		{
+			if (m_materials.contains(name))
+			{
+				return *m_materials[name];
+			}
+
 			texture* tex = nullptr;
 
 			GLuint shader_program = std::get<1>(m_shader_manager.load_shader(shader_paths));
@@ -405,7 +410,10 @@ namespace spark
 		}
 
 	private:
-		material_manager() = default;
+		material_manager()
+		{
+			create_material("__default__");
+		}
 		~material_manager() = default;
 	private:
 		shader_manager& m_shader_manager = shader_manager::get();
@@ -425,6 +433,11 @@ namespace spark
 
 		mesh& create_mesh(const std::string& name, const std::vector <vertex>& vertices)
 		{
+			if (m_meshes.contains(name))
+			{
+				return *m_meshes[name];
+			}
+
 			m_meshes[name] = std::make_unique<mesh>(vertices);
 			return *m_meshes[name];
 		}

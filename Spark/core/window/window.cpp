@@ -4,6 +4,8 @@
 #include "../events/event.hpp"
 #include "../logging/log.hpp"
 #include "../ui/ui.hpp"
+#include "../util/wrap.hpp"
+#include "../ecs/component/shader.hpp"
 
 namespace spark
 {
@@ -22,7 +24,7 @@ namespace spark
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 		m_window = glfwCreateWindow(
-				m_window_data->m_width, m_window_data->m_height, m_window_data->m_title.c_str(), NULL, NULL);
+			m_window_data->m_width, m_window_data->m_height, m_window_data->m_title.c_str(), NULL, NULL);
 
 		glfwMakeContextCurrent(m_window);
 		glfwSetFramebufferSizeCallback(m_window, framebuffer_size_callback);
@@ -31,6 +33,8 @@ namespace spark
 		glEnable(GL_DEPTH_TEST);
 
 		glewInit();
+
+		init_framebuffer();
 
 		vsync(m_window_data->m_vsync);
 
@@ -41,6 +45,56 @@ namespace spark
 		glfwSetMouseButtonCallback(m_window, mouse_button_event_callback);
 		glfwSetCursorPosCallback(m_window, mouse_move_event_callback);
 		glfwSetScrollCallback(m_window, mouse_scroll_event_callback);
+	}
+
+	void window::init_framebuffer()
+	{
+		auto& _shader_manager = engine::get<shader_manager>();
+		auto [name, program] = _shader_manager.load_shader({"Spark/shaders/quad.vert", "Spark/shaders/quad.frag"});
+
+		m_window_data->m_screen_shader = program;
+
+		// Generate and bind the framebuffer
+		glGenFramebuffers(1, &m_window_data->m_framebuffer);
+		glBindFramebuffer(GL_FRAMEBUFFER, m_window_data->m_framebuffer);
+
+		// Create a texture to attach to the framebuffer
+		glGenTextures(1, &m_window_data->m_texture_color_buffer);
+		glBindTexture(GL_TEXTURE_2D, m_window_data->m_texture_color_buffer);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_window_data->m_width, m_window_data->m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_window_data->m_texture_color_buffer, 0);
+
+		glGenRenderbuffers(1, &m_window_data->m_render_buffer);
+		glBindRenderbuffer(GL_RENDERBUFFER, m_window_data->m_render_buffer);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_window_data->m_width, m_window_data->m_height);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_window_data->m_render_buffer);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0); // Unbind the framebuffer
+
+		setup_fullscreen_quad();
+	}
+
+	void window::render_framebuffer_to_screen()
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glDisable(GL_DEPTH_TEST);
+
+		glUseProgram(m_window_data->m_screen_shader);
+
+		// Bind the VAO for the quad
+		glBindVertexArray(m_window_data->m_quad_vao);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, m_window_data->m_texture_color_buffer);
+
+		glUniform1i(glGetUniformLocation(m_window_data->m_screen_shader, "screenTexture"), 0);
+
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		glBindVertexArray(0);
+		glEnable(GL_DEPTH_TEST);
 	}
 
 	window& window::get()
@@ -60,20 +114,46 @@ namespace spark
 		m_event_callback = window::event_callback;
 	}
 
-	void window::on_update()
-	{
-		glfwPollEvents();
-
-		auto& _ui = ui_manager::get();
-
-		_ui.on_update();
-
-		glfwSwapBuffers(m_window);
-	}
-
 	bool window::running()
 	{
 		return !glfwWindowShouldClose(m_window);
+	}
+
+	void window::pre_draw()
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, m_window_data->m_framebuffer);
+		clear_screen();
+	}
+
+	void window::post_draw()
+	{
+		glfwSwapBuffers(m_window); // Move buffer swap here.
+		glfwPollEvents(); // Handle window events.
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+	void window::setup_fullscreen_quad()
+	{
+		float32_t quad[] = {
+			// positions   // texCoords
+			-1.0f,  1.0f,  0.0f, 1.0f,
+			-1.0f, -1.0f,  0.0f, 0.0f,
+			 1.0f, -1.0f,  1.0f, 0.0f,
+
+			-1.0f,  1.0f,  0.0f, 1.0f,
+			 1.0f, -1.0f,  1.0f, 0.0f,
+			 1.0f,  1.0f,  1.0f, 1.0f
+		};
+
+		glGenVertexArrays(1, &m_window_data->m_quad_vao);
+		glGenBuffers(1, &m_window_data->m_quad_vbo);
+		glBindVertexArray(m_window_data->m_quad_vao);
+		glBindBuffer(GL_ARRAY_BUFFER, m_window_data->m_quad_vbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(quad), &quad, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float32_t), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float32_t), (void*)(2 * sizeof(float32_t)));
 	}
 
 	void window::vsync(bool vsync)
@@ -99,6 +179,10 @@ namespace spark
 	window::~window()
 	{
 		m_running = false;
+		glfwDestroyWindow(m_window);
+		glDeleteFramebuffers(1, &m_window_data->m_framebuffer);
+		glDeleteTextures(1, &m_window_data->m_texture_color_buffer);
+		glDeleteRenderbuffers(1, &m_window_data->m_render_buffer);
 		glfwDestroyWindow(m_window);
 	}
 
@@ -139,24 +223,24 @@ namespace spark
 
 		switch (action)
 		{
-			case GLFW_PRESS:
-			{
-				auto event = std::make_shared<key_pressed_event>(key);
-				_window_data->m_event_callback(event);
-				break;
-			}
-			case GLFW_RELEASE:
-			{
-				auto event = std::make_shared<key_released_event>(key);
-				_window_data->m_event_callback(event);
-				break;
-			}
-			case GLFW_REPEAT:
-			{
-				auto event = std::make_shared<key_repeat_event>(key);
-				_window_data->m_event_callback(event);
-				break;
-			}
+		case GLFW_PRESS:
+		{
+			auto event = std::make_shared<key_pressed_event>(key);
+			_window_data->m_event_callback(event);
+			break;
+		}
+		case GLFW_RELEASE:
+		{
+			auto event = std::make_shared<key_released_event>(key);
+			_window_data->m_event_callback(event);
+			break;
+		}
+		case GLFW_REPEAT:
+		{
+			auto event = std::make_shared<key_repeat_event>(key);
+			_window_data->m_event_callback(event);
+			break;
+		}
 		}
 	}
 
@@ -166,18 +250,18 @@ namespace spark
 
 		switch (action)
 		{
-			case GLFW_PRESS:
-			{
-				auto event = std::make_shared<mouse_pressed_event>(button);
-				_window_data->m_event_callback(event);
-				break;
-			}
-			case GLFW_RELEASE:
-			{
-				auto event = std::make_shared<mouse_released_event>(button);
-				_window_data->m_event_callback(event);
-				break;
-			}
+		case GLFW_PRESS:
+		{
+			auto event = std::make_shared<mouse_pressed_event>(button);
+			_window_data->m_event_callback(event);
+			break;
+		}
+		case GLFW_RELEASE:
+		{
+			auto event = std::make_shared<mouse_released_event>(button);
+			_window_data->m_event_callback(event);
+			break;
+		}
 		}
 	}
 

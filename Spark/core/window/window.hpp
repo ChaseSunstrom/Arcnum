@@ -29,6 +29,18 @@ namespace spark
 
 		uint32_t m_height = 1080;
 
+		GLuint m_framebuffer = 0; 
+
+		GLuint m_texture_color_buffer = 0;
+
+		GLuint m_render_buffer = 0;
+
+		GLuint m_quad_vao = 0;
+
+		GLuint m_quad_vbo = 0;
+
+		GLuint m_screen_shader;
+
 		std::function<void(std::shared_ptr<event>)> m_event_callback;
 	};
 
@@ -37,11 +49,11 @@ namespace spark
 	public:
 		static window& get();
 
-		void on_update();
+		void pre_draw();
+
+		void post_draw();
 
 		void vsync(bool vsync);
-
-		void init_gl();
 
 		bool running();
 
@@ -50,6 +62,8 @@ namespace spark
 		GLFWwindow* get_window() { return m_window; }
 
 		window_data& get_window_data() { return *m_window_data; }
+
+		void render_framebuffer_to_screen();
 
 		// ==============================================================================
 		// EVENT CALLBACKS:
@@ -73,6 +87,12 @@ namespace spark
 		window();
 
 		~window();
+
+		void setup_fullscreen_quad();
+
+		void init_gl();
+
+		void init_framebuffer();
 	private:
 		GLFWwindow* m_window;
 

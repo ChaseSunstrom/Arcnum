@@ -34,7 +34,7 @@ namespace spark
 	void application::on_update()
 	{
 		app_functions::s_on_update();
-		
+
 		auto& _window = engine::get<window>();
 		auto& _renderer = engine::get<renderer>();
 		auto& _scene_manager = engine::get<scene_manager>();
@@ -43,14 +43,19 @@ namespace spark
 
 		_ecs.update_systems(s_delta_time);
 
-		_window.on_update();
-
 		_renderer.on_update();
+
+		_window.pre_draw(); 
 
 		_scene_manager.update_current_scene(_renderer.get_fixed_delta_time());
 
-		// Needs to be called after the renderer
-		_ui.on_end_update();
+		_window.render_framebuffer_to_screen(); // Renders the framebuffer to the screen
+
+		_ui.on_update(); // UI rendering should come after rendering the framebuffer to screen
+
+		_window.post_draw(); // Swap buffers and poll events
+
+
 		spark::thread_pool::synchronize_registered_threads();
 	}
 

@@ -15,5 +15,3 @@ void main() {
     vec4 result = text * material_color;
     FragColor = result;
 }
-
-

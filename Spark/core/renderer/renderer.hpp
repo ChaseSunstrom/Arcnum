@@ -16,6 +16,8 @@ namespace spark
 	{
 		renderer_settings(
 			int32_t resolution_width = 1920, int32_t resolution_height = 1080,
+			int32_t min_width = 800, int32_t min_height = 600,
+			int32_t max_width = 3840, int32_t max_height = 2160,
 			int32_t texture_quality = 1, int32_t shadow_quality = 1,
 			int32_t reflection_quality = 1, int32_t anti_aliasing_level = 1,
 			int32_t lighting_quality = 1, int32_t volumetric_lighting_quality = 0,
@@ -36,8 +38,10 @@ namespace spark
 			bool uv_debug_mode = false, bool physics_debug_drawer = false,
 			bool lighting_only_mode = false, float32_t ui_scale = 1.0f,
 			bool subtitles = false, int32_t text_size = 1)
-			: 
+			:
 			m_resolution_width(resolution_width), m_resolution_height(resolution_height),
+			m_min_width(min_width), m_min_height(min_height), m_max_width(max_width),
+			m_max_height(max_height),
 			m_texture_quality(texture_quality), m_shadow_quality(shadow_quality),
 			m_reflection_quality(reflection_quality), m_anti_aliasing_level(anti_aliasing_level),
 			m_lighting_quality(lighting_quality), m_volumetric_lighting_quality(volumetric_lighting_quality),
@@ -59,9 +63,12 @@ namespace spark
 			m_subtitles(subtitles), m_text_size(text_size)
 		{}
 
-
 		int32_t m_resolution_width = 1920;
 		int32_t m_resolution_height = 1080;
+		int32_t m_min_width = 800;
+		int32_t m_min_height = 600;
+		int32_t m_max_width = 3840;
+		int32_t m_max_height = 2160;
 
 		// Quality settings
 		int32_t m_texture_quality = 1; // 0: Low, 1: Medium, 2: High

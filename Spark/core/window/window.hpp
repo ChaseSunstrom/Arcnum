@@ -14,8 +14,8 @@ namespace spark
 		window_data(
 				std::string title,
 				bool vsync,
-				uint32_t height,
-				uint32_t width,
+				int32_t height,
+				int32_t width,
 				std::function<void(std::shared_ptr<event>)> event_callback) :
 				m_title(title), m_vsync(vsync), m_height(height), m_width(width), m_event_callback(event_callback) { }
 
@@ -25,9 +25,9 @@ namespace spark
 
 		bool m_vsync = false;
 
-		uint32_t m_width = 1080;
+		int32_t m_width = 1080;
 
-		uint32_t m_height = 1080;
+		int32_t m_height = 1080;
 
 		GLuint m_framebuffer = 0; 
 
@@ -39,7 +39,7 @@ namespace spark
 
 		GLuint m_quad_vbo = 0;
 
-		GLuint m_screen_shader;
+		GLuint m_screen_shader = 0;
 
 		std::function<void(std::shared_ptr<event>)> m_event_callback;
 	};

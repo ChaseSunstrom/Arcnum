@@ -49,29 +49,44 @@ namespace spark
 
 	void window::init_framebuffer()
 	{
-		auto& _shader_manager = engine::get<shader_manager>();
-		auto [name, program] = _shader_manager.load_shader({"Spark/shaders/quad.vert", "Spark/shaders/quad.frag"});
+		if (m_window_data->m_screen_shader == 0)
+		{
+			auto& _shader_manager = engine::get<shader_manager>();
+			auto [name, program] = _shader_manager.load_shader({ "Spark/shaders/quad.vert", "Spark/shaders/quad.frag" });
+			m_window_data->m_screen_shader = program;
+		}
 
-		m_window_data->m_screen_shader = program;
+		// Generate the framebuffer if not already created
+		if (m_window_data->m_framebuffer == 0)
+		{
+			glGenFramebuffers(1, &m_window_data->m_framebuffer);
+		}
 
-		// Generate and bind the framebuffer
-		glGenFramebuffers(1, &m_window_data->m_framebuffer);
+		// Always bind the framebuffer to configure it
 		glBindFramebuffer(GL_FRAMEBUFFER, m_window_data->m_framebuffer);
 
-		// Create a texture to attach to the framebuffer
-		glGenTextures(1, &m_window_data->m_texture_color_buffer);
+		// Create or resize the texture attached to the framebuffer
+		if (m_window_data->m_texture_color_buffer == 0)
+		{
+			glGenTextures(1, &m_window_data->m_texture_color_buffer);
+		}
 		glBindTexture(GL_TEXTURE_2D, m_window_data->m_texture_color_buffer);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_window_data->m_width, m_window_data->m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_window_data->m_texture_color_buffer, 0);
 
-		glGenRenderbuffers(1, &m_window_data->m_render_buffer);
+		// Create or resize the render buffer attached to the framebuffer
+		if (m_window_data->m_render_buffer == 0)
+		{
+			glGenRenderbuffers(1, &m_window_data->m_render_buffer);
+		}
 		glBindRenderbuffer(GL_RENDERBUFFER, m_window_data->m_render_buffer);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_window_data->m_width, m_window_data->m_height);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_window_data->m_render_buffer);
 
-		glBindFramebuffer(GL_FRAMEBUFFER, 0); // Unbind the framebuffer
+		// Unbind the framebuffer after configuration
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		setup_fullscreen_quad();
 	}
@@ -134,6 +149,13 @@ namespace spark
 
 	void window::setup_fullscreen_quad()
 	{
+		static bool called = false;
+
+		// So if the framebuffer gets recreated it does not do this again
+		if (called) return;
+
+		called = true;
+
 		float32_t quad[] = {
 			// positions   // texCoords
 			-1.0f,  1.0f,  0.0f, 1.0f,
@@ -201,11 +223,14 @@ namespace spark
 	void window::resized_event_callback(GLFWwindow* window, int32_t width, int32_t height)
 	{
 		window_data* _window_data = static_cast<window_data*>(glfwGetWindowUserPointer(window));
-		auto event = std::make_shared<window_resized_event>(width, height);
-
 		_window_data->m_width = width;
 		_window_data->m_height = height;
 
+		get().init_framebuffer(); 
+
+		glViewport(0, 0, width, height);
+
+		auto event = std::make_shared<window_resized_event>(width, height);
 		_window_data->m_event_callback(event);
 	}
 

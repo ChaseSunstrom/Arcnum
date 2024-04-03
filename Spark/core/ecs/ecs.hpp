@@ -9,6 +9,7 @@
 #include "component/component_types.hpp"
 #include "entity/entity.hpp"
 #include "system/system.hpp"
+#include "../net/serializeable.hpp"
 
 namespace spark
 {
@@ -45,7 +46,7 @@ namespace spark
 
 	struct entity_destroyed_event : public event
 	{
-		entity_destroyed_event(entity entity) 
+		entity_destroyed_event(entity entity)
 			: event(ENTITY_DESTROYED_EVENT), m_entity(entity) {}
 
 		entity m_entity;
@@ -237,6 +238,8 @@ namespace spark
 		entity_manager& m_entity_manager = entity_manager::get();
 
 		system_manager& m_system_manager = system_manager::get();
+
+		SERIALIZE_MEMBERS(ecs, m_observers, m_component_manager, m_entity_manager, m_system_manager)
 	};
 }
 

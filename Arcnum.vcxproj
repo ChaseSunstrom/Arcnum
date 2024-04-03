@@ -58,7 +58,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>Spark;Spark\include;Spark\include\BOOST;Spark\include\IRRKLANG;Spark\include\GLEW;Spark\include\GLFW;Spark\include\GLM;Spark\include\OTHER;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Spark;Spark\include;Spark\include\BOOST;Spark\include\IRRKLANG;Spark\include\GLEW;Spark\include\GLFW;Spark\include\GLM;Spark\include\RFL;Spark\include\OTHER;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <LanguageStandard>stdcpp20</LanguageStandard>
@@ -79,7 +79,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>Spark;Spark\include;Spark\include\BOOST;Spark\include\IRRKLANG;Spark\include\GLEW;Spark\include\GLFW;Spark\include\GLM;Spark\include\OTHER;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Spark;Spark\include;Spark\include\BOOST;Spark\include\IRRKLANG;Spark\include\GLEW;Spark\include\GLFW;Spark\include\GLM;Spark\include\RFL;Spark\include\OTHER;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>

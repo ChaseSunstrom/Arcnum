@@ -7,6 +7,8 @@
 #include "../component/component.hpp"
 #include "../../util/memory.hpp"
 
+#include "../../net/serializeable.hpp"
+
 namespace spark
 {
 	class system
@@ -108,6 +110,13 @@ namespace spark
 			std::vector<std::unique_ptr<system>>();
 
 		component_manager& m_component_manager = component_manager::get();
+
+		SERIALIZE_MEMBERS(
+			system_manager,
+			m_start_systems,
+			m_update_systems,
+			m_shutdown_systems
+		)
 	};
 }
 

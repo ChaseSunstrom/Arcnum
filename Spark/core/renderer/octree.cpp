@@ -364,7 +364,6 @@ namespace spark
 	bool octree::is_inside(const math::vec3& center, float32_t size) const
 	{
 		bool inside = true;
-		// Check if the volume's min corner is inside
 		inside &= (center.x - size) >= (m_center.x - m_size) && (center.x + size) <= (m_center.x + m_size);
 		inside &= (center.y - size) >= (m_center.y - m_size) && (center.y + size) <= (m_center.y + m_size);
 		inside &= (center.z - size) >= (m_center.z - m_size) && (center.z + size) <= (m_center.z + m_size);
@@ -382,12 +381,12 @@ namespace spark
 	{
 		for (const auto& plane : frustum.m_planes)
 		{
-			math::vec3 closestPoint;
-			closestPoint.x = plane.m_normal.x > 0 ? m_center.x - m_size / 2 : m_center.x + m_size / 2;
-			closestPoint.y = plane.m_normal.y > 0 ? m_center.y - m_size / 2 : m_center.y + m_size / 2;
-			closestPoint.z = plane.m_normal.z > 0 ? m_center.z - m_size / 2 : m_center.z + m_size / 2;
+			math::vec3 closest_point;
+			closest_point.x = plane.m_normal.x > 0 ? m_center.x - m_size / 2 : m_center.x + m_size / 2;
+			closest_point.y = plane.m_normal.y > 0 ? m_center.y - m_size / 2 : m_center.y + m_size / 2;
+			closest_point.z = plane.m_normal.z > 0 ? m_center.z - m_size / 2 : m_center.z + m_size / 2;
 
-			if (plane.get_signed_distance(closestPoint) > 0)
+			if (plane.get_signed_distance(closest_point) > 0)
 			{
 				return false; // AABB is completely outside the frustum
 			}

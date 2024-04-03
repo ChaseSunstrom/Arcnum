@@ -1,7 +1,7 @@
 #ifndef SPARK_CHAT_MESSAGE_HPP
 #define SPARK_CHAT_MESSAGE_HPP
 
-#include "packet.hpp"
+#include "serializeable.hpp"
 
 namespace spark
 {
@@ -19,14 +19,9 @@ namespace spark
                 SPARK_INFO("[CHAT]: " << m_message);
             }
 
-            template<class Archive>
-            void serialize(Archive& ar, const unsigned int version)
-            {
-                ar& boost::serialization::base_object<packet>(*this);
-                ar& m_message;
-            }
         public:
             std::string m_message;
+            SERIALIZE_MEMBERS(chat_message, m_message)
         private:
             friend class ::boost::serialization::access;
         };

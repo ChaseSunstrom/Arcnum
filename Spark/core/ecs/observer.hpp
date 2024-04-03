@@ -14,6 +14,7 @@ namespace spark
         virtual ~observer();
 
 		virtual void on_notify(std::shared_ptr<event> event) {}
+
 	};
 }
 

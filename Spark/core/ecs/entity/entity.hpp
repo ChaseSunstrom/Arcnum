@@ -3,6 +3,7 @@
 
 #include "../../spark.hpp"
 #include "entity_type.hpp"
+#include "../../net/serializeable.hpp"
 #include "../component/component.hpp"
 
 namespace spark
@@ -22,8 +23,8 @@ namespace spark
 				return m_next_id++;
 			}
 
-			uint64_t id = m_recycled_ids.top();
-			m_recycled_ids.pop();
+			uint64_t id = m_recycled_ids.front();
+			m_recycled_ids.pop_front();
 			return id;
 		}
 
@@ -32,11 +33,9 @@ namespace spark
 			return m_next_id;
 		}
 
-
-
 		void destroy_entity(entity e)
 		{
-			m_recycled_ids.push(e);
+			m_recycled_ids.push_front(e);
 		}
 	private:
 		entity_manager() = default;
@@ -45,7 +44,8 @@ namespace spark
 	private:
 		entity m_next_id = 0;
 
-		std::stack <entity> m_recycled_ids = std::stack<entity>();
+		std::deque <entity> m_recycled_ids;
+		SERIALIZE_MEMBERS(entity_manager, m_next_id, m_recycled_ids)
 	};
 }
 

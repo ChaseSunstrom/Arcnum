@@ -70,6 +70,7 @@ namespace spark
 		{
 			glGenTextures(1, &m_window_data->m_texture_color_buffer);
 		}
+
 		glBindTexture(GL_TEXTURE_2D, m_window_data->m_texture_color_buffer);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_window_data->m_width, m_window_data->m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -81,6 +82,7 @@ namespace spark
 		{
 			glGenRenderbuffers(1, &m_window_data->m_render_buffer);
 		}
+
 		glBindRenderbuffer(GL_RENDERBUFFER, m_window_data->m_render_buffer);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_window_data->m_width, m_window_data->m_height);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_window_data->m_render_buffer);

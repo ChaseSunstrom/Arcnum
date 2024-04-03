@@ -1,7 +1,6 @@
 #include "spark.hpp"
 
 #include "app/app.hpp"
-#include "app/service.hpp"
 #include "ecs/ecs.hpp"
 #include "util/thread_pool.hpp"
 #include "tests/test.hpp"

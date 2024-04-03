@@ -3,7 +3,7 @@
 
 #include <boost/asio.hpp>
 #include "../spark.hpp"
-#include "packet.hpp"
+#include "serializeable.hpp"
 #include "net_common.hpp"
 #include "../events/sub.hpp"
 

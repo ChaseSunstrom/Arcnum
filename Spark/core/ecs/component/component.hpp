@@ -4,6 +4,9 @@
 #include "../entity/entity_type.hpp"
 
 #include "shader.hpp"
+#include "../../net/serializeable.hpp"
+
+#include <boost/serialization/access.hpp>
 
 namespace spark
 {
@@ -49,19 +52,23 @@ namespace spark
 
 	struct component_array_base
 	{
+		component_array_base() = default;
+
 		virtual ~component_array_base() = default;
 
-		virtual void entity_destroyed(entity entity) = 0;
+		virtual void entity_destroyed(entity entity) {}
 
-		virtual bool has_component(entity entity) const = 0;
+		virtual bool has_component(entity entity) const {}
 
-		virtual const component_info_base get_component(entity entity) = 0;
+		virtual const component_info_base get_component(entity entity) {}
 	};
 
 	template <typename T>
 	class component_array : public component_array_base
 	{
 	public:
+		component_array() = default;
+
 		std::vector <T>& get_array()
 		{
 			return m_component_array;
@@ -117,6 +124,7 @@ namespace spark
 
 	private:
 		std::vector <T> m_component_array = std::vector<T>();
+		SERIALIZE_MEMBERS(component_array, m_component_array)
 	};
 
 	class component_manager
@@ -230,6 +238,7 @@ namespace spark
 
 	private:
 		std::unordered_map <std::type_index, std::unique_ptr<component_array_base>> m_components;
+		SERIALIZE_MEMBERS(component_manager, m_components)
 	};
 }
 

@@ -26,6 +26,7 @@ project "Arcnum"
         "Spark/include/GLEW",
         "Spark/include/GLFW",
         "Spark/include/GLM",
+        "Spark/include/RFL",
         "Spark/include/OTHER"
     }
 
@@ -72,7 +73,7 @@ project "Spark"
     language "C++"
     targetdir "bin/%{cfg.buildcfg}/lib"
     cppdialect "C++20"
-    files { "Spark/core/**.cpp", "Spark/core/**.hpp", "Spark/core/**.h", "Spark/include/IMGUI/**.cpp", "Spark/include/IMGUI/**.h" }
+    files { "Spark/core/**.cpp", "Spark/core/**.hpp", "Spark/core/**.h", "Spark/include/IMGUI/**.cpp", "Spark/include/IMGUI/**.h", "Spark/include/RFL/**.hpp", "Spark/include/RFL/**.h", "Spark/include/RFL/**.c", "Spark/include/RFL/**.cpp" }
     includedirs {
         "Spark/include",
         "Spark/include/BOOST",
@@ -80,6 +81,7 @@ project "Spark"
         "Spark/include/GLEW",
         "Spark/include/GLFW",
         "Spark/include/GLM",
+        "Spark/include/RFL",
         "Spark/include/OTHER"
     }
 

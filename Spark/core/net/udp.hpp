@@ -11,7 +11,7 @@
 #include "../logging/log.hpp"
 #include "../events/sub.hpp"
 
-#include "packet.hpp"
+#include "serializeable.hpp"
 #include "net_common.hpp"
 
 namespace spark
@@ -159,7 +159,7 @@ namespace spark
                     });
             }
 
-            void broadcast(const packet& packet)
+            void broadcast(const serializeable& packet)
             {
                 std::string serialized_packet = serialize(packet);
 

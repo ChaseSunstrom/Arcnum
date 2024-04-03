@@ -1,4 +1,4 @@
-#include "packet.hpp"
+#include "serializeable.hpp"
 
 namespace spark
 {

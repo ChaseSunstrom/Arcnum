@@ -49,6 +49,8 @@
 #include <gtc/matrix_inverse.hpp>
 #include <gtx/transform.hpp>
 #include <gtc/type_ptr.hpp>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 #include <common.hpp>
 
 #endif

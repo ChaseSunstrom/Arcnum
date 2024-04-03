@@ -16,7 +16,6 @@
 #include <core/scene/scene_manager.hpp>
 #include <core/app/app_interface.hpp>
 #include <core/app/app.hpp>
-#include <core/app/service.hpp>
 #include <core/lighting/light.hpp>
 #include <core/audio/sound.hpp>
 #include <core/net/udp.hpp>

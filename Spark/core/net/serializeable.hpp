@@ -16,7 +16,6 @@
 #include <boost/serialization/array.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/detail/stack_constructor.hpp>
-
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/deque.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -82,7 +81,23 @@
             boost::archive::binary_iarchive ia(iss); \
             ia >> *this; \
         } \
-    } 
+    }
+
+#define SERIALIZE_EMPTY() \
+		friend class boost::serialization::access; \
+	template<class Archive> \
+	void serialize(Archive& ar, const unsigned int version) { \
+	} \
+	struct state { \
+		friend class boost::serialization::access; \
+		template<class Archive> \
+		void serialize(Archive& ar, const unsigned int version) { \
+		} \
+	}; \
+	std::string export_state_to_binary() const { \
+		return ""; \
+	} \
+	void apply_state_from_binary(const std::string& serialized_state) { }
 
 template<typename T>
 struct packet_traits;
@@ -228,7 +243,6 @@ namespace spark
 			uint16_t m_version;
 			std::string m_data; 
 			SERIALIZE_MEMBERS(envelope, m_type, m_version, m_data)
-
 		};
 
 		template<typename T>

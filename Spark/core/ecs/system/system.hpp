@@ -14,6 +14,7 @@ namespace spark
 	class system
 	{
 	public:
+		system() = default;
 		virtual ~system() = default;
 
 		virtual void on_init()
@@ -27,6 +28,7 @@ namespace spark
 
 		virtual void on_shutdown()
 		{}
+		SERIALIZE_EMPTY()
 	private:
 		component_manager& m_component_manager = component_manager::get();
 	};

@@ -26,6 +26,7 @@
 namespace spark
 {
 	namespace math = glm;
+
 	using namespace irrklang;
 }
 

@@ -239,7 +239,12 @@ namespace spark
 
 		system_manager& m_system_manager = system_manager::get();
 
-		SERIALIZE_MEMBERS(ecs, m_observers, m_component_manager, m_entity_manager, m_system_manager)
+		SERIALIZE_MEMBERS(
+			ecs, 
+			m_component_manager, 
+			m_entity_manager, 
+			m_system_manager
+		)
 	};
 }
 

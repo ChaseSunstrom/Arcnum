@@ -1011,6 +1011,7 @@
     <ClInclude Include="Spark\include\RFL\yyjson.h">
       <Filter>include\RFL</Filter>
     </ClInclude>
+    <ClInclude Include="Spark\core\util\result.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spark\core\app\app.cpp">

@@ -449,10 +449,54 @@ namespace spark
 			ImVec4 m_modal_window_dim_bg;
 
 			// Initialize with default values
-			color_scheme()
-				: m_text(ImGui::GetStyle().Colors[ImGuiCol_Text]),
+			color_scheme() : 
+				m_text(ImGui::GetStyle().Colors[ImGuiCol_Text]),
 				m_text_disabled(ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]),
-				// Continue initialization for all colors...
+				m_window_bg(ImGui::GetStyle().Colors[ImGuiCol_WindowBg]),
+				m_child_bg(ImGui::GetStyle().Colors[ImGuiCol_ChildBg]),
+				m_popup_bg(ImGui::GetStyle().Colors[ImGuiCol_PopupBg]),
+				m_border(ImGui::GetStyle().Colors[ImGuiCol_Border]),
+				m_border_shadow(ImGui::GetStyle().Colors[ImGuiCol_BorderShadow]),
+				m_frame_bg(ImGui::GetStyle().Colors[ImGuiCol_FrameBg]),
+				m_frame_bg_hovered(ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered]),
+				m_frame_bg_active(ImGui::GetStyle().Colors[ImGuiCol_FrameBgActive]),
+				m_title_bg(ImGui::GetStyle().Colors[ImGuiCol_TitleBg]),
+				m_title_bg_active(ImGui::GetStyle().Colors[ImGuiCol_TitleBgActive]),
+				m_title_bg_collapsed(ImGui::GetStyle().Colors[ImGuiCol_TitleBgCollapsed]),
+				m_menu_bar_bg(ImGui::GetStyle().Colors[ImGuiCol_MenuBarBg]),
+				m_scrollbar_bg(ImGui::GetStyle().Colors[ImGuiCol_ScrollbarBg]),
+				m_scrollbar_grab(ImGui::GetStyle().Colors[ImGuiCol_ScrollbarGrab]),
+				m_scrollbar_grab_hovered(ImGui::GetStyle().Colors[ImGuiCol_ScrollbarGrabHovered]),
+				m_scrollbar_grab_active(ImGui::GetStyle().Colors[ImGuiCol_ScrollbarGrabActive]),
+				m_check_mark(ImGui::GetStyle().Colors[ImGuiCol_CheckMark]),
+				m_slider_grab(ImGui::GetStyle().Colors[ImGuiCol_SliderGrab]),
+				m_slider_grab_active(ImGui::GetStyle().Colors[ImGuiCol_SliderGrabActive]),
+				m_button(ImGui::GetStyle().Colors[ImGuiCol_Button]),
+				m_button_hovered(ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered]),
+				m_button_active(ImGui::GetStyle().Colors[ImGuiCol_ButtonActive]),
+				m_header(ImGui::GetStyle().Colors[ImGuiCol_Header]),
+				m_header_hovered(ImGui::GetStyle().Colors[ImGuiCol_HeaderHovered]),
+				m_header_active(ImGui::GetStyle().Colors[ImGuiCol_HeaderActive]),
+				m_separator(ImGui::GetStyle().Colors[ImGuiCol_Separator]),
+				m_separator_hovered(ImGui::GetStyle().Colors[ImGuiCol_SeparatorHovered]),
+				m_separator_active(ImGui::GetStyle().Colors[ImGuiCol_SeparatorActive]),
+				m_resize_grip(ImGui::GetStyle().Colors[ImGuiCol_ResizeGrip]),
+				m_resize_grip_hovered(ImGui::GetStyle().Colors[ImGuiCol_ResizeGripHovered]),
+				m_resize_grip_active(ImGui::GetStyle().Colors[ImGuiCol_ResizeGripActive]),
+				m_tab(ImGui::GetStyle().Colors[ImGuiCol_Tab]),
+				m_tab_hovered(ImGui::GetStyle().Colors[ImGuiCol_TabHovered]),
+				m_tab_active(ImGui::GetStyle().Colors[ImGuiCol_TabActive]),
+				m_tab_unfocused(ImGui::GetStyle().Colors[ImGuiCol_TabUnfocused]),
+				m_tab_unfocused_active(ImGui::GetStyle().Colors[ImGuiCol_TabUnfocusedActive]),
+				m_plot_lines(ImGui::GetStyle().Colors[ImGuiCol_PlotLines]),
+				m_plot_lines_hovered(ImGui::GetStyle().Colors[ImGuiCol_PlotLinesHovered]),
+				m_plot_histogram(ImGui::GetStyle().Colors[ImGuiCol_PlotHistogram]),
+				m_plot_histogram_hovered(ImGui::GetStyle().Colors[ImGuiCol_PlotHistogramHovered]),
+				m_text_selected_bg(ImGui::GetStyle().Colors[ImGuiCol_TextSelectedBg]),
+				m_drag_drop_target(ImGui::GetStyle().Colors[ImGuiCol_DragDropTarget]),
+				m_nav_highlight(ImGui::GetStyle().Colors[ImGuiCol_NavHighlight]),
+				m_nav_windowing_highlight(ImGui::GetStyle().Colors[ImGuiCol_NavWindowingHighlight]),
+				m_nav_windowing_dim_bg(ImGui::GetStyle().Colors[ImGuiCol_NavWindowingDimBg]),
 				m_modal_window_dim_bg(ImGui::GetStyle().Colors[ImGuiCol_ModalWindowDimBg])
 			{}
 		} m_colors;
@@ -498,18 +542,16 @@ namespace spark
 			style.ScrollbarSize = m_scrollbar_size;
 			style.ScrollbarRounding = m_scrollbar_rounding;
 
+			// Fonts and scaling
+			style.ScaleAllSizes(m_scale);
+
 			// Apply colors
-			style.Colors[ImGuiCol_Text] = m_colors.m_text;
-			style.Colors[ImGuiCol_TextDisabled] = m_colors.m_text_disabled;
 			style.GrabRounding = m_grab_rounding;
 			style.AntiAliasedLines = m_anti_aliased_lines;
 			style.AntiAliasedFill = m_anti_aliased_fill;
 			style.CurveTessellationTol = m_curve_tessellation_tol;
-
-			// Fonts and scaling
-			style.ScaleAllSizes(m_scale);
-
-			// Apply colors (continuing from previously set colors)
+			style.Colors[ImGuiCol_Text] = m_colors.m_text;
+			style.Colors[ImGuiCol_TextDisabled] = m_colors.m_text_disabled;
 			style.Colors[ImGuiCol_WindowBg] = m_colors.m_window_bg;
 			style.Colors[ImGuiCol_ChildBg] = m_colors.m_child_bg;
 			style.Colors[ImGuiCol_PopupBg] = m_colors.m_popup_bg;

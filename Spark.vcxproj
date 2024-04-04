@@ -140,6 +140,7 @@
     <ClInclude Include="Spark\core\util\file.hpp" />
     <ClInclude Include="Spark\core\util\macros.hpp" />
     <ClInclude Include="Spark\core\util\memory.hpp" />
+    <ClInclude Include="Spark\core\util\result.hpp" />
     <ClInclude Include="Spark\core\util\thread_pool.hpp" />
     <ClInclude Include="Spark\core\util\wrap.hpp" />
     <ClInclude Include="Spark\core\window\window.hpp" />

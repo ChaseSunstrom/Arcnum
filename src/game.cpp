@@ -120,6 +120,8 @@ void on_start()
 			add_cube_entity(random_position);
 		}));
 
+	std::string ecs_string = spark::serialize_to_binary(_ecs);
+	SPARK_TRACE(ecs_string);
 }
 
 void on_update()

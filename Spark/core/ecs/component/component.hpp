@@ -56,11 +56,13 @@ namespace spark
 
 		virtual ~component_array_base() = default;
 
-		virtual void entity_destroyed(entity entity) {}
+		virtual void entity_destroyed(entity entity) = 0;
 
-		virtual bool has_component(entity entity) const {}
+		virtual bool has_component(entity entity) const = 0;
 
-		virtual const component_info_base get_component(entity entity) {}
+		virtual const component_info_base get_component(entity entity) = 0;
+
+		SERIALIZE_EMPTY()
 	};
 
 	template <typename T>
@@ -138,7 +140,7 @@ namespace spark
 		template <typename T>
 		component_array<T>& get_component_array()
 		{
-			std::type_index type = std::type_index(typeid(T));
+			std::string type = std::type_index(typeid(T)).name();
 
 			if (m_components.find(type) == m_components.end())
 			{
@@ -152,7 +154,7 @@ namespace spark
 		template <typename T>
 		constexpr  void register_component()
 		{
-			std::type_index type = std::type_index(typeid(T));
+			std::string type = std::type_index(typeid(T)).name();
 			m_components[type] = std::make_unique<component_array<T>>();
 		}
 
@@ -218,7 +220,7 @@ namespace spark
 		template <typename T>
 		bool has_component(entity id) const
 		{
-			std::type_index type = std::type_index(typeid(T));
+			std::string type = std::type_index(typeid(T)).name();
 
 			auto found = m_components.find(type);
 
@@ -237,7 +239,7 @@ namespace spark
 		~component_manager() = default;
 
 	private:
-		std::unordered_map <std::type_index, std::unique_ptr<component_array_base>> m_components;
+		std::unordered_map <std::string, std::unique_ptr<component_array_base>> m_components;
 		SERIALIZE_MEMBERS(component_manager, m_components)
 	};
 }

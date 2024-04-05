@@ -29,6 +29,7 @@ namespace spark
 }
 
 #ifndef CHAT_MESSAGE_PACKET
+#define CHAT_MESSAGE_PACKET
     REGISTER_PACKET_TYPE(spark::net, chat_message, 1);
 #endif // CHAT_MESSAGE_PACKET
 

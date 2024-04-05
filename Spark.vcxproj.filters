@@ -1012,6 +1012,11 @@
       <Filter>include\RFL</Filter>
     </ClInclude>
     <ClInclude Include="Spark\core\util\result.hpp" />
+    <ClInclude Include="Spark\core\window\opengl_window.hpp" />
+    <ClInclude Include="Spark\core\window\window_manager.hpp" />
+    <ClInclude Include="Spark\core\window\vulkan_window.hpp" />
+    <ClInclude Include="Spark\core\window\directx_window.hpp" />
+    <ClInclude Include="Spark\core\window\metal_window.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spark\core\app\app.cpp">
@@ -1074,9 +1079,6 @@
     <ClCompile Include="Spark\core\util\wrap.cpp">
       <Filter>core\util</Filter>
     </ClCompile>
-    <ClCompile Include="Spark\core\window\window.cpp">
-      <Filter>core\window</Filter>
-    </ClCompile>
     <ClCompile Include="Spark\include\IMGUI\imgui.cpp">
       <Filter>include\IMGUI</Filter>
     </ClCompile>
@@ -1101,5 +1103,6 @@
     <ClCompile Include="Spark\include\RFL\yyjson.c">
       <Filter>include\RFL</Filter>
     </ClCompile>
+    <ClCompile Include="Spark\core\window\opengl_window.cpp" />
   </ItemGroup>
 </Project>

@@ -5,12 +5,13 @@
 namespace spark
 {
 	template <typename E>
-	concept exception = std::is_base_of_v<std::runtime_error, E>;
+	concept exception = std::is_base_of_v<std::exception, E>;
 
 	template <typename T>
 	class ok
 	{
 	public:
+		explicit ok() = default;
 		explicit ok(const T& value) : m_value(value) {}
 		explicit ok(T&& value) : m_value(std::move(value)) {} 
 		T& get_value() 
@@ -29,6 +30,7 @@ namespace spark
 	class error
 	{
 	public:
+		explicit error() = default;
 		explicit error(const E& error) : m_error(error) {}
 		explicit error(E&& error) : m_error(std::move(error)) {}
 		E& get_error() 
@@ -43,7 +45,7 @@ namespace spark
 		E m_error;
 	};
 
-	template <typename T, exception E>
+	template <typename T, exception E = std::exception>
 	class result
 	{
 	public:
@@ -52,6 +54,31 @@ namespace spark
 
 		template <typename F>
 		result(error<F>&& error) : m_value(std::forward<error<F>>(error)) {}
+
+		template<typename Func, typename... Args> requires (!exception<Func>) // Prevent this constructor from being called with error types directly
+		explicit result(Func&& func, Args&&... args) 
+		{
+			try 
+			{
+				if constexpr (std::is_invocable_r_v<void, Func, Args...>) 
+				{
+					std::invoke(std::forward<Func>(func), std::forward<Args>(args)...);
+					m_value = ok<T>(T{});
+				}
+				else 
+				{
+					m_value = ok<T>(std::invoke(std::forward<Func>(func), std::forward<Args>(args)...));
+				}
+			}
+			catch (const E& e) 
+			{
+				m_value = error<E>(e);
+			}
+			catch (...) 
+			{
+				m_value = error<E>(E("Unknown exception caught"));
+			}
+		}
 
 		bool is_ok() const 
 		{
@@ -139,6 +166,15 @@ namespace spark
 			{
 				return error_func(get_error());
 			}
+		}
+
+		T unwrap()
+		{
+			if (auto val = std::get_if<ok<T>>(&m_value)) 
+			{
+				return std::move(val->get_value());
+			}
+			throw std::get<error<E>>(m_value).get_error();
 		}
 	private:
 		std::variant<ok<T>, error<E>> m_value;

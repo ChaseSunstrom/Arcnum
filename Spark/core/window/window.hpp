@@ -19,7 +19,7 @@ namespace spark
 				std::function<void(std::shared_ptr<event>)> event_callback) :
 				m_title(title), m_vsync(vsync), m_height(height), m_width(width), m_event_callback(event_callback) { }
 
-		~window_data() = default;
+		virtual ~window_data() = default;
 
 		std::string m_title = "Title";
 
@@ -29,86 +29,31 @@ namespace spark
 
 		int32_t m_height = 1080;
 
-		GLuint m_framebuffer = 0; 
-
-		GLuint m_texture_color_buffer = 0;
-
-		GLuint m_render_buffer = 0;
-
-		GLuint m_quad_vao = 0;
-
-		GLuint m_quad_vbo = 0;
-
-		GLuint m_screen_shader = 0;
-
 		std::function<void(std::shared_ptr<event>)> m_event_callback;
 	};
 
 	class window
 	{
 	public:
-		static window& get();
+		virtual void pre_draw() = 0;
 
-		void pre_draw();
+		virtual void on_update() = 0;
 
-		void post_draw();
+		virtual void post_draw() = 0;
 
-		void vsync(bool vsync);
+		virtual bool is_running() = 0;
+		
+		virtual void set_vsync(bool vsync) = 0;
 
-		bool running();
+		virtual void set_window_title(const std::string& title) = 0;
 
-		void set_window_title(const std::string& title);
-
-		GLFWwindow* get_window() { return m_window; }
-
-		window_data& get_window_data() { return *m_window_data; }
-
-		void render_framebuffer_to_screen();
-
-		// ==============================================================================
-		// EVENT CALLBACKS:
-
-		static void event_callback(std::shared_ptr<event> event);
-
-		static void resized_event_callback(GLFWwindow* window, int32_t width, int32_t height);
-
-		static void close_event_callback(GLFWwindow* window);
-
-		static void key_event_callback(GLFWwindow* window, int32_t key, int32_t scancode, int32_t action, int32_t mods);
-
-		static void mouse_button_event_callback(GLFWwindow* window, int32_t button, int32_t action, int32_t mods);
-
-		static void mouse_scroll_event_callback(GLFWwindow* window, float64_t xoffset, float64_t yoffset);
-
-		static void mouse_move_event_callback(GLFWwindow* window, float64_t x, float64_t y);
-
-		// ==============================================================================
-	private:
-		window();
-
-		~window();
-
-		void setup_fullscreen_quad();
-
-		void init_gl();
-
-		void init_framebuffer();
-	private:
-		GLFWwindow* m_window;
-
-		std::unique_ptr <window_data> m_window_data = std::make_unique<window_data>();
+		virtual window_data& get_window_data() = 0;
+	protected:
+		virtual ~window();
 
 		bool m_running = true;
 	};
 
-	// ==============================================================================
-	// GLFW CALLBACKS:
-
-	void glfw_error_callback(int32_t error, c_str description);
-
-	void framebuffer_size_callback(GLFWwindow* window, int32_t width, int32_t height);
-
-	// ==============================================================================
 }
 
 #endif // CORE_WINDOW_H

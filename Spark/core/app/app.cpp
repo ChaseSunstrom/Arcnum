@@ -4,6 +4,7 @@
 #include "../events/sub.hpp"
 #include "../logging/log.hpp"
 #include "../ui/ui.hpp"
+#include "../window/window_manager.hpp"
 
 namespace spark
 {
@@ -25,7 +26,7 @@ namespace spark
 
 		subscription<event>::create(EVERY_EVENT_TOPIC, app_functions::s_on_event);
 
-		while (_window.running())
+		while (_window.is_running())
 		{
 			on_update();
 		}
@@ -35,7 +36,7 @@ namespace spark
 	{
 		app_functions::s_on_update();
 
-		auto& _window = engine::get<window>();
+		auto& _window = engine::get<get_window_type()>();
 		auto& _renderer = engine::get<renderer>();
 		auto& _scene_manager = engine::get<scene_manager>();
 		auto& _ecs = engine::get<ecs>();

@@ -143,7 +143,12 @@
     <ClInclude Include="Spark\core\util\result.hpp" />
     <ClInclude Include="Spark\core\util\thread_pool.hpp" />
     <ClInclude Include="Spark\core\util\wrap.hpp" />
+    <ClInclude Include="Spark\core\window\directx_window.hpp" />
+    <ClInclude Include="Spark\core\window\metal_window.hpp" />
+    <ClInclude Include="Spark\core\window\opengl_window.hpp" />
+    <ClInclude Include="Spark\core\window\vulkan_window.hpp" />
     <ClInclude Include="Spark\core\window\window.hpp" />
+    <ClInclude Include="Spark\core\window\window_manager.hpp" />
     <ClInclude Include="Spark\include\IMGUI\imconfig.h" />
     <ClInclude Include="Spark\include\IMGUI\imgui.h" />
     <ClInclude Include="Spark\include\IMGUI\imgui_impl_glfw.h" />
@@ -418,7 +423,7 @@
     <ClCompile Include="Spark\core\user\control.cpp" />
     <ClCompile Include="Spark\core\util\file.cpp" />
     <ClCompile Include="Spark\core\util\wrap.cpp" />
-    <ClCompile Include="Spark\core\window\window.cpp" />
+    <ClCompile Include="Spark\core\window\opengl_window.cpp" />
     <ClCompile Include="Spark\include\IMGUI\imgui.cpp" />
     <ClCompile Include="Spark\include\IMGUI\imgui_demo.cpp" />
     <ClCompile Include="Spark\include\IMGUI\imgui_draw.cpp" />

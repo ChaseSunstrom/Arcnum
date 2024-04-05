@@ -1,7 +1,7 @@
 #include "test.hpp"
 
 #include "../util/memory.hpp"
-#include "../net/chat_message.hpp"
+#include "../util/result.hpp"
 
 namespace spark
 {
@@ -33,14 +33,14 @@ namespace spark
             EXPECT_EQ(ptr1.use_count(), 1);
         }
         
-        TEST(make_threaded_unique_ptr)
+        TEST(test_make_threaded_unique_ptr)
         {
             auto ptr = std::make_unique<test_resource>(30);
             auto ptr2 = make_threaded<test_resource>(std::move(ptr));
             EXPECT_EQ(ptr2.access()->value, 30);
         }
         
-        TEST(make_threaded_shared_ptr)
+        TEST(test_make_threaded_shared_ptr)
         {
             auto ptr = std::make_shared<test_resource>(40);
             auto ptr2 = make_threaded<test_resource>(ptr);
@@ -55,6 +55,43 @@ namespace spark
             t1.join();
             t2.join();
             EXPECT_EQ(*ptr.access(), 2000); // This should pass if the shared_shield_ptr properly locks around the int increment.
+        }
+
+        TEST(test_ok_result)
+        {
+            auto divide = 
+                [](int32_t numerator, int32_t denominator) -> spark::result<int32_t> 
+                {
+                    return spark::result<int32_t>([&]() -> int32_t 
+                        {
+                            if (denominator == 0)
+                                throw std::runtime_error("Division by zero");
+                            return numerator / denominator;
+                        });
+                };
+
+            // this should be good
+            result<int32_t, std::exception> res = divide(10, 2);
+
+            EXPECT_EQ(res.unwrap(), 5);
+        }
+
+        TEST(test_error_result)
+        {
+            auto divide = 
+                [](int32_t numerator, int32_t denominator) ->spark::result<int> 
+                {
+                    return spark::result<int32_t>([&]() -> int32_t 
+                        {
+                            if (denominator == 0)
+                                throw std::runtime_error("Division by zero");
+                            return numerator / denominator;
+                        });
+                };
+
+            result<int32_t, std::exception> res = divide(10, 5);
+
+            EXPECT_EQ(res.get_error().what(), "Division by zero");
         }
 
         bool core_test_main()

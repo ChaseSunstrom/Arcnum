@@ -1,11 +1,8 @@
-#include "window.hpp"
+#include "opengl_window.hpp"
+
+#include "../ecs/component/shader.hpp"
 
 #include "../events/sub.hpp"
-#include "../events/event.hpp"
-#include "../logging/log.hpp"
-#include "../ui/ui.hpp"
-#include "../util/wrap.hpp"
-#include "../ecs/component/shader.hpp"
 
 namespace spark
 {
@@ -13,7 +10,7 @@ namespace spark
 	// ==============================================================================
 	// WINDOW FUNCTIONS:
 
-	void window::init_gl()
+	void opengl_window::init_gl()
 	{
 		glfwSetErrorCallback(glfw_error_callback);
 
@@ -36,7 +33,7 @@ namespace spark
 
 		init_framebuffer();
 
-		vsync(m_window_data->m_vsync);
+		set_vsync(m_window_data->m_vsync);
 
 		//glfw callbacks
 		glfwSetWindowSizeCallback(m_window, resized_event_callback);
@@ -47,7 +44,7 @@ namespace spark
 		glfwSetScrollCallback(m_window, mouse_scroll_event_callback);
 	}
 
-	void window::init_framebuffer()
+	void opengl_window::init_framebuffer()
 	{
 		if (m_window_data->m_screen_shader == 0)
 		{
@@ -93,7 +90,7 @@ namespace spark
 		setup_fullscreen_quad();
 	}
 
-	void window::render_framebuffer_to_screen()
+	void opengl_window::render_framebuffer_to_screen()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glDisable(GL_DEPTH_TEST);
@@ -114,42 +111,41 @@ namespace spark
 		glEnable(GL_DEPTH_TEST);
 	}
 
-	window& window::get()
+	opengl_window& opengl_window::get()
 	{
-		static window instance;
+		static opengl_window instance;
 		return instance;
 	}
 
-	window::window()
+	opengl_window::opengl_window()
 	{
-		m_window_data = std::make_unique<window_data>();
 		init_gl();
 	}
 
-	window_data::window_data()
+	opengl_window_data::opengl_window_data()
 	{
-		m_event_callback = window::event_callback;
+		m_event_callback = opengl_window::event_callback;
 	}
 
-	bool window::running()
+	bool opengl_window::is_running()
 	{
 		return !glfwWindowShouldClose(m_window);
 	}
 
-	void window::pre_draw()
+	void opengl_window::pre_draw()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, m_window_data->m_framebuffer);
 		clear_screen();
 	}
 
-	void window::post_draw()
+	void opengl_window::post_draw()
 	{
 		glfwSwapBuffers(m_window); // Move buffer swap here.
 		glfwPollEvents(); // Handle window events.
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
-	void window::setup_fullscreen_quad()
+	void opengl_window::setup_fullscreen_quad()
 	{
 		static bool called = false;
 
@@ -180,7 +176,7 @@ namespace spark
 		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float32_t), (void*)(2 * sizeof(float32_t)));
 	}
 
-	void window::vsync(bool vsync)
+	void opengl_window::set_vsync(bool vsync)
 	{
 		if (vsync)
 		{
@@ -193,14 +189,16 @@ namespace spark
 		}
 	}
 
-	void window::set_window_title(const std::string& title)
+
+
+	void opengl_window::set_window_title(const std::string& title)
 	{
 		m_window_data->m_title = title;
 
 		glfwSetWindowTitle(m_window, title.c_str());
 	}
 
-	window::~window()
+	opengl_window::~opengl_window()
 	{
 		m_running = false;
 		glfwDestroyWindow(m_window);
@@ -211,24 +209,20 @@ namespace spark
 	}
 
 	// ==============================================================================
-
-
-
-	// ==============================================================================
 	// EVENT CALLBACKS:
 
-	void window::event_callback(std::shared_ptr <event> _event)
+	void opengl_window::event_callback(std::shared_ptr <event> _event)
 	{
 		publish_to_topic(WINDOW_EVENT_TOPIC, _event);
 	}
 
-	void window::resized_event_callback(GLFWwindow* window, int32_t width, int32_t height)
+	void opengl_window::resized_event_callback(GLFWwindow* window, int32_t width, int32_t height)
 	{
-		window_data* _window_data = static_cast<window_data*>(glfwGetWindowUserPointer(window));
+		opengl_window_data* _window_data = static_cast<opengl_window_data*>(glfwGetWindowUserPointer(window));
 		_window_data->m_width = width;
 		_window_data->m_height = height;
 
-		get().init_framebuffer(); 
+		get().init_framebuffer();
 
 		glViewport(0, 0, width, height);
 
@@ -236,17 +230,17 @@ namespace spark
 		_window_data->m_event_callback(event);
 	}
 
-	void window::close_event_callback(GLFWwindow* window)
+	void opengl_window::close_event_callback(GLFWwindow* window)
 	{
-		window_data* _window_data = static_cast<window_data*>(glfwGetWindowUserPointer(window));
+		opengl_window_data* _window_data = static_cast<opengl_window_data*>(glfwGetWindowUserPointer(window));
 		auto event = std::make_shared<window_closed_event>();
 
 		_window_data->m_event_callback(event);
 	}
 
-	void window::key_event_callback(GLFWwindow* window, int32_t key, int32_t scancode, int32_t action, int32_t mods)
+	void opengl_window::key_event_callback(GLFWwindow* window, int32_t key, int32_t scancode, int32_t action, int32_t mods)
 	{
-		window_data* _window_data = static_cast<window_data*>(glfwGetWindowUserPointer(window));
+		opengl_window_data* _window_data = static_cast<opengl_window_data*>(glfwGetWindowUserPointer(window));
 
 		switch (action)
 		{
@@ -271,9 +265,9 @@ namespace spark
 		}
 	}
 
-	void window::mouse_button_event_callback(GLFWwindow* window, int32_t button, int32_t action, int32_t mods)
+	void opengl_window::mouse_button_event_callback(GLFWwindow* window, int32_t button, int32_t action, int32_t mods)
 	{
-		window_data* _window_data = static_cast<window_data*>(glfwGetWindowUserPointer(window));
+		opengl_window_data* _window_data = static_cast<opengl_window_data*>(glfwGetWindowUserPointer(window));
 
 		switch (action)
 		{
@@ -292,17 +286,17 @@ namespace spark
 		}
 	}
 
-	void window::mouse_scroll_event_callback(GLFWwindow* window, float64_t xoffset, float64_t yoffset)
+	void opengl_window::mouse_scroll_event_callback(GLFWwindow* window, float64_t xoffset, float64_t yoffset)
 	{
-		window_data* _window_data = static_cast<window_data*>(glfwGetWindowUserPointer(window));
+		opengl_window_data* _window_data = static_cast<opengl_window_data*>(glfwGetWindowUserPointer(window));
 		auto event = std::make_shared<mouse_scrolled_event>(xoffset, yoffset);
 
 		_window_data->m_event_callback(event);
 	}
 
-	void window::mouse_move_event_callback(GLFWwindow* window, float64_t xpos, float64_t ypos)
+	void opengl_window::mouse_move_event_callback(GLFWwindow* window, float64_t xpos, float64_t ypos)
 	{
-		window_data* _window_data = static_cast<window_data*>(glfwGetWindowUserPointer(window));
+		opengl_window_data* _window_data = static_cast<opengl_window_data*>(glfwGetWindowUserPointer(window));
 		auto event = std::make_shared<mouse_moved_event>(xpos, ypos);
 
 		_window_data->m_event_callback(event);

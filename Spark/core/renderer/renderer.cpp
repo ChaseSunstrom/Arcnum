@@ -3,53 +3,7 @@
 
 namespace spark
 {
-	void renderer::apply_dynamic_resolution()
-	{
-		auto& window_ref = engine::get<window>();
-		auto& window_data_ref = window_ref.get_window_data();
-
-		static auto last_time = std::chrono::high_resolution_clock::now();
-		auto current_time = std::chrono::high_resolution_clock::now();
-		float delta_time = std::chrono::duration<float, std::chrono::seconds::period>(current_time - last_time).count();
-		last_time = current_time;
-
-		float target_frame_time = 1.0f / m_settings->m_max_frames; // Target frame time to achieve target FPS
-		float scale_adjustment_factor = 1.05f; // Adjust based on how aggressively you want to scale
-
-		// If frame took longer than target, reduce resolution
-		if (delta_time > target_frame_time)
-		{
-			m_settings->m_resolution_width /= scale_adjustment_factor;
-			m_settings->m_resolution_height /= scale_adjustment_factor;
-		}
-		else if (delta_time < target_frame_time * 0.85f) // Arbitrary threshold to start increasing resolution again
-		{
-			m_settings->m_resolution_width *= scale_adjustment_factor;
-			m_settings->m_resolution_height *= scale_adjustment_factor;
-		}
-
-		// Ensure we don't go below a minimum resolution or above the maximum resolution
-		m_settings->m_resolution_width = std::max(m_settings->m_min_width, std::min(m_settings->m_resolution_width, window_data_ref.m_width));
-		m_settings->m_resolution_height = std::max(m_settings->m_min_height, std::min(m_settings->m_resolution_height, window_data_ref.m_height));
-
-		// Resize framebuffer texture
-		glBindTexture(GL_TEXTURE_2D, window_data_ref.m_texture_color_buffer);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_settings->m_resolution_width, m_settings->m_resolution_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-		glBindTexture(GL_TEXTURE_2D, 0); // Unbind the texture
-
-		glBindFramebuffer(GL_FRAMEBUFFER, window_data_ref.m_framebuffer);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, window_data_ref.m_texture_color_buffer, 0);
-
-		// Check the framebuffer status
-		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		{
-			// Handle incomplete framebuffer status
-			SPARK_ERROR("Framebuffer not complete after resizing");
-		}
-		// Update the viewport in case the resolution has changed
-		glViewport(0, 0, m_settings->m_resolution_width, m_settings->m_resolution_height);
-	}
-
+	void renderer::apply_dynamic_resolution() {}
 
 	void renderer::render_with_anti_aliasing() {}
 

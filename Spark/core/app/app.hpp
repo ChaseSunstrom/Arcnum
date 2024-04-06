@@ -9,8 +9,7 @@
 
 namespace spark
 {
-	class application :
-			public std::enable_shared_from_this<application>
+	class application
 	{
 	public:
 		static void on_start();

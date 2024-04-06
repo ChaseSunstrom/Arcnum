@@ -14,11 +14,16 @@ namespace spark
 	{
 		application::add_scene("Main Scene", scene_config(math::vec4(0)));
 
-		auto& _window = engine::get<window>();
+		auto& _window_man = window_manager::get();
+		auto& _window = _window_man.get_current_window();
 		auto& _ecs = engine::get<ecs>();
 		auto& _ui = engine::get<ui_manager>();
 
-		_ui.on_start(_window.get_window());
+		if (get_current_window_type() == window_type::OPENGL)
+		{
+			opengl_window& opengl_win = dynamic_cast<opengl_window&>(_window);
+			_ui.on_start(opengl_win.get_window());
+		}
 
 		app_functions::s_on_start();
 
@@ -36,26 +41,30 @@ namespace spark
 	{
 		app_functions::s_on_update();
 
-		auto& _window = engine::get<get_window_type()>();
+		auto& _window = engine::get<window_manager>().get_current_window();
 		auto& _renderer = engine::get<renderer>();
 		auto& _scene_manager = engine::get<scene_manager>();
 		auto& _ecs = engine::get<ecs>();
 		auto& _ui = engine::get<ui_manager>();
 
-		_ecs.update_systems(s_delta_time);
+		if (get_current_window_type() == window_type::OPENGL)
+		{
+			opengl_window& opengl_win = dynamic_cast<opengl_window&>(_window);
 
-		_renderer.on_update();
+			_ecs.update_systems(s_delta_time);
 
-		_window.pre_draw(); 
+			_renderer.on_update();
 
-		_scene_manager.update_current_scene(_renderer.get_fixed_delta_time());
+			_window.pre_draw();
 
-		_window.render_framebuffer_to_screen(); // Renders the framebuffer to the screen
+			_scene_manager.update_current_scene(_renderer.get_fixed_delta_time());
 
-		_ui.on_update(); // UI rendering should come after rendering the framebuffer to screen
+			opengl_win.render_framebuffer_to_screen(); // Renders the framebuffer to the screen
 
-		_window.post_draw(); // Swap buffers and poll events
+			_ui.on_update(); // UI rendering should come after rendering the framebuffer to screen
 
+			_window.post_draw(); // Swap buffers and poll events
+		}
 
 		spark::thread_pool::synchronize_registered_threads();
 	}
@@ -78,7 +87,8 @@ namespace spark
 
 	void application::set_window_title(const std::string& title)
 	{
-		auto& _window = engine::get<window>();
+		auto& _window = engine::get<window_manager>().get_current_window();
+
 		_window.set_window_title(title);
 	}
 

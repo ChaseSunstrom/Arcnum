@@ -19,7 +19,7 @@ namespace spark
 
 		thread_pool::initialize(num_threads);
 
-#define TEST_MAIN
+//#define TEST_MAIN
 #ifdef TEST_MAIN
 		test::core_test_main();
 #else

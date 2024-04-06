@@ -5,9 +5,9 @@
 
 namespace spark
 {
-	struct opengl_window_data : window_data
+	struct opengl_window_data : public window_data
 	{
-		opengl_window_data() = default;
+		opengl_window_data();
 
 		opengl_window_data(std::string title,
 			bool vsync,
@@ -66,6 +66,15 @@ namespace spark
 
 		static void mouse_move_event_callback(GLFWwindow* window, float64_t x, float64_t y);
 
+
+		opengl_window_data& get_window_data() override {
+			return *m_window_data;
+		}
+
+		GLFWwindow* get_window() {
+			return m_window;
+		}
+
 		// ==============================================================================
 
 	private:
@@ -83,7 +92,6 @@ namespace spark
 
 		std::unique_ptr<opengl_window_data> m_window_data = std::make_unique<opengl_window_data>();
 	};
-
 
 	// ==============================================================================
 	// GLFW CALLBACKS:

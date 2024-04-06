@@ -1,12 +1,11 @@
 #include "opengl_window.hpp"
 
 #include "../ecs/component/shader.hpp"
-
+#include "window_manager.hpp"
 #include "../events/sub.hpp"
 
 namespace spark
 {
-
 	// ==============================================================================
 	// WINDOW FUNCTIONS:
 
@@ -117,12 +116,13 @@ namespace spark
 		return instance;
 	}
 
-	opengl_window::opengl_window()
+	opengl_window::opengl_window() :
+		window(window_type::OPENGL)
 	{
 		init_gl();
 	}
 
-	opengl_window_data::opengl_window_data()
+	opengl_window_data::opengl_window_data() : window_data("Title", false, 1080, 1080, opengl_window::event_callback)
 	{
 		m_event_callback = opengl_window::event_callback;
 	}
@@ -136,6 +136,11 @@ namespace spark
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, m_window_data->m_framebuffer);
 		clear_screen();
+	}
+
+	void opengl_window::on_update()
+	{
+
 	}
 
 	void opengl_window::post_draw()

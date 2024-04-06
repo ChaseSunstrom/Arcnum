@@ -10,31 +10,8 @@
 
 namespace spark
 {
-	enum class window_type
-	{
-		UNKNOWN = 0,
-		OPENGL,
-		VULKAN,
-		METAL,
-		DIRECTX
-	};
-
 	template <typename W>
 	concept is_window_type = std::is_base_of_v<window, W>;
-
-	inline window_type type_to_enum(const std::type_index& type)
-	{
-		if (type == typeid(opengl_window))
-			return window_type::OPENGL;
-		else if (type == typeid(vulkan_window))
-			return window_type::VULKAN;
-		else if (type == typeid(metal_window))
-			return window_type::METAL;
-		else if (type == typeid(directx_window))
-			return window_type::DIRECTX;
-		else
-			return window_type::UNKNOWN;
-	}
 
 	class window_manager
 	{
@@ -45,7 +22,7 @@ namespace spark
 			return instance;
 		}
 		template <is_window_type T>
-		void add_window(const T& window)
+		void add_window(T& window)
 		{
 			m_windows[typeid(T)] = &window;
 
@@ -56,11 +33,7 @@ namespace spark
 		void set_window()
 		{
 			// At to prevent accessing a window that hasnt been added yet
-			m_current_window = m_windows.at(typeid(T));
-		}
-		std::type_index get_window_type()
-		{
-			return typeid(*m_current_window);
+			m_current_window = m_windows[typeid(T)];
 		}
 		window& get_current_window()
 		{
@@ -68,7 +41,7 @@ namespace spark
 		}
 		window_type get_current_window_type()
 		{
-			return type_to_enum(typeid(*m_current_window));
+			return m_current_window->get_window_type();
 		}
 		template <is_window_type T>
 		bool is_window_type(window_type type)
@@ -76,7 +49,11 @@ namespace spark
 			return type == type_to_enum(T);
 		}
 	private:
-		window_manager() = default;
+		window_manager()
+		{
+			auto& _opengl_window = engine::get<opengl_window>();
+			add_window(_opengl_window);
+		}
 		~window_manager() = default;
 	private:
 		window* m_current_window;
@@ -85,11 +62,11 @@ namespace spark
 		std::unordered_map<std::type_index, window*> m_windows;
 	};
 
-	std::type_index get_window_type()
+	inline window_type get_current_window_type()
 	{
 		auto& _window_manager = engine::get<window_manager>();
 
-		return _window_manager.get_window_type();
+		return _window_manager.get_current_window_type();
 	}
 }
 

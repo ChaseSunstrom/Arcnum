@@ -14,10 +14,12 @@ namespace spark
 	}
 
 	mesh::mesh(
-		const std::vector <vertex>& vertices
+		const std::vector <vertex>& vertices,
+		const std::vector<uint32_t>& indices
 	)
 	{
 		m_vertices = vertices;
+		m_indices = indices;
 
 		create_mesh();
 	}
@@ -32,6 +34,10 @@ namespace spark
 		generate_vertex_buffer(m_vbo);
 		bind_vertex_buffer(m_vbo);
 		buffer_vertex_data<vertex>(m_vbo, m_vertices);
+
+		generate_index_buffer(m_ibo);
+		bind_index_buffer(m_ibo);
+		buffer_index_data(m_ibo, m_indices);
 
 		set_vertex_attribute_ptr(0, 3, GL_FLOAT, sizeof vertex, (void*)0);
 		enable_vertex_attribute_ptr(0);

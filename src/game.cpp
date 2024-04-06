@@ -5,7 +5,7 @@
 
 void add_cube_entity(const spark::math::vec3& position)
 {
-	spark::create_shape<spark::cube>(position);
+	spark::create_shape<spark::sphere>(position, spark::math::vec3(0.0f), spark::math::vec3(position.x, position.x, position.x), 64, 32);
 }
 
 static std::shared_ptr<spark::net::udp_server> g_server_instance;

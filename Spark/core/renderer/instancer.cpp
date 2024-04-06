@@ -180,7 +180,12 @@ namespace spark
 
 				// Perform the instanced draw call
 				auto& mesh = engine::get<mesh_manager>().get_mesh(mesh_name);
-				glDrawArraysInstanced(GL_TRIANGLES, 0, mesh.m_vertices.size(), transforms_ptr->m_data.size());
+
+				if (mesh.m_indices.size() == 0)
+					glDrawArraysInstanced(GL_TRIANGLES, 0, mesh.m_vertices.size(), transforms_ptr->m_data.size());
+
+				else
+					glDrawElementsInstanced(GL_TRIANGLES, mesh.m_indices.size(), GL_UNSIGNED_INT, 0, transforms_ptr->m_data.size());
 			}
 		}
 	}

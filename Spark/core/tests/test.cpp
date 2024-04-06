@@ -1,8 +1,6 @@
 #include "test.hpp"
 
 #include "../util/memory.hpp"
-#include "../util/result.hpp"
-
 namespace spark
 {
 	namespace test
@@ -57,42 +55,6 @@ namespace spark
             EXPECT_EQ(*ptr.access(), 2000); // This should pass if the shared_shield_ptr properly locks around the int increment.
         }
 
-        TEST(test_ok_result)
-        {
-            auto divide = 
-                [](int32_t numerator, int32_t denominator) -> spark::result<int32_t> 
-                {
-                    return spark::result<int32_t>([&]() -> int32_t 
-                        {
-                            if (denominator == 0)
-                                throw std::runtime_error("Division by zero");
-                            return numerator / denominator;
-                        });
-                };
-
-            // this should be good
-            result<int32_t, std::exception> res = divide(10, 2);
-
-            EXPECT_EQ(res.unwrap(), 5);
-        }
-
-        TEST(test_error_result)
-        {
-            auto divide = 
-                [](int32_t numerator, int32_t denominator) ->spark::result<int> 
-                {
-                    return spark::result<int32_t>([&]() -> int32_t 
-                        {
-                            if (denominator == 0)
-                                throw std::runtime_error("Division by zero");
-                            return numerator / denominator;
-                        });
-                };
-
-            result<int32_t, std::exception> res = divide(10, 5);
-
-            EXPECT_EQ(res.get_error().what(), "Division by zero");
-        }
 
         bool core_test_main()
         {

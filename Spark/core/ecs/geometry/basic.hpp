@@ -202,32 +202,57 @@ namespace spark
 
 	struct sphere
 	{
-		static entity create(const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f))
+		static entity create(const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f), const int32_t slices = 36, const int32_t stacks = 18)
 		{
-			return create("__default__", position, rotation, size);
+			return create("__default__", position, rotation, size, slices, stacks);
 		}
 
-		static entity create(const std::string& material, const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f))
+		static entity create(const std::string& material, const math::vec3& position = math::vec3(0.0f), const math::vec3& rotation = math::vec3(0.0f), const math::vec3& size = math::vec3(1.0f), const int32_t slices = 36, const int32_t stacks = 18)
 		{
 			auto& _ecs = engine::get<ecs>();
 			auto& _mesh_manager = engine::get<mesh_manager>();
 			auto& _material_manager = engine::get<material_manager>();
 
 			std::vector<vertex> vertices;
+			std::vector<uint32_t> indices;
 
-			for (float32_t i = 0; i < 360; i += 10)
+			// Generate vertices
+			for (int32_t i = 0; i <= stacks; ++i)
 			{
-				for (float32_t j = 0; j < 360; j += 10)
+				// phi ranges from 0 to pi
+				float32_t phi = math::pi<float32_t>() * float32_t(i) / stacks;
+				for (int32_t j = 0; j <= slices; ++j)
 				{
-					float32_t x = size.x * cos(math::radians(i)) * sin(math::radians(j));
-					float32_t y = size.y * sin(math::radians(i)) * sin(math::radians(j));
-					float32_t z = size.z * cos(math::radians(j));
+					// theta ranges from 0 to 2pi
+					float32_t theta = 2 * math::pi<float32_t>() * float32_t(j) / slices;
+
+					float32_t x = size.x * sin(phi) * cos(theta);
+					float32_t y = size.y * sin(phi) * sin(theta);
+					float32_t z = size.z * cos(phi);
 
 					vertices.push_back(vertex(math::vec3(x, y, z)));
 				}
 			}
 
-			_mesh_manager.create_mesh("__sphere__", vertices);
+			// Generate indices
+			for (int32_t i = 0; i < stacks; ++i)
+			{
+				for (int32_t j = 0; j < slices; ++j)
+				{
+					int32_t first = (i * (slices + 1)) + j;
+					int32_t second = first + slices + 1;
+
+					indices.push_back(first);
+					indices.push_back(second);
+					indices.push_back(first + 1);
+
+					indices.push_back(second);
+					indices.push_back(second + 1);
+					indices.push_back(first + 1);
+				}
+			}
+
+			_mesh_manager.create_mesh("__sphere__", vertices, indices);
 
 			entity sphere_entity = _ecs.create_entity(
 				mesh_component("__sphere__"),
@@ -238,6 +263,7 @@ namespace spark
 			return sphere_entity;
 		}
 	};
+
 
 	struct capsule
 	{

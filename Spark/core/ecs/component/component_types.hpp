@@ -132,7 +132,7 @@ namespace spark
 	{
 		mesh();
 
-		mesh(const std::vector <vertex>& vertices);
+		mesh(const std::vector <vertex>& vertices, const std::vector<uint32_t>& indices);
 
 		~mesh();
 
@@ -158,9 +158,11 @@ namespace spark
 		}
 
 		std::vector <vertex> m_vertices = std::vector<vertex>();
+		std::vector <uint32_t> m_indices = std::vector<uint32_t>();
 	private:
 		GLuint m_vao = 0;
 		GLuint m_vbo = 0;
+		GLuint m_ibo = 0;
 	};
 
 	struct material
@@ -431,14 +433,14 @@ namespace spark
 			return instance;
 		}
 
-		mesh& create_mesh(const std::string& name, const std::vector <vertex>& vertices)
+		mesh& create_mesh(const std::string& name, const std::vector <vertex>& vertices, const std::vector<uint32_t> indices = {})
 		{
 			if (m_meshes.contains(name))
 			{
 				return *m_meshes[name];
 			}
 
-			m_meshes[name] = std::make_unique<mesh>(vertices);
+			m_meshes[name] = std::make_unique<mesh>(vertices, indices);
 			return *m_meshes[name];
 		}
 

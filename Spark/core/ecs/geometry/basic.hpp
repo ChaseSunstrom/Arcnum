@@ -29,7 +29,7 @@ namespace spark
 			entity triangle_entity = _ecs.create_entity(
 				mesh_component("__triangle__"),
 				material_component(material),
-				transform_component(position, rotation)
+				transform_component(position, rotation, size)
 			);
 
 			return triangle_entity;
@@ -61,7 +61,7 @@ namespace spark
 			entity square_entity = _ecs.create_entity(
 				mesh_component("__square__"),
 				material_component(material),
-				transform_component(position, rotation)
+				transform_component(position, rotation, size)
 			);
 
 			return square_entity;
@@ -94,7 +94,7 @@ namespace spark
 			entity circle_entity = _ecs.create_entity(
 				mesh_component("__circle__"),
 				material_component(material),
-				transform_component(position, rotation)
+				transform_component(position, rotation, size)
 			);
 
 			return circle_entity;
@@ -193,7 +193,7 @@ namespace spark
 			entity cube_entity = _ecs.create_entity(
 				mesh_component("__cube__"),
 				material_component(material),
-				transform_component(position, rotation)
+				transform_component(position, rotation, size)
 			);
 
 			return cube_entity;
@@ -257,7 +257,7 @@ namespace spark
 			entity sphere_entity = _ecs.create_entity(
 				mesh_component("__sphere__"),
 				material_component(material),
-				transform_component(position, rotation)
+				transform_component(position, rotation, size)
 			);
 
 			return sphere_entity;
@@ -297,7 +297,7 @@ namespace spark
 			entity capsule_entity = _ecs.create_entity(
 				mesh_component("__capsule__"),
 				material_component(material),
-				transform_component(position, rotation)
+				transform_component(position, rotation, size)
 			);
 
 			return capsule_entity;
@@ -336,7 +336,7 @@ namespace spark
 			entity cone_entity = _ecs.create_entity(
 				mesh_component("__cone__"),
 				material_component(material),
-				transform_component(position, rotation)
+				transform_component(position, rotation, size)
 			);
 
 			return cone_entity;
@@ -375,7 +375,7 @@ namespace spark
 			entity cylinder_entity = _ecs.create_entity(
 				mesh_component("__cylinder__"),
 				material_component(material),
-				transform_component(position, rotation)
+				transform_component(position, rotation, size)
 			);
 
 			return cylinder_entity;

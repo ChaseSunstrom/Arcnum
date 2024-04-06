@@ -3,9 +3,18 @@
 
 #include <core/net/chat_message.hpp>
 
+void add_sphere_entity(const spark::math::vec3& position)
+{
+	spark::float32_t clamped_scale = std::clamp(position.x, 0.1f, 1.0f);
+
+	spark::create_shape<spark::sphere>("material", position, position, spark::math::vec3(clamped_scale, clamped_scale, clamped_scale), 64, 32);
+}
+
 void add_cube_entity(const spark::math::vec3& position)
 {
-	spark::create_shape<spark::sphere>(position, spark::math::vec3(0.0f), spark::math::vec3(position.x, position.x, position.x), 64, 32);
+	spark::float32_t clamped_scale = std::clamp(position.x, 0.1f, 1.0f);
+
+	spark::create_shape<spark::cube>("material", position, position, spark::math::vec3(clamped_scale, clamped_scale, clamped_scale));
 }
 
 static std::shared_ptr<spark::net::udp_server> g_server_instance;
@@ -107,7 +116,20 @@ void on_start()
 
 	// Create entity
 
-	_ui_manager.create_component<spark::button_component>("", "Spawn Cube", "Spawn", std::function<void()>([]()
+	_ui_manager.create_component<spark::button_component>("", "Spawn Sphere", "Spawn Sphere", std::function<void()>([]()
+		{
+			static std::random_device rd; // Obtain a random number from hardware
+			static std::mt19937 eng(rd()); // Seed the generator
+			static std::uniform_real_distribution<> distr(-3.0, 3.0); // Define the range
+
+			// Generate a random position
+			spark::math::vec3 random_position(distr(eng), distr(eng), distr(eng));
+
+			// Assuming a function or mechanism to add a cube entity
+			add_sphere_entity(random_position);
+		}));
+
+	_ui_manager.create_component<spark::button_component>("", "Spawn Cube", "Spawn Cube", std::function<void()>([]()
 		{
 			static std::random_device rd; // Obtain a random number from hardware
 			static std::mt19937 eng(rd()); // Seed the generator
@@ -121,16 +143,33 @@ void on_start()
 		}));
 }
 
+void update_material_color(spark::material& mat, spark::float32_t time)
+{
+	spark::float32_t new_time = std::clamp(time, 1.0f, 255.0f); // Keep the time between 0 and 255
+	// Use the sine function to get a value between 0 and 1 for R, G, and B colors, creating a smooth transition
+	spark::float32_t red = (std::sin(new_time * 0.6f) + 1.0f) / 2.0f; // Vary the multiplier for speed of color change
+	spark::float32_t green = (std::sin(new_time * 0.7f) + 1.0f) / 2.0f;
+	spark::float32_t blue = (std::sin(new_time * 0.5f) + 1.0f) / 2.0f;
+
+	// Set the new color of the material
+	mat.m_color = spark::math::vec4(red, green, blue, 1.0f); // Alpha is set to 1 for full opacity
+}
+
 void on_update()
 {
-	static float x = 3; // Static to keep its value between calls
+	static spark::float32_t x = 3; // Static to keep its value between calls
+	static spark::float32_t time = 0.0f;
 
 	auto& _renderer = spark::engine::get<spark::renderer>();
+	auto& _material = spark::engine::get<spark::material_manager>().get_material("material");
+
+	update_material_color(_material, time);
 
 	spark::camera& camera = *_renderer.get_cameras()[0];
 
 	camera.m_position = spark::math::vec3(0.0f, 0.0f, x);
 	x += 0.0001f;
+	time += 0.001f;
 }
 
 // required function

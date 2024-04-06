@@ -46,7 +46,7 @@ namespace spark
 		material_map[material_name]->add_transform(_transform);
 		m_entity_mesh_materials[e] = { mesh_name, material_name };
 
-		scene.get_octree().insert(const_cast<transform*>(&_transform));
+		//scene.get_octree().insert(const_cast<transform*>(&_transform));
 	}
 	void instancer::remove_renderable_for_entity(entity e) 
 	{

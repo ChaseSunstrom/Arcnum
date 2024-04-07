@@ -26,6 +26,7 @@ project "Arcnum"
         "Spark/include/GLEW",
         "Spark/include/GLFW",
         "Spark/include/GLM",
+        "Spark/include/VULKAN",
         "Spark/include/RFL",
         "Spark/include/OTHER"
     }
@@ -36,6 +37,7 @@ project "Arcnum"
         "Spark/lib/IRRKLANG",
         "Spark/lib/GLEW",
         "Spark/lib/GLFW",
+        "Spark/lib/VULKAN"
     }
     links {
         "Spark",
@@ -73,7 +75,7 @@ project "Spark"
     language "C++"
     targetdir "bin/%{cfg.buildcfg}/lib"
     cppdialect "C++20"
-    files { "Spark/core/**.cpp", "Spark/core/**.hpp", "Spark/core/**.h", "Spark/include/IMGUI/**.cpp", "Spark/include/IMGUI/**.h", "Spark/include/RFL/**.hpp", "Spark/include/RFL/**.h", "Spark/include/RFL/**.c", "Spark/include/RFL/**.cpp" }
+    files { "Spark/core/**.cpp", "Spark/core/**.hpp", "Spark/core/**.h", "Spark/include/IMGUI/**.cpp", "Spark/include/IMGUI/**.h"}
     includedirs {
         "Spark/include",
         "Spark/include/BOOST",
@@ -82,6 +84,7 @@ project "Spark"
         "Spark/include/GLFW",
         "Spark/include/GLM",
         "Spark/include/RFL",
+        "Spark/include/VULKAN",
         "Spark/include/OTHER"
     }
 
@@ -91,12 +94,14 @@ project "Spark"
         "Spark/lib/IRRKLANG",
         "Spark/lib/GLEW",
         "Spark/lib/GLFW",
+        "Spark/lib/VULKAN"
     }
     links {
         "glfw3",
         "glew32",
         "opengl32.lib",
         "irrKlang",
+        "vulkan-1"
     }
     filter "configurations:Debug"
         defines { "DEBUG" }

@@ -210,7 +210,6 @@ namespace spark
 		glDeleteFramebuffers(1, &m_window_data->m_framebuffer);
 		glDeleteTextures(1, &m_window_data->m_texture_color_buffer);
 		glDeleteRenderbuffers(1, &m_window_data->m_render_buffer);
-		glfwDestroyWindow(m_window);
 	}
 
 	// ==============================================================================
@@ -319,7 +318,7 @@ namespace spark
 		SPARK_ERROR("GLFW ERROR: " << description);
 	}
 
-	static void framebuffer_size_callback(GLFWwindow* window, int32_t width, int32_t height)
+	void framebuffer_size_callback(GLFWwindow* window, int32_t width, int32_t height)
 	{
 		glViewport(0, 0, width, height);
 	}

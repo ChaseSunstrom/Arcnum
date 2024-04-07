@@ -29,10 +29,13 @@ namespace spark
 			if (m_windows.size() == 1)
 				set_window<T>();
 		}
+	
+		// Doesnt register the window UNTIL you call this function
+		// this is to prevent for example, vulkan from being registered automatically
+		// because it is not supported on all platforms and it uses the opengl window as a base
 		template <is_window_type T>
 		void set_window()
 		{
-			// At to prevent accessing a window that hasnt been added yet
 			m_current_window = m_windows[typeid(T)];
 		}
 		window& get_current_window()
@@ -51,13 +54,13 @@ namespace spark
 	private:
 		window_manager()
 		{
-			auto& _opengl_window = engine::get<opengl_window>();
-			add_window(_opengl_window);
+			auto& _vulkan_window = engine::get<vulkan_window>();
+			add_window(_vulkan_window);
 		}
 		~window_manager() = default;
 	private:
 		window* m_current_window;
-		// Needs window pointers because I cant store references in a unordered_map
+		// Needs window pointers because you cant store references in a unordered_map
 		// its a pointer to the static windows anyway, it should be fine
 		std::unordered_map<std::type_index, window*> m_windows;
 	};

@@ -317,6 +317,9 @@
     <ClCompile Include="Spark\core\window\opengl_window.cpp">
       <Filter>core\window</Filter>
     </ClCompile>
+    <ClCompile Include="Spark\core\window\vulkan_window.cpp">
+      <Filter>core\window</Filter>
+    </ClCompile>
     <ClCompile Include="Spark\include\IMGUI\imgui.cpp">
       <Filter>include\IMGUI</Filter>
     </ClCompile>

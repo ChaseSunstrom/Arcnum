@@ -56,7 +56,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>Spark\include;Spark\include\BOOST;Spark\include\IRRKLANG;Spark\include\GLEW;Spark\include\GLFW;Spark\include\GLM;Spark\include\RFL;Spark\include\OTHER;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Spark\include;Spark\include\BOOST;Spark\include\IRRKLANG;Spark\include\GLEW;Spark\include\GLFW;Spark\include\GLM;Spark\include\RFL;Spark\include\VULKAN;Spark\include\OTHER;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <LanguageStandard>stdcpp20</LanguageStandard>
@@ -67,8 +67,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>glfw3.lib;glew32.lib;opengl32.lib;irrKlang.lib;libboost_system-vc143-mt-gd-x64-1_84.lib;libboost_serialization-vc143-mt-gd-x64-1_84.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>Spark\lib;Spark\lib\BOOST;Spark\lib\IRRKLANG;Spark\lib\GLEW;Spark\lib\GLFW;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;glew32.lib;opengl32.lib;irrKlang.lib;vulkan-1.lib;libboost_system-vc143-mt-gd-x64-1_84.lib;libboost_serialization-vc143-mt-gd-x64-1_84.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>Spark\lib;Spark\lib\BOOST;Spark\lib\IRRKLANG;Spark\lib\GLEW;Spark\lib\GLFW;Spark\lib\VULKAN;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -76,7 +76,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>Spark\include;Spark\include\BOOST;Spark\include\IRRKLANG;Spark\include\GLEW;Spark\include\GLFW;Spark\include\GLM;Spark\include\RFL;Spark\include\OTHER;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Spark\include;Spark\include\BOOST;Spark\include\IRRKLANG;Spark\include\GLEW;Spark\include\GLFW;Spark\include\GLM;Spark\include\RFL;Spark\include\VULKAN;Spark\include\OTHER;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -91,8 +91,8 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <AdditionalDependencies>glfw3.lib;glew32.lib;opengl32.lib;irrKlang.lib;libboost_system-vc143-mt-x64-1_84.lib;libboost_serialization-vc143-mt-x64-1_84.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>Spark\lib;Spark\lib\BOOST;Spark\lib\IRRKLANG;Spark\lib\GLEW;Spark\lib\GLFW;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;glew32.lib;opengl32.lib;irrKlang.lib;vulkan-1.lib;libboost_system-vc143-mt-x64-1_84.lib;libboost_serialization-vc143-mt-x64-1_84.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>Spark\lib;Spark\lib\BOOST;Spark\lib\IRRKLANG;Spark\lib\GLEW;Spark\lib\GLFW;Spark\lib\VULKAN;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -180,6 +180,7 @@
     <ClCompile Include="Spark\core\util\file.cpp" />
     <ClCompile Include="Spark\core\util\wrap.cpp" />
     <ClCompile Include="Spark\core\window\opengl_window.cpp" />
+    <ClCompile Include="Spark\core\window\vulkan_window.cpp" />
     <ClCompile Include="Spark\include\IMGUI\imgui.cpp" />
     <ClCompile Include="Spark\include\IMGUI\imgui_demo.cpp" />
     <ClCompile Include="Spark\include\IMGUI\imgui_draw.cpp" />

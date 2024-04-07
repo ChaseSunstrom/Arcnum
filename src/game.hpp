@@ -9,6 +9,4 @@ bool on_event(std::shared_ptr<spark::event> event);
 
 void register_functions();
 
-
-
 #endif

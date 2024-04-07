@@ -35,6 +35,7 @@
 #include <thread>
 #include <mutex>
 #include <ranges>
+#include <map>
 #include <future>
 #include <array>
 #include <new>

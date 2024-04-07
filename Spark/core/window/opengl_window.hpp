@@ -2,7 +2,6 @@
 #define SPARK_OPENGL_WINDOW_HPP
 
 #include "window.hpp"
-
 namespace spark
 {
 	struct opengl_window_data : public window_data
@@ -27,7 +26,6 @@ namespace spark
 		GLuint m_quad_vbo = 0;
 
 		GLuint m_screen_shader = 0;
-
 	};
 
 	class opengl_window : public window
@@ -66,6 +64,7 @@ namespace spark
 
 		static void mouse_move_event_callback(GLFWwindow* window, float64_t x, float64_t y);
 
+		// ==============================================================================
 
 		opengl_window_data& get_window_data() override {
 			return *m_window_data;
@@ -74,8 +73,6 @@ namespace spark
 		GLFWwindow* get_window() {
 			return m_window;
 		}
-
-		// ==============================================================================
 
 	private:
 		opengl_window();
@@ -91,6 +88,7 @@ namespace spark
 		GLFWwindow* m_window;
 
 		std::unique_ptr<opengl_window_data> m_window_data = std::make_unique<opengl_window_data>();
+
 	};
 
 	// ==============================================================================

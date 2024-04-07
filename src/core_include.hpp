@@ -24,5 +24,6 @@
 #include <core/net/net_common.hpp>
 #include <core/user/control.hpp>
 #include <core/ecs/geometry/basic.hpp>
+#include <core/window/window_manager.hpp>
 
 #endif // CORE_INCLUDE_HPP

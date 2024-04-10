@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PropertyPageSchema
+      Include="$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml" />
+    <AvailableItemName Include="Shader">
+      <Targets>_Shader</Targets>
+    </AvailableItemName>
+  </ItemGroup>
+  <ItemDefinitionGroup>
+    <Shader>
+      <Outputs>%(RootDir)%(Directory)\%(Filename).spv</Outputs>
+    </Shader>
+  </ItemDefinitionGroup>
+  <PropertyGroup>
+    <ComputeCompileInputsTargets>
+      $(ComputeCompileInputsTargets);
+      ComputeShaderOutput;
+    </ComputeCompileInputsTargets>
+    <ComputeLinkInputsTargets>
+      $(ComputeLinkInputsTargets);
+      ComputeShaderOutput;
+    </ComputeLinkInputsTargets>
+    <ComputeLibInputsTargets>
+      $(ComputeLibInputsTargets);
+      ComputeShaderOutput;
+    </ComputeLibInputsTargets>
+  </PropertyGroup>
+  <UsingTask
+    TaskName="Shader"
+    TaskFactory="XamlTaskFactory"
+    AssemblyName="Microsoft.Build.Tasks.v4.0">
+    <Task>$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml</Task>
+  </UsingTask>
+  <Target
+    Name="_Shader"
+    BeforeTargets="$(ShaderBeforeTargets)"
+    AfterTargets="$(ShaderAfterTargets)"
+    Condition="'@(Shader)' != ''"
+    Outputs="%(Shader.Outputs)"
+    Inputs="%(Shader.Identity);%(Shader.AdditionalDependencies);$(MSBuildProjectFile)"
+    DependsOnTargets="$(ShaderDependsOn);ComputeShaderOutput">
+    <ItemGroup Condition="'@(SelectedFiles)' != ''">
+      <Shader Remove="@(Shader)" Condition="'%(Identity)' != '@(SelectedFiles)'" />
+    </ItemGroup>
+    <ItemGroup>
+      <Shader_tlog
+        Include="%(Shader.Outputs)"
+        Condition="'%(Shader.Outputs)' != '' and '%(Shader.ExcludedFromBuild)' != 'true'">
+        <Source>@(Shader, '|')</Source>
+        <Inputs>@(Shader, ';')</Inputs>
+      </Shader_tlog>
+    </ItemGroup>
+    <Message
+      Importance="High"
+      Text="%(Shader.ExecutionDescription)" />
+    <WriteLinesToFile
+      Condition="'@(Shader_tlog)' != '' and '%(Shader_tlog.ExcludedFromBuild)' != 'true'"
+      File="$(TLogLocation)Shader.write.1.tlog"
+      Lines="^%(Shader_tlog.Source);%(Shader_tlog.Fullpath)" />
+    <WriteLinesToFile
+      Condition="'@(Shader_tlog)' != '' and '%(Shader_tlog.ExcludedFromBuild)' != 'true'"
+      File="$(TLogLocation)Shader.read.1.tlog"
+      Lines="^%(Shader_tlog.Inputs);$(MSBuildProjectFullPath);%(Shader_tlog.Fullpath)" />
+    <Shader
+      Condition="'@(Shader)' != '' and '%(Shader.ExcludedFromBuild)' != 'true'"
+      CommandLineTemplate="%(Shader.CommandLineTemplate)"
+      AdditionalOptions="%(Shader.AdditionalOptions)"
+      Inputs="%(Shader.Identity)"
+      StandardOutputImportance="High"
+      StandardErrorImportance="High" />
+  </Target>
+  <Target
+    Name="ComputeShaderOutput"
+    Condition="'@(Shader)' != ''">
+    <ItemGroup>
+      <ShaderOutputs
+        Condition="'@(Shader)' != '' and '%(Shader.ExcludedFromBuild)' != 'true'"
+        Include="%(Shader.Outputs)" />
+    </ItemGroup>
+    <MakeDir Directories="@(ShaderOutputs->'%(RootDir)%(Directory)')" />
+  </Target>
+</Project>

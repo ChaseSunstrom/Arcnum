@@ -12,10 +12,13 @@ namespace spark
 		create_surface();
 		pick_physical_device();
 		create_logical_device();
+		create_swap_chain();
 	}
 
 	vulkan_window::~vulkan_window()
 	{
+		vkDestroySwapchainKHR(m_window_data->m_device, m_window_data->m_swapchain, nullptr);
+
 		if (m_enable_validation_layers)
 		{
 			destroy_debug_utils_messenger_ext(m_window_data->m_instance, m_window_data->m_debug_messenger, nullptr);
@@ -57,16 +60,21 @@ namespace spark
 
 	void vulkan_window::pre_draw()
 	{}
+
 	void vulkan_window::on_update()
 	{}
+
 	void vulkan_window::post_draw()
 	{}
+
 	bool vulkan_window::is_running()
 	{
 		return !glfwWindowShouldClose(m_window);
 	}
+
 	void vulkan_window::set_vsync(bool vsync)
 	{}
+
 	void vulkan_window::set_window_title(const std::string& title)
 	{}
 
@@ -175,7 +183,34 @@ namespace spark
 	{
 		queue_family_indices indices = find_queue_families(device);
 
-		return indices.is_complete();
+		bool extensions_supported = check_device_extension_support(device);
+
+		bool swap_chain_adequate = false;
+		if (extensions_supported)
+		{
+			swap_chain_support_details swap_chain_support = query_swap_chain_support(device);
+			swap_chain_adequate = !swap_chain_support.m_formats.empty() && !swap_chain_support.m_present_modes.empty();
+		}
+
+		return indices.is_complete() && extensions_supported && swap_chain_adequate;
+	}
+
+	bool vulkan_window::check_device_extension_support(VkPhysicalDevice device)
+	{
+		uint32_t extension_count;
+		vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, nullptr);
+
+		std::vector<VkExtensionProperties> available_extensions(extension_count);
+		vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, available_extensions.data());
+
+		std::set<std::string> required_extensions(m_device_extensions.begin(), m_device_extensions.end());
+
+		for (const auto& extension : available_extensions)
+		{
+			required_extensions.erase(extension.extensionName);
+		}
+
+		return required_extensions.empty();
 	}
 
 	int32_t vulkan_window::rate_device(VkPhysicalDevice device)
@@ -249,8 +284,7 @@ namespace spark
 		create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		create_info.pApplicationInfo = &app_info;
 
-		std::vector<const char*> extensions = get_required_extensions();
-
+		auto extensions = get_required_extensions();
 		create_info.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 		create_info.ppEnabledExtensionNames = extensions.data();
 
@@ -272,6 +306,97 @@ namespace spark
 
 		VkResult result = vkCreateInstance(&create_info, nullptr, &m_window_data->m_instance);
 	}
+
+	swap_chain_support_details vulkan_window::query_swap_chain_support(VkPhysicalDevice device)
+	{
+		swap_chain_support_details details;
+
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, m_window_data->m_surface, &details.m_capabilities);
+
+		uint32_t format_count;
+		vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_window_data->m_surface, &format_count, nullptr);
+
+		if (format_count != 0)
+		{
+			details.m_formats.resize(format_count);
+			vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_window_data->m_surface, &format_count, details.m_formats.data());
+		}
+
+		uint32_t present_mode_count;
+		vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_window_data->m_surface, &present_mode_count, nullptr);
+
+		if (present_mode_count != 0)
+		{
+			details.m_present_modes.resize(present_mode_count);
+			vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_window_data->m_surface, &present_mode_count, details.m_present_modes.data());
+		}
+
+		return details;
+	}
+
+	void vulkan_window::create_swap_chain()
+	{
+		swap_chain_support_details swap_chain_support = query_swap_chain_support(m_window_data->m_physical_device);
+
+		VkSurfaceFormatKHR surface_format = choose_swap_surface_format(swap_chain_support.m_formats);
+		VkPresentModeKHR present_mode = choose_swap_present_mode(swap_chain_support.m_present_modes);
+		VkExtent2D extent = choose_swap_extent(swap_chain_support.m_capabilities);
+
+		uint32_t image_count = swap_chain_support.m_capabilities.minImageCount + 1;
+		if (swap_chain_support.m_capabilities.maxImageCount > 0 && image_count > swap_chain_support.m_capabilities.maxImageCount)
+		{
+			image_count = swap_chain_support.m_capabilities.maxImageCount;
+		}
+
+		VkSwapchainCreateInfoKHR create_info{};
+		create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+		create_info.surface = m_window_data->m_surface;
+		create_info.minImageCount = image_count;
+		create_info.imageFormat = surface_format.format;
+		create_info.imageColorSpace = surface_format.colorSpace;
+		create_info.imageExtent = extent;
+		create_info.imageArrayLayers = 1;
+		create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+		queue_family_indices indices = find_queue_families(m_window_data->m_physical_device);
+		uint32_t queue_family_indices[] = { indices.m_graphics_family.value(), indices.m_present_family.value() };
+
+		if (indices.m_graphics_family != indices.m_present_family)
+		{
+			create_info.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+			create_info.queueFamilyIndexCount = 2;
+			create_info.pQueueFamilyIndices = queue_family_indices;
+		}
+		else
+		{
+			create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		}
+
+		create_info.preTransform = swap_chain_support.m_capabilities.currentTransform;
+		create_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+		create_info.presentMode = present_mode;
+		create_info.clipped = VK_TRUE;
+		create_info.oldSwapchain = VK_NULL_HANDLE;
+
+		VkResult result = vkCreateSwapchainKHR(m_window_data->m_device, &create_info, nullptr, &m_window_data->m_swapchain);
+		if (result == VK_SUCCESS)
+		{
+			SPARK_INFO("[VULKAN] Swap chain created successfully.");
+		}
+		else
+		{
+			SPARK_ERROR("[VULKAN] Failed to create swap chain!");
+			assert(false);
+		}
+
+		vkGetSwapchainImagesKHR(m_window_data->m_device, m_window_data->m_swapchain, &image_count, nullptr);
+		m_window_data->m_swapchain_images.resize(image_count);
+		vkGetSwapchainImagesKHR(m_window_data->m_device, m_window_data->m_swapchain, &image_count, m_window_data->m_swapchain_images.data());
+
+		m_window_data->m_swapchain_image_format = surface_format.format;
+		m_window_data->m_swapchain_extent = extent;
+	}
+
 
 	void vulkan_window::create_logical_device()
 	{
@@ -318,6 +443,55 @@ namespace spark
 
 		vkGetDeviceQueue(m_window_data->m_device, indices.m_graphics_family.value(), 0, &m_window_data->m_graphics_queue);
 		vkGetDeviceQueue(m_window_data->m_device, indices.m_present_family.value(), 0, &m_window_data->m_present_queue);
+	}
+
+	VkSurfaceFormatKHR vulkan_window::choose_swap_surface_format(const std::vector<VkSurfaceFormatKHR>& available_formats)
+	{
+		for (const auto& available_format : available_formats)
+		{
+			if (available_format.format == VK_FORMAT_B8G8R8A8_SRGB && available_format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+			{
+				return available_format;
+			}
+		}
+
+		return available_formats[0];
+	}
+
+	VkPresentModeKHR vulkan_window::choose_swap_present_mode(const std::vector<VkPresentModeKHR>& available_present_modes)
+	{
+		for (const auto& available_present_mode : available_present_modes)
+		{
+			if (available_present_mode == VK_PRESENT_MODE_MAILBOX_KHR)
+			{
+				return available_present_mode;
+			}
+		}
+
+		return VK_PRESENT_MODE_FIFO_KHR;
+	}
+
+	VkExtent2D vulkan_window::choose_swap_extent(const VkSurfaceCapabilitiesKHR& capabilities)
+	{
+		if (capabilities.currentExtent.width != UINT32_MAX)
+		{
+			return capabilities.currentExtent;
+		}
+		else
+		{
+			int32_t width, height;
+			glfwGetFramebufferSize(m_window, &width, &height);
+
+			VkExtent2D actual_extent = {
+				static_cast<uint32_t>(width),
+				static_cast<uint32_t>(height)
+			};
+
+			actual_extent.width = std::clamp(actual_extent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+			actual_extent.height = std::clamp(actual_extent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+
+			return actual_extent;
+		}
 	}
 
 	void vulkan_window::create_surface()

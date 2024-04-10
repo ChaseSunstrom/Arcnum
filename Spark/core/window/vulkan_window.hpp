@@ -15,6 +15,13 @@ namespace spark
 		std::optional<uint32_t> m_graphics_family;
 		std::optional<uint32_t> m_present_family;
 	};
+
+	struct swap_chain_support_details
+	{
+		VkSurfaceCapabilitiesKHR m_capabilities;
+		std::vector<VkSurfaceFormatKHR> m_formats;
+		std::vector<VkPresentModeKHR> m_present_modes;
+	};
 	
 	struct vulkan_window_data : public window_data
 	{
@@ -34,6 +41,10 @@ namespace spark
 		VkQueue m_graphics_queue;
 		VkQueue m_present_queue;
 		VkSurfaceKHR m_surface;
+		VkSwapchainKHR m_swapchain;
+		std::vector<VkImage> m_swapchain_images;
+		VkFormat m_swapchain_image_format;
+		VkExtent2D m_swapchain_extent;
 	};
 
 	class vulkan_window : public window
@@ -98,9 +109,15 @@ namespace spark
 		void create_logical_device();
 		void pick_physical_device();
 		void create_surface();
+		void create_swap_chain();
 		bool is_device_suitable(VkPhysicalDevice device);
+		bool check_device_extension_support(VkPhysicalDevice device);
 		int32_t rate_device(VkPhysicalDevice device);
 		queue_family_indices find_queue_families(VkPhysicalDevice device);
+		swap_chain_support_details query_swap_chain_support(VkPhysicalDevice device);
+		VkSurfaceFormatKHR choose_swap_surface_format(const std::vector<VkSurfaceFormatKHR>& available_formats);
+		VkPresentModeKHR choose_swap_present_mode(const std::vector<VkPresentModeKHR>& available_present_modes);
+		VkExtent2D choose_swap_extent(const VkSurfaceCapabilitiesKHR& capabilities);
 	private:
 		GLFWwindow* m_window;
 
@@ -108,6 +125,10 @@ namespace spark
 
 		const std::vector<const char*> m_validation_layers = {
 			"VK_LAYER_KHRONOS_validation"
+		};
+
+		const std::vector<const char*> m_device_extensions = {
+			VK_KHR_SWAPCHAIN_EXTENSION_NAME
 		};
 
 #ifdef DEBUG

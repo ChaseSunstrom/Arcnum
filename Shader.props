@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup
+    Condition="'$(ShaderBeforeTargets)' == '' and '$(ShaderAfterTargets)' == '' and '$(ConfigurationType)' != 'Makefile'">
+    <ShaderBeforeTargets>Midl</ShaderBeforeTargets>
+    <ShaderAfterTargets>CustomBuild</ShaderAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ShaderDependsOn
+      Condition="'$(ConfigurationType)' != 'Makefile'">_SelectedFiles;$(ShaderDependsOn)</ShaderDependsOn>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Shader>
+      <CommandLineTemplate>"${VULKAN_SDK}/Bin/glslc" %(Identity) -o %(RootDir)%(Directory)/%(Filename).spv</CommandLineTemplate>
+      <AdditionalDependencies></AdditionalDependencies>
+    </Shader>
+  </ItemDefinitionGroup>
+</Project>

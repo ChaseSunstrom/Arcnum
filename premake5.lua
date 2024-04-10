@@ -9,6 +9,23 @@ local boost_lib_prefix = "libboost_"
 local debug_suffix = "-vc143-mt-gd-x64-1_84"
 local release_suffix = "-vc143-mt-x64-1_84"
 
+rule "Shader"
+    fileextension ".vert"
+    fileextension ".frag"
+    fileextension ".geom"
+    fileextension ".tese"
+    fileextension ".tesc"
+    fileextension ".comp"
+
+    -- Assume Vulkan SDK is available in the environment variable VULKAN_SDK
+    -- Output directory is constructed using tokens and known structure, avoiding direct cfg reference
+    buildcommands {
+        "\"${VULKAN_SDK}/Bin/glslc\" %{file.relpath} -o %{file.directory}/%{file.basename}.spv"
+    }
+    buildoutputs { "%{file.directory}/%{file.basename}.spv" }
+
+
+
 -- Configuration for the Arcnum project
 project "Arcnum"
     kind "ConsoleApp"
@@ -17,6 +34,7 @@ project "Arcnum"
     cppdialect "C++20"
     dependson { "Spark" }
     files { "src/**.cpp", "src/**.hpp", "src/**.h" }
+    rules {"Shader"}
 
    includedirs {
        "Spark",
@@ -32,12 +50,7 @@ project "Arcnum"
     }
 
     libdirs {
-        "Spark/lib",
-        "Spark/lib/BOOST",
-        "Spark/lib/IRRKLANG",
-        "Spark/lib/GLEW",
-        "Spark/lib/GLFW",
-        "Spark/lib/VULKAN"
+        "Spark/lib/**"
     }
     links {
         "Spark",
@@ -76,6 +89,7 @@ project "Spark"
     targetdir "bin/%{cfg.buildcfg}/lib"
     cppdialect "C++20"
     files { "Spark/core/**.cpp", "Spark/core/**.hpp", "Spark/core/**.h", "Spark/include/IMGUI/**.cpp", "Spark/include/IMGUI/**.h"}
+    rules {"Shader"}
     includedirs {
         "Spark/include",
         "Spark/include/BOOST",
@@ -89,12 +103,7 @@ project "Spark"
     }
 
     libdirs {
-        "Spark/lib",
-        "Spark/lib/BOOST",
-        "Spark/lib/IRRKLANG",
-        "Spark/lib/GLEW",
-        "Spark/lib/GLFW",
-        "Spark/lib/VULKAN"
+        "Spark/lib/**"
     }
     links {
         "glfw3",

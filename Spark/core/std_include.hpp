@@ -40,19 +40,19 @@
 #include <array>
 #include <new>
 
-#include <glew.h>
+#include <GLEW/glew.h>
 
 #include <VULKAN/vulkan.h>
-#include <glfw3.h>
+#include <GLFW/glfw3.h>
 
-#include <glm.hpp>
-#include <irrKlang.h>
-#include <gtx/quaternion.hpp>
-#include <gtc/quaternion.hpp>
-#include <gtc/matrix_transform.hpp>
-#include <gtc/matrix_inverse.hpp>
-#include <gtx/transform.hpp>
-#include <gtc/type_ptr.hpp>
-#include <common.hpp>
+#include <GLM/glm.hpp>
+#include <IRRKLANG/irrKlang.h>
+#include <GLM/gtx/quaternion.hpp>
+#include <GLM/gtc/quaternion.hpp>
+#include <GLM/gtc/matrix_transform.hpp>
+#include <GLM/gtc/matrix_inverse.hpp>
+#include <GLM/gtx/transform.hpp>
+#include <GLM/gtc/type_ptr.hpp>
+#include <GLM/common.hpp>
 
 #endif

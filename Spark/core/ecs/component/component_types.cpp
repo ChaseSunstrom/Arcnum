@@ -4,7 +4,7 @@
 
 // Because stb_image is fucking weird
 #define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
+#include <OTHER/stb_image.h>
 
 namespace spark
 {
@@ -14,7 +14,7 @@ namespace spark
 	}
 
 	mesh::mesh(
-		const std::vector <vertex>& vertices,
+		const std::vector<vertex>& vertices,
 		const std::vector<uint32_t>& indices
 	)
 	{

@@ -26,6 +26,8 @@ namespace spark
 
 	vulkan_window::~vulkan_window()
 	{
+		vkDeviceWaitIdle(m_window_data->m_device);
+
 		vkDestroySemaphore(m_window_data->m_device, m_window_data->m_image_available_semaphore, nullptr);
 		vkDestroySemaphore(m_window_data->m_device, m_window_data->m_render_finished_semaphore, nullptr);
 		vkDestroyFence(m_window_data->m_device, m_window_data->m_in_flight_fence, nullptr);

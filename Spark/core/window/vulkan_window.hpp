@@ -43,8 +43,17 @@ namespace spark
 		VkSurfaceKHR m_surface;
 		VkSwapchainKHR m_swapchain;
 		std::vector<VkImage> m_swapchain_images;
+		std::vector<VkImageView> m_swapchain_image_views;
 		VkFormat m_swapchain_image_format;
 		VkExtent2D m_swapchain_extent;
+
+		const std::vector<const char*> m_validation_layers = {
+			"VK_LAYER_KHRONOS_validation"
+		};
+
+		const std::vector<const char*> m_device_extensions = {
+			VK_KHR_SWAPCHAIN_EXTENSION_NAME
+		};
 	};
 
 	class vulkan_window : public window
@@ -100,16 +109,18 @@ namespace spark
 		void init_gl();
 		void init_vulkan();
 		void init_debug();
+		void init_logical_device();
+		void init_physical_device();
+		void init_surface();
+		void init_swap_chain();
+		void init_image_views();
+		void init_pipeline();
 
 		bool check_validation_layer_support();
 		std::vector<const char*> get_required_extensions();
 		VkResult create_debug_utils_messenger_ext(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* create_info, const VkAllocationCallbacks* allocator, VkDebugUtilsMessengerEXT* debug_messenger);
 		void destroy_debug_utils_messenger_ext(VkInstance instance, VkDebugUtilsMessengerEXT debug_messenger, const VkAllocationCallbacks* allocator);
 		void populate_debug_messenger(VkDebugUtilsMessengerCreateInfoEXT& create_info);
-		void create_logical_device();
-		void pick_physical_device();
-		void create_surface();
-		void create_swap_chain();
 		bool is_device_suitable(VkPhysicalDevice device);
 		bool check_device_extension_support(VkPhysicalDevice device);
 		int32_t rate_device(VkPhysicalDevice device);
@@ -118,18 +129,11 @@ namespace spark
 		VkSurfaceFormatKHR choose_swap_surface_format(const std::vector<VkSurfaceFormatKHR>& available_formats);
 		VkPresentModeKHR choose_swap_present_mode(const std::vector<VkPresentModeKHR>& available_present_modes);
 		VkExtent2D choose_swap_extent(const VkSurfaceCapabilitiesKHR& capabilities);
+		VkShaderModule create_shader_module(const std::vector<char>& code);
 	private:
 		GLFWwindow* m_window;
 
 		std::unique_ptr<vulkan_window_data> m_window_data = std::make_unique<vulkan_window_data>();
-
-		const std::vector<const char*> m_validation_layers = {
-			"VK_LAYER_KHRONOS_validation"
-		};
-
-		const std::vector<const char*> m_device_extensions = {
-			VK_KHR_SWAPCHAIN_EXTENSION_NAME
-		};
 
 #ifdef DEBUG
 		const bool m_enable_validation_layers = true;

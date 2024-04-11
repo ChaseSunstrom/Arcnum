@@ -105,8 +105,6 @@ void on_start()
 
 	_audio_manager.create_sound("retro", "assets/sfx/retro.wav");
 
-	auto [vert, frag] = _shader_manager.load_shader({ "Spark/shaders/line.vert", "Spark/shaders/line.frag" });
-	
 	cur_scene.set_background_color(spark::math::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 
 	// Create material and mesh

@@ -59,7 +59,7 @@ namespace spark
 
 			_scene_manager.update_current_scene(_renderer.get_fixed_delta_time());
 
-			opengl_win.render_framebuffer_to_screen(); // Renders the framebuffer to the screen
+			//opengl_win.render_framebuffer_to_screen(); // Renders the framebuffer to the screen
 
 			_ui.on_update(); // UI rendering should come after rendering the framebuffer to screen
 

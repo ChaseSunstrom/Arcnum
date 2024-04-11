@@ -8,19 +8,44 @@
 
 namespace spark
 {
-	class shader_preprocessor
+	enum class shader_type
+	{
+		UNKNOWN = 0,
+		VERTEX,
+		FRAGMENT,
+		GEOMETRY,
+		COMPUTE,
+		TESS_CONTROL,
+		TESSELATION_EVAL
+	};
+
+	struct shader_wrapper
+	{
+		shader_wrapper() = default;
+		shader_type get_shader_type_from_extension(const std::string& file_extension);
+
+		// Only vulkan is implemented currently
+		void create_vulkan_shader(const std::filesystem::path& shader_path);
+		void create_metal_shader();
+		void create_directx_shader();
+
+		shader_type m_shader_type;
+		std::variant<VkShaderModule> m_shader_variant;
+	};
+
+	class shader
 	{
 	public:
-		shader_preprocessor() = default;
-
-		std::string preprocess_shader(const std::string& file_path);
+		shader(const std::filesystem::path& shader_path) {
+			create_shader(shader_path); 
+		}
+		shader_type get_shader_type() const {
+			return m_shader->m_shader_type; 
+		}
 	private:
-		std::string process_file(const std::string& file_path);
-
-		std::string extract_path(const std::string& line);
+		void create_shader(const std::filesystem::path& shader_path);
 	private:
-		std::unordered_set<std::string> m_included_files;
-		std::string m_library_base_path = "Spark/shaders/";
+		std::unique_ptr<shader_wrapper> m_shader = std::make_unique<shader_wrapper>();
 	};
 
 	class shader_manager
@@ -33,38 +58,18 @@ namespace spark
 		}
 		// Tuple to allow the user to get the concated paths of the vertex and
 		// fragment shaders
-		std::tuple<std::string, GLuint> load_shader(
-			const std::pair<std::optional<std::string>, std::optional<std::string>>&
-			paths_opt);
+		shader load_shader(const std::filesystem::path& shader_path);
 
-		bool create_and_link_program(GLuint vertex_shader, GLuint fragment_shader, GLuint& out_program);
-
-		GLuint get_shader(const std::string& vertex_path,
-						  const std::string& fragment_path);
-
-		GLuint get_shader(const std::string& concat_paths);
-
-		void delete_shader(const std::string& vertex_path,
-						   const std::string& fragment_path);
-
-		void delete_shader(const std::string& concat_paths);
-
+		GLuint get_shader(const std::string& path);
 	private:
 		shader_manager() = default;
 
 		~shader_manager();
 
-		GLuint compile_shader(const std::string& shader_code, GLenum shader_type);
-
-		inline std::string concat_paths(const std::string& vertex_path,
-										const std::string& fragment_path);
-
 	private:
 		// Uses a concatenated string of the vertex and fragment shader paths
 		std::unordered_map<std::string, GLuint> m_shaders =
 			std::unordered_map<std::string, GLuint>();
-		std::unique_ptr<shader_preprocessor> m_preprocessor =
-			std::make_unique<shader_preprocessor>();
 	};
 } // namespace spark
 

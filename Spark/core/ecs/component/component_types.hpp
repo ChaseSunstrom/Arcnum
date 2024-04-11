@@ -168,7 +168,6 @@ namespace spark
 	struct material
 	{
 		material(
-			GLuint shader_program,
 			const math::vec4& color,
 			texture& tex,
 			int32_t diffuse,
@@ -177,8 +176,7 @@ namespace spark
 			float32_t shininess)
 			: m_color(color), m_diffuse(diffuse), m_specular(specular),
 			m_ambient(ambient), m_shininess(shininess),
-			m_texture(tex),
-			m_shader_program(shader_program)
+			m_texture(tex)
 		{}
 
 		~material() = default;
@@ -194,8 +192,6 @@ namespace spark
 		float32_t m_shininess;
 
 		texture& m_texture;
-
-		GLuint m_shader_program;
 	};
 
 
@@ -357,8 +353,6 @@ namespace spark
 
 			texture* tex = nullptr;
 
-			GLuint shader_program = std::get<1>(m_shader_manager.load_shader(shader_paths));
-
 			if (!texture_name.empty() && m_texture_manager.get_textures().contains(texture_name))
 			{
 				tex = &(m_texture_manager.get_texture(texture_name));
@@ -369,7 +363,6 @@ namespace spark
 			}
 
 			m_materials[name] = std::make_unique<material>(
-				shader_program,
 				color,
 				*tex,
 				diffuse,

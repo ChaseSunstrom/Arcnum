@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <vector>
 #include <numeric>
+#include <variant>
 #include <string>
 #include <memory>
 #include <chrono>

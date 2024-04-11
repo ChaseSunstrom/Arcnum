@@ -131,7 +131,7 @@ namespace spark
 		}
 	}
 
-
+#ifdef FIX_VULKAN
 	void instancer::bind_renderables(const std::vector<std::unique_ptr<camera>>& cameras, const std::string& mesh_name, const std::string& material_name)
 	{
 
@@ -165,7 +165,7 @@ namespace spark
 
 		trans_struct->update(); // This method binds and updates the VBO as needed
 	}
-
+#endif
 	void instancer::render_instanced(const std::vector<std::unique_ptr<camera>>& cameras, scene& scene)
 	{
 		for (auto& [mesh_name, material_map] : m_renderables)
@@ -173,7 +173,7 @@ namespace spark
 			for (auto& [material_name, transforms_ptr] : material_map)
 			{
 				// Bind the necessary resources for this mesh-material combination
-				bind_renderables(cameras, mesh_name, material_name);
+				//bind_renderables(cameras, mesh_name, material_name);
 
 				// Now update the instance transformation data
 				transforms_ptr->update();

@@ -1,6 +1,8 @@
 #include "vulkan_window.hpp"
 #include "opengl_window.hpp"
 
+#include "../util/file.hpp"
+
 namespace spark
 {
 	vulkan_window::vulkan_window() :
@@ -9,14 +11,21 @@ namespace spark
 		init_gl();
 		init_vulkan();
 		init_debug();
-		create_surface();
-		pick_physical_device();
-		create_logical_device();
-		create_swap_chain();
+		init_surface();
+		init_physical_device();
+		init_logical_device();
+		init_swap_chain();
+		init_image_views();
+		init_pipeline();
 	}
 
 	vulkan_window::~vulkan_window()
 	{
+		for (auto & import : m_window_data->m_swapchain_image_views)
+		{
+			vkDestroyImageView(m_window_data->m_device, import, nullptr);
+		}
+
 		vkDestroySwapchainKHR(m_window_data->m_device, m_window_data->m_swapchain, nullptr);
 
 		if (m_enable_validation_layers)
@@ -38,7 +47,7 @@ namespace spark
 		std::vector<VkLayerProperties> available_layers(layer_count);
 		vkEnumerateInstanceLayerProperties(&layer_count, available_layers.data());
 
-		for (const char* layer_name : m_validation_layers)
+		for (const char* layer_name : m_window_data->m_validation_layers)
 		{
 			bool layer_found = false;
 
@@ -76,7 +85,9 @@ namespace spark
 	{}
 
 	void vulkan_window::set_window_title(const std::string& title)
-	{}
+	{
+		glfwSetWindowTitle(m_window, title.c_str());
+	}
 
 	std::vector<const char*> vulkan_window::get_required_extensions()
 	{
@@ -115,7 +126,7 @@ namespace spark
 		}
 	}
 
-	void vulkan_window::pick_physical_device()
+	void vulkan_window::init_physical_device()
 	{
 		uint32_t device_count = 0;
 		vkEnumeratePhysicalDevices(m_window_data->m_instance, &device_count, nullptr);
@@ -203,7 +214,7 @@ namespace spark
 		std::vector<VkExtensionProperties> available_extensions(extension_count);
 		vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, available_extensions.data());
 
-		std::set<std::string> required_extensions(m_device_extensions.begin(), m_device_extensions.end());
+		std::set<std::string> required_extensions(m_window_data->m_device_extensions.begin(), m_window_data->m_device_extensions.end());
 
 		for (const auto& extension : available_extensions)
 		{
@@ -292,8 +303,8 @@ namespace spark
 
 		if (m_enable_validation_layers)
 		{
-			create_info.enabledLayerCount = static_cast<uint32_t>(m_validation_layers.size());
-			create_info.ppEnabledLayerNames = m_validation_layers.data();
+			create_info.enabledLayerCount = static_cast<uint32_t>(m_window_data->m_validation_layers.size());
+			create_info.ppEnabledLayerNames = m_window_data->m_validation_layers.data();
 
 			populate_debug_messenger(debug_create_info);
 			create_info.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debug_create_info;
@@ -334,7 +345,7 @@ namespace spark
 		return details;
 	}
 
-	void vulkan_window::create_swap_chain()
+	void vulkan_window::init_swap_chain()
 	{
 		swap_chain_support_details swap_chain_support = query_swap_chain_support(m_window_data->m_physical_device);
 
@@ -379,11 +390,8 @@ namespace spark
 		create_info.oldSwapchain = VK_NULL_HANDLE;
 
 		VkResult result = vkCreateSwapchainKHR(m_window_data->m_device, &create_info, nullptr, &m_window_data->m_swapchain);
-		if (result == VK_SUCCESS)
-		{
-			SPARK_INFO("[VULKAN] Swap chain created successfully.");
-		}
-		else
+		
+		if (result != VK_SUCCESS)
 		{
 			SPARK_ERROR("[VULKAN] Failed to create swap chain!");
 			assert(false);
@@ -398,7 +406,7 @@ namespace spark
 	}
 
 
-	void vulkan_window::create_logical_device()
+	void vulkan_window::init_logical_device()
 	{
 		queue_family_indices indices = find_queue_families(m_window_data->m_physical_device);
 
@@ -424,12 +432,14 @@ namespace spark
 		create_info.queueCreateInfoCount = static_cast<uint32_t>(queue_create_infos.size());
 		create_info.pQueueCreateInfos = queue_create_infos.data();
 		create_info.pEnabledFeatures = &device_features;
-		create_info.enabledExtensionCount = 0;
+
+		create_info.enabledExtensionCount = static_cast<uint32_t>(m_window_data->m_device_extensions.size());
+		create_info.ppEnabledExtensionNames = m_window_data->m_device_extensions.data();
 
 		if (m_enable_validation_layers)
 		{
-			create_info.enabledLayerCount = static_cast<uint32_t>(m_validation_layers.size());
-			create_info.ppEnabledLayerNames = m_validation_layers.data();
+			create_info.enabledLayerCount = static_cast<uint32_t>(m_window_data->m_validation_layers.size());
+			create_info.ppEnabledLayerNames = m_window_data->m_validation_layers.data();
 		}
 		else
 		{
@@ -443,6 +453,28 @@ namespace spark
 
 		vkGetDeviceQueue(m_window_data->m_device, indices.m_graphics_family.value(), 0, &m_window_data->m_graphics_queue);
 		vkGetDeviceQueue(m_window_data->m_device, indices.m_present_family.value(), 0, &m_window_data->m_present_queue);
+	}
+
+	void vulkan_window::init_pipeline()
+	{
+
+	}
+
+	VkShaderModule vulkan_window::create_shader_module(const std::vector<char>& code)
+	{
+		VkShaderModuleCreateInfo create_info{};
+		create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+		create_info.codeSize = code.size();
+		create_info.pCode = reinterpret_cast<const uint32_t*>(code.data());
+
+		VkShaderModule shader_module;
+		if (vkCreateShaderModule(m_window_data->m_device, &create_info, nullptr, &shader_module) != VK_SUCCESS)
+		{
+			SPARK_ERROR("[VULKAN] Failed to create shader module!");
+			assert(false);
+		}
+
+		return shader_module;
 	}
 
 	VkSurfaceFormatKHR vulkan_window::choose_swap_surface_format(const std::vector<VkSurfaceFormatKHR>& available_formats)
@@ -473,7 +505,7 @@ namespace spark
 
 	VkExtent2D vulkan_window::choose_swap_extent(const VkSurfaceCapabilitiesKHR& capabilities)
 	{
-		if (capabilities.currentExtent.width != UINT32_MAX)
+		if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
 		{
 			return capabilities.currentExtent;
 		}
@@ -494,12 +526,43 @@ namespace spark
 		}
 	}
 
-	void vulkan_window::create_surface()
+	void vulkan_window::init_surface()
 	{
 		if (glfwCreateWindowSurface(m_window_data->m_instance, m_window, nullptr, &m_window_data->m_surface) != VK_SUCCESS)
 		{
 			SPARK_ERROR("[VULKAN] Failed to create window surface!");
 			assert(false);
+		}
+	}
+
+	void vulkan_window::init_image_views()
+	{
+		m_window_data->m_swapchain_image_views.resize(m_window_data->m_swapchain_images.size());
+
+		for (uint64_t i = 0; i < m_window_data->m_swapchain_images.size(); i++)
+		{
+			VkImageViewCreateInfo create_info{};
+			create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+			create_info.image = m_window_data->m_swapchain_images[i];
+			create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+			create_info.format = m_window_data->m_swapchain_image_format;
+
+			create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+			create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+			create_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+			create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+			create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			create_info.subresourceRange.baseMipLevel = 0;
+			create_info.subresourceRange.levelCount = 1;
+			create_info.subresourceRange.baseArrayLayer = 0;
+			create_info.subresourceRange.layerCount = 1;
+
+			if (vkCreateImageView(m_window_data->m_device, &create_info, nullptr, &m_window_data->m_swapchain_image_views[i]) != VK_SUCCESS)
+			{
+				SPARK_ERROR("[VULKAN] Failed to create image views!");
+				assert(false);
+			}
 		}
 	}
 

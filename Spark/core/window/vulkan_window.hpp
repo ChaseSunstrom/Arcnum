@@ -46,6 +46,15 @@ namespace spark
 		std::vector<VkImageView> m_swapchain_image_views;
 		VkFormat m_swapchain_image_format;
 		VkExtent2D m_swapchain_extent;
+		VkRenderPass m_render_pass;
+		VkPipelineLayout m_pipeline_layout;
+		VkPipeline m_graphics_pipeline;
+		std::vector<VkFramebuffer> m_swapchain_framebuffers;
+		VkCommandPool m_command_pool;
+		VkCommandBuffer m_command_buffer;
+		VkSemaphore m_image_available_semaphore;
+		VkSemaphore m_render_finished_semaphore;
+		VkFence m_in_flight_fence;
 
 		const std::vector<const char*> m_validation_layers = {
 			"VK_LAYER_KHRONOS_validation"
@@ -114,13 +123,20 @@ namespace spark
 		void init_surface();
 		void init_swap_chain();
 		void init_image_views();
+		void init_render_pass();
 		void init_pipeline();
+		void init_framebuffer();
+		void init_command_pool();
+		void init_command_buffer();
+		void init_sync_objects();
 
 		bool check_validation_layer_support();
 		std::vector<const char*> get_required_extensions();
 		VkResult create_debug_utils_messenger_ext(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* create_info, const VkAllocationCallbacks* allocator, VkDebugUtilsMessengerEXT* debug_messenger);
 		void destroy_debug_utils_messenger_ext(VkInstance instance, VkDebugUtilsMessengerEXT debug_messenger, const VkAllocationCallbacks* allocator);
 		void populate_debug_messenger(VkDebugUtilsMessengerCreateInfoEXT& create_info);
+		void record_command_buffer(VkCommandBuffer command_buffer, uint32_t image_index);
+		void draw_frame();
 		bool is_device_suitable(VkPhysicalDevice device);
 		bool check_device_extension_support(VkPhysicalDevice device);
 		int32_t rate_device(VkPhysicalDevice device);

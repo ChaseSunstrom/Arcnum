@@ -39,6 +39,38 @@ namespace spark
 		}
 	}
 
+	vulkan_shader_wrapper::vulkan_shader_wrapper(shader_type type, VkShaderModule module)
+	{
+		m_pipeline_shader.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+
+		VkShaderStageFlagBits vk_shader_type;
+		switch (type)
+		{
+		case shader_type::VERTEX:
+			vk_shader_type = VK_SHADER_STAGE_VERTEX_BIT;
+			break;
+		case shader_type::FRAGMENT:
+			vk_shader_type = VK_SHADER_STAGE_FRAGMENT_BIT;
+			break;
+		case shader_type::COMPUTE:
+			vk_shader_type = VK_SHADER_STAGE_COMPUTE_BIT;
+			break;
+		case shader_type::GEOMETRY:
+			vk_shader_type = VK_SHADER_STAGE_GEOMETRY_BIT;
+			break;
+		case shader_type::TESS_CONTROL:
+			vk_shader_type = VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+			break;
+		case shader_type::TESSELATION_EVAL:
+			vk_shader_type = VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+			break;
+		}
+
+		m_pipeline_shader.stage = vk_shader_type;
+		m_pipeline_shader.module = module;
+		m_pipeline_shader.pName = "main";
+	}
+
 	void shader_wrapper::create_vulkan_shader(const std::filesystem::path& shader_code)
 	{
 		auto& _vulkan_window = engine::get<vulkan_window>();
@@ -55,7 +87,7 @@ namespace spark
 			SPARK_ERROR("[SHADER] Failed to create shader module");
 		}
 
-		m_shader_variant = shader_module;
+		m_shader_variant = std::make_unique<vulkan_shader_wrapper>(m_shader_type, shader_module);
 	}
 
 	void shader::create_shader(const std::filesystem::path& shader_path)

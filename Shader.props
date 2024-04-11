@@ -11,7 +11,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <Shader>
-      <CommandLineTemplate>"${VULKAN_SDK}/Bin/glslc" %(Identity) -o %(RootDir)%(Directory)/%(Filename).spv</CommandLineTemplate>
+      <CommandLineTemplate>"${VULKAN_SDK}/Bin/glslc" %(Identity) -o %(RootDir)%(Directory)/%(Filename).spv --verbose</CommandLineTemplate>
       <AdditionalDependencies></AdditionalDependencies>
     </Shader>
   </ItemDefinitionGroup>

@@ -47,9 +47,9 @@ namespace spark
 		auto& _ecs = engine::get<ecs>();
 		auto& _ui = engine::get<ui_manager>();
 
-		if (get_current_window_type() == window_type::OPENGL)
+		if (get_current_window_type() == window_type::VULKAN)
 		{
-			opengl_window& opengl_win = dynamic_cast<opengl_window&>(_window);
+			vulkan_window& opengl_win = dynamic_cast<vulkan_window&>(_window);
 
 			_ecs.update_systems(s_delta_time);
 
@@ -57,13 +57,11 @@ namespace spark
 
 			_window.pre_draw();
 
-			_scene_manager.update_current_scene(_renderer.get_fixed_delta_time());
+			//_scene_manager.update_current_scene(_renderer.get_fixed_delta_time());
 
-			//opengl_win.render_framebuffer_to_screen(); // Renders the framebuffer to the screen
+			_window.on_update();
 
-			_ui.on_update(); // UI rendering should come after rendering the framebuffer to screen
-
-			_window.post_draw(); // Swap buffers and poll events
+			_window.post_draw();
 		}
 
 		spark::thread_pool::synchronize_registered_threads();

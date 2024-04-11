@@ -37,7 +37,7 @@ namespace spark
 		math::vec4 bc = config.m_background_color;
 		set_background_color(bc.r, bc.g, bc.b, bc.a);
 
-		//apply_dynamic_resolution();    // Adjusts resolution based on performance settings
+		apply_dynamic_resolution();    // Adjusts resolution based on performance settings
 		render_with_anti_aliasing();   // Applies anti-aliasing if enabled
 		render_shadows();              // Renders shadows if enabled
 		render_reflections();          // Renders reflections if enabled

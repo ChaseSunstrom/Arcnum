@@ -19,6 +19,28 @@ namespace spark
 		TESSELATION_EVAL
 	};
 
+	struct vulkan_shader_wrapper
+	{
+		// Forwards the shader type and vk_shader_module
+		vulkan_shader_wrapper(shader_type type, VkShaderModule module);
+
+		VkPipelineShaderStageCreateInfo m_pipeline_shader{};
+		std::optional<VkPipelineVertexInputStateCreateInfo> m_vertex_input;
+
+	private:
+		void create_vertex_input();
+	};
+
+	struct directx_shader_wrapper
+	{
+
+	};
+
+	struct metal_shader_wrapper
+	{
+
+	};
+
 	struct shader_wrapper
 	{
 		shader_wrapper() = default;
@@ -30,7 +52,9 @@ namespace spark
 		void create_directx_shader();
 
 		shader_type m_shader_type;
-		std::variant<VkShaderModule> m_shader_variant;
+		std::variant<std::unique_ptr<vulkan_shader_wrapper>, 
+					 std::unique_ptr<directx_shader_wrapper>, 
+					 std::unique_ptr<metal_shader_wrapper>> m_shader_variant;
 	};
 
 	class shader

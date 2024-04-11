@@ -20,8 +20,9 @@ rule "Shader"
     -- Assume Vulkan SDK is available in the environment variable VULKAN_SDK
     -- Output directory is constructed using tokens and known structure, avoiding direct cfg reference
     buildcommands {
-        "\"${VULKAN_SDK}/Bin/glslc\" %{file.relpath} -o %{file.directory}/%{file.basename}.spv"
+    "\"${VULKAN_SDK}/Bin/glslc\" %{file.relpath} -o %{file.directory}/%{file.basename}.spv --verbose"
     }
+
     buildoutputs { "%{file.directory}/%{file.basename}.spv" }
 
 

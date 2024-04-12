@@ -40,6 +40,9 @@ namespace spark
 
 	void application::on_update()
 	{
+		calculate_delta_time();
+		SPARK_INFO("[APPLICATION] Delta time: " << s_last_frame_time);
+
 		app_functions::s_on_update();
 
 		auto& _window = engine::get<window_manager>().get_current_window();
@@ -98,8 +101,10 @@ namespace spark
 	void application::calculate_delta_time()
 	{
 		// Update last frame time for frame rate calculations
-		s_last_frame_time = s_timer->elapsed_milliseconds() - s_total_time;
-		s_total_time = s_timer->elapsed_milliseconds();
+		float64_t time = s_timer->elapsed_milliseconds();
+		s_last_frame_time = time - s_total_time;
+		s_delta_time = s_last_frame_time;
+		s_total_time = time;
 	}
 
 	float64_t application::get_delta_time()

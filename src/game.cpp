@@ -183,7 +183,7 @@ bool on_event(std::shared_ptr<spark::event> event)
 
 		if (received_event)
 		{
-			SPARK_INFO("[ KEY PRESSED ]: " << spark::to_string(spark::key(received_event->m_key_code)));
+			SPARK_TRACE("[KEY PRESSED]: " << spark::to_string(spark::key(received_event->m_key_code)));
 		}
 	}
 	break;
@@ -193,7 +193,7 @@ bool on_event(std::shared_ptr<spark::event> event)
 
 		if (received_event)
 		{
-			SPARK_INFO("[ KEY HELD ]: " << spark::to_string(spark::key(received_event->m_key_code)));
+			SPARK_TRACE("[KEY HELD]: " << spark::to_string(spark::key(received_event->m_key_code)));
 		}
 	}
 	break;
@@ -203,7 +203,7 @@ bool on_event(std::shared_ptr<spark::event> event)
 
 		if (received_event)
 		{
-			SPARK_INFO("[ KEY RELEASED ]: " << spark::to_string(spark::key(received_event->m_key_code)));
+			SPARK_TRACE("[KEY RELEASED]: " << spark::to_string(spark::key(received_event->m_key_code)));
 		}
 	}
 	break;

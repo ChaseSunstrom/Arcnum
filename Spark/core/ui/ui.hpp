@@ -659,7 +659,7 @@ namespace spark
 			return nullptr; // Return nullptr if not found in any scope.
 		}
 
-		void on_start(GLFWwindow* window);
+		void on_start();
 		void on_update();
 		void on_end_update();
 		void on_shutdown();

@@ -2,12 +2,19 @@
 #include "opengl_window.hpp"
 
 #include "../util/file.hpp"
+#include "../events/sub.hpp"
+
+#include "IMGUI/imgui.h"
+#include "IMGUI/imgui_impl_glfw.h"
+#include "IMGUI/imgui_impl_vulkan.h"
 
 namespace spark
 {
 	vulkan_window::vulkan_window() :
 		window(window_type::VULKAN)
 	{
+		m_window_data = std::make_unique<vulkan_window_data>("Title", false, 1080, 1080, event_callback);
+
 		init_gl();
 		init_vulkan();
 		init_debug();
@@ -18,21 +25,17 @@ namespace spark
 		init_image_views();
 		init_render_pass();
 		init_pipeline();
-		init_framebuffer();
+		init_framebuffers();
 		init_command_pool();
-		init_command_buffer();
+		init_command_buffers();
 		init_sync_objects();
+		// Uncomment this when done fully implementing vulkan
+		//init_imgui();
 	}
 
 	vulkan_window::~vulkan_window()
 	{
-		vkDeviceWaitIdle(m_window_data->m_device);
-
-		vkDestroySemaphore(m_window_data->m_device, m_window_data->m_image_available_semaphore, nullptr);
-		vkDestroySemaphore(m_window_data->m_device, m_window_data->m_render_finished_semaphore, nullptr);
-		vkDestroyFence(m_window_data->m_device, m_window_data->m_in_flight_fence, nullptr);
-		
-		vkDestroyCommandPool(m_window_data->m_device, m_window_data->m_command_pool, nullptr);
+		cleanup_swap_chain();
 
 		for (auto& framebuffer : m_window_data->m_swapchain_framebuffers)
 		{
@@ -42,6 +45,15 @@ namespace spark
 		vkDestroyPipeline(m_window_data->m_device, m_window_data->m_graphics_pipeline, nullptr);
 		vkDestroyPipelineLayout(m_window_data->m_device, m_window_data->m_pipeline_layout, nullptr);
 		vkDestroyRenderPass(m_window_data->m_device, m_window_data->m_render_pass, nullptr);
+
+		for (uint64_t i = 0; i < m_window_data->m_max_frames_in_flight; i++)
+		{
+			vkDestroySemaphore(m_window_data->m_device, m_window_data->m_image_available_semaphores[i], nullptr);
+			vkDestroySemaphore(m_window_data->m_device, m_window_data->m_render_finished_semaphores[i], nullptr);
+			vkDestroyFence(m_window_data->m_device, m_window_data->m_in_flight_fences[i], nullptr);
+		}
+
+		vkDestroyCommandPool(m_window_data->m_device, m_window_data->m_command_pool, nullptr);
 
 		for (auto & import : m_window_data->m_swapchain_image_views)
 		{
@@ -58,6 +70,10 @@ namespace spark
 		vkDestroySurfaceKHR(m_window_data->m_instance, m_window_data->m_surface, nullptr);
 		vkDestroyInstance(m_window_data->m_instance, nullptr);
 		vkDestroyDevice(m_window_data->m_device, nullptr);
+
+		glfwDestroyWindow(m_window);
+
+		glfwTerminate();
 	}
 
 	bool vulkan_window::check_validation_layer_support()
@@ -91,31 +107,43 @@ namespace spark
 
 	void vulkan_window::draw_frame()
 	{
-		vkWaitForFences(m_window_data->m_device, 1, &m_window_data->m_in_flight_fence, VK_TRUE, UINT64_MAX);
-		vkResetFences(m_window_data->m_device, 1, &m_window_data->m_in_flight_fence);
-
+		vkWaitForFences(m_window_data->m_device, 1, &m_window_data->m_in_flight_fences[m_window_data->m_current_frame], VK_TRUE, UINT64_MAX);
+		
 		uint32_t image_index;
-		vkAcquireNextImageKHR(m_window_data->m_device, m_window_data->m_swapchain, UINT64_MAX, m_window_data->m_image_available_semaphore, VK_NULL_HANDLE, &image_index);
-		vkResetCommandBuffer(m_window_data->m_command_buffer, 0);
+		VkResult result =vkAcquireNextImageKHR(m_window_data->m_device, m_window_data->m_swapchain, UINT64_MAX, m_window_data->m_image_available_semaphores[m_window_data->m_current_frame], VK_NULL_HANDLE, &image_index);
+		
+		if (result == VK_ERROR_OUT_OF_DATE_KHR)
+		{
+			reinit_swap_chain();
+			return;
+		}
+		else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+		{
+			SPARK_ERROR("[VULKAN] Failed to acquire swap chain image!");
+			assert(false);
+		}
+		
+		vkResetFences(m_window_data->m_device, 1, &m_window_data->m_in_flight_fences[m_window_data->m_current_frame]);
+		vkResetCommandBuffer(m_window_data->m_command_buffers[m_window_data->m_current_frame], 0);
 
-		record_command_buffer(m_window_data->m_command_buffer, image_index);
+		record_command_buffer(m_window_data->m_command_buffers[m_window_data->m_current_frame], image_index);
 
 		VkSubmitInfo submit_info{};
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-		VkSemaphore wait_semaphores[] = { m_window_data->m_image_available_semaphore };
+		VkSemaphore wait_semaphores[] = { m_window_data->m_image_available_semaphores[m_window_data->m_current_frame] };
 		VkPipelineStageFlags wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 		submit_info.waitSemaphoreCount = 1;
 		submit_info.pWaitSemaphores = wait_semaphores;
 		submit_info.pWaitDstStageMask = wait_stages;
 		submit_info.commandBufferCount = 1;
-		submit_info.pCommandBuffers = &m_window_data->m_command_buffer;
+		submit_info.pCommandBuffers = &m_window_data->m_command_buffers[m_window_data->m_current_frame];
 
-		VkSemaphore signal_semaphores[] = { m_window_data->m_render_finished_semaphore };
+		VkSemaphore signal_semaphores[] = { m_window_data->m_render_finished_semaphores[m_window_data->m_current_frame] };
 		submit_info.signalSemaphoreCount = 1;
 		submit_info.pSignalSemaphores = signal_semaphores;
 
-		if (vkQueueSubmit(m_window_data->m_graphics_queue, 1, &submit_info, m_window_data->m_in_flight_fence) != VK_SUCCESS)
+		if (vkQueueSubmit(m_window_data->m_graphics_queue, 1, &submit_info, m_window_data->m_in_flight_fences[m_window_data->m_current_frame]) != VK_SUCCESS)
 		{
 			SPARK_ERROR("[VULKAN] Failed to submit draw command buffer!");
 			assert(false);
@@ -132,7 +160,20 @@ namespace spark
 		present_info.pImageIndices = &image_index;
 		present_info.pResults = nullptr;
 
-		vkQueuePresentKHR(m_window_data->m_present_queue, &present_info);
+		result = vkQueuePresentKHR(m_window_data->m_present_queue, &present_info);
+
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_window_data->m_framebuffer_resized)
+		{
+			m_window_data->m_framebuffer_resized = false;
+			reinit_swap_chain();
+		}
+		else if (result != VK_SUCCESS)
+		{
+			SPARK_ERROR("[VULKAN] Failed to present swap chain image!");
+			assert(false);
+		}
+
+		m_window_data->m_current_frame = (m_window_data->m_current_frame + 1) % m_window_data->m_max_frames_in_flight;
 	}
 
 	void vulkan_window::pre_draw()
@@ -217,8 +258,14 @@ namespace spark
 		for (const auto& device : devices)
 		{
 			int32_t score = rate_device(device);
+			VkPhysicalDeviceProperties properties;
+			vkGetPhysicalDeviceProperties(device, &properties);
+
+			SPARK_INFO("[VULKAN] Device " + std::string(properties.deviceName) + " was given score: " + std::to_string(score));
+
 			candidates.insert(std::make_pair(score, device));
 		}
+
 
 		if (candidates.rbegin()->first > 0)
 		{
@@ -299,22 +346,94 @@ namespace spark
 	int32_t vulkan_window::rate_device(VkPhysicalDevice device)
 	{
 		VkPhysicalDeviceProperties device_properties;
-		vkGetPhysicalDeviceProperties(device, &device_properties);
-
 		VkPhysicalDeviceFeatures device_features;
+		VkPhysicalDeviceMemoryProperties memory_properties;
+
+		vkGetPhysicalDeviceProperties(device, &device_properties);
 		vkGetPhysicalDeviceFeatures(device, &device_features);
+		vkGetPhysicalDeviceMemoryProperties(device, &memory_properties);
 
 		int32_t score = 0;
 
+		// Device type preference: Discrete GPU is given a high score
 		if (device_properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+		{
 			score += 1000;
+		}
+		else if (device_properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
+		{
+			score += 500; // Less preferable, but still viable
+		}
 
+		// Feature support
+		if (device_features.geometryShader)
+		{
+			score += 100;
+		}
+		if (device_features.tessellationShader)
+		{
+			score += 100;
+		}
+
+		// Maximum texture dimension 2D for texture-heavy applications
 		score += device_properties.limits.maxImageDimension2D;
 
-		if (!device_features.geometryShader)
-			return 0;
+		// Assess the memory capacity
+		uint64_t total_memory = 0;
+		for (uint32_t i = 0; i < memory_properties.memoryHeapCount; i++)
+		{
+			if (memory_properties.memoryHeaps[i].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)
+			{
+				total_memory += memory_properties.memoryHeaps[i].size;
+			}
+		}
+		score += static_cast<int32_t>(total_memory >> 20); // Add one point per MB of GPU memory
+
+		// Ensure the device supports all required queue families
+		queue_family_indices indices = find_queue_families(device);
+		if (!indices.is_complete())
+		{
+			score = 0; // Disqualify the device if it does not meet the queue family requirements
+		}
 
 		return score;
+	}
+
+	void vulkan_window::cleanup_swap_chain()
+	{
+		for (uint64_t i = 0; i < m_window_data->m_swapchain_framebuffers.size(); i++)
+		{
+			vkDestroyFramebuffer(m_window_data->m_device, m_window_data->m_swapchain_framebuffers[i], nullptr);
+		}
+
+		for (uint64_t i = 0; i < m_window_data->m_swapchain_image_views.size(); i++)
+		{
+			vkDestroyImageView(m_window_data->m_device, m_window_data->m_swapchain_image_views[i], nullptr);
+		}
+
+		vkDestroySwapchainKHR(m_window_data->m_device, m_window_data->m_swapchain, nullptr);
+	}
+
+	void vulkan_window::reinit_swap_chain()
+	{
+		int32_t width = 0;
+		int32_t height = 0;
+
+		glfwGetFramebufferSize(m_window, &width, &height);
+
+		while (width == 0 || height == 0)
+		{
+			glfwGetFramebufferSize(m_window, &width, &height);
+			glfwWaitEvents();
+		}
+
+		vkDeviceWaitIdle(m_window_data->m_device);
+
+		cleanup_swap_chain();
+
+		init_swap_chain();
+		init_image_views();
+		init_framebuffers();
 	}
 
 	void vulkan_window::populate_debug_messenger(VkDebugUtilsMessengerCreateInfoEXT& create_info)
@@ -328,6 +447,10 @@ namespace spark
 
 	void vulkan_window::init_sync_objects()
 	{
+		m_window_data->m_image_available_semaphores.resize(m_window_data->m_max_frames_in_flight);
+		m_window_data->m_render_finished_semaphores.resize(m_window_data->m_max_frames_in_flight);
+		m_window_data->m_in_flight_fences.resize(m_window_data->m_max_frames_in_flight);
+
 		VkSemaphoreCreateInfo semaphore_info{};
 		semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
@@ -335,12 +458,15 @@ namespace spark
 		fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-		if (vkCreateSemaphore(m_window_data->m_device, &semaphore_info, nullptr, &m_window_data->m_image_available_semaphore) != VK_SUCCESS ||
-			vkCreateSemaphore(m_window_data->m_device, &semaphore_info, nullptr, &m_window_data->m_render_finished_semaphore) != VK_SUCCESS ||
-			vkCreateFence(m_window_data->m_device, &fence_info, nullptr, &m_window_data->m_in_flight_fence) != VK_SUCCESS)
+		for (uint64_t i = 0; i < m_window_data->m_max_frames_in_flight; i++)
 		{
-			SPARK_ERROR("[VULKAN] Failed to create semaphore!");
-			assert(false);
+			if (vkCreateSemaphore(m_window_data->m_device, &semaphore_info, nullptr, &m_window_data->m_image_available_semaphores[i]) != VK_SUCCESS ||
+				vkCreateSemaphore(m_window_data->m_device, &semaphore_info, nullptr, &m_window_data->m_render_finished_semaphores[i]) != VK_SUCCESS ||
+				vkCreateFence(m_window_data->m_device, &fence_info, nullptr, &m_window_data->m_in_flight_fences[i]) != VK_SUCCESS)
+			{
+				SPARK_ERROR("[VULKAN] Failed to create semaphore!");
+				assert(false);
+			}
 		}
 	}
 
@@ -353,6 +479,16 @@ namespace spark
 
 		m_window = glfwCreateWindow(
 			m_window_data->m_width, m_window_data->m_height, m_window_data->m_title.c_str(), NULL, NULL);
+
+		glfwSetWindowUserPointer(m_window, m_window_data.get());
+
+		glfwSetFramebufferSizeCallback(m_window, framebuffer_resize_callback);
+		glfwSetWindowSizeCallback(m_window, opengl_window::resized_event_callback);
+		glfwSetWindowCloseCallback(m_window, opengl_window::close_event_callback);
+		glfwSetKeyCallback(m_window, opengl_window::key_event_callback);
+		glfwSetMouseButtonCallback(m_window, opengl_window::mouse_button_event_callback);
+		glfwSetCursorPosCallback(m_window, opengl_window::mouse_move_event_callback);
+		glfwSetScrollCallback(m_window, opengl_window::mouse_scroll_event_callback);
 	}
 
 	void vulkan_window::init_vulkan()
@@ -796,7 +932,32 @@ namespace spark
 		}
 	}
 
-	void vulkan_window::init_framebuffer()
+	void vulkan_window::init_imgui()
+	{
+			ImGui::CreateContext();
+			ImGuiIO& io = ImGui::GetIO();
+			io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+
+			// Set up Dear ImGui style
+			ImGui::StyleColorsDark();
+
+			// Initialize ImGui for Vulkan
+			ImGui_ImplGlfw_InitForVulkan(m_window, true);
+
+			ImGui_ImplVulkan_InitInfo init_info = {};
+			init_info.Instance = m_window_data->m_instance;
+			init_info.PhysicalDevice = m_window_data->m_physical_device;
+			init_info.Device = m_window_data->m_device;
+			init_info.QueueFamily = find_queue_families(m_window_data->m_physical_device).m_graphics_family.value();
+			init_info.Queue = m_window_data->m_graphics_queue;
+			init_info.PipelineCache = VK_NULL_HANDLE;
+			init_info.Allocator = nullptr;
+			init_info.MinImageCount = 2;
+			init_info.ImageCount = m_window_data->m_swapchain_images.size();
+			ImGui_ImplVulkan_Init(&init_info);
+	}
+
+	void vulkan_window::init_framebuffers()
 	{
 		m_window_data->m_swapchain_framebuffers.resize(m_window_data->m_swapchain_image_views.size());
 
@@ -890,20 +1051,20 @@ namespace spark
 		}
 	}
 
-	void vulkan_window::init_command_buffer()
+	void vulkan_window::init_command_buffers()
 	{
+		m_window_data->m_command_buffers.resize(m_window_data->m_max_frames_in_flight);
+
 		VkCommandBufferAllocateInfo alloc_info{};
 		alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		alloc_info.commandPool = m_window_data->m_command_pool;
 		alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		alloc_info.commandBufferCount = 1;
+		alloc_info.commandBufferCount = static_cast<uint32_t>(m_window_data->m_command_buffers.size());
 
-		if (vkAllocateCommandBuffers(m_window_data->m_device, &alloc_info, &m_window_data->m_command_buffer) != VK_SUCCESS)
+		if (vkAllocateCommandBuffers(m_window_data->m_device, &alloc_info, &m_window_data->m_command_buffers[m_window_data->m_current_frame]) != VK_SUCCESS)
 		{
 			SPARK_ERROR("[VULKAN] Failed to allocate command buffers!");
 		}
-
-
 	}
 
 	void vulkan_window::init_debug()
@@ -919,5 +1080,88 @@ namespace spark
 			SPARK_ERROR("[VULKAN] Failed to set up debug messenger!");
 			assert(false);
 		}
+	}
+
+	void vulkan_window::event_callback(std::shared_ptr <event> _event)
+	{
+		publish_to_topic(WINDOW_EVENT_TOPIC, _event);
+	}
+
+	void vulkan_window::framebuffer_resize_callback(GLFWwindow* window, int32_t width, int32_t height)
+	{
+		auto window_data = reinterpret_cast<vulkan_window_data*>(glfwGetWindowUserPointer(window));
+		window_data->m_framebuffer_resized = true;
+	}
+
+	void vulkan_window::close_event_callback(GLFWwindow* window)
+	{
+		opengl_window_data* _window_data = static_cast<opengl_window_data*>(glfwGetWindowUserPointer(window));
+		auto event = std::make_shared<window_closed_event>();
+
+		_window_data->m_event_callback(event);
+	}
+
+	void vulkan_window::key_event_callback(GLFWwindow* window, int32_t key, int32_t scancode, int32_t action, int32_t mods)
+	{
+		opengl_window_data* _window_data = static_cast<opengl_window_data*>(glfwGetWindowUserPointer(window));
+
+		switch (action)
+		{
+		case GLFW_PRESS:
+		{
+			auto event = std::make_shared<key_pressed_event>(key);
+			_window_data->m_event_callback(event);
+			break;
+		}
+		case GLFW_RELEASE:
+		{
+			auto event = std::make_shared<key_released_event>(key);
+			_window_data->m_event_callback(event);
+			break;
+		}
+		case GLFW_REPEAT:
+		{
+			auto event = std::make_shared<key_repeat_event>(key);
+			_window_data->m_event_callback(event);
+			break;
+		}
+		}
+	}
+
+	void vulkan_window::mouse_button_event_callback(GLFWwindow* window, int32_t button, int32_t action, int32_t mods)
+	{
+		opengl_window_data* _window_data = static_cast<opengl_window_data*>(glfwGetWindowUserPointer(window));
+
+		switch (action)
+		{
+		case GLFW_PRESS:
+		{
+			auto event = std::make_shared<mouse_pressed_event>(button);
+			_window_data->m_event_callback(event);
+			break;
+		}
+		case GLFW_RELEASE:
+		{
+			auto event = std::make_shared<mouse_released_event>(button);
+			_window_data->m_event_callback(event);
+			break;
+		}
+		}
+	}
+
+	void vulkan_window::mouse_scroll_event_callback(GLFWwindow* window, float64_t xoffset, float64_t yoffset)
+	{
+		opengl_window_data* _window_data = static_cast<opengl_window_data*>(glfwGetWindowUserPointer(window));
+		auto event = std::make_shared<mouse_scrolled_event>(xoffset, yoffset);
+
+		_window_data->m_event_callback(event);
+	}
+
+	void vulkan_window::mouse_move_event_callback(GLFWwindow* window, float64_t xpos, float64_t ypos)
+	{
+		opengl_window_data* _window_data = static_cast<opengl_window_data*>(glfwGetWindowUserPointer(window));
+		auto event = std::make_shared<mouse_moved_event>(xpos, ypos);
+
+		_window_data->m_event_callback(event);
 	}
 }

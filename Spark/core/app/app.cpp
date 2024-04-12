@@ -18,13 +18,7 @@ namespace spark
 		auto& _window = _window_man.get_current_window();
 		auto& _ecs = engine::get<ecs>();
 		auto& _ui = engine::get<ui_manager>();
-
-		if (get_current_window_type() == window_type::OPENGL)
-		{
-			opengl_window& opengl_win = dynamic_cast<opengl_window&>(_window);
-			_ui.on_start(opengl_win.get_window());
-		}
-
+		
 		app_functions::s_on_start();
 
 		_ecs.start_systems();
@@ -56,22 +50,17 @@ namespace spark
 			_renderer.on_update();
 
 			_window.pre_draw();
-
+			
 			//_scene_manager.update_current_scene(_renderer.get_fixed_delta_time());
 
 			_window.on_update();
+
+			//_ui.on_update();
 
 			_window.post_draw();
 		}
 
 		spark::thread_pool::synchronize_registered_threads();
-	}
-
-	void application::on_shutdown()
-	{
-		auto& _ui = engine::get<ui_manager>();
-
-		_ui.on_shutdown();
 	}
 
 	void application::on_event(std::shared_ptr <event> event)

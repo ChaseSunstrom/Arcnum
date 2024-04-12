@@ -252,6 +252,9 @@
     <ClInclude Include="Spark\include\IMGUI\imstb_truetype.h">
       <Filter>include\IMGUI</Filter>
     </ClInclude>
+    <ClInclude Include="Spark\include\IMGUI\imgui_impl_dx12.h" />
+    <ClInclude Include="Spark\include\IMGUI\imgui_impl_metal.h" />
+    <ClInclude Include="Spark\include\IMGUI\imgui_impl_vulkan.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spark\core\app\app.cpp">
@@ -341,5 +344,10 @@
     <ClCompile Include="Spark\include\IMGUI\imgui_widgets.cpp">
       <Filter>include\IMGUI</Filter>
     </ClCompile>
+    <ClCompile Include="Spark\include\IMGUI\imgui_impl_dx12.cpp" />
+    <ClCompile Include="Spark\include\IMGUI\imgui_impl_vulkan.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Spark\include\IMGUI\imgui_impl_metal.mm" />
   </ItemGroup>
 </Project>

@@ -14,7 +14,7 @@ namespace spark
 
 		if (num_threads == 0)
 		{
-			num_threads = 1;
+			num_threads = 2;
 		}
 
 		thread_pool::initialize(num_threads);
@@ -24,7 +24,6 @@ namespace spark
 		test::core_test_main();
 #else
 		application::on_start();
-		application::on_shutdown();
 #endif
 	}
 }

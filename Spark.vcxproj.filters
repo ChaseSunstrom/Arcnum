@@ -255,6 +255,7 @@
     <ClInclude Include="Spark\include\IMGUI\imgui_impl_dx12.h" />
     <ClInclude Include="Spark\include\IMGUI\imgui_impl_metal.h" />
     <ClInclude Include="Spark\include\IMGUI\imgui_impl_vulkan.h" />
+    <ClInclude Include="Spark\core\util\timer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spark\core\app\app.cpp">

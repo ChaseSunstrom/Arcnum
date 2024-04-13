@@ -8,11 +8,11 @@
 
 namespace spark
 {
-	float64_t application::s_fixed_delta_time = 0.005;
-	float64_t application::s_delta_time = 0;
-	float64_t application::s_last_frame_time = 0;
-	float64_t application::s_total_time = 0;
-	uint64_t application::s_tick_speed = 60;
+	f64 application::s_fixed_delta_time = 0.005;
+	f64 application::s_delta_time = 0;
+	f64 application::s_last_frame_time = 0;
+	f64 application::s_total_time = 0;
+	u64 application::s_tick_speed = 60;
 	std::unique_ptr<timer> application::s_timer = std::make_unique<timer>();
 
 	void application::on_start()
@@ -41,7 +41,6 @@ namespace spark
 	void application::on_update()
 	{
 		calculate_delta_time();
-		SPARK_INFO("[APPLICATION] Delta time: " << s_last_frame_time);
 
 		app_functions::s_on_update();
 
@@ -59,7 +58,7 @@ namespace spark
 
 			_window.pre_draw();
 
-			//_scene_manager.update_current_scene(_renderer.get_fixed_delta_time());
+			_scene_manager.update_current_scene(s_fixed_delta_time);
 
 			_window.on_update();
 
@@ -93,7 +92,7 @@ namespace spark
 		_scene_manager.add_scene(name, std::make_unique<scene>(config));
 	}
 
-	void application::set_delta_time(uint64_t delta_time)
+	void application::set_delta_time(u64 delta_time)
 	{
 		s_delta_time = delta_time;
 	}
@@ -101,43 +100,43 @@ namespace spark
 	void application::calculate_delta_time()
 	{
 		// Update last frame time for frame rate calculations
-		float64_t time = s_timer->elapsed_milliseconds();
+		f64 time = s_timer->elapsed_milliseconds();
 		s_last_frame_time = time - s_total_time;
 		s_delta_time = s_last_frame_time;
 		s_total_time = time;
 	}
 
-	float64_t application::get_delta_time()
+	f64 application::get_delta_time()
 	{
 		return s_last_frame_time / 1000.0; // Convert milliseconds to seconds
 	}
 
-	float64_t application::get_fixed_delta_time()
+	f64 application::get_fixed_delta_time()
 	{
 		return s_fixed_delta_time;
 	}
 
-	float64_t application::get_last_frame_time()
+	f64 application::get_last_frame_time()
 	{
 		return s_last_frame_time;
 	}
 
-	float64_t application::get_total_time()
+	f64 application::get_total_time()
 	{
 		return s_total_time;
 	}
 
-	uint64_t application::get_tick_speed()
+	u64 application::get_tick_speed()
 	{
 		return s_tick_speed;
 	}
 
-	void application::set_fixed_delta_time(float64_t time)
+	void application::set_fixed_delta_time(f64 time)
 	{
 		s_fixed_delta_time = time;
 	}
 
-	void application::set_tick_speed(uint64_t speed)
+	void application::set_tick_speed(u64 speed)
 	{
 		s_tick_speed = speed;
 	}

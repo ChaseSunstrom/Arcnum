@@ -76,15 +76,15 @@ namespace spark
 		}
 	private:
 		std::string m_label;
-		float32_t* m_value;
-		float32_t m_min;
-		float32_t m_max;
+		f32* m_value;
+		f32 m_min;
+		f32 m_max;
 	};
 
 	class list_box_component : public ui_component
 	{
 	public:
-		list_box_component(const std::string& id, const std::string& label, int32_t* current_item, std::vector<std::string> items)
+		list_box_component(const std::string& id, const std::string& label, i32* current_item, std::vector<std::string> items)
 			: ui_component(id), m_label(label), m_current_item(current_item), m_items(std::move(items))
 		{}
 
@@ -92,7 +92,7 @@ namespace spark
 		{
 			if (ImGui::BeginListBox(m_label.c_str()))
 			{
-				for (int32_t i = 0; i < m_items.size(); i++)
+				for (i32 i = 0; i < m_items.size(); i++)
 				{
 					const bool is_selected = (*m_current_item == i);
 					if (ImGui::Selectable(m_items[i].c_str(), is_selected))
@@ -108,7 +108,7 @@ namespace spark
 
 	private:
 		std::string m_label;
-		int32_t* m_current_item;
+		i32* m_current_item;
 		std::vector<std::string> m_items;
 	};
 
@@ -136,7 +136,7 @@ namespace spark
 	class color_picker_component : public ui_component
 	{
 	public:
-		color_picker_component(const std::string& id, const std::string& label, float32_t* color)
+		color_picker_component(const std::string& id, const std::string& label, f32* color)
 			: ui_component(id), m_label(label), m_color(color)
 		{}
 
@@ -147,20 +147,20 @@ namespace spark
 
 	private:
 		std::string m_label;
-		float32_t* m_color; // Should be an array of 3 floats (RGB)
+		f32* m_color; // Should be an array of 3 floats (RGB)
 	};
 
 	class radio_button_component : public ui_component
 	{
 	public:
-		radio_button_component(const std::string& id, const std::string& label, int32_t* selected, std::vector<std::string> options)
+		radio_button_component(const std::string& id, const std::string& label, i32* selected, std::vector<std::string> options)
 			: ui_component(id), m_label(label), m_selected(selected), m_options(std::move(options))
 		{}
 
 		void draw() override
 		{
 			ImGui::Text("%s", m_label.c_str());
-			for (int32_t i = 0; i < m_options.size(); i++)
+			for (i32 i = 0; i < m_options.size(); i++)
 			{
 				ImGui::RadioButton(m_options[i].c_str(), m_selected, i);
 			}
@@ -168,7 +168,7 @@ namespace spark
 
 	private:
 		std::string m_label;
-		int32_t* m_selected;
+		i32* m_selected;
 		std::vector<std::string> m_options;
 	};
 
@@ -286,7 +286,7 @@ namespace spark
 	class dropdown_component : public ui_component
 	{
 	public:
-		dropdown_component(const std::string& id, const std::string& label, int32_t* current_item, std::vector<std::string> items)
+		dropdown_component(const std::string& id, const std::string& label, i32* current_item, std::vector<std::string> items)
 			: ui_component(id), m_label(label), m_current_item(current_item), m_items(std::move(items))
 		{
 			for (auto& item : m_items)
@@ -299,7 +299,7 @@ namespace spark
 		{
 			if (ImGui::BeginCombo(m_label.c_str(), m_items_cstr[*m_current_item]))
 			{
-				for (int32_t i = 0; i < m_items_cstr.size(); i++)
+				for (i32 i = 0; i < m_items_cstr.size(); i++)
 				{
 					bool is_selected = (*m_current_item == i);
 					if (ImGui::Selectable(m_items_cstr[i], is_selected))
@@ -318,7 +318,7 @@ namespace spark
 
 	private:
 		std::string m_label;
-		int32_t* m_current_item;
+		i32* m_current_item;
 		std::vector<std::string> m_items;
 		std::vector<const char*> m_items_cstr;
 	};
@@ -326,7 +326,7 @@ namespace spark
 	class progress_bar_component : public ui_component
 	{
 	public:
-		progress_bar_component(const std::string& id, const std::string& label, float32_t value, const ImVec2& size = ImVec2(-1, 0))
+		progress_bar_component(const std::string& id, const std::string& label, f32 value, const ImVec2& size = ImVec2(-1, 0))
 			: ui_component(id), m_label(label), m_value(value), m_size(size)
 		{}
 
@@ -338,7 +338,7 @@ namespace spark
 
 	private:
 		std::string m_label;
-		float32_t m_value;
+		f32 m_value;
 		ImVec2 m_size;
 	};
 
@@ -380,7 +380,7 @@ namespace spark
 	{
 
 	public:
-		slider_int_component(const std::string& id, const std::string& label, int32_t* value, int32_t min, int32_t max)
+		slider_int_component(const std::string& id, const std::string& label, i32* value, i32 min, i32 max)
 			: ui_component(id), m_label(label), m_value(value), m_min(min), m_max(max)
 		{}
 
@@ -390,9 +390,9 @@ namespace spark
 		}
 	private:
 		std::string m_label;
-		int32_t* m_value;
-		int32_t m_min;
-		int32_t m_max;
+		i32* m_value;
+		i32 m_min;
+		i32 m_max;
 	};
 
 	struct ui_theme
@@ -502,17 +502,17 @@ namespace spark
 		} m_colors;
 
 		// Style variables
-		float32_t m_window_rounding;
-		float32_t m_frame_rounding;
+		f32 m_window_rounding;
+		f32 m_frame_rounding;
 		ImVec2 m_window_padding;
 		ImVec2 m_frame_padding;
 		ImVec2 m_item_spacing;
 		ImVec2 m_item_inner_spacing;
-		float32_t m_scrollbar_size;
-		float32_t m_scrollbar_rounding;
-		float32_t m_scale;
-		float32_t m_grab_rounding;
-		float32_t m_curve_tessellation_tol;
+		f32 m_scrollbar_size;
+		f32 m_scrollbar_rounding;
+		f32 m_scale;
+		f32 m_grab_rounding;
+		f32 m_curve_tessellation_tol;
 		bool m_anti_aliased_lines;
 		bool m_anti_aliased_fill;
 

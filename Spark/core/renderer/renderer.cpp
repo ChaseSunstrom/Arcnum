@@ -31,12 +31,8 @@ namespace spark
 
 	void renderer::finalize_frame() {}
 
-	void renderer::render(scene& scene)
+	void renderer::render()
 	{
-		scene_config& config = scene.get_scene_config();
-		math::vec4 bc = config.m_background_color;
-		set_background_color(bc.r, bc.g, bc.b, bc.a);
-
 		apply_dynamic_resolution();    // Adjusts resolution based on performance settings
 		render_with_anti_aliasing();   // Applies anti-aliasing if enabled
 		render_shadows();              // Renders shadows if enabled
@@ -51,6 +47,6 @@ namespace spark
 		toggle_wireframe_mode();       // Toggles wireframe mode if enabled for debugging
 		render_debugging_tools();      // Renders any additional debugging tools like bounding boxes, normals visualizer, etc.
 
-		m_instancer->render_instanced(m_cameras, scene);
+		instancer::get().render_instanced(m_cameras, scene_manager::get().get_current_scene());
 	}
 }

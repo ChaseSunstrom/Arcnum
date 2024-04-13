@@ -23,12 +23,12 @@ namespace spark
 				return m_next_id++;
 			}
 
-			uint64_t id = m_recycled_ids.front();
+			u64 id = m_recycled_ids.front();
 			m_recycled_ids.pop_front();
 			return id;
 		}
 
-		uint64_t get_entity_count() const
+		u64 get_entity_count() const
 		{
 			return m_next_id;
 		}

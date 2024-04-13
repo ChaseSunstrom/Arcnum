@@ -1,6 +1,8 @@
 #include "component_types.hpp"
 
 #include "../../util/wrap.hpp"
+#include "../../window/window_manager.hpp"
+#include "../../window/vulkan/mesh.hpp"
 
 // Because stb_image is fucking weird
 #define STB_IMAGE_IMPLEMENTATION
@@ -8,74 +10,10 @@
 
 namespace spark
 {
-	mesh::mesh()
-	{
-		create_mesh();
-	}
-
-	mesh::mesh(
-		const std::vector<vertex>& vertices,
-		const std::vector<uint32_t>& indices
-	)
-	{
-		m_vertices = vertices;
-		m_indices = indices;
-
-		create_mesh();
-	}
-
-	void mesh::create_mesh()
-	{
-		// Generate and bind VAO
-		generate_vertex_array(m_vao);
-		bind_vertex_array(m_vao);
-
-		// Generate and bind VBO
-		generate_vertex_buffer(m_vbo);
-		bind_vertex_buffer(m_vbo);
-		buffer_vertex_data<vertex>(m_vbo, m_vertices);
-
-		generate_index_buffer(m_ibo);
-		bind_index_buffer(m_ibo);
-		buffer_index_data(m_ibo, m_indices);
-
-		set_vertex_attribute_ptr(0, 3, GL_FLOAT, sizeof vertex, (void*)0);
-		enable_vertex_attribute_ptr(0);
-
-		set_vertex_attribute_ptr(
-			1, 3, GL_FLOAT, sizeof vertex, (void*)offsetof(vertex, m_normal)
-		);
-		enable_vertex_attribute_ptr(1);
-
-		set_vertex_attribute_ptr(
-			2, 2, GL_FLOAT, sizeof vertex, (void*)offsetof(vertex, m_texcoords)
-		);
-		enable_vertex_attribute_ptr(2);
-
-		bind_vertex_array(0);
-	}
-
-
-	mesh::~mesh()
-	{
-		delete_vertex_buffer(m_vbo);
-		delete_vertex_array(m_vao);
-	}
-
-	void mesh::bind()
-	{
-		bind_vertex_array(m_vao);
-	}
-
-	void mesh::unbind()
-	{
-		bind_vertex_array(0);
-	}
-
 	texture::texture(
 		const std::filesystem::path& path,
 		texture_type type,
-		std::optional <int32_t> depth,
+		std::optional <i32> depth,
 		const std::vector <std::pair<GLenum, GLenum>>& params
 	) : m_type(type), m_depth(depth)
 	{
@@ -172,7 +110,7 @@ namespace spark
 		GLuint shader_program
 	)
 	{
-		int32_t texture_unit = 0;
+		i32 texture_unit = 0;
 
 		GLenum texture_type = material.m_texture.get_gl_texture_type();
 
@@ -204,5 +142,19 @@ namespace spark
 		// Set other material properties	
 		set_uniform(uniform_name + ".shininess", material.m_shininess, shader_program);
 		set_uniform(uniform_name + ".color", material.m_color, shader_program);
+	}
+
+	mesh& mesh_manager::create_mesh(const std::string& name, const std::vector <vertex>& vertices, const std::vector<u32> indices)
+	{
+		if (m_meshes.contains(name))
+		{
+			return *m_meshes[name];
+		}
+
+		if (get_current_window_type() == window_type::VULKAN)
+		{
+			m_meshes[name] = std::make_unique<vulkan_mesh>(vertices, indices);
+			return *m_meshes[name];
+		}
 	}
 }  // namespace spark

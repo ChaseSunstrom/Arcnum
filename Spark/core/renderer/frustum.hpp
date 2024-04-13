@@ -9,16 +9,16 @@ namespace spark
 	struct plane
 	{
 		plane() = default;
-		plane(const math::vec3& normal, float32_t distance) :
+		plane(const math::vec3& normal, f32 distance) :
 			m_normal(math::normalize(normal)), m_distance(distance) {}
 
-		float32_t get_signed_distance(const math::vec3& point) const
+		f32 get_signed_distance(const math::vec3& point) const
 		{
 			return math::dot(m_normal, point) + m_distance;
 		}
 
 		math::vec3 m_normal;
-		float32_t m_distance;
+		f32 m_distance;
 	};
 
 	struct frustum
@@ -26,7 +26,7 @@ namespace spark
 		frustum() = default;
 		frustum(const math::mat4& pv_matrix);
 		void update(const math::mat4& view_projection_matrix);
-		bool is_inside(const math::vec3& center, float32_t size) const;
+		bool is_inside(const math::vec3& center, f32 size) const;
 		std::array<math::vec3, 8> get_corners() const;
 
 		std::array<plane, 6> m_planes;

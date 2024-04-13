@@ -197,9 +197,9 @@ namespace spark
 		}
 	}
 
-	math::vec3 octree::calculate_child_center(int32_t child_index) const
+	math::vec3 octree::calculate_child_center(i32 child_index) const
 	{
-		float32_t quarter_size = m_size / 4.0f;
+		f32 quarter_size = m_size / 4.0f;
 		math::vec3 quarter_vec(
 			(child_index & 1 ? quarter_size : -quarter_size),
 			(child_index & 2 ? quarter_size : -quarter_size),
@@ -300,7 +300,7 @@ namespace spark
 			{
 				// Node is at capacity, so subdivide and then insert
 				subdivide();
-				int32_t child_index = determine_child(math::vec3(transform->m_transform[3]));
+				i32 child_index = determine_child(math::vec3(transform->m_transform[3]));
 
 				// Check if the child exists before attempting to insert the transform
 				if (m_children[child_index])
@@ -317,7 +317,7 @@ namespace spark
 		}
 		else
 		{
-			int32_t child_index = determine_child(math::vec3(transform->m_transform[3]));
+			i32 child_index = determine_child(math::vec3(transform->m_transform[3]));
 
 			// Check if the child exists before attempting to insert the transform
 			if (m_children[child_index])
@@ -334,18 +334,18 @@ namespace spark
 	}
 
 
-	int32_t octree::determine_child(const math::vec3& position) const
+	i32 octree::determine_child(const math::vec3& position) const
 	{
-		int32_t child_index = 0;
+		i32 child_index = 0;
 		if (position.x >= m_center.x) child_index |= 1;
 		if (position.y >= m_center.y) child_index |= 2;
 		if (position.z >= m_center.z) child_index |= 4;
 		return child_index;
 	}
 
-	int32_t octree::determine_child(const math::vec3& point, const math::vec3& center) const
+	i32 octree::determine_child(const math::vec3& point, const math::vec3& center) const
 	{
-		int32_t child_index = 0;
+		i32 child_index = 0;
 		if (point.x >= center.x) child_index |= 1;
 		if (point.y >= center.y) child_index |= 2;
 		if (point.z >= center.z) child_index |= 4;
@@ -361,7 +361,7 @@ namespace spark
 		return inside;
 	}
 
-	bool octree::is_inside(const math::vec3& center, float32_t size) const
+	bool octree::is_inside(const math::vec3& center, f32 size) const
 	{
 		bool inside = true;
 		inside &= (center.x - size) >= (m_center.x - m_size) && (center.x + size) <= (m_center.x + m_size);
@@ -412,14 +412,14 @@ namespace spark
 		};
 
 		// 12 edges of the AABB, each edge consists of 2 points
-		int32_t edges[12][2] = {
+		i32 edges[12][2] = {
 			{0, 1}, {1, 2}, {2, 3}, {3, 0},
 			{4, 5}, {5, 6}, {6, 7}, {7, 4},
 			{0, 4}, {1, 5}, {2, 6}, {3, 7}
 		};
 
 		// Generate line segments for each edge
-		for (int32_t i = 0; i < 12; ++i)
+		for (i32 i = 0; i < 12; ++i)
 		{
 			lines.push_back(corners[edges[i][0]]);
 			lines.push_back(corners[edges[i][1]]);

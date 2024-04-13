@@ -10,10 +10,10 @@ namespace spark
 	{
 		camera(const math::vec3& position = math::vec3(0.0f, 0.0f, 3.0f), 
 			   const math::vec3& direction = math::vec3(0.0f, 0.0f, -1.0f), 
-			   float32_t fov = 90.0f, 
-			   float32_t aspect_ratio = 1, 
-			   float32_t near_plane = 0.1f, 
-			   float32_t far_plane = 100.0f) :
+			   f32 fov = 90.0f, 
+			   f32 aspect_ratio = 1, 
+			   f32 near_plane = 0.1f, 
+			   f32 far_plane = 100.0f) :
 			m_position(position), 
 			m_direction(direction), 
 			m_fov(fov), 
@@ -46,10 +46,10 @@ namespace spark
 
 		math::vec3 m_position;
 		math::vec3 m_direction;
-		float32_t m_fov;
-		float32_t m_aspect_ratio;
-		float32_t m_near_plane;
-		float32_t m_far_plane;
+		f32 m_fov;
+		f32 m_aspect_ratio;
+		f32 m_near_plane;
+		f32 m_far_plane;
 
 		std::unique_ptr<frustum> m_frustum;
 	};

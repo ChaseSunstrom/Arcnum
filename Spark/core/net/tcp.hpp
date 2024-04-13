@@ -88,7 +88,7 @@ namespace spark
             {
                 m_socket.async_read_some(
                     asio::buffer(m_receive_buffer),
-                    [this](boost::system::error_code ec, uint64_t bytes_recvd)
+                    [this](boost::system::error_code ec, u64 bytes_recvd)
                     {
                         if (!ec && bytes_recvd > 0)
                         {

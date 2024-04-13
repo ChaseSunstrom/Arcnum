@@ -13,7 +13,7 @@ namespace spark
 #define TEXT_COLOR_CYAN   11
 #define TEXT_COLOR_YELLOW 14
 
-	void set_console_color(uint32_t color);
+	void set_console_color(u32 color);
 
 #ifdef __SPARK_TRACE__
 #define SPARK_TRACE(...) spark::set_console_color(TEXT_COLOR_CYAN); std::cout << "[ TRACE ] " << __VA_ARGS__ << "\n"

@@ -2,7 +2,7 @@
 
 namespace spark
 {
-	void set_background_color(float64_t r, float64_t g, float64_t b, float64_t a)
+	void set_background_color(f64 r, f64 g, f64 b, f64 a)
 	{
 		glClearColor(r, g, b, a);
 
@@ -16,7 +16,7 @@ namespace spark
 		check_gl_error("Screen clear");
 	}
 
-	void set_viewport(int32_t x, int32_t y, int32_t width, int32_t height)
+	void set_viewport(i32 x, i32 y, i32 width, i32 height)
 	{
 		glViewport(x, y, width, height);
 
@@ -68,21 +68,21 @@ namespace spark
 		check_gl_error("Vertex array bind");
 	}
 
-	void bind_vertex_buffer(uint32_t vbo)
+	void bind_vertex_buffer(u32 vbo)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
 		check_gl_error("Vertex buffer bind");
 	}
 
-	void bind_index_buffer(uint32_t ibo)
+	void bind_index_buffer(u32 ibo)
 	{
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 
 		check_gl_error("Index buffer bind");
 	}
 
-	void draw_elements(uint32_t mode, int32_t count, uint32_t type, const void* indices)
+	void draw_elements(u32 mode, i32 count, u32 type, const void* indices)
 	{
 		glDrawElements(mode, count, type, indices);
 
@@ -90,63 +90,63 @@ namespace spark
 	}
 
 	void set_vertex_attribute_ptr(
-		uint32_t index, int32_t size, uint32_t type, int32_t stride, const void* pointer)
+		u32 index, i32 size, u32 type, i32 stride, const void* pointer)
 	{
 		glVertexAttribPointer(index, size, type, GL_FALSE, stride, pointer);
 
 		check_gl_error("Vertex attribute set");
 	}
 
-	void enable_vertex_attribute_ptr(uint32_t index)
+	void enable_vertex_attribute_ptr(u32 index)
 	{
 		glEnableVertexAttribArray(index);
 
 		check_gl_error("Vertex attribute enable");
 	}
 
-	void generate_vertex_array(uint32_t& vao)
+	void generate_vertex_array(u32& vao)
 	{
 		glGenVertexArrays(1, &vao);
 
 		check_gl_error("Vertex array generate");
 	}
 
-	void generate_vertex_buffer(uint32_t& vbo)
+	void generate_vertex_buffer(u32& vbo)
 	{
 		glGenBuffers(1, &vbo);
 
 		check_gl_error("Vertex buffer generate");
 	}
 
-	void generate_index_buffer(uint32_t& ibo)
+	void generate_index_buffer(u32& ibo)
 	{
 		glGenBuffers(1, &ibo);
 
 		check_gl_error("Index buffer generate");
 	}
 
-	void delete_vertex_array(uint32_t& vao)
+	void delete_vertex_array(u32& vao)
 	{
 		glDeleteVertexArrays(1, &vao);
 
 		check_gl_error("Vertex array delete");
 	}
 
-	void delete_vertex_buffer(uint32_t& vbo)
+	void delete_vertex_buffer(u32& vbo)
 	{
 		glDeleteBuffers(1, &vbo);
 
 		check_gl_error("Vertex buffer delete");
 	}
 
-	void delete_index_buffer(uint32_t& ibo)
+	void delete_index_buffer(u32& ibo)
 	{
 		glDeleteBuffers(1, &ibo);
 
 		check_gl_error("Index buffer delete");
 	}
 
-	void buffer_index_data(uint32_t ibo, const std::vector <uint32_t>& data)
+	void buffer_index_data(u32 ibo, const std::vector <u32>& data)
 	{
 		bind_index_buffer(ibo);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.size() * sizeof GLuint, data.data(), GL_DYNAMIC_DRAW);
@@ -154,7 +154,7 @@ namespace spark
 		check_gl_error("Index data in buffer");
 	}
 
-	void buffer_index_subdata(uint32_t ibo, const std::vector <uint32_t>& data)
+	void buffer_index_subdata(u32 ibo, const std::vector <u32>& data)
 	{
 		bind_vertex_buffer(ibo);
 		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, data.size() * sizeof GLuint, data.data());
@@ -171,28 +171,28 @@ namespace spark
 		return program;
 	}
 
-	void delete_program(uint32_t program)
+	void delete_program(u32 program)
 	{
 		glDeleteProgram(program);
 
 		check_gl_error("Program delete");
 	}
 
-	void delete_shader(uint32_t shader)
+	void delete_shader(u32 shader)
 	{
 		glDeleteShader(shader);
 
 		check_gl_error("Shader delete");
 	}
 
-	void attach_shader(uint32_t program, uint32_t shader)
+	void attach_shader(u32 program, u32 shader)
 	{
 		glAttachShader(program, shader);
 
 		check_gl_error("Shader attach");
 	}
 
-	void link_program(uint32_t program)
+	void link_program(u32 program)
 	{
 		glLinkProgram(program);
 
@@ -208,14 +208,14 @@ namespace spark
 		check_gl_error("Program link");
 	}
 
-	void use_program(uint32_t program)
+	void use_program(u32 program)
 	{
 		glUseProgram(program);
 
 		check_gl_error("Program use");
 	}
 
-	GLuint create_shader(uint32_t type)
+	GLuint create_shader(u32 type)
 	{
 		GLuint shader = glCreateShader(type);
 
@@ -224,7 +224,7 @@ namespace spark
 		return shader;
 	}
 
-	void shader_source(uint32_t shader, const std::string& source)
+	void shader_source(u32 shader, const std::string& source)
 	{
 		const char* source_ptr = source.c_str();
 		glShaderSource(shader, 1, &source_ptr, nullptr);
@@ -232,7 +232,7 @@ namespace spark
 		check_gl_error("Shader source");
 	}
 
-	void compile_shader(uint32_t shader)
+	void compile_shader(u32 shader)
 	{
 		glCompileShader(shader);
 
@@ -248,19 +248,19 @@ namespace spark
 		check_gl_error("Shader compilation");
 	}
 
-	void set_uniform(const std::string& name, const int32_t value, GLuint shader_program)
+	void set_uniform(const std::string& name, const i32 value, GLuint shader_program)
 	{
 		GLint loc = glGetUniformLocation(shader_program, name.c_str());
 		glUniform1i(loc, value);
 	}
 
-	void set_uniform(const std::string& name, const float32_t value, GLuint shader_program)
+	void set_uniform(const std::string& name, const f32 value, GLuint shader_program)
 	{
 		GLint loc = glGetUniformLocation(shader_program, name.c_str());
 		glUniform1f(loc, value);
 	}
 
-	void set_uniform(const std::string& name, const float64_t value, GLuint shader_program)
+	void set_uniform(const std::string& name, const f64 value, GLuint shader_program)
 	{
 		GLint loc = glGetUniformLocation(shader_program, name.c_str());
 		glUniform1d(loc, value);
@@ -318,12 +318,12 @@ namespace spark
 		glActiveTexture(texture);
 	}
 
-	void generate_texture(uint32_t& texture)
+	void generate_texture(u32& texture)
 	{
 		glGenTextures(1, &texture);
 	}
 
-	void bind_texture(GLenum target, uint32_t texture)
+	void bind_texture(GLenum target, u32 texture)
 	{
 		glBindTexture(target, texture);
 	}

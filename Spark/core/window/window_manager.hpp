@@ -3,10 +3,9 @@
 
 #include "../spark.hpp"
 #include "window.hpp"
-#include "opengl_window.hpp"
-#include "vulkan_window.hpp"
-#include "metal_window.hpp"
-#include "directx_window.hpp"
+#include "vulkan/vulkan_window.hpp"
+#include "metal/metal_window.hpp"
+#include "directx/directx_window.hpp"
 
 namespace spark
 {

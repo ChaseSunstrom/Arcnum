@@ -6,7 +6,7 @@
 namespace spark
 {
 	// Needs a seperate file to prevent circular dependency
-	using entity = uint64_t;
+	using entity = u64;
 }
 
 #endif

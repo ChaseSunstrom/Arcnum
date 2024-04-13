@@ -5,14 +5,14 @@
 
 void add_sphere_entity(const spark::math::vec3& position)
 {
-	spark::float32_t clamped_scale = std::clamp(position.x, 0.1f, 1.0f);
+	spark::f32 clamped_scale = std::clamp(position.x, 0.1f, 1.0f);
 
 	spark::create_shape<spark::sphere>("material", position, position, spark::math::vec3(clamped_scale, clamped_scale, clamped_scale), 64, 32);
 }
 
 void add_cube_entity(const spark::math::vec3& position)
 {
-	spark::float32_t clamped_scale = std::clamp(position.x, 0.1f, 1.0f);
+	spark::f32 clamped_scale = std::clamp(position.x, 0.1f, 1.0f);
 
 	spark::create_shape<spark::cube>("material", position, position, spark::math::vec3(clamped_scale, clamped_scale, clamped_scale));
 }
@@ -110,7 +110,7 @@ void on_start()
 	// Create material and mesh
 	spark::material& material = _material_manager.create_material("material", {}, spark::math::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	std::default_random_engine random_engine;
-	std::uniform_real_distribution<spark::float32_t> distribution(0.0f, 1.0f);
+	std::uniform_real_distribution<spark::f32> distribution(0.0f, 1.0f);
 
 	// Create entity
 
@@ -139,15 +139,17 @@ void on_start()
 			// Assuming a function or mechanism to add a cube entity
 			add_cube_entity(random_position);
 		}));
+
+	spark::create_shape<spark::square>("material", spark::math::vec3(0.0f, 0.0f, 0.0f), spark::math::vec3(0.0f, 0.0f, 0.0f), spark::math::vec3(1.0f, 1.0f, 1.0f));
 }
 
-void update_material_color(spark::material& mat, spark::float32_t time)
+void update_material_color(spark::material& mat, spark::f32 time)
 {
-	spark::float32_t new_time = std::clamp(time, 1.0f, 255.0f); // Keep the time between 0 and 255
+	spark::f32 new_time = std::clamp(time, 1.0f, 255.0f); // Keep the time between 0 and 255
 	// Use the sine function to get a value between 0 and 1 for R, G, and B colors, creating a smooth transition
-	spark::float32_t red = (std::sin(new_time * 0.6f) + 1.0f) / 2.0f; // Vary the multiplier for speed of color change
-	spark::float32_t green = (std::sin(new_time * 0.7f) + 1.0f) / 2.0f;
-	spark::float32_t blue = (std::sin(new_time * 0.5f) + 1.0f) / 2.0f;
+	spark::f32 red = (std::sin(new_time * 0.6f) + 1.0f) / 2.0f; // Vary the multiplier for speed of color change
+	spark::f32 green = (std::sin(new_time * 0.7f) + 1.0f) / 2.0f;
+	spark::f32 blue = (std::sin(new_time * 0.5f) + 1.0f) / 2.0f;
 
 	// Set the new color of the material
 	mat.m_color = spark::math::vec4(red, green, blue, 1.0f); // Alpha is set to 1 for full opacity
@@ -155,8 +157,8 @@ void update_material_color(spark::material& mat, spark::float32_t time)
 
 void on_update()
 {
-	static spark::float32_t x = 3; // Static to keep its value between calls
-	static spark::float32_t time = 0.0f;
+	static spark::f32 x = 3; // Static to keep its value between calls
+	static spark::f32 time = 0.0f;
 
 	auto& _renderer = spark::engine::get<spark::renderer>();
 	auto& _material = spark::engine::get<spark::material_manager>().get_material("material");

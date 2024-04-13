@@ -34,9 +34,9 @@ namespace spark
 
 		point_light_component(
 				math::vec3 position,
-				float32_t constant,
-				float32_t linear,
-				float32_t quadratic,
+				f32 constant,
+				f32 linear,
+				f32 quadratic,
 				math::vec3 ambient,
 				math::vec3 diffuse,
 				math::vec3 specular) :
@@ -52,11 +52,11 @@ namespace spark
 
 		math::vec3 m_position;
 
-		float32_t m_constant;
+		f32 m_constant;
 
-		float32_t m_linear;
+		f32 m_linear;
 
-		float32_t m_quadratic;
+		f32 m_quadratic;
 
 		math::vec3 m_ambient;
 
@@ -72,11 +72,11 @@ namespace spark
 		spot_light_component(
 				math::vec3 position,
 				math::vec3 direction,
-				float32_t cut_off,
-				float32_t outer_cut_off,
-				float32_t constant,
-				float32_t linear,
-				float32_t quadratic,
+				f32 cut_off,
+				f32 outer_cut_off,
+				f32 constant,
+				f32 linear,
+				f32 quadratic,
 				math::vec3 ambient,
 				math::vec3 diffuse,
 				math::vec3 specular) :
@@ -96,15 +96,15 @@ namespace spark
 
 		math::vec3 m_direction;
 
-		float32_t m_cut_off;
+		f32 m_cut_off;
 
-		float32_t m_outer_cut_off;
+		f32 m_outer_cut_off;
 
-		float32_t m_constant;
+		f32 m_constant;
 
-		float32_t m_linear;
+		f32 m_linear;
 
-		float32_t m_quadratic;
+		f32 m_quadratic;
 
 		math::vec3 m_ambient;
 

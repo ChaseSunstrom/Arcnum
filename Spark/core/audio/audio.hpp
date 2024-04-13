@@ -108,14 +108,14 @@ namespace spark
 			m_engine->stopAllSounds();
 		}
 
-		void set_sound_pan(const std::string& name, float32_t pan)
+		void set_sound_pan(const std::string& name, f32 pan)
 		{
 			m_sounds[name]->set_pan(pan);
 
 			m_engine->update();
 		}
 
-		void set_sound_volume(const std::string& name, float32_t volume)
+		void set_sound_volume(const std::string& name, f32 volume)
 		{
 			m_sounds[name]->set_volume(volume);
 
@@ -163,7 +163,7 @@ namespace spark
 			system(), m_component_manager(component_manager), m_audio_components(*audio_components)
 		{}
 
-		void on_update(float64_t delta_time);
+		void on_update(f64 delta_time);
 	private:
 		std::vector<audio_component>& m_audio_components;
 		component_manager& m_component_manager;

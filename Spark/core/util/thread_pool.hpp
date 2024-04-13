@@ -39,14 +39,14 @@ namespace spark
 		thread_pool() = delete;
 		~thread_pool() = delete;
 
-		static void initialize(uint32_t num_threads)
+		static void initialize(u32 num_threads)
 		{
 			s_stop = false;
 			s_active_tasks = 0;
 			s_tasks_queues.resize(num_threads);
 			s_threads_control.resize(num_threads);
 
-			for (uint32_t i = 0; i < num_threads; ++i)
+			for (u32 i = 0; i < num_threads; ++i)
 			{
 				s_threads_control[i] = std::make_shared<thread_control_block>();
 				s_workers.emplace_back(worker_thread, s_threads_control[i], i);
@@ -142,7 +142,7 @@ namespace spark
 			s_condition.notify_all(); // Wake up all threads to let them exit
 		}
 	private:
-		static void worker_thread(std::shared_ptr<thread_control_block> tcb, uint32_t index)
+		static void worker_thread(std::shared_ptr<thread_control_block> tcb, u32 index)
 		{
 			tcb->thread_id = std::this_thread::get_id();
 
@@ -210,7 +210,7 @@ namespace spark
 		static inline std::condition_variable s_condition;
 		static inline std::mutex s_sync_mutex;
 		static inline std::condition_variable s_sync_condition;
-		static inline std::atomic<uint64_t> s_active_tasks{ 0 };
+		static inline std::atomic<u64> s_active_tasks{ 0 };
 		static inline std::atomic<bool> s_stop{ false };
 	};
 }

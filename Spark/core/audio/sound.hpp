@@ -42,8 +42,8 @@ namespace spark
 		 void resume() { m_sound->setIsPaused(false); }
 		 void loop() { m_sound->setIsLooped(true); }
 		 void stop() { m_sound->setIsLooped(false); }
-		 void set_volume(float32_t volume) { m_sound->setVolume(volume); }
-		 void set_pan(float32_t pan) { m_sound->setPan(pan); }
+		 void set_volume(f32 volume) { m_sound->setVolume(volume); }
+		 void set_pan(f32 pan) { m_sound->setPan(pan); }
 		 bool is_playing() { return !m_sound->isFinished(); }
 	private:
 		ISound* m_sound;

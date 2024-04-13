@@ -26,24 +26,24 @@ namespace spark
 
 		static void add_scene(const std::string& name, const scene_config& config);
 
-		static void set_delta_time(uint64_t delta_time);
+		static void set_delta_time(u64 delta_time);
 
 		static void calculate_total_time();
 		static void calculate_delta_time();
 		static void calculate_last_frame_time();
-		static float64_t get_fixed_delta_time();
-		static float64_t get_delta_time();
-		static float64_t get_last_frame_time();
-		static float64_t get_total_time();
-		static uint64_t get_tick_speed();
-		static void set_fixed_delta_time(float64_t time);
-		static void set_tick_speed(uint64_t speed);
+		static f64 get_fixed_delta_time();
+		static f64 get_delta_time();
+		static f64 get_last_frame_time();
+		static f64 get_total_time();
+		static u64 get_tick_speed();
+		static void set_fixed_delta_time(f64 time);
+		static void set_tick_speed(u64 speed);
 	private:
-		static float64_t s_fixed_delta_time;
-		static float64_t s_delta_time;
-		static float64_t s_last_frame_time;
-		static float64_t s_total_time;
-		static uint64_t s_tick_speed;
+		static f64 s_fixed_delta_time;
+		static f64 s_delta_time;
+		static f64 s_last_frame_time;
+		static f64 s_total_time;
+		static u64 s_tick_speed;
 		static std::unique_ptr<timer> s_timer;
 	};
 }

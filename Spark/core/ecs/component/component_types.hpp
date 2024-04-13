@@ -2,7 +2,6 @@
 #define SPARK_COMPONENT_TYPES_HPP
 
 #include "../../spark.hpp"
-
 #include "shader.hpp"
 
 namespace spark
@@ -65,7 +64,7 @@ namespace spark
 
 		texture(const std::filesystem::path& path,
 				texture_type type,
-				std::optional <int32_t> depth = std::nullopt,
+				std::optional <i32> depth = std::nullopt,
 				const std::vector <std::pair<GLenum, GLenum>>& params = std::vector<std::pair < GLenum, GLenum>>());
 
 		~texture();
@@ -107,17 +106,17 @@ namespace spark
 		GLenum get_gl_texture_type() const;
 	public:
 
-		uint32_t m_texture;
+		u32 m_texture;
 
 		void* m_image_data = nullptr;
 
-		int32_t m_width;
+		i32 m_width;
 
-		int32_t m_height;
+		i32 m_height;
 
-		int32_t m_nr_channels;
+		i32 m_nr_channels;
 
-		std::optional <int32_t> m_depth;
+		std::optional <i32> m_depth;
 
 		texture_type m_type;
 
@@ -130,39 +129,17 @@ namespace spark
 
 	struct mesh
 	{
-		mesh();
+		mesh(const std::vector <vertex>& vertices, const std::vector<u32>& indices) :
+			m_vertices(vertices), m_indices(indices) {}
 
-		mesh(const std::vector <vertex>& vertices, const std::vector<uint32_t>& indices);
+		virtual ~mesh() = default;
 
-		~mesh();
+		virtual void update(const std::vector <vertex>& vertices, const std::vector<GLuint>& indices) {}
 
-		mesh(mesh&& other) noexcept :
-			m_vertices(std::move(other.m_vertices)),
-			m_vao(other.m_vao)
-		{
-			// Transfer ownership
-			other.m_vao = 0;
-		}
-
-		void bind();
-
-		void unbind();
-
-		void update(const std::vector <vertex>& vertices, const std::vector<GLuint>& indices);
-
-		void create_mesh();
-
-		GLuint get_vao()
-		{
-			return m_vao;
-		}
+		virtual void create_mesh() {}
 
 		std::vector <vertex> m_vertices = std::vector<vertex>();
-		std::vector <uint32_t> m_indices = std::vector<uint32_t>();
-	private:
-		GLuint m_vao = 0;
-		GLuint m_vbo = 0;
-		GLuint m_ibo = 0;
+		std::vector <u32> m_indices = std::vector<u32>();
 	};
 
 	struct material
@@ -170,10 +147,10 @@ namespace spark
 		material(
 			const math::vec4& color,
 			texture& tex,
-			int32_t diffuse,
-			int32_t specular,
-			int32_t ambient,
-			float32_t shininess)
+			i32 diffuse,
+			i32 specular,
+			i32 ambient,
+			f32 shininess)
 			: m_color(color), m_diffuse(diffuse), m_specular(specular),
 			m_ambient(ambient), m_shininess(shininess),
 			m_texture(tex)
@@ -183,13 +160,13 @@ namespace spark
 
 		math::vec4 m_color;
 
-		int32_t m_diffuse;
+		i32 m_diffuse;
 
-		int32_t m_specular;
+		i32 m_specular;
 
-		int32_t m_ambient;
+		i32 m_ambient;
 
-		float32_t m_shininess;
+		f32 m_shininess;
 
 		texture& m_texture;
 	};
@@ -260,7 +237,7 @@ namespace spark
 			const std::string& name,
 			const std::filesystem::path& path,
 			texture_type type,
-			std::optional <int32_t> depth = std::nullopt,
+			std::optional <i32> depth = std::nullopt,
 			const std::vector <std::pair<GLenum, GLenum>>& params = {
 				{GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR},
 				{GL_TEXTURE_MAG_FILTER, GL_LINEAR},
@@ -341,10 +318,10 @@ namespace spark
 			const std::pair <std::optional<std::string>, std::optional<std::string>>&shader_paths = {std::nullopt, std::nullopt},
 			const math::vec4& color = math::vec4(1),
 			const std::string& texture_name = "",
-			int32_t diffuse = 0,
-			int32_t specular = 0,
-			int32_t ambient = 1,
-			float32_t shininess = 0)
+			i32 diffuse = 0,
+			i32 specular = 0,
+			i32 ambient = 1,
+			f32 shininess = 0)
 		{
 			if (m_materials.contains(name))
 			{
@@ -393,7 +370,7 @@ namespace spark
 			const std::string& name,
 			const std::filesystem::path& path,
 			texture_type type,
-			std::optional <int32_t> depth = std::nullopt,
+			std::optional <i32> depth = std::nullopt,
 			const std::vector <std::pair<GLenum, GLenum>>& params = {
 				{GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR},
 				{GL_TEXTURE_MAG_FILTER, GL_LINEAR},
@@ -416,7 +393,6 @@ namespace spark
 		std::unordered_map<std::string, std::unique_ptr<material>> m_materials;
 	};
 
-
 	class mesh_manager
 	{
 	public:
@@ -426,16 +402,7 @@ namespace spark
 			return instance;
 		}
 
-		mesh& create_mesh(const std::string& name, const std::vector <vertex>& vertices, const std::vector<uint32_t> indices = {})
-		{
-			if (m_meshes.contains(name))
-			{
-				return *m_meshes[name];
-			}
-
-			m_meshes[name] = std::make_unique<mesh>(vertices, indices);
-			return *m_meshes[name];
-		}
+		mesh& create_mesh(const std::string& name, const std::vector <vertex>& vertices, const std::vector<u32> indices = {});
 
 		void load_mesh(const std::string& name, std::unique_ptr <mesh> mesh)
 		{

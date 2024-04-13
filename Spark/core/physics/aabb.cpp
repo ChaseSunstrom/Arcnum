@@ -6,8 +6,8 @@ namespace spark
 	{
         if (vertices.empty()) 
         {
-            m_min = math::vec3(std::numeric_limits<float32_t>::max());
-            m_max = math::vec3(-std::numeric_limits<float32_t>::max());
+            m_min = math::vec3(std::numeric_limits<f32>::max());
+            m_max = math::vec3(-std::numeric_limits<f32>::max());
         }
 
         else 

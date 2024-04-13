@@ -2,6 +2,7 @@
 
 #include "app/app.hpp"
 #include "ecs/ecs.hpp"
+#include "renderer/instancer.hpp"
 #include "util/thread_pool.hpp"
 #include "tests/test.hpp"
 
@@ -10,7 +11,7 @@ namespace spark
 	// Default main function
 	void spark_main()
 	{
-		uint32_t num_threads = std::thread::hardware_concurrency();
+		u32 num_threads = std::thread::hardware_concurrency();
 
 		if (num_threads == 0)
 		{
@@ -23,6 +24,9 @@ namespace spark
 #ifdef TEST_MAIN
 		test::core_test_main();
 #else
+		// To make sure the instancer is initialized
+		instancer::get();
+
 		application::on_start();
 #endif
 	}

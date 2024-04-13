@@ -14,7 +14,7 @@ namespace spark
 	public:
 		static scene_manager& get()
 		{
-			static scene_manager instance(renderer::get());
+			static scene_manager instance;
 			return instance;
 		}
 
@@ -49,11 +49,9 @@ namespace spark
 			return *m_scenes[m_current_scene_name];
 		}
 
-		void update_current_scene(float64_t time_step)
+		void update_current_scene(f64 time_step)
 		{
 			scene& current_scene = *m_scenes[m_current_scene_name];
-
-			m_renderer.render(current_scene);
 		}
 
 		std::vector <scene*>& get_all_scenes()
@@ -61,9 +59,7 @@ namespace spark
 			return m_scenes_vector;
 		}
 	private:
-		scene_manager(renderer& renderer) :
-			m_renderer(renderer)
-		{}
+		scene_manager() = default;
 
 		~scene_manager() = default;
 	private:
@@ -73,8 +69,6 @@ namespace spark
 		std::vector <scene*> m_scenes_vector = std::vector<scene*>();
 
 		std::string m_current_scene_name = "";
-
-		renderer& m_renderer;
 	};
 }
 

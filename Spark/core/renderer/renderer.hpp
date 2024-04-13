@@ -15,29 +15,29 @@ namespace spark
 	struct renderer_settings
 	{
 		renderer_settings(
-			int32_t resolution_width = 1920, int32_t resolution_height = 1080,
-			int32_t min_width = 800, int32_t min_height = 600,
-			int32_t max_width = 3840, int32_t max_height = 2160,
-			int32_t texture_quality = 1, int32_t shadow_quality = 1,
-			int32_t reflection_quality = 1, int32_t anti_aliasing_level = 1,
-			int32_t lighting_quality = 1, int32_t volumetric_lighting_quality = 0,
-			int32_t particle_quality = 1, float32_t view_distance = 1000.0f,
-			bool occlusion_culling = true, int32_t max_frames = 60,
+			i32 resolution_width = 1920, i32 resolution_height = 1080,
+			i32 min_width = 800, i32 min_height = 600,
+			i32 max_width = 3840, i32 max_height = 2160,
+			i32 texture_quality = 1, i32 shadow_quality = 1,
+			i32 reflection_quality = 1, i32 anti_aliasing_level = 1,
+			i32 lighting_quality = 1, i32 volumetric_lighting_quality = 0,
+			i32 particle_quality = 1, f32 view_distance = 1000.0f,
+			bool occlusion_culling = true, i32 max_frames = 60,
 			bool textures = true, bool anti_aliasing = true, bool shadows = true,
 			bool reflections = true, bool hdr = true, bool bloom = true,
 			bool volumetric_lighting = false, bool motion_blur = false,
 			bool wireframe_mode = false, bool show_bounding_boxes = false,
 			bool fps_counter = true, bool light_visualizer = false,
-			int32_t tessellation_quality = 0, int32_t foliage_quality = 1,
-			int32_t water_quality = 1, int32_t post_processing_quality = 1,
-			int32_t global_illumination_quality = 1, bool dynamic_resolution = false,
-			int32_t cpu_thread_usage = 1, bool gpu_async_compute = false,
+			i32 tessellation_quality = 0, i32 foliage_quality = 1,
+			i32 water_quality = 1, i32 post_processing_quality = 1,
+			i32 global_illumination_quality = 1, bool dynamic_resolution = false,
+			i32 cpu_thread_usage = 1, bool gpu_async_compute = false,
 			bool soft_particles = true, bool screen_space_reflections = true,
 			bool depth_of_field = false, bool ambient_occlusion = true,
 			bool color_grading = true, bool normals_visualizer = false,
 			bool uv_debug_mode = false, bool physics_debug_drawer = false,
-			bool lighting_only_mode = false, float32_t ui_scale = 1.0f,
-			bool subtitles = false, int32_t text_size = 1)
+			bool lighting_only_mode = false, f32 ui_scale = 1.0f,
+			bool subtitles = false, i32 text_size = 1)
 			:
 			m_resolution_width(resolution_width), m_resolution_height(resolution_height),
 			m_min_width(min_width), m_min_height(min_height), m_max_width(max_width),
@@ -63,26 +63,26 @@ namespace spark
 			m_subtitles(subtitles), m_text_size(text_size)
 		{}
 
-		int32_t m_resolution_width = 1920;
-		int32_t m_resolution_height = 1080;
-		int32_t m_min_width = 800;
-		int32_t m_min_height = 600;
-		int32_t m_max_width = 3840;
-		int32_t m_max_height = 2160;
+		i32 m_resolution_width = 1920;
+		i32 m_resolution_height = 1080;
+		i32 m_min_width = 800;
+		i32 m_min_height = 600;
+		i32 m_max_width = 3840;
+		i32 m_max_height = 2160;
 
 		// Quality settings
-		int32_t m_texture_quality = 1; // 0: Low, 1: Medium, 2: High
-		int32_t m_shadow_quality = 1;  // 0: Low, 1: Medium, 2: High
-		int32_t m_reflection_quality = 1; // 0: Low, 1: Medium, 2: High
-		int32_t m_anti_aliasing_level = 1; // 0: Off, 1: FXAA, 2: MSAAx2, 3: MSAAx4, etc.
-		int32_t m_lighting_quality = 1; // 0: Low, 1: Medium, 2: High
-		int32_t m_volumetric_lighting_quality = 0; // 0: Off, 1: Low, 2: Medium, 3: High
-		int32_t m_particle_quality = 1; // 0: Low, 1: Medium, 2: High
+		i32 m_texture_quality = 1; // 0: Low, 1: Medium, 2: High
+		i32 m_shadow_quality = 1;  // 0: Low, 1: Medium, 2: High
+		i32 m_reflection_quality = 1; // 0: Low, 1: Medium, 2: High
+		i32 m_anti_aliasing_level = 1; // 0: Off, 1: FXAA, 2: MSAAx2, 3: MSAAx4, etc.
+		i32 m_lighting_quality = 1; // 0: Low, 1: Medium, 2: High
+		i32 m_volumetric_lighting_quality = 0; // 0: Off, 1: Low, 2: Medium, 3: High
+		i32 m_particle_quality = 1; // 0: Low, 1: Medium, 2: High
 
 		// Performance optimization
-		float32_t m_view_distance = 1000.0f; // Maximum view distance
+		f32 m_view_distance = 1000.0f; // Maximum view distance
 		bool m_occlusion_culling = true; // Toggle occlusion culling
-		int32_t m_max_frames = 60; // Framerate cap
+		i32 m_max_frames = 60; // Framerate cap
 
 		// Feature toggles
 		bool m_textures = true; // Toggle textures
@@ -101,11 +101,11 @@ namespace spark
 		bool m_light_visualizer = false; // Visualize lights in the scene
 
 		// Advanced Quality settings
-		int32_t m_tessellation_quality = 0; // 0: Off, 1: Low, 2: Medium, 3: High
-		int32_t m_foliage_quality = 1; // 0: Low, 1: Medium, 2: High
-		int32_t m_water_quality = 1; // 0: Low, 1: Medium, 2: High
-		int32_t m_post_processing_quality = 1; // 0: Low, 1: Medium, 2: High
-		int32_t m_global_illumination_quality = 1; // 0: Off, 1: Low, 2: Medium, 3: High
+		i32 m_tessellation_quality = 0; // 0: Off, 1: Low, 2: Medium, 3: High
+		i32 m_foliage_quality = 1; // 0: Low, 1: Medium, 2: High
+		i32 m_water_quality = 1; // 0: Low, 1: Medium, 2: High
+		i32 m_post_processing_quality = 1; // 0: Low, 1: Medium, 2: High
+		i32 m_global_illumination_quality = 1; // 0: Off, 1: Low, 2: Medium, 3: High
 
 		// Additional Performance optimization
 		bool m_dynamic_resolution = false; // Adjust resolution dynamically to maintain framerate
@@ -123,9 +123,9 @@ namespace spark
 		bool m_physics_debug_drawer = false; // Enable debug drawer for physics engine (collision shapes, etc.)
 		bool m_lighting_only_mode = false; // Render lighting information only, ignoring textures and materials
 
-		float32_t m_ui_scale = 1.0f; // Adjust the scale of UI elements for accessibility
+		f32 m_ui_scale = 1.0f; // Adjust the scale of UI elements for accessibility
 		bool m_subtitles = false; // Enable subtitles for game dialogues or important sounds
-		int32_t m_text_size = 1; // 0: Small, 1: Medium, 2: Large, for UI text size customization
+		i32 m_text_size = 1; // 0: Small, 1: Medium, 2: Large, for UI text size customization
 	};
 
 	// ==============================================================================
@@ -141,7 +141,7 @@ namespace spark
 			return instance;
 		}
 
-		void render(scene& scene);
+		void render();
 
 		void apply_dynamic_resolution();
 
@@ -178,11 +178,6 @@ namespace spark
 
 		void render_octree(camera& camera, octree& octree, math::mat4& modelMatrix);
 		void render_frustum(camera& camera, frustum& frustum);
-
-		inline instancer& get_instancer()
-		{
-			return *m_instancer;
-		}
 	private:
 
 		renderer()
@@ -192,9 +187,6 @@ namespace spark
 
 		~renderer() = default;
 	private:
-
-		std::unique_ptr <instancer> m_instancer = std::make_unique<instancer>();
-
 		std::unique_ptr<renderer_settings> m_settings = std::make_unique<renderer_settings>();
 
 		std::vector <std::unique_ptr<camera>> m_cameras;

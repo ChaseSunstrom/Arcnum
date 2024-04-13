@@ -1,17 +1,9 @@
-#version 330 core
-out vec4 FragColor;
+#version 450
 
-in vec3 FragPos;
-in vec3 Normal;
-in vec2 TexCoords;
+layout(location = 0) in vec3 fragColor;
 
-#include "material.frag"
-
-uniform Material material;
+layout(location = 0) out vec4 outColor;
 
 void main() {
-    vec4 material_color = material.color;
-    vec4 text = texture(material.texture, TexCoords);
-    vec4 result = text * material_color;
-    FragColor = result;
+    outColor = vec4(1.0, 1.0, 1.0, 1.0);
 }

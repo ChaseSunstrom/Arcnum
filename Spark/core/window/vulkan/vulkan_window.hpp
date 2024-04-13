@@ -1,8 +1,7 @@
 #ifndef SPARK_VULKAN_WINDOW_HPP
 #define SPARK_VULKAN_WINDOW_HPP
 
-#include "window.hpp"
-
+#include "../window.hpp"
 namespace spark
 {
 	struct queue_family_indices
@@ -12,8 +11,8 @@ namespace spark
 			return m_graphics_family.has_value() && m_present_family.has_value();
 		}
 
-		std::optional<uint32_t> m_graphics_family;
-		std::optional<uint32_t> m_present_family;
+		std::optional<u32> m_graphics_family;
+		std::optional<u32> m_present_family;
 	};
 
 	struct swap_chain_support_details
@@ -29,13 +28,13 @@ namespace spark
 
 		vulkan_window_data(std::string title,
 			bool vsync,
-			int32_t height,
-			int32_t width,
+			i32 height,
+			i32 width,
 			std::function<void(std::shared_ptr<event>)> event_callback) :
 			window_data(title, vsync, height, width, event_callback) {}
 
 		bool m_framebuffer_resized = false;
-		uint64_t m_current_frame = 0;
+		u64 m_current_frame = 0;
 		VkInstance m_instance;
 		VkDebugUtilsMessengerEXT m_debug_messenger;
 		VkPhysicalDevice m_physical_device = VK_NULL_HANDLE;
@@ -59,7 +58,7 @@ namespace spark
 		std::vector<VkSemaphore> m_render_finished_semaphores;
 		std::vector<VkFence> m_in_flight_fences;
 
-		const int32_t m_max_frames_in_flight = 2;
+		const i32 m_max_frames_in_flight = 2;
 
 		const std::vector<const char*> m_validation_layers = {
 			"VK_LAYER_KHRONOS_validation"
@@ -118,12 +117,12 @@ namespace spark
 		}
 
 		static void event_callback(std::shared_ptr<event> event);
-		static void framebuffer_resize_callback(GLFWwindow* window, int32_t width, int32_t hieght);
+		static void framebuffer_resize_callback(GLFWwindow* window, i32 width, i32 hieght);
 		static void close_event_callback(GLFWwindow* window);
-		static void key_event_callback(GLFWwindow* window, int32_t key, int32_t scancode, int32_t action, int32_t mods);
-		static void mouse_button_event_callback(GLFWwindow* window, int32_t button, int32_t action, int32_t mods);
-		static void mouse_scroll_event_callback(GLFWwindow* window, float64_t xoffset, float64_t yoffset);
-		static void mouse_move_event_callback(GLFWwindow* window, float64_t x, float64_t y);
+		static void key_event_callback(GLFWwindow* window, i32 key, i32 scancode, i32 action, i32 mods);
+		static void mouse_button_event_callback(GLFWwindow* window, i32 button, i32 action, i32 mods);
+		static void mouse_scroll_event_callback(GLFWwindow* window, f64 xoffset, f64 yoffset);
+		static void mouse_move_event_callback(GLFWwindow* window, f64 x, f64 y);
 	private:
 		vulkan_window();
 		~vulkan_window();
@@ -149,12 +148,12 @@ namespace spark
 		VkResult create_debug_utils_messenger_ext(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* create_info, const VkAllocationCallbacks* allocator, VkDebugUtilsMessengerEXT* debug_messenger);
 		void destroy_debug_utils_messenger_ext(VkInstance instance, VkDebugUtilsMessengerEXT debug_messenger, const VkAllocationCallbacks* allocator);
 		void populate_debug_messenger(VkDebugUtilsMessengerCreateInfoEXT& create_info);
-		void record_command_buffer(VkCommandBuffer command_buffer, uint32_t image_index);
+		void record_command_buffer(VkCommandBuffer command_buffer, u32 image_index);
 		void draw_frame();
 		void cleanup_swap_chain();
 		bool is_device_suitable(VkPhysicalDevice device);
 		bool check_device_extension_support(VkPhysicalDevice device);
-		int32_t rate_device(VkPhysicalDevice device);
+		i32 rate_device(VkPhysicalDevice device);
 		queue_family_indices find_queue_families(VkPhysicalDevice device);
 		swap_chain_support_details query_swap_chain_support(VkPhysicalDevice device);
 		VkSurfaceFormatKHR choose_swap_surface_format(const std::vector<VkSurfaceFormatKHR>& available_formats);

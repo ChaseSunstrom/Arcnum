@@ -167,7 +167,7 @@ namespace spark
 			}
 		}
 
-		int32_t use_count() const
+		i32 use_count() const
 		{
 			return m_data.use_count();
 		}

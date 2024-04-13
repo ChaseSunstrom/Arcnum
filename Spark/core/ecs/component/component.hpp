@@ -119,7 +119,7 @@ namespace spark
 			return component_info<T>(m_component_array[entity]);
 		}
 
-		uint32_t size() const
+		u32 size() const
 		{
 			return m_component_array.size();
 		}

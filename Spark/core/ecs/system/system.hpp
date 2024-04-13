@@ -23,7 +23,7 @@ namespace spark
 		virtual void on_start()
 		{}
 
-		virtual void on_update(float64_t delta_time)
+		virtual void on_update(f64 delta_time)
 		{}
 
 		virtual void on_shutdown()
@@ -77,7 +77,7 @@ namespace spark
 			}
 		}
 
-		void update_systems(float64_t delta_time)
+		void update_systems(f64 delta_time)
 		{
 			for (auto& system : m_update_systems)
 			{

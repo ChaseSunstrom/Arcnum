@@ -207,16 +207,13 @@
     <ClInclude Include="Spark\core\util\wrap.hpp">
       <Filter>core\util</Filter>
     </ClInclude>
-    <ClInclude Include="Spark\core\window\directx_window.hpp">
+    <ClInclude Include="Spark\core\window\directx\directx_window.hpp">
       <Filter>core\window</Filter>
     </ClInclude>
-    <ClInclude Include="Spark\core\window\metal_window.hpp">
+    <ClInclude Include="Spark\core\window\metal\metal_window.hpp">
       <Filter>core\window</Filter>
     </ClInclude>
-    <ClInclude Include="Spark\core\window\opengl_window.hpp">
-      <Filter>core\window</Filter>
-    </ClInclude>
-    <ClInclude Include="Spark\core\window\vulkan_window.hpp">
+    <ClInclude Include="Spark\core\window\vulkan\vulkan_window.hpp">
       <Filter>core\window</Filter>
     </ClInclude>
     <ClInclude Include="Spark\core\window\window.hpp">
@@ -256,6 +253,8 @@
     <ClInclude Include="Spark\include\IMGUI\imgui_impl_metal.h" />
     <ClInclude Include="Spark\include\IMGUI\imgui_impl_vulkan.h" />
     <ClInclude Include="Spark\core\util\timer.hpp" />
+    <ClInclude Include="Spark\core\window\vulkan\vertex.hpp" />
+    <ClInclude Include="Spark\core\window\vulkan\mesh.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spark\core\app\app.cpp">
@@ -318,10 +317,7 @@
     <ClCompile Include="Spark\core\util\wrap.cpp">
       <Filter>core\util</Filter>
     </ClCompile>
-    <ClCompile Include="Spark\core\window\opengl_window.cpp">
-      <Filter>core\window</Filter>
-    </ClCompile>
-    <ClCompile Include="Spark\core\window\vulkan_window.cpp">
+    <ClCompile Include="Spark\core\window\vulkan\vulkan_window.cpp">
       <Filter>core\window</Filter>
     </ClCompile>
     <ClCompile Include="Spark\include\IMGUI\imgui.cpp">
@@ -347,6 +343,7 @@
     </ClCompile>
     <ClCompile Include="Spark\include\IMGUI\imgui_impl_dx12.cpp" />
     <ClCompile Include="Spark\include\IMGUI\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="Spark\core\window\vulkan\mesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Spark\include\IMGUI\imgui_impl_metal.mm" />

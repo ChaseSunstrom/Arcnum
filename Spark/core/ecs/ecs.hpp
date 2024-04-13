@@ -134,7 +134,7 @@ namespace spark
 			m_system_manager.start_systems();
 		}
 
-		inline void update_systems(float64_t delta_time)
+		inline void update_systems(f64 delta_time)
 		{
 			m_system_manager.update_systems(delta_time);
 		}

@@ -169,7 +169,7 @@ namespace spark
                     m_socket.async_send_to(asio::buffer(serialized_packet), client_endpoint,
                                // Need to move serialized_packet to keep it alive while we send it, boost takes a reference to the packet data
                                // So this is necessary to keep it alive
-                        [serialized_packet = std::move(serialized_packet), client_endpoint](boost::system::error_code ec, uint64_t bytes_sent)
+                        [serialized_packet = std::move(serialized_packet), client_endpoint](boost::system::error_code ec, u64 bytes_sent)
                         {
                             if (ec)
                             {

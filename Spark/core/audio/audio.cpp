@@ -3,7 +3,7 @@
 
 namespace spark
 {
-	void audio_system::on_update(float64_t delta_time)
+	void audio_system::on_update(f64 delta_time)
 	{
 		audio_manager& audio_man = engine::get<audio_manager>();
 

@@ -1,8 +1,9 @@
 #include "vulkan_window.hpp"
-#include "opengl_window.hpp"
+#include "vertex.hpp"
 
-#include "../util/file.hpp"
-#include "../events/sub.hpp"
+#include "../../util/file.hpp"
+#include "../../events/sub.hpp"
+#include "../../renderer/renderer.hpp"
 
 #include "IMGUI/imgui.h"
 #include "IMGUI/imgui_impl_glfw.h"
@@ -46,7 +47,7 @@ namespace spark
 		vkDestroyPipelineLayout(m_window_data->m_device, m_window_data->m_pipeline_layout, nullptr);
 		vkDestroyRenderPass(m_window_data->m_device, m_window_data->m_render_pass, nullptr);
 
-		for (uint64_t i = 0; i < m_window_data->m_max_frames_in_flight; i++)
+		for (u64 i = 0; i < m_window_data->m_max_frames_in_flight; i++)
 		{
 			vkDestroySemaphore(m_window_data->m_device, m_window_data->m_image_available_semaphores[i], nullptr);
 			vkDestroySemaphore(m_window_data->m_device, m_window_data->m_render_finished_semaphores[i], nullptr);
@@ -78,7 +79,7 @@ namespace spark
 
 	bool vulkan_window::check_validation_layer_support()
 	{
-		uint32_t layer_count;
+		u32 layer_count;
 
 		vkEnumerateInstanceLayerProperties(&layer_count, nullptr);
 
@@ -109,7 +110,7 @@ namespace spark
 	{
 		vkWaitForFences(m_window_data->m_device, 1, &m_window_data->m_in_flight_fences[m_window_data->m_current_frame], VK_TRUE, UINT64_MAX);
 		
-		uint32_t image_index;
+		u32 image_index;
 		VkResult result =vkAcquireNextImageKHR(m_window_data->m_device, m_window_data->m_swapchain, UINT64_MAX, m_window_data->m_image_available_semaphores[m_window_data->m_current_frame], VK_NULL_HANDLE, &image_index);
 		
 		if (result == VK_ERROR_OUT_OF_DATE_KHR)
@@ -204,7 +205,7 @@ namespace spark
 
 	std::vector<const char*> vulkan_window::get_required_extensions()
 	{
-		uint32_t glfw_extension_count = 0;
+		u32 glfw_extension_count = 0;
 		const char** glfw_extensions;
 
 		glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
@@ -241,7 +242,7 @@ namespace spark
 
 	void vulkan_window::init_physical_device()
 	{
-		uint32_t device_count = 0;
+		u32 device_count = 0;
 		vkEnumeratePhysicalDevices(m_window_data->m_instance, &device_count, nullptr);
 
 		if (device_count == 0)
@@ -253,11 +254,11 @@ namespace spark
 		std::vector<VkPhysicalDevice> devices(device_count);
 		vkEnumeratePhysicalDevices(m_window_data->m_instance, &device_count, devices.data());
 
-		std::multimap<int32_t, VkPhysicalDevice> candidates;
+		std::multimap<i32, VkPhysicalDevice> candidates;
 
 		for (const auto& device : devices)
 		{
-			int32_t score = rate_device(device);
+			i32 score = rate_device(device);
 			VkPhysicalDeviceProperties properties;
 			vkGetPhysicalDeviceProperties(device, &properties);
 
@@ -282,13 +283,13 @@ namespace spark
 	{
 		queue_family_indices indices;
 
-		uint32_t queue_family_count = 0;
+		u32 queue_family_count = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, nullptr);
 
 		std::vector<VkQueueFamilyProperties> queue_families(queue_family_count);
 		vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, queue_families.data());
 
-		uint32_t i = 0;
+		u32 i = 0;
 		for (const auto& queue_family : queue_families)
 		{
 			if (queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT)
@@ -327,7 +328,7 @@ namespace spark
 
 	bool vulkan_window::check_device_extension_support(VkPhysicalDevice device)
 	{
-		uint32_t extension_count;
+		u32 extension_count;
 		vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, nullptr);
 
 		std::vector<VkExtensionProperties> available_extensions(extension_count);
@@ -343,7 +344,7 @@ namespace spark
 		return required_extensions.empty();
 	}
 
-	int32_t vulkan_window::rate_device(VkPhysicalDevice device)
+	i32 vulkan_window::rate_device(VkPhysicalDevice device)
 	{
 		VkPhysicalDeviceProperties device_properties;
 		VkPhysicalDeviceFeatures device_features;
@@ -353,7 +354,7 @@ namespace spark
 		vkGetPhysicalDeviceFeatures(device, &device_features);
 		vkGetPhysicalDeviceMemoryProperties(device, &memory_properties);
 
-		int32_t score = 0;
+		i32 score = 0;
 
 		// Device type preference: Discrete GPU is given a high score
 		if (device_properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
@@ -379,15 +380,15 @@ namespace spark
 		score += device_properties.limits.maxImageDimension2D;
 
 		// Assess the memory capacity
-		uint64_t total_memory = 0;
-		for (uint32_t i = 0; i < memory_properties.memoryHeapCount; i++)
+		u64 total_memory = 0;
+		for (u32 i = 0; i < memory_properties.memoryHeapCount; i++)
 		{
 			if (memory_properties.memoryHeaps[i].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)
 			{
 				total_memory += memory_properties.memoryHeaps[i].size;
 			}
 		}
-		score += static_cast<int32_t>(total_memory >> 20); // Add one point per MB of GPU memory
+		score += static_cast<i32>(total_memory >> 20); // Add one point per MB of GPU memory
 
 		// Ensure the device supports all required queue families
 		queue_family_indices indices = find_queue_families(device);
@@ -401,12 +402,12 @@ namespace spark
 
 	void vulkan_window::cleanup_swap_chain()
 	{
-		for (uint64_t i = 0; i < m_window_data->m_swapchain_framebuffers.size(); i++)
+		for (u64 i = 0; i < m_window_data->m_swapchain_framebuffers.size(); i++)
 		{
 			vkDestroyFramebuffer(m_window_data->m_device, m_window_data->m_swapchain_framebuffers[i], nullptr);
 		}
 
-		for (uint64_t i = 0; i < m_window_data->m_swapchain_image_views.size(); i++)
+		for (u64 i = 0; i < m_window_data->m_swapchain_image_views.size(); i++)
 		{
 			vkDestroyImageView(m_window_data->m_device, m_window_data->m_swapchain_image_views[i], nullptr);
 		}
@@ -416,8 +417,8 @@ namespace spark
 
 	void vulkan_window::reinit_swap_chain()
 	{
-		int32_t width = 0;
-		int32_t height = 0;
+		i32 width = 0;
+		i32 height = 0;
 
 		glfwGetFramebufferSize(m_window, &width, &height);
 
@@ -458,7 +459,7 @@ namespace spark
 		fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-		for (uint64_t i = 0; i < m_window_data->m_max_frames_in_flight; i++)
+		for (u64 i = 0; i < m_window_data->m_max_frames_in_flight; i++)
 		{
 			if (vkCreateSemaphore(m_window_data->m_device, &semaphore_info, nullptr, &m_window_data->m_image_available_semaphores[i]) != VK_SUCCESS ||
 				vkCreateSemaphore(m_window_data->m_device, &semaphore_info, nullptr, &m_window_data->m_render_finished_semaphores[i]) != VK_SUCCESS ||
@@ -483,12 +484,11 @@ namespace spark
 		glfwSetWindowUserPointer(m_window, m_window_data.get());
 
 		glfwSetFramebufferSizeCallback(m_window, framebuffer_resize_callback);
-		glfwSetWindowSizeCallback(m_window, opengl_window::resized_event_callback);
-		glfwSetWindowCloseCallback(m_window, opengl_window::close_event_callback);
-		glfwSetKeyCallback(m_window, opengl_window::key_event_callback);
-		glfwSetMouseButtonCallback(m_window, opengl_window::mouse_button_event_callback);
-		glfwSetCursorPosCallback(m_window, opengl_window::mouse_move_event_callback);
-		glfwSetScrollCallback(m_window, opengl_window::mouse_scroll_event_callback);
+		glfwSetWindowCloseCallback(m_window, close_event_callback);
+		glfwSetKeyCallback(m_window, key_event_callback);
+		glfwSetMouseButtonCallback(m_window, mouse_button_event_callback);
+		glfwSetCursorPosCallback(m_window, mouse_move_event_callback);
+		glfwSetScrollCallback(m_window, mouse_scroll_event_callback);
 	}
 
 	void vulkan_window::init_vulkan()
@@ -506,14 +506,14 @@ namespace spark
 		create_info.pApplicationInfo = &app_info;
 
 		auto extensions = get_required_extensions();
-		create_info.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+		create_info.enabledExtensionCount = static_cast<u32>(extensions.size());
 		create_info.ppEnabledExtensionNames = extensions.data();
 
 		VkDebugUtilsMessengerCreateInfoEXT debug_create_info{};
 
 		if (m_enable_validation_layers)
 		{
-			create_info.enabledLayerCount = static_cast<uint32_t>(m_window_data->m_validation_layers.size());
+			create_info.enabledLayerCount = static_cast<u32>(m_window_data->m_validation_layers.size());
 			create_info.ppEnabledLayerNames = m_window_data->m_validation_layers.data();
 
 			populate_debug_messenger(debug_create_info);
@@ -534,7 +534,7 @@ namespace spark
 
 		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, m_window_data->m_surface, &details.m_capabilities);
 
-		uint32_t format_count;
+		u32 format_count;
 		vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_window_data->m_surface, &format_count, nullptr);
 
 		if (format_count != 0)
@@ -543,7 +543,7 @@ namespace spark
 			vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_window_data->m_surface, &format_count, details.m_formats.data());
 		}
 
-		uint32_t present_mode_count;
+		u32 present_mode_count;
 		vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_window_data->m_surface, &present_mode_count, nullptr);
 
 		if (present_mode_count != 0)
@@ -563,7 +563,7 @@ namespace spark
 		VkPresentModeKHR present_mode = choose_swap_present_mode(swap_chain_support.m_present_modes);
 		VkExtent2D extent = choose_swap_extent(swap_chain_support.m_capabilities);
 
-		uint32_t image_count = swap_chain_support.m_capabilities.minImageCount + 1;
+		u32 image_count = swap_chain_support.m_capabilities.minImageCount + 1;
 		if (swap_chain_support.m_capabilities.maxImageCount > 0 && image_count > swap_chain_support.m_capabilities.maxImageCount)
 		{
 			image_count = swap_chain_support.m_capabilities.maxImageCount;
@@ -580,7 +580,7 @@ namespace spark
 		create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 		queue_family_indices indices = find_queue_families(m_window_data->m_physical_device);
-		uint32_t queue_family_indices[] = { indices.m_graphics_family.value(), indices.m_present_family.value() };
+		u32 queue_family_indices[] = { indices.m_graphics_family.value(), indices.m_present_family.value() };
 
 		if (indices.m_graphics_family != indices.m_present_family)
 		{
@@ -621,11 +621,11 @@ namespace spark
 		queue_family_indices indices = find_queue_families(m_window_data->m_physical_device);
 
 		std::vector<VkDeviceQueueCreateInfo> queue_create_infos;
-		std::set<uint32_t> unique_queue_families = { indices.m_graphics_family.value(), indices.m_present_family.value() };
+		std::set<u32> unique_queue_families = { indices.m_graphics_family.value(), indices.m_present_family.value() };
 
-		float32_t queue_priority = 1.0f;
+		f32 queue_priority = 1.0f;
 
-		for (uint32_t queue_family : unique_queue_families)
+		for (u32 queue_family : unique_queue_families)
 		{
 			VkDeviceQueueCreateInfo queue_create_info{};
 			queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -639,16 +639,16 @@ namespace spark
 		VkDeviceCreateInfo create_info{};
 
 		create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-		create_info.queueCreateInfoCount = static_cast<uint32_t>(queue_create_infos.size());
+		create_info.queueCreateInfoCount = static_cast<u32>(queue_create_infos.size());
 		create_info.pQueueCreateInfos = queue_create_infos.data();
 		create_info.pEnabledFeatures = &device_features;
 
-		create_info.enabledExtensionCount = static_cast<uint32_t>(m_window_data->m_device_extensions.size());
+		create_info.enabledExtensionCount = static_cast<u32>(m_window_data->m_device_extensions.size());
 		create_info.ppEnabledExtensionNames = m_window_data->m_device_extensions.data();
 
 		if (m_enable_validation_layers)
 		{
-			create_info.enabledLayerCount = static_cast<uint32_t>(m_window_data->m_validation_layers.size());
+			create_info.enabledLayerCount = static_cast<u32>(m_window_data->m_validation_layers.size());
 			create_info.ppEnabledLayerNames = m_window_data->m_validation_layers.data();
 		}
 		else
@@ -667,8 +667,8 @@ namespace spark
 
 	void vulkan_window::init_pipeline()
 	{
-		std::vector<char> vertex_shader_code = read_file_to_bytes("Spark/shaders/default_vert.spv");
-		std::vector<char> fragment_shader_code = read_file_to_bytes("Spark/shaders/default_frag.spv");
+		std::vector<char> vertex_shader_code = read_file_to_bytes("Spark/shaders/vertex_shader.spv");
+		std::vector<char> fragment_shader_code = read_file_to_bytes("Spark/shaders/fragment_shader.spv");
 
 		VkShaderModule vertex_shader_module = create_shader_module(vertex_shader_code);
 		VkShaderModule fragment_shader_module = create_shader_module(fragment_shader_code);
@@ -689,8 +689,14 @@ namespace spark
 
 		VkPipelineVertexInputStateCreateInfo vertex_input_info{};
 		vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		vertex_input_info.vertexBindingDescriptionCount = 0; 
-		vertex_input_info.vertexAttributeDescriptionCount = 0;
+		
+		auto binding_description = get_binding_description();
+		auto attribute_descriptions = get_attribute_descriptions();
+
+		vertex_input_info.vertexBindingDescriptionCount = 1; 
+		vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attribute_descriptions.size());
+		vertex_input_info.pVertexBindingDescriptions = &binding_description;
+		vertex_input_info.pVertexAttributeDescriptions = attribute_descriptions.data();
 
 		VkPipelineInputAssemblyStateCreateInfo input_assembly{};
 		input_assembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -739,7 +745,7 @@ namespace spark
 
 		VkPipelineDynamicStateCreateInfo dynamic_state{};
 		dynamic_state.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-		dynamic_state.dynamicStateCount = static_cast<uint32_t>(dynamic_states.size());
+		dynamic_state.dynamicStateCount = static_cast<u32>(dynamic_states.size());
 		dynamic_state.pDynamicStates = dynamic_states.data();
 
 		VkPipelineLayoutCreateInfo pipeline_layout_info{};
@@ -786,7 +792,7 @@ namespace spark
 		VkShaderModuleCreateInfo create_info{};
 		create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 		create_info.codeSize = code.size();
-		create_info.pCode = reinterpret_cast<const uint32_t*>(code.data());
+		create_info.pCode = reinterpret_cast<const u32*>(code.data());
 
 		VkShaderModule shader_module;
 		if (vkCreateShaderModule(m_window_data->m_device, &create_info, nullptr, &shader_module) != VK_SUCCESS)
@@ -826,18 +832,18 @@ namespace spark
 
 	VkExtent2D vulkan_window::choose_swap_extent(const VkSurfaceCapabilitiesKHR& capabilities)
 	{
-		if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
+		if (capabilities.currentExtent.width != std::numeric_limits<u32>::max())
 		{
 			return capabilities.currentExtent;
 		}
 		else
 		{
-			int32_t width, height;
+			i32 width, height;
 			glfwGetFramebufferSize(m_window, &width, &height);
 
 			VkExtent2D actual_extent = {
-				static_cast<uint32_t>(width),
-				static_cast<uint32_t>(height)
+				static_cast<u32>(width),
+				static_cast<u32>(height)
 			};
 
 			actual_extent.width = std::clamp(actual_extent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
@@ -860,7 +866,7 @@ namespace spark
 	{
 		m_window_data->m_swapchain_image_views.resize(m_window_data->m_swapchain_images.size());
 
-		for (uint64_t i = 0; i < m_window_data->m_swapchain_images.size(); i++)
+		for (u64 i = 0; i < m_window_data->m_swapchain_images.size(); i++)
 		{
 			VkImageViewCreateInfo create_info{};
 			create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -962,7 +968,7 @@ namespace spark
 		m_window_data->m_swapchain_framebuffers.resize(m_window_data->m_swapchain_image_views.size());
 
 
-		for (uint64_t i = 0; i < m_window_data->m_swapchain_image_views.size(); i++)
+		for (u64 i = 0; i < m_window_data->m_swapchain_image_views.size(); i++)
 		{
 			VkImageView attachments[] = {
 				m_window_data->m_swapchain_image_views[i]
@@ -1001,7 +1007,7 @@ namespace spark
 		}
 	}
 
-	void vulkan_window::record_command_buffer(VkCommandBuffer command_buffer, uint32_t image_index)
+	void vulkan_window::record_command_buffer(VkCommandBuffer command_buffer, u32 image_index)
 	{
 		VkCommandBufferBeginInfo begin_info{};
 		begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -1041,7 +1047,9 @@ namespace spark
 		scissor.offset = { 0, 0 };
 		scissor.extent = m_window_data->m_swapchain_extent;
 		vkCmdSetScissor(command_buffer, 0, 1, &scissor);
-		vkCmdDraw(command_buffer, 3, 1, 0, 0);
+
+		renderer::get().render();
+
 		vkCmdEndRenderPass(command_buffer);
 
 		if (vkEndCommandBuffer(command_buffer) != VK_SUCCESS)
@@ -1059,7 +1067,7 @@ namespace spark
 		alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		alloc_info.commandPool = m_window_data->m_command_pool;
 		alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		alloc_info.commandBufferCount = static_cast<uint32_t>(m_window_data->m_command_buffers.size());
+		alloc_info.commandBufferCount = static_cast<u32>(m_window_data->m_command_buffers.size());
 
 		if (vkAllocateCommandBuffers(m_window_data->m_device, &alloc_info, &m_window_data->m_command_buffers[m_window_data->m_current_frame]) != VK_SUCCESS)
 		{
@@ -1087,7 +1095,7 @@ namespace spark
 		publish_to_topic(WINDOW_EVENT_TOPIC, _event);
 	}
 
-	void vulkan_window::framebuffer_resize_callback(GLFWwindow* window, int32_t width, int32_t height)
+	void vulkan_window::framebuffer_resize_callback(GLFWwindow* window, i32 width, i32 height)
 	{
 		auto window_data = reinterpret_cast<vulkan_window_data*>(glfwGetWindowUserPointer(window));
 		window_data->m_framebuffer_resized = true;
@@ -1095,15 +1103,15 @@ namespace spark
 
 	void vulkan_window::close_event_callback(GLFWwindow* window)
 	{
-		opengl_window_data* _window_data = static_cast<opengl_window_data*>(glfwGetWindowUserPointer(window));
+		vulkan_window_data* _window_data = static_cast<vulkan_window_data*>(glfwGetWindowUserPointer(window));
 		auto event = std::make_shared<window_closed_event>();
 
 		_window_data->m_event_callback(event);
 	}
 
-	void vulkan_window::key_event_callback(GLFWwindow* window, int32_t key, int32_t scancode, int32_t action, int32_t mods)
+	void vulkan_window::key_event_callback(GLFWwindow* window, i32 key, i32 scancode, i32 action, i32 mods)
 	{
-		opengl_window_data* _window_data = static_cast<opengl_window_data*>(glfwGetWindowUserPointer(window));
+		vulkan_window_data* _window_data = static_cast<vulkan_window_data*>(glfwGetWindowUserPointer(window));
 
 		switch (action)
 		{
@@ -1128,9 +1136,9 @@ namespace spark
 		}
 	}
 
-	void vulkan_window::mouse_button_event_callback(GLFWwindow* window, int32_t button, int32_t action, int32_t mods)
+	void vulkan_window::mouse_button_event_callback(GLFWwindow* window, i32 button, i32 action, i32 mods)
 	{
-		opengl_window_data* _window_data = static_cast<opengl_window_data*>(glfwGetWindowUserPointer(window));
+		vulkan_window_data* _window_data = static_cast<vulkan_window_data*>(glfwGetWindowUserPointer(window));
 
 		switch (action)
 		{
@@ -1149,17 +1157,17 @@ namespace spark
 		}
 	}
 
-	void vulkan_window::mouse_scroll_event_callback(GLFWwindow* window, float64_t xoffset, float64_t yoffset)
+	void vulkan_window::mouse_scroll_event_callback(GLFWwindow* window, f64 xoffset, f64 yoffset)
 	{
-		opengl_window_data* _window_data = static_cast<opengl_window_data*>(glfwGetWindowUserPointer(window));
+		vulkan_window_data* _window_data = static_cast<vulkan_window_data*>(glfwGetWindowUserPointer(window));
 		auto event = std::make_shared<mouse_scrolled_event>(xoffset, yoffset);
 
 		_window_data->m_event_callback(event);
 	}
 
-	void vulkan_window::mouse_move_event_callback(GLFWwindow* window, float64_t xpos, float64_t ypos)
+	void vulkan_window::mouse_move_event_callback(GLFWwindow* window, f64 xpos, f64 ypos)
 	{
-		opengl_window_data* _window_data = static_cast<opengl_window_data*>(glfwGetWindowUserPointer(window));
+		vulkan_window_data* _window_data = static_cast<vulkan_window_data*>(glfwGetWindowUserPointer(window));
 		auto event = std::make_shared<mouse_moved_event>(xpos, ypos);
 
 		_window_data->m_event_callback(event);

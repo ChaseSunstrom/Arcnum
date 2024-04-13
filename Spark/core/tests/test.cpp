@@ -7,8 +7,8 @@ namespace spark
 	{
         struct test_resource 
         {
-            int32_t value;
-            explicit test_resource(int32_t val) : value(val) {}
+            i32 value;
+            explicit test_resource(i32 val) : value(val) {}
         };
 
         TEST(test_unique_shield_ptr)
@@ -47,9 +47,9 @@ namespace spark
         
         TEST(test_threaded_shared_ptr)
         {
-            shared_shield_ptr<int32_t> ptr(new int32_t(0));
-            std::thread t1([&ptr] { for (int32_t i = 0; i < 1000; ++i) ++(*ptr.access()); });
-            std::thread t2([&ptr] { for (int32_t i = 0; i < 1000; ++i) ++(*ptr.access()); });
+            shared_shield_ptr<i32> ptr(new i32(0));
+            std::thread t1([&ptr] { for (i32 i = 0; i < 1000; ++i) ++(*ptr.access()); });
+            std::thread t2([&ptr] { for (i32 i = 0; i < 1000; ++i) ++(*ptr.access()); });
             t1.join();
             t2.join();
             EXPECT_EQ(*ptr.access(), 2000); // This should pass if the shared_shield_ptr properly locks around the int increment.

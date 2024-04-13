@@ -24,7 +24,7 @@ namespace spark
             m_is_running = false;
         }
 
-        float64_t elapsed_seconds() const
+        f64 elapsed_seconds() const
         {
             if (m_is_running)
             {
@@ -35,7 +35,7 @@ namespace spark
             return 0.0;
         }
 
-        float64_t elapsed_milliseconds() const
+        f64 elapsed_milliseconds() const
         {
             if (m_is_running)
             {
@@ -46,7 +46,7 @@ namespace spark
             return 0.0;
         }
 
-        float64_t elapsed_microseconds() const
+        f64 elapsed_microseconds() const
         {
             if (m_is_running)
             {

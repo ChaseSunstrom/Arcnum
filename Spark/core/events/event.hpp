@@ -10,14 +10,14 @@ namespace spark
 	{
 		event() = default;
 
-		event(int32_t type) :
+		event(i32 type) :
 			m_type(type) { }
 
 		virtual ~event() = default;
 
 		bool m_handled = false;
 
-		int32_t m_type = NO_EVENT;
+		i32 m_type = NO_EVENT;
 	};
 
 	using app_update_event = event;
@@ -30,12 +30,12 @@ namespace spark
 	{
 		window_resized_event() = default;
 
-		window_resized_event(int32_t width, int32_t height) :
+		window_resized_event(i32 width, i32 height) :
 			event(WINDOW_RESIZED_EVENT), m_width(width), m_height(height) { }
 
-		int32_t m_width;
+		i32 m_width;
 
-		int32_t m_height;
+		i32 m_height;
 	};
 
 	struct window_moved_event :
@@ -43,12 +43,12 @@ namespace spark
 	{
 		window_moved_event() = default;
 
-		window_moved_event(int32_t x_pos, int32_t y_pos) :
+		window_moved_event(i32 x_pos, i32 y_pos) :
 			event(WINDOW_MOVED_EVENT), m_x_pos(x_pos), m_y_pos(y_pos) { }
 
-		int32_t m_x_pos;
+		i32 m_x_pos;
 
-		int32_t m_y_pos;
+		i32 m_y_pos;
 	};
 
 	struct key_pressed_event :
@@ -56,19 +56,19 @@ namespace spark
 	{
 		key_pressed_event() = default;
 
-		key_pressed_event(int32_t key_code) :
+		key_pressed_event(i32 key_code) :
 			event(KEY_PRESSED_EVENT), m_key_code(key_code) { }
 
-		int32_t m_key_code;
+		i32 m_key_code;
 	};
 
 	struct key_released_event :
 		event
 	{
-		key_released_event(int32_t key_code) :
+		key_released_event(i32 key_code) :
 			event(KEY_RELEASED_EVENT), m_key_code(key_code) { }
 
-		int32_t m_key_code;
+		i32 m_key_code;
 	};
 
 	struct key_repeat_event :
@@ -76,10 +76,10 @@ namespace spark
 	{
 		key_repeat_event() = default;
 
-		key_repeat_event(int32_t key_code) :
+		key_repeat_event(i32 key_code) :
 			event(KEY_REPEAT_EVENT), m_key_code(key_code) { }
 
-		int32_t m_key_code;
+		i32 m_key_code;
 	};
 
 	struct mouse_pressed_event :
@@ -87,10 +87,10 @@ namespace spark
 	{
 		mouse_pressed_event() = default;
 
-		mouse_pressed_event(int32_t button) :
+		mouse_pressed_event(i32 button) :
 			event(MOUSE_PRESSED_EVENT), m_button(button) { }
 
-		int32_t m_button;
+		i32 m_button;
 	};
 
 	struct mouse_released_event :
@@ -98,10 +98,10 @@ namespace spark
 	{
 		mouse_released_event() = default;
 
-		mouse_released_event(int32_t button) :
+		mouse_released_event(i32 button) :
 			event(MOUSE_RELEASED_EVENT), m_button(button) { }
 
-		int32_t m_button;
+		i32 m_button;
 	};
 
 	struct mouse_moved_event :
@@ -109,12 +109,12 @@ namespace spark
 	{
 		mouse_moved_event() = default;
 
-		mouse_moved_event(float64_t x_pos, float64_t y_pos) :
+		mouse_moved_event(f64 x_pos, f64 y_pos) :
 			event(MOUSE_MOVE_EVENT), m_x_pos(x_pos), m_y_pos(y_pos) { }
 
-		float64_t m_x_pos;
+		f64 m_x_pos;
 
-		float64_t m_y_pos;
+		f64 m_y_pos;
 	};
 
 	struct mouse_scrolled_event :
@@ -122,12 +122,12 @@ namespace spark
 	{
 		mouse_scrolled_event() = default;
 
-		mouse_scrolled_event(float64_t x_offset, float64_t y_offset) :
+		mouse_scrolled_event(f64 x_offset, f64 y_offset) :
 			event(MOUSE_SCROLLED_EVENT), m_x_offset(x_offset), m_y_offset(y_offset) { }
 
-		float64_t m_x_offset;
+		f64 m_x_offset;
 
-		float64_t m_y_offset;
+		f64 m_y_offset;
 	};
 
 	// ===============================================================

@@ -15,8 +15,8 @@ namespace spark
 		window_data(
 			std::string title,
 			bool vsync,
-			int32_t height,
-			int32_t width,
+			i32 height,
+			i32 width,
 			std::function<void(std::shared_ptr<event>)> event_callback) :
 			m_title(title), m_vsync(vsync), m_height(height), m_width(width), m_event_callback(event_callback) { }
 
@@ -26,9 +26,9 @@ namespace spark
 
 		bool m_vsync = false;
 
-		int32_t m_width = 1080;
+		i32 m_width = 1080;
 
-		int32_t m_height = 1080;
+		i32 m_height = 1080;
 
 		std::function<void(std::shared_ptr<event>)> m_event_callback;
 	};

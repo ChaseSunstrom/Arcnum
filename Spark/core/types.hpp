@@ -5,18 +5,45 @@
 
 namespace spark
 {
-	using c_str = const char*;
+#if !defined(u8)
+	using u8 = std::uint8_t;
+#endif
+	
+#if !defined(i8)
+	using i8 = std::int8_t;
+#endif
 
-	using byte = std::uint8_t;
-	using sbyte = std::int8_t;
+#if !defined(u16)
+	using u16 = std::uint16_t;
+#endif
 
-	using int32_t = std::int32_t;
-	using uint32_t = std::uint32_t;
-	using int64_t = std::int64_t;
-	using uint64_t = std::uint64_t;
+#if !defined(i16)
+	using i16 = std::int16_t;
+#endif
 
-	using float32_t = float;
-	using float64_t = double;
+#if !defined(i32)
+	using i32 = std::int32_t;
+#endif
+
+#if !defined(u32)
+	using u32 = std::uint32_t;
+#endif
+
+#if !defined(i64)
+	using i64 = std::int64_t;
+#endif
+
+#if !defined(u64)
+	using u64 = std::uint64_t;
+#endif
+
+#if !defined(f32)
+	using f32 = float;
+#endif
+
+#if !defined(f64)
+	using f64 = double;
+#endif
 }
 
 #endif

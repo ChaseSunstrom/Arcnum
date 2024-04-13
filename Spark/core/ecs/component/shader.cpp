@@ -79,7 +79,7 @@ namespace spark
 		VkShaderModuleCreateInfo create_info = {};
 		create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 		create_info.codeSize = code.size();
-		create_info.pCode = reinterpret_cast<const uint32_t*>(code.data());
+		create_info.pCode = reinterpret_cast<const u32*>(code.data());
 
 		VkShaderModule shader_module;
 		if (vkCreateShaderModule(_vulkan_window.get_window_data().m_device, &create_info, nullptr, &shader_module) != VK_SUCCESS)

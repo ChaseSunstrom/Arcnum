@@ -1,6 +1,9 @@
 #include "../app/app.hpp"
 
 #include "instancer.hpp"
+#include "../window/window_manager.hpp"
+#include "../window/vulkan/vulkan_window.hpp"
+#include "../window/vulkan/mesh.hpp"
 #include "../user/camera.hpp"
 
 namespace spark
@@ -8,23 +11,6 @@ namespace spark
 	void transforms::add_transform(const transform& transform)
 	{
 		m_data.emplace_back(transform);
-	}
-
-	void transforms::update() 
-	{
-		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-
-		glBufferData(GL_ARRAY_BUFFER, m_data.size() * sizeof(transform), m_data.data(), GL_DYNAMIC_DRAW);
-
-		GLsizei vec4_size = sizeof(transform) / 4;
-		for (GLuint i = 0; i < 4; ++i) 
-		{
-			glEnableVertexAttribArray(3 + i); 
-
-			glVertexAttribPointer(3 + i, 4, GL_FLOAT, GL_FALSE, 4 * vec4_size, reinterpret_cast<void*>(i * vec4_size));
-
-			glVertexAttribDivisor(3 + i, 1);
-		}
 	}
 
 	void transforms::update_render_transforms()
@@ -131,61 +117,29 @@ namespace spark
 		}
 	}
 
-#ifdef FIX_VULKAN
-	void instancer::bind_renderables(const std::vector<std::unique_ptr<camera>>& cameras, const std::string& mesh_name, const std::string& material_name)
-	{
-
-		auto& material_map = m_renderables[mesh_name];
-		auto& trans_struct = material_map[material_name];
-
-		if (!trans_struct) return; // Safeguard against null pointer
-
-		material_manager& mat_man = engine::get<material_manager>();
-		auto shader_program_id = mat_man.get_material(material_name).m_shader_program;
-
-		glUseProgram(shader_program_id); // Ensure the shader program is active
-
-		// Get uniform locations
-		GLint loc_projection = glGetUniformLocation(shader_program_id, "projection");
-		GLint loc_view = glGetUniformLocation(shader_program_id, "view");
-
-		for (auto& camera : cameras)
-		{
-			// Set the projection and view matrices
-			glUniformMatrix4fv(loc_projection, 1, GL_FALSE, math::value_ptr(camera->get_projection_matrix()));
-			glUniformMatrix4fv(loc_view, 1, GL_FALSE, math::value_ptr(camera->get_view_matrix()));
-
-			material& mat = mat_man.get_material(material_name);
-			set_uniform(mat, shader_program_id);
-
-			mesh_manager& mesh_man = engine::get<mesh_manager>();
-			auto vao_id = mesh_man.get_mesh(mesh_name).get_vao();
-			glBindVertexArray(vao_id);
-		}
-
-		trans_struct->update(); // This method binds and updates the VBO as needed
-	}
-#endif
 	void instancer::render_instanced(const std::vector<std::unique_ptr<camera>>& cameras, scene& scene)
 	{
+		auto& _vulkan_window = engine::get<vulkan_window>();
+
 		for (auto& [mesh_name, material_map] : m_renderables)
 		{
 			for (auto& [material_name, transforms_ptr] : material_map)
 			{
-				// Bind the necessary resources for this mesh-material combination
-				//bind_renderables(cameras, mesh_name, material_name);
-
-				// Now update the instance transformation data
-				transforms_ptr->update();
-
 				// Perform the instanced draw call
 				auto& mesh = engine::get<mesh_manager>().get_mesh(mesh_name);
 
-				if (mesh.m_indices.size() == 0)
-					glDrawArraysInstanced(GL_TRIANGLES, 0, mesh.m_vertices.size(), transforms_ptr->m_data.size());
+				if (get_current_window_type() == window_type::VULKAN)
+				{
+					auto& _vulkan_mesh = dynamic_cast<vulkan_mesh&>(mesh);
 
-				else
-					glDrawElementsInstanced(GL_TRIANGLES, mesh.m_indices.size(), GL_UNSIGNED_INT, 0, transforms_ptr->m_data.size());
+					vkCmdBindPipeline(_vulkan_window.get_window_data().m_command_buffers[_vulkan_window.get_window_data().m_current_frame], VK_PIPELINE_BIND_POINT_GRAPHICS, _vulkan_window.get_window_data().m_graphics_pipeline);
+
+					VkBuffer vertex_buffers[] = { _vulkan_mesh.m_vertex_buffer };
+					VkDeviceSize offsets[] = { 0 };
+					vkCmdBindVertexBuffers(_vulkan_window.get_window_data().m_command_buffers[_vulkan_window.get_window_data().m_current_frame], 0, 1, vertex_buffers, offsets);
+
+					vkCmdDraw(_vulkan_window.get_window_data().m_command_buffers[_vulkan_window.get_window_data().m_current_frame], _vulkan_mesh.m_vertices.size(), transforms_ptr->m_data.size(), 0, 0);
+				}
 			}
 		}
 	}

@@ -8,7 +8,7 @@ namespace spark
 {
 	struct transforms
 	{
-		transforms() { generate_vertex_buffer(m_vbo); }
+        transforms() = default;
 
 		void add_transform(const transform& transform);
 
@@ -16,7 +16,6 @@ namespace spark
 
         void update_render_transforms();
 		
-		GLuint m_vbo = 0;
 		std::vector<transform> m_data;
         std::unordered_map<entity, transform> m_entity_transforms;
 	};
@@ -24,9 +23,11 @@ namespace spark
     class instancer : public observer
     {
     public:
-        instancer() = default;
-        ~instancer() = default;
-
+        static instancer& get()
+        {
+            static instancer instance;
+            return instance;
+        }
         void add_renderable(entity e, const scene& scene, const std::string& mesh_name, const std::string& material_name, const transform& transform);
 
         void bind_renderables(const std::vector<std::unique_ptr<camera>>& cameras, const std::string& mesh_name, const std::string& material_name);
@@ -38,6 +39,11 @@ namespace spark
         void update_renderable(entity e, scene& scene);
 
         void on_notify(std::shared_ptr<event> event) override;
+    private:
+
+        instancer() = default;
+        ~instancer() = default;
+
     private:
             std::unordered_map<std::string, 
                 std::unordered_map<std::string, 

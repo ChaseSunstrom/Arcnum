@@ -35,11 +35,11 @@ namespace spark
 
 #endif
 
-	void set_background_color(float64_t r, float64_t g, float64_t b, float64_t a);
+	void set_background_color(f64 r, f64 g, f64 b, f64 a);
 
 	void clear_screen();
 
-	void set_viewport(int32_t x, int32_t y, int32_t width, int32_t height);
+	void set_viewport(i32 x, i32 y, i32 width, i32 height);
 
 	void set_depth_test(bool enabled);
 
@@ -49,56 +49,55 @@ namespace spark
 
 	void bind_vertex_array(GLuint vao);
 
-	void bind_vertex_buffer(uint32_t vbo);
+	void bind_vertex_buffer(u32 vbo);
 
-	void bind_index_buffer(uint32_t ibo);
+	void bind_index_buffer(u32 ibo);
 
-	void draw_elements(uint32_t mode, int32_t count, uint32_t type, const void* indices);
+	void draw_elements(u32 mode, i32 count, u32 type, const void* indices);
 
-	void set_vertex_attribute_ptr(
-		uint32_t index, int32_t size, uint32_t type, int32_t stride, const void* pointer);
+	void set_vertex_attribute_ptr(u32 index, i32 size, u32 type, i32 stride, const void* pointer);
 	
-	void enable_vertex_attribute_ptr(uint32_t index);
+	void enable_vertex_attribute_ptr(u32 index);
 
-	void generate_vertex_array(uint32_t& vao);
+	void generate_vertex_array(u32& vao);
 
-	void generate_vertex_buffer(uint32_t& vbo);
+	void generate_vertex_buffer(u32& vbo);
 
-	void generate_index_buffer(uint32_t& ibo);
+	void generate_index_buffer(u32& ibo);
 
-	void delete_vertex_array(uint32_t& vao);
+	void delete_vertex_array(u32& vao);
 
-	void delete_vertex_buffer(uint32_t& vbo);
+	void delete_vertex_buffer(u32& vbo);
 
-	void delete_index_buffer(uint32_t& ibo);
+	void delete_index_buffer(u32& ibo);
 
-	void buffer_index_data(uint32_t ibo, const std::vector <uint32_t>& data);
+	void buffer_index_data(u32 ibo, const std::vector <u32>& data);
 
-	void buffer_index_subdata(uint32_t ibo, const std::vector <uint32_t>& data);
+	void buffer_index_subdata(u32 ibo, const std::vector <u32>& data);
 
 	GLuint create_program();
 
-	void delete_program(uint32_t program);
+	void delete_program(u32 program);
 	
-	void delete_shader(uint32_t shader);
+	void delete_shader(u32 shader);
 
-	void attach_shader(uint32_t program, uint32_t shader);
+	void attach_shader(u32 program, u32 shader);
 
-	void link_program(uint32_t program);
+	void link_program(u32 program);
 
-	void use_program(uint32_t program);
+	void use_program(u32 program);
 
-	GLuint create_shader(uint32_t type);
+	GLuint create_shader(u32 type);
 
-	void shader_source(uint32_t shader, const std::string& source);
+	void shader_source(u32 shader, const std::string& source);
 
-	void compile_shader(uint32_t shader);
+	void compile_shader(u32 shader);
 
-	void set_uniform(const std::string& name, const int32_t value, GLuint shader_program);
+	void set_uniform(const std::string& name, const i32 value, GLuint shader_program);
 
-	void set_uniform(const std::string& name, const float32_t value, GLuint shader_program);
+	void set_uniform(const std::string& name, const f32 value, GLuint shader_program);
 
-	void set_uniform(const std::string& name, const float64_t value, GLuint shader_program);
+	void set_uniform(const std::string& name, const f64 value, GLuint shader_program);
 
 	void set_uniform(const std::string& name, const math::mat2& value, GLuint shader_program);
 
@@ -118,12 +117,12 @@ namespace spark
 
 	void active_texture(GLenum texture);
 
-	void generate_texture(uint32_t& texture);
+	void generate_texture(u32& texture);
 
-	void bind_texture(GLenum target, uint32_t texture);
+	void bind_texture(GLenum target, u32 texture);
 	
 	template <typename T>
-	void buffer_vertex_data(uint32_t vbo, const std::vector <T>& data)
+	void buffer_vertex_data(u32 vbo, const std::vector <T>& data)
 	{
 		bind_vertex_buffer(vbo);
 		glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(T), data.data(), GL_DYNAMIC_DRAW);
@@ -132,7 +131,7 @@ namespace spark
 	}
 
 	template <typename T>
-	void buffer_vertex_subdata(uint32_t vbo, const std::vector <T>& data)
+	void buffer_vertex_subdata(u32 vbo, const std::vector <T>& data)
 	{
 		bind_vertex_buffer(vbo);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, data.size() * sizeof(T), data.data());

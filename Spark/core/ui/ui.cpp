@@ -15,6 +15,7 @@ namespace spark
 		draw_components();
 
 		ImGui::Render();
-		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), _vulkan_window.get_window_data().m_command_buffers[_vulkan_window.get_window_data().m_current_frame]);
+		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(),
+									   _vulkan_window.get_window_data().m_command_buffers[_vulkan_window.get_window_data().m_current_frame]);
 	}
 }

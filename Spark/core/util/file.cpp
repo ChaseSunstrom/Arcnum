@@ -37,7 +37,7 @@ namespace spark
 			SPARK_ERROR("[FILE] Failed to open file: " << path.string());
 		}
 		
-		uint64_t file_size = static_cast<uint64_t>(file.tellg());
+		u64 file_size = static_cast<u64>(file.tellg());
 		std::vector<char> buffer(file_size);
 
 		file.seekg(0);

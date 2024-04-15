@@ -33,7 +33,7 @@ namespace spark
 					data(ubo_data), create_func([this, ubo_data]() { this->create_buffer<UBOType>(ubo_data); }), data_func(
 					[this]()->void* { return &std::any_cast<UBOType&>(this->data); }), size_func([]()->u64 { return sizeof(UBOType); })
 			{
-				create_func(); // Call the create function immediately upon construction
+				create_func(); 
 			}
 
 			template <typename UBOType>
@@ -48,6 +48,7 @@ namespace spark
 						VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 						this->buffer,
 						this->buffer_memory);
+
 				void* data_ptr;
 				vkMapMemory(vk_window.get_window_data().m_device, this->buffer_memory, 0, buffer_size, 0, &data_ptr);
 				std::memcpy(data_ptr, &ubo_data, buffer_size);
@@ -386,16 +387,19 @@ namespace spark
 		{
 			auto& vk_window = engine::get<vulkan_window>();
 			VkDevice device = vk_window.get_window_data().m_device;
-			// Assuming you have only one descriptor set for now.
-			VkDescriptorSet descriptor_set = vk_window.get_window_data().m_descriptor_sets[0];
 
-			// Create an array for buffer info and write descriptor for each UBO type.
-			std::array<VkDescriptorBufferInfo, sizeof...(UBOTypes)> buffer_infos;
-			std::array<VkWriteDescriptorSet, sizeof...(UBOTypes)> write_descriptor_sets;
+			for (u64 i = 0; i < vk_window.get_window_data().m_max_frames_in_flight; i++)
+			{
+				VkDescriptorSet descriptor_set = vk_window.get_window_data().m_descriptor_sets[i];
 
-			// Use index sequence to iterate over each UBO type and its corresponding index.
-			update_descriptor_set_impl(device, descriptor_set, std::index_sequence_for < UBOTypes... >
-			{ }, buffer_infos, write_descriptor_sets, ubo_data...);
+				// Create an array for buffer info and write descriptor for each UBO type.
+				std::array<VkDescriptorBufferInfo, sizeof...(UBOTypes)> buffer_infos;
+				std::array<VkWriteDescriptorSet, sizeof...(UBOTypes)> write_descriptor_sets;
+
+				// Use index sequence to iterate over each UBO type and its corresponding index.
+				update_descriptor_set_impl(device, descriptor_set, std::index_sequence_for <UBOTypes...>
+				{ }, buffer_infos, write_descriptor_sets, ubo_data...);
+			}
 		}
 
 	private:

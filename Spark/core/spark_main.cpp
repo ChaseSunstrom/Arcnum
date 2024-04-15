@@ -20,14 +20,7 @@ namespace spark
 
 		thread_pool::initialize(num_threads);
 
-//#define TEST_MAIN
-#ifdef TEST_MAIN
-		test::core_test_main();
-#else
-		// To make sure the instancer is initialized
 		instancer::get();
-
 		application::on_start();
-#endif
 	}
 }

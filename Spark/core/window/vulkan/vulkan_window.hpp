@@ -2,6 +2,7 @@
 #define SPARKvk_window_HPP
 
 #include "../window.hpp"
+#include "../../util/singelton.hpp"
 
 namespace spark
 {
@@ -102,7 +103,7 @@ namespace spark
 	};
 
 	class vulkan_window :
-			public window
+			public window, public singelton<vulkan_window>
 	{
 	public:
 		static vulkan_window& get()

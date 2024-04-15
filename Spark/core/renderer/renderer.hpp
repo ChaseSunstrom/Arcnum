@@ -8,6 +8,7 @@
 #include "../ecs/ecs.hpp"
 #include "../user/camera.hpp"
 #include "../logging/log.hpp"
+#include "../util/singelton.hpp"
 #include "instancer.hpp"
 
 namespace spark
@@ -153,7 +154,8 @@ namespace spark
 	// RENDERER:     | Used for rendering and storing rendering data
 	// ==============================================================================
 
-	class renderer
+	class renderer :
+		public singelton<renderer>
 	{
 	public:
 		static renderer& get()
@@ -203,7 +205,8 @@ namespace spark
 
 	private:
 
-		renderer()
+		renderer() :
+			singelton()
 		{
 			m_cameras.emplace_back(std::make_unique<camera>());
 		}

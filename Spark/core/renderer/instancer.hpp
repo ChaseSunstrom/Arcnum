@@ -3,6 +3,7 @@
 
 #include "../ecs/ecs.hpp"
 #include "../scene/scene.hpp"
+#include "../util/singelton.hpp"
 
 namespace spark
 {
@@ -22,7 +23,7 @@ namespace spark
 	};
 
 	class instancer :
-			public observer
+			public observer, public singelton<instancer>
 	{
 	public:
 		static instancer& get()

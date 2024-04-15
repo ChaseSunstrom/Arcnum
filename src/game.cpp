@@ -145,10 +145,15 @@ void on_start()
 		}));
 
 	std::vector<spark::vertex> vertices = {
-		{ { -0.5f, -0.5f, 0.0f } },
+		{ { -0.5f, -0.5f, 0.0f }},
 		{ { 0.5f, -0.5f, 0.0f }},
 		{ { 0.5f, 0.5f, 0.0f }},
 		{ { -0.5f, 0.5f, 0.0f }}
+	};
+
+	std::vector<spark::u32> indices = {
+		0, 1, 3,
+		1, 2, 3
 	};
 
 	ubo _ubo{};
@@ -156,13 +161,15 @@ void on_start()
 	_ubo.m_proj = spark::math::perspective(45.0f, 1.0f, 0.1f, 100.0f);
 	_ubo.m_view = spark::math::lookAt(spark::math::vec3(0.0f, 0.0f, 3.0f), spark::math::vec3(0.0f, 0.0f, 0.0f), spark::math::vec3(0.0f, 1.0f, 0.0f));
 
-	_mesh_manager.create_mesh("quad", vertices);
+	_mesh_manager.create_mesh("quad", vertices, indices, _ubo);
 
 	_ecs.create_entity(
 spark::mesh_component("quad"),
 spark::material_component("__default__"),
 	spark::transform_component(spark::math::vec3(0.0f, 0.0f, 0.0f), spark::math::vec3(1.0f, 1.0f, 1.0f), spark::math::vec3(0.0f, 0.0f, 0.0f))
 	);
+
+	spark::create_shape<spark::square>("material");
 }
 
 void update_material_color(spark::material& mat, spark::f32 time)

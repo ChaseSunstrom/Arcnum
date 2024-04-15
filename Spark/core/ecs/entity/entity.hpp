@@ -4,11 +4,13 @@
 #include "../../spark.hpp"
 #include "entity_type.hpp"
 #include "../../net/serializeable.hpp"
+#include "../util/singelton.hpp"
 #include "../component/component.hpp"
 
 namespace spark
 {
-	class entity_manager
+	class entity_manager :
+		public singelton<entity_manager>
 	{
 	public:
 		static entity_manager& get()

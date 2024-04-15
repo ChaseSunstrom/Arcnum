@@ -30,7 +30,7 @@ namespace spark
 		}
 		else if (file_extension == ".tese")
 		{
-			return shader_type::TESSELATION_EVAL;
+			return shader_type::TESS_EVAL;
 		}
 		else
 		{
@@ -61,7 +61,7 @@ namespace spark
 			case shader_type::TESS_CONTROL:
 				vk_shader_type = VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
 				break;
-			case shader_type::TESSELATION_EVAL:
+			case shader_type::TESS_EVAL:
 				vk_shader_type = VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
 				break;
 		}

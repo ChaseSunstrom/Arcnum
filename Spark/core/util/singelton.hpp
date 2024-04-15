@@ -9,7 +9,7 @@ namespace spark
 	class singelton
 	{
 	public:
-		static T& get_instance()
+		static T& get()
 		{
 			return *m_instance.get();
 		}
@@ -17,7 +17,6 @@ namespace spark
 	protected:
 		singelton() { }  // Constructor needs to be accessible to derived classes.
 		virtual ~singelton() { }
-
 	private:
 		singelton(const singelton&) = delete;
 

@@ -6,6 +6,8 @@
 #include "shader.hpp"
 #include "../../net/serializeable.hpp"
 
+#include "../util/singelton.hpp"
+
 #include <boost/serialization/access.hpp>
 
 namespace spark
@@ -132,7 +134,8 @@ namespace spark
 		SERIALIZE_MEMBERS(component_array, m_component_array)
 	};
 
-	class component_manager
+	class component_manager :
+		public singelton<component_manager>
 	{
 	public:
 		static component_manager& get()

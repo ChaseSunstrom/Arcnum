@@ -3,11 +3,13 @@
 
 #include "sound.hpp"
 
+#include "../util/singelton.hpp"
 #include "../ecs/system/system.hpp"
 
 namespace spark
 {
-	class audio_manager
+	class audio_manager :
+		public singelton<audio_manager>
 	{
 	public:
 

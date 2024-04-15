@@ -158,15 +158,7 @@ namespace spark
 							vertex_buffers,
 							offsets);
 
-					vkCmdBindDescriptorSets(
-							vk_window.get_window_data().m_command_buffers[vk_window.get_window_data().m_current_frame],
-							VK_PIPELINE_BIND_POINT_GRAPHICS,
-							vk_window.get_window_data().m_pipeline_layout,
-							0,
-							1,
-							&vk_window.get_window_data().m_descriptor_sets[vk_window.get_window_data().m_current_frame],
-							0,
-							nullptr);
+					
 
 					if (!_vulkan_mesh.m_indices.empty())
 					{
@@ -176,6 +168,16 @@ namespace spark
 								_vulkan_mesh.m_index_buffer,
 								0,
 								VK_INDEX_TYPE_UINT32);
+
+						vkCmdBindDescriptorSets(
+							vk_window.get_window_data().m_command_buffers[vk_window.get_window_data().m_current_frame],
+							VK_PIPELINE_BIND_POINT_GRAPHICS,
+							vk_window.get_window_data().m_pipeline_layout,
+							0,
+							1,
+							&vk_window.get_window_data().m_descriptor_sets[vk_window.get_window_data().m_current_frame],
+							0,
+							nullptr);
 
 						vkCmdDrawIndexed(
 								vk_window.get_window_data().m_command_buffers[vk_window.get_window_data()
@@ -189,6 +191,16 @@ namespace spark
 
 					else
 					{
+						vkCmdBindDescriptorSets(
+							vk_window.get_window_data().m_command_buffers[vk_window.get_window_data().m_current_frame],
+							VK_PIPELINE_BIND_POINT_GRAPHICS,
+							vk_window.get_window_data().m_pipeline_layout,
+							0,
+							1,
+							&vk_window.get_window_data().m_descriptor_sets[vk_window.get_window_data().m_current_frame],
+							0,
+							nullptr);
+
 						vkCmdDraw(
 								vk_window.get_window_data().m_command_buffers[vk_window.get_window_data()
 								                                                       .m_current_frame],

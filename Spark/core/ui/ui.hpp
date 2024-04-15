@@ -6,6 +6,7 @@
 #include <IMGUI/imgui_impl_opengl3.h>
 
 #include "../spark.hpp"
+#include "../util/singelton.hpp"
 
 namespace spark
 {
@@ -693,7 +694,8 @@ namespace spark
 		}
 	};
 
-	class ui_manager
+	class ui_manager :
+		public singelton<ui_manager>
 	{
 	public:
 		static ui_manager& get()

@@ -6,6 +6,7 @@
 #include "../../util/thread_pool.hpp"
 #include "../component/component.hpp"
 #include "../../util/memory.hpp"
+#include "../util/singelton.hpp"
 
 #include "../../net/serializeable.hpp"
 
@@ -33,7 +34,8 @@ namespace spark
 		component_manager& m_component_manager = component_manager::get();
 	};
 
-	class system_manager
+	class system_manager :
+		public singelton<system_manager>
 	{
 	public:
 		static system_manager& get()

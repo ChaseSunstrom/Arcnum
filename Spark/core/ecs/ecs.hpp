@@ -9,6 +9,7 @@
 #include "component/component_types.hpp"
 #include "entity/entity.hpp"
 #include "system/system.hpp"
+#include "../util/singelton.hpp"
 #include "../net/serializeable.hpp"
 
 namespace spark
@@ -60,7 +61,8 @@ namespace spark
 		entity m_entity;
 	};
 
-	class ecs
+	class ecs :
+		public singelton<ecs>
 	{
 	public:
 

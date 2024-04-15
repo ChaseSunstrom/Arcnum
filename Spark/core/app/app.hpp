@@ -6,12 +6,14 @@
 #include "../scene/scene_manager.hpp"
 #include "../window/window.hpp"
 #include "../audio/audio.hpp"
+#include "../util/singelton.hpp"
 
 #include "../util/timer.hpp"
 
 namespace spark
 {
-	class application
+	class application :
+		public singelton<application>
 	{
 	public:
 		static void on_start();

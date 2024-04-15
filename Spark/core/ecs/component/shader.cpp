@@ -46,24 +46,24 @@ namespace spark
 		VkShaderStageFlagBits vk_shader_type;
 		switch (type)
 		{
-		case shader_type::VERTEX:
-			vk_shader_type = VK_SHADER_STAGE_VERTEX_BIT;
-			break;
-		case shader_type::FRAGMENT:
-			vk_shader_type = VK_SHADER_STAGE_FRAGMENT_BIT;
-			break;
-		case shader_type::COMPUTE:
-			vk_shader_type = VK_SHADER_STAGE_COMPUTE_BIT;
-			break;
-		case shader_type::GEOMETRY:
-			vk_shader_type = VK_SHADER_STAGE_GEOMETRY_BIT;
-			break;
-		case shader_type::TESS_CONTROL:
-			vk_shader_type = VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
-			break;
-		case shader_type::TESSELATION_EVAL:
-			vk_shader_type = VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
-			break;
+			case shader_type::VERTEX:
+				vk_shader_type = VK_SHADER_STAGE_VERTEX_BIT;
+				break;
+			case shader_type::FRAGMENT:
+				vk_shader_type = VK_SHADER_STAGE_FRAGMENT_BIT;
+				break;
+			case shader_type::COMPUTE:
+				vk_shader_type = VK_SHADER_STAGE_COMPUTE_BIT;
+				break;
+			case shader_type::GEOMETRY:
+				vk_shader_type = VK_SHADER_STAGE_GEOMETRY_BIT;
+				break;
+			case shader_type::TESS_CONTROL:
+				vk_shader_type = VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+				break;
+			case shader_type::TESSELATION_EVAL:
+				vk_shader_type = VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+				break;
 		}
 
 		m_pipeline_shader.stage = vk_shader_type;
@@ -73,16 +73,17 @@ namespace spark
 
 	void shader_wrapper::create_vulkan_shader(const std::filesystem::path& shader_code)
 	{
-		auto& _vulkan_window = engine::get<vulkan_window>();
+		auto& vk_window = engine::get<vulkan_window>();
 
 		std::string code = read_file(shader_code);
-		VkShaderModuleCreateInfo create_info = {};
+		VkShaderModuleCreateInfo create_info = { };
 		create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 		create_info.codeSize = code.size();
 		create_info.pCode = reinterpret_cast<const u32*>(code.data());
 
 		VkShaderModule shader_module;
-		if (vkCreateShaderModule(_vulkan_window.get_window_data().m_device, &create_info, nullptr, &shader_module) != VK_SUCCESS)
+		if (vkCreateShaderModule(vk_window.get_window_data().m_device, &create_info, nullptr, &shader_module) !=
+		    VK_SUCCESS)
 		{
 			SPARK_ERROR("[SHADER] Failed to create shader module");
 		}
@@ -130,7 +131,7 @@ namespace spark
 		return shader(shader_path);
 	}
 
-	GLuint shader_manager::get_shader(const std::string& path)
+	u32 shader_manager::get_shader(const std::string& path)
 	{
 		return m_shaders[path];
 	}

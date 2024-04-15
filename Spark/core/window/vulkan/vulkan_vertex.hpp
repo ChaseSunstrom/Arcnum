@@ -2,14 +2,14 @@
 #define SPARK_VULKAN_VERTEX_HPP
 
 #include "../../spark.hpp"
-#include "../../ecs/component/component_types.hpp"
+#include "../../ecs/component/vertex.hpp"
 #include "VULKAN/vulkan.h"
 
 namespace spark
 {
 	static VkVertexInputBindingDescription get_binding_description()
 	{
-		VkVertexInputBindingDescription binding_description = {};
+		VkVertexInputBindingDescription binding_description = { };
 		binding_description.binding = 0;
 		binding_description.stride = sizeof(vertex);
 		binding_description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
@@ -19,7 +19,7 @@ namespace spark
 
 	static std::array<VkVertexInputAttributeDescription, 3> get_attribute_descriptions()
 	{
-		std::array<VkVertexInputAttributeDescription, 3> attribute_descriptions = {};
+		std::array<VkVertexInputAttributeDescription, 3> attribute_descriptions = { };
 
 		attribute_descriptions[0].binding = 0;
 		attribute_descriptions[0].location = 0;

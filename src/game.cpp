@@ -20,7 +20,8 @@ void add_cube_entity(const spark::math::vec3& position)
 static std::shared_ptr<spark::net::udp_server> g_server_instance;
 static std::shared_ptr<spark::net::udp_client> g_client_instance;
 
-void setup_server_ui(spark::window_component& server_window) {
+void setup_server_ui(spark::window_component& server_window) 
+{
 	static char server_ip[128] = "127.0.0.1";
 	static char server_port[6] = "8080";
 
@@ -72,6 +73,12 @@ void setup_client_ui(spark::window_component& client_window) {
 		}));
 }
 
+struct ubo
+{
+	spark::math::mat4 m_model;
+	spark::math::mat4 m_proj;
+	spark::math::mat4 m_view;
+};
 
 void on_start()
 {
@@ -82,8 +89,6 @@ void on_start()
 	auto& _scene_manager = spark::engine::get<spark::scene_manager>();
 	auto& _shader_manager = spark::engine::get<spark::shader_manager>();
 	auto& _ecs = spark::engine::get<spark::ecs>();
-
-	std::cout << "SIZE OF THEME: " << sizeof(spark::ui_theme) << std::endl;
 
 	spark::application::set_window_title("Arcnum");
 
@@ -136,11 +141,28 @@ void on_start()
 			// Generate a random position
 			spark::math::vec3 random_position(distr(eng), distr(eng), distr(eng));
 
-			// Assuming a function or mechanism to add a cube entity
 			add_cube_entity(random_position);
 		}));
 
-	spark::create_shape<spark::square>("material", spark::math::vec3(0.0f, 0.0f, 0.0f), spark::math::vec3(0.0f, 0.0f, 0.0f), spark::math::vec3(1.0f, 1.0f, 1.0f));
+	std::vector<spark::vertex> vertices = {
+		{ { -0.5f, -0.5f, 0.0f } },
+		{ { 0.5f, -0.5f, 0.0f }},
+		{ { 0.5f, 0.5f, 0.0f }},
+		{ { -0.5f, 0.5f, 0.0f }}
+	};
+
+	ubo _ubo{};
+	_ubo.m_model = spark::math::mat4(1.0f);
+	_ubo.m_proj = spark::math::perspective(45.0f, 1.0f, 0.1f, 100.0f);
+	_ubo.m_view = spark::math::lookAt(spark::math::vec3(0.0f, 0.0f, 3.0f), spark::math::vec3(0.0f, 0.0f, 0.0f), spark::math::vec3(0.0f, 1.0f, 0.0f));
+
+	_mesh_manager.create_mesh("quad", vertices);
+
+	_ecs.create_entity(
+spark::mesh_component("quad"),
+spark::material_component("__default__"),
+	spark::transform_component(spark::math::vec3(0.0f, 0.0f, 0.0f), spark::math::vec3(1.0f, 1.0f, 1.0f), spark::math::vec3(0.0f, 0.0f, 0.0f))
+	);
 }
 
 void update_material_color(spark::material& mat, spark::f32 time)

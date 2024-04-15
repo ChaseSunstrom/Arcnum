@@ -30,11 +30,14 @@ namespace spark
 		~scene() = default;
 
 		scene_config& get_scene_config() const { return m_config; }
+
 		octree& get_octree() const { return *m_octree; }
 
 		void set_background_color(const math::vec4& color) { m_config.m_background_color = color; }
+
 	private:
 		scene_config& m_config;
+
 		std::unique_ptr<octree> m_octree = std::make_unique<octree>(math::vec3(0), 1.0f);
 	};
 }

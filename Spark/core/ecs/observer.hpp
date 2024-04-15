@@ -1,5 +1,5 @@
 #ifndef SPARK_OBSERVER_HPP
-#define	SPARK_OBSERVER_HPP
+#define    SPARK_OBSERVER_HPP
 
 #include "../spark.hpp"
 #include "../events/event.hpp"
@@ -11,9 +11,9 @@ namespace spark
 	public:
 		observer();
 
-        virtual ~observer();
+		virtual ~observer();
 
-		virtual void on_notify(std::shared_ptr<event> event) {}
+		virtual void on_notify(std::shared_ptr <event> event) { }
 	};
 }
 

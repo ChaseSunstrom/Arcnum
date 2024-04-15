@@ -15,59 +15,80 @@ namespace spark
 	struct renderer_settings
 	{
 		renderer_settings(
-			i32 resolution_width = 1920, i32 resolution_height = 1080,
-			i32 min_width = 800, i32 min_height = 600,
-			i32 max_width = 3840, i32 max_height = 2160,
-			i32 texture_quality = 1, i32 shadow_quality = 1,
-			i32 reflection_quality = 1, i32 anti_aliasing_level = 1,
-			i32 lighting_quality = 1, i32 volumetric_lighting_quality = 0,
-			i32 particle_quality = 1, f32 view_distance = 1000.0f,
-			bool occlusion_culling = true, i32 max_frames = 60,
-			bool textures = true, bool anti_aliasing = true, bool shadows = true,
-			bool reflections = true, bool hdr = true, bool bloom = true,
-			bool volumetric_lighting = false, bool motion_blur = false,
-			bool wireframe_mode = false, bool show_bounding_boxes = false,
-			bool fps_counter = true, bool light_visualizer = false,
-			i32 tessellation_quality = 0, i32 foliage_quality = 1,
-			i32 water_quality = 1, i32 post_processing_quality = 1,
-			i32 global_illumination_quality = 1, bool dynamic_resolution = false,
-			i32 cpu_thread_usage = 1, bool gpu_async_compute = false,
-			bool soft_particles = true, bool screen_space_reflections = true,
-			bool depth_of_field = false, bool ambient_occlusion = true,
-			bool color_grading = true, bool normals_visualizer = false,
-			bool uv_debug_mode = false, bool physics_debug_drawer = false,
-			bool lighting_only_mode = false, f32 ui_scale = 1.0f,
-			bool subtitles = false, i32 text_size = 1)
-			:
-			m_resolution_width(resolution_width), m_resolution_height(resolution_height),
-			m_min_width(min_width), m_min_height(min_height), m_max_width(max_width),
-			m_max_height(max_height),
-			m_texture_quality(texture_quality), m_shadow_quality(shadow_quality),
-			m_reflection_quality(reflection_quality), m_anti_aliasing_level(anti_aliasing_level),
-			m_lighting_quality(lighting_quality), m_volumetric_lighting_quality(volumetric_lighting_quality),
-			m_particle_quality(particle_quality), m_view_distance(view_distance),
-			m_occlusion_culling(occlusion_culling), m_max_frames(max_frames),
-			m_textures(textures), m_anti_aliasing(anti_aliasing), m_shadows(shadows),
-			m_reflections(reflections), m_hdr(hdr), m_bloom(bloom),
-			m_volumetric_lighting(volumetric_lighting), m_motion_blur(motion_blur),
-			m_wireframe_mode(wireframe_mode), m_show_bounding_boxes(show_bounding_boxes),
-			m_fps_counter(fps_counter), m_light_visualizer(light_visualizer),
-			m_tessellation_quality(tessellation_quality), m_foliage_quality(foliage_quality),
-			m_water_quality(water_quality), m_post_processing_quality(post_processing_quality),
-			m_global_illumination_quality(global_illumination_quality), m_dynamic_resolution(dynamic_resolution),
-			m_soft_particles(soft_particles), m_screen_space_reflections(screen_space_reflections),
-			m_depth_of_field(depth_of_field), m_ambient_occlusion(ambient_occlusion),
-			m_color_grading(color_grading), m_normals_visualizer(normals_visualizer),
-			m_uv_debug_mode(uv_debug_mode), m_physics_debug_drawer(physics_debug_drawer),
-			m_lighting_only_mode(lighting_only_mode), m_ui_scale(ui_scale),
-			m_subtitles(subtitles), m_text_size(text_size)
-		{}
+				i32 resolution_width = 1920,
+				i32 resolution_height = 1080,
+				i32 min_width = 800,
+				i32 min_height = 600,
+				i32 max_width = 3840,
+				i32 max_height = 2160,
+				i32 texture_quality = 1,
+				i32 shadow_quality = 1,
+				i32 reflection_quality = 1,
+				i32 anti_aliasing_level = 1,
+				i32 lighting_quality = 1,
+				i32 volumetric_lighting_quality = 0,
+				i32 particle_quality = 1,
+				f32 view_distance = 1000.0f,
+				bool occlusion_culling = true,
+				i32 max_frames = 60,
+				bool textures = true,
+				bool anti_aliasing = true,
+				bool shadows = true,
+				bool reflections = true,
+				bool hdr = true,
+				bool bloom = true,
+				bool volumetric_lighting = false,
+				bool motion_blur = false,
+				bool wireframe_mode = false,
+				bool show_bounding_boxes = false,
+				bool fps_counter = true,
+				bool light_visualizer = false,
+				i32 tessellation_quality = 0,
+				i32 foliage_quality = 1,
+				i32 water_quality = 1,
+				i32 post_processing_quality = 1,
+				i32 global_illumination_quality = 1,
+				bool dynamic_resolution = false,
+				i32 cpu_thread_usage = 1,
+				bool gpu_async_compute = false,
+				bool soft_particles = true,
+				bool screen_space_reflections = true,
+				bool depth_of_field = false,
+				bool ambient_occlusion = true,
+				bool color_grading = true,
+				bool normals_visualizer = false,
+				bool uv_debug_mode = false,
+				bool physics_debug_drawer = false,
+				bool lighting_only_mode = false,
+				f32 ui_scale = 1.0f,
+				bool subtitles = false,
+				i32 text_size = 1) :
+				m_resolution_width(resolution_width), m_resolution_height(resolution_height), m_min_width(min_width), m_min_height(
+				min_height), m_max_width(max_width), m_max_height(max_height), m_texture_quality(texture_quality), m_shadow_quality(
+				shadow_quality), m_reflection_quality(reflection_quality), m_anti_aliasing_level(anti_aliasing_level), m_lighting_quality(
+				lighting_quality), m_volumetric_lighting_quality(volumetric_lighting_quality), m_particle_quality(
+				particle_quality), m_view_distance(view_distance), m_occlusion_culling(occlusion_culling), m_max_frames(
+				max_frames), m_textures(textures), m_anti_aliasing(anti_aliasing), m_shadows(shadows), m_reflections(
+				reflections), m_hdr(hdr), m_bloom(bloom), m_volumetric_lighting(volumetric_lighting), m_motion_blur(
+				motion_blur), m_wireframe_mode(wireframe_mode), m_show_bounding_boxes(show_bounding_boxes), m_fps_counter(
+				fps_counter), m_light_visualizer(light_visualizer), m_tessellation_quality(tessellation_quality), m_foliage_quality(
+				foliage_quality), m_water_quality(water_quality), m_post_processing_quality(post_processing_quality), m_global_illumination_quality(
+				global_illumination_quality), m_dynamic_resolution(dynamic_resolution), m_soft_particles(soft_particles), m_screen_space_reflections(
+				screen_space_reflections), m_depth_of_field(depth_of_field), m_ambient_occlusion(ambient_occlusion), m_color_grading(
+				color_grading), m_normals_visualizer(normals_visualizer), m_uv_debug_mode(uv_debug_mode), m_physics_debug_drawer(
+				physics_debug_drawer), m_lighting_only_mode(lighting_only_mode), m_ui_scale(ui_scale), m_subtitles(
+				subtitles), m_text_size(text_size) { }
 
 		i32 m_resolution_width = 1920;
+
 		i32 m_resolution_height = 1080;
+
 		i32 m_min_width = 800;
+
 		i32 m_min_height = 600;
+
 		i32 m_max_width = 3840;
+
 		i32 m_max_height = 2160;
 
 		// Quality settings
@@ -177,7 +198,9 @@ namespace spark
 		}
 
 		void render_octree(camera& camera, octree& octree, math::mat4& modelMatrix);
+
 		void render_frustum(camera& camera, frustum& frustum);
+
 	private:
 
 		renderer()
@@ -186,10 +209,11 @@ namespace spark
 		}
 
 		~renderer() = default;
+
 	private:
 		std::unique_ptr<renderer_settings> m_settings = std::make_unique<renderer_settings>();
 
-		std::vector <std::unique_ptr<camera>> m_cameras;
+		std::vector<std::unique_ptr<camera>> m_cameras;
 	};
 }
 

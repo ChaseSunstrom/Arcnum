@@ -22,7 +22,7 @@ namespace spark
 
 		virtual void on_update() = 0;
 
-		virtual void on_event(std::shared_ptr<event>) = 0;
+		virtual void on_event(std::shared_ptr <event>) = 0;
 	};
 }
 

@@ -54,14 +54,14 @@ namespace spark
 		check_gl_error("Blending set");
 	}
 
-	void use_shader_program(GLuint program)
+	void use_shader_program(u32 program)
 	{
 		glUseProgram(program);
 
 		check_gl_error("Program use");
 	}
 
-	void bind_vertex_array(GLuint vao)
+	void bind_vertex_array(u32 vao)
 	{
 		glBindVertexArray(vao);
 
@@ -90,7 +90,7 @@ namespace spark
 	}
 
 	void set_vertex_attribute_ptr(
-		u32 index, i32 size, u32 type, i32 stride, const void* pointer)
+			u32 index, i32 size, u32 type, i32 stride, const void* pointer)
 	{
 		glVertexAttribPointer(index, size, type, GL_FALSE, stride, pointer);
 
@@ -149,7 +149,7 @@ namespace spark
 	void buffer_index_data(u32 ibo, const std::vector <u32>& data)
 	{
 		bind_index_buffer(ibo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.size() * sizeof GLuint, data.data(), GL_DYNAMIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.size() * sizeof u32, data.data(), GL_DYNAMIC_DRAW);
 
 		check_gl_error("Index data in buffer");
 	}
@@ -157,14 +157,14 @@ namespace spark
 	void buffer_index_subdata(u32 ibo, const std::vector <u32>& data)
 	{
 		bind_vertex_buffer(ibo);
-		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, data.size() * sizeof GLuint, data.data());
+		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, data.size() * sizeof u32, data.data());
 
 		check_gl_error("Index data in buffer");
 	}
 
-	GLuint create_program()
+	u32 create_program()
 	{
-		GLuint program = glCreateProgram();
+		u32 program = glCreateProgram();
 
 		check_gl_error("Program create");
 
@@ -202,7 +202,8 @@ namespace spark
 		if (!success)
 		{
 			glGetProgramInfoLog(program, 1024, NULL, infoLog);
-			SPARK_ERROR("[SHADER]: Linking error \n" << infoLog << "\n -- --------------------------------------------------- -- ");
+			SPARK_ERROR("[SHADER]: Linking error \n" << infoLog
+			                                         << "\n -- --------------------------------------------------- -- ");
 		}
 
 		check_gl_error("Program link");
@@ -215,9 +216,9 @@ namespace spark
 		check_gl_error("Program use");
 	}
 
-	GLuint create_shader(u32 type)
+	u32 create_shader(u32 type)
 	{
-		GLuint shader = glCreateShader(type);
+		u32 shader = glCreateShader(type);
 
 		check_gl_error("Shader create");
 
@@ -242,67 +243,68 @@ namespace spark
 		if (!success)
 		{
 			glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-			SPARK_ERROR("[SHADER]: Compilation error of type: " << "\n" << infoLog << "\n -- --------------------------------------------------- -- ");
+			SPARK_ERROR("[SHADER]: Compilation error of type: " << "\n" << infoLog
+			                                                    << "\n -- --------------------------------------------------- -- ");
 		}
 
 		check_gl_error("Shader compilation");
 	}
 
-	void set_uniform(const std::string& name, const i32 value, GLuint shader_program)
+	void set_uniform(const std::string& name, const i32 value, u32 shader_program)
 	{
 		GLint loc = glGetUniformLocation(shader_program, name.c_str());
 		glUniform1i(loc, value);
 	}
 
-	void set_uniform(const std::string& name, const f32 value, GLuint shader_program)
+	void set_uniform(const std::string& name, const f32 value, u32 shader_program)
 	{
 		GLint loc = glGetUniformLocation(shader_program, name.c_str());
 		glUniform1f(loc, value);
 	}
 
-	void set_uniform(const std::string& name, const f64 value, GLuint shader_program)
+	void set_uniform(const std::string& name, const f64 value, u32 shader_program)
 	{
 		GLint loc = glGetUniformLocation(shader_program, name.c_str());
 		glUniform1d(loc, value);
 	}
 
-	void set_uniform(const std::string& name, const math::mat2& value, GLuint shader_program)
+	void set_uniform(const std::string& name, const math::mat2& value, u32 shader_program)
 	{
 		GLint loc = glGetUniformLocation(shader_program, name.c_str());
 		glUniformMatrix2fv(loc, 1, GL_FALSE, math::value_ptr(value));
 	}
 
-	void set_uniform(const std::string& name, const math::mat3& value, GLuint shader_program)
+	void set_uniform(const std::string& name, const math::mat3& value, u32 shader_program)
 	{
 		GLint loc = glGetUniformLocation(shader_program, name.c_str());
 		glUniformMatrix3fv(loc, 1, GL_FALSE, math::value_ptr(value));
 	}
 
-	void set_uniform(const std::string& name, const math::mat4& value, GLuint shader_program)
+	void set_uniform(const std::string& name, const math::mat4& value, u32 shader_program)
 	{
 		GLint loc = glGetUniformLocation(shader_program, name.c_str());
 		glUniformMatrix4fv(loc, 1, GL_FALSE, math::value_ptr(value));
 	}
 
-	void set_uniform(const std::string& name, const math::vec2& value, GLuint shader_program)
+	void set_uniform(const std::string& name, const math::vec2& value, u32 shader_program)
 	{
 		GLint loc = glGetUniformLocation(shader_program, name.c_str());
 		glUniform2fv(loc, 1, math::value_ptr(value));
 	}
 
-	void set_uniform(const std::string& name, const math::vec3& value, GLuint shader_program)
+	void set_uniform(const std::string& name, const math::vec3& value, u32 shader_program)
 	{
 		GLint loc = glGetUniformLocation(shader_program, name.c_str());
 		glUniform3fv(loc, 1, math::value_ptr(value));
 	}
 
-	void set_uniform(const std::string& name, const math::vec4& value, GLuint shader_program)
+	void set_uniform(const std::string& name, const math::vec4& value, u32 shader_program)
 	{
 		GLint loc = glGetUniformLocation(shader_program, name.c_str());
 		glUniform4fv(loc, 1, math::value_ptr(value));
 	}
 
-	void set_uniform(const std::string& name, const bool value, GLuint shader_program)
+	void set_uniform(const std::string& name, const bool value, u32 shader_program)
 	{
 		GLint loc = glGetUniformLocation(shader_program, name.c_str());
 		glUniform1i(loc, value ? 1 : 0);

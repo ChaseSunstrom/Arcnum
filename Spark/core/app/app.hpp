@@ -18,7 +18,7 @@ namespace spark
 
 		static void on_update();
 
-		static void on_event(std::shared_ptr <event> event);
+		static void on_event(std::shared_ptr<event> event);
 
 		static void on_shutdown();
 
@@ -29,21 +29,36 @@ namespace spark
 		static void set_delta_time(u64 delta_time);
 
 		static void calculate_total_time();
+
 		static void calculate_delta_time();
+
 		static void calculate_last_frame_time();
+
 		static f64 get_fixed_delta_time();
+
 		static f64 get_delta_time();
+
 		static f64 get_last_frame_time();
+
 		static f64 get_total_time();
+
 		static u64 get_tick_speed();
+
 		static void set_fixed_delta_time(f64 time);
+
 		static void set_tick_speed(u64 speed);
+
 	private:
 		static f64 s_fixed_delta_time;
+
 		static f64 s_delta_time;
+
 		static f64 s_last_frame_time;
+
 		static f64 s_total_time;
+
 		static u64 s_tick_speed;
+
 		static std::unique_ptr<timer> s_timer;
 	};
 }

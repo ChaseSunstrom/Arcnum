@@ -18,7 +18,7 @@ namespace spark
 			return instance;
 		}
 
-		void add_scene(const std::string& name, std::unique_ptr <scene> scene)
+		void add_scene(const std::string& name, std::unique_ptr<scene> scene)
 		{
 			m_scenes[name] = std::move(scene);
 			m_scenes_vector.push_back(&*m_scenes[name]);
@@ -54,19 +54,20 @@ namespace spark
 			scene& current_scene = *m_scenes[m_current_scene_name];
 		}
 
-		std::vector <scene*>& get_all_scenes()
+		std::vector<scene*>& get_all_scenes()
 		{
 			return m_scenes_vector;
 		}
+
 	private:
 		scene_manager() = default;
 
 		~scene_manager() = default;
-	private:
-		std::unordered_map <std::string, std::unique_ptr<scene>> m_scenes =
-			std::unordered_map <std::string, std::unique_ptr<scene>>();
 
-		std::vector <scene*> m_scenes_vector = std::vector<scene*>();
+	private:
+		std::unordered_map<std::string, std::unique_ptr<scene>> m_scenes = std::unordered_map<std::string, std::unique_ptr<scene>>();
+
+		std::vector<scene*> m_scenes_vector = std::vector<scene*>();
 
 		std::string m_current_scene_name = "";
 	};

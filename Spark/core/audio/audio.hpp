@@ -18,28 +18,36 @@ namespace spark
 		}
 
 		sound& create_sound(
-			const std::string& name,
-			const std::filesystem::path& source,
-			bool loops = false,
-			bool pause_on_create = true
-		)
+				const std::string& name,
+				const std::filesystem::path& source,
+				bool loops = false,
+				bool pause_on_create = true)
 		{
-			std::unique_ptr<sound> s = std::make_unique<sound>(m_engine->play2D(source.string().c_str(), loops, pause_on_create, true));
+			std::unique_ptr<sound> s = std::make_unique<sound>(
+					m_engine->play2D(
+							source.string().c_str(),
+							loops,
+							pause_on_create,
+							true));
 			m_sounds[name] = std::move(s);
 			return *m_sounds[name];
 		}
 
 		sound& create_sound(
-			const std::string& name,
-			const std::filesystem::path& source,
-			const math::vec3& position,
-			bool loops = false,
-			bool pause_on_create = true
-		)
+				const std::string& name,
+				const std::filesystem::path& source,
+				const math::vec3& position,
+				bool loops = false,
+				bool pause_on_create = true)
 		{
 			vec3df position_3d(position.x, position.y, position.z);
 
-			std::unique_ptr<sound> s = std::make_unique<sound>(m_engine->play3D(source.string().c_str(), position_3d, loops, pause_on_create));
+			std::unique_ptr<sound> s = std::make_unique<sound>(
+					m_engine->play3D(
+							source.string().c_str(),
+							position_3d,
+							loops,
+							pause_on_create));
 
 			m_sounds[name] = std::move(s);
 			return *m_sounds[name];
@@ -133,6 +141,7 @@ namespace spark
 		{
 			return m_engine;
 		}
+
 	private:
 		audio_manager() = default;
 
@@ -140,32 +149,37 @@ namespace spark
 		{
 			m_engine->drop();
 		}
+
 	private:
 		ISoundEngine* m_engine = createIrrKlangDevice();
+
 		std::unordered_map<std::string, std::unique_ptr<sound>> m_sounds;
 	};
 
 	struct audio_component
 	{
 		audio_component() = default;
+
 		audio_component(const std::string& name, const std::function<bool(component_manager&)>& play_condition) :
-			m_name(name), m_play_condition(play_condition)
-		{}
+				m_name(name), m_play_condition(play_condition) { }
 
 		std::string m_name;
+
 		std::function<bool(component_manager&)> m_play_condition;
 	};
 
-	class audio_system : public system
+	class audio_system :
+			public system
 	{
 	public:
 		audio_system(component_manager& component_manager, std::vector<audio_component>* audio_components) :
-			system(), m_component_manager(component_manager), m_audio_components(*audio_components)
-		{}
+				system(), m_component_manager(component_manager), m_audio_components(*audio_components) { }
 
 		void on_update(f64 delta_time);
+
 	private:
 		std::vector<audio_component>& m_audio_components;
+
 		component_manager& m_component_manager;
 	};
 }

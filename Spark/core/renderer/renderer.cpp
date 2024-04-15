@@ -3,33 +3,33 @@
 
 namespace spark
 {
-	void renderer::apply_dynamic_resolution() {}
+	void renderer::apply_dynamic_resolution() { }
 
-	void renderer::render_with_anti_aliasing() {}
+	void renderer::render_with_anti_aliasing() { }
 
-	void renderer::render_shadows() {}
+	void renderer::render_shadows() { }
 
-	void renderer::render_reflections() {}
+	void renderer::render_reflections() { }
 
-	void renderer::apply_hdr() {}
+	void renderer::apply_hdr() { }
 
-	void renderer::apply_bloom() {}
+	void renderer::apply_bloom() { }
 
 	void renderer::render_volumetric_lighting() { }
 
-	void renderer::apply_motion_blur() {}
+	void renderer::apply_motion_blur() { }
 
-	void renderer::apply_depth_of_field() {}
+	void renderer::apply_depth_of_field() { }
 
-	void renderer::apply_ambient_occlusion() {}
+	void renderer::apply_ambient_occlusion() { }
 
-	void renderer::apply_color_grading() {}
+	void renderer::apply_color_grading() { }
 
-	void renderer::toggle_wireframe_mode() {}
+	void renderer::toggle_wireframe_mode() { }
 
-	void renderer::render_debugging_tools() {}
+	void renderer::render_debugging_tools() { }
 
-	void renderer::finalize_frame() {}
+	void renderer::finalize_frame() { }
 
 	void renderer::render()
 	{

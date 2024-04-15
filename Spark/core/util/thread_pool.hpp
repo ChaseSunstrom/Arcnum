@@ -8,26 +8,21 @@ namespace spark
 {
 	enum class task_priority
 	{
-		CRITICAL,
-		VERY_HIGH,
-		HIGH,
-		NORMAL,
-		LOW,
-		VERY_LOW,
-		BACKGROUND
+		CRITICAL, VERY_HIGH, HIGH, NORMAL, LOW, VERY_LOW, BACKGROUND
 	};
 
 	struct thread_control_block
 	{
 		std::thread::id thread_id;
-		std::atomic<bool> is_registered_for_sync{ false };
-		std::atomic<bool> has_reached_sync_point{ false };
+		std::atomic<bool> is_registered_for_sync { false };
+		std::atomic<bool> has_reached_sync_point { false };
 	};
 
 	struct task_comparator
 	{
-		bool operator()(const std::pair<task_priority, std::function<void()>>& lhs,
-			const std::pair<task_priority, std::function<void()>>& rhs) const
+		bool operator()(
+				const std::pair <task_priority, std::function<void()>>& lhs,
+				const std::pair <task_priority, std::function<void()>>& rhs) const
 		{
 			return lhs.first < rhs.first; // Higher priority tasks first
 		}
@@ -37,6 +32,7 @@ namespace spark
 	{
 	public:
 		thread_pool() = delete;
+
 		~thread_pool() = delete;
 
 		static void initialize(u32 num_threads)
@@ -54,44 +50,53 @@ namespace spark
 		}
 
 		template <class F, class... Args>
-		static auto enqueue(task_priority priority, bool synchronize, F&& f, Args&&... args) -> std::future<typename std::invoke_result<F, Args...>::type>
+		static auto enqueue(
+				task_priority priority,
+				bool synchronize,
+				F&& f,
+				Args&& ... args)->std::future<typename std::invoke_result<F, Args...>::type>
 		{
 			using return_type = typename std::invoke_result<F, Args...>::type;
 
-			auto task = std::make_shared<std::packaged_task<return_type()>>(
-				std::bind(std::forward<F>(f), std::forward<Args>(args)...)
-			);
+			auto task = std::make_shared < std::packaged_task <
+			            return_type() >> (std::bind(std::forward<F>(f), std::forward<Args>(args)...));
 
-			std::future<return_type> res = task->get_future();
+			std::future <return_type> res = task->get_future();
 			{
-				std::unique_lock<std::mutex> lock(s_queue_mutex);
+				std::unique_lock <std::mutex> lock(s_queue_mutex);
 
 				if (__SPARK_ASSERT__(s_stop))
 				{
 					SPARK_ERROR("[THREAD POOL]: enqueue() called after shutdown");
-					return {};
+					return { };
 				}
 
 				// Find the least loaded queue or with the highest priority task to insert this task
-				auto min_it = std::min_element(s_tasks_queues.begin(), s_tasks_queues.end(),
-					[](const task_queue& a, const task_queue& b) {
-						return a.m_queue.size() < b.m_queue.size();
-					});
-
-				min_it->m_queue.emplace(priority, [task, synchronize]() {
-					(*task)();
-					if (synchronize)
-					{
-						auto it = std::find_if(s_threads_control.begin(), s_threads_control.end(),
-							[](const std::shared_ptr<thread_control_block>& tcb) {
-								return tcb->thread_id == std::this_thread::get_id();
-							});
-						if (it != s_threads_control.end())
+				auto min_it = std::min_element(
+						s_tasks_queues.begin(), s_tasks_queues.end(), [](const task_queue& a, const task_queue& b)
 						{
-							(*it)->has_reached_sync_point = true;
-						}
-					}
-					});
+							return a.m_queue.size() < b.m_queue.size();
+						});
+
+				min_it->m_queue.emplace(
+						priority, [task, synchronize]()
+						{
+							(*task)();
+							if (synchronize)
+							{
+								auto it = std::find_if(
+										s_threads_control.begin(),
+										s_threads_control.end(),
+										[](const std::shared_ptr <thread_control_block>& tcb)
+										{
+											return tcb->thread_id == std::this_thread::get_id();
+										});
+								if (it != s_threads_control.end())
+								{
+									(*it)->has_reached_sync_point = true;
+								}
+							}
+						});
 				s_active_tasks++;
 			}
 
@@ -101,9 +106,13 @@ namespace spark
 
 		static void sync_this_thread(bool register_for_sync)
 		{
-			auto it = std::find_if(s_threads_control.begin(), s_threads_control.end(), [](const std::shared_ptr<thread_control_block>& tcb) {
-					return tcb->thread_id == std::this_thread::get_id();
-				});
+			auto it = std::find_if(
+					s_threads_control.begin(),
+					s_threads_control.end(),
+					[](const std::shared_ptr <thread_control_block>& tcb)
+					{
+						return tcb->thread_id == std::this_thread::get_id();
+					});
 
 			if (it != s_threads_control.end())
 			{
@@ -119,15 +128,21 @@ namespace spark
 		static void synchronize_registered_threads()
 		{
 			// Wait for all registered threads to reach their sync point
-			std::unique_lock<std::mutex> lock(s_sync_mutex);
-			s_sync_condition.wait(lock, [] {
-				return std::all_of(s_threads_control.begin(), s_threads_control.end(), [](const std::shared_ptr<thread_control_block>& tcb) {
-					return !tcb->is_registered_for_sync || tcb->has_reached_sync_point;
+			std::unique_lock <std::mutex> lock(s_sync_mutex);
+			s_sync_condition.wait(
+					lock, []
+					{
+						return std::all_of(
+								s_threads_control.begin(),
+								s_threads_control.end(),
+								[](const std::shared_ptr <thread_control_block>& tcb)
+								{
+									return !tcb->is_registered_for_sync || tcb->has_reached_sync_point;
+								});
 					});
-				});
 
 			// Reset sync points
-			for (auto& tcb : s_threads_control)
+			for (auto& tcb: s_threads_control)
 			{
 				tcb->has_reached_sync_point = false;
 			}
@@ -136,13 +151,14 @@ namespace spark
 		static void shutdown()
 		{
 			{
-				std::unique_lock<std::mutex> lock(s_queue_mutex);
+				std::unique_lock <std::mutex> lock(s_queue_mutex);
 				s_stop = true;
 			}
 			s_condition.notify_all(); // Wake up all threads to let them exit
 		}
+
 	private:
-		static void worker_thread(std::shared_ptr<thread_control_block> tcb, u32 index)
+		static void worker_thread(std::shared_ptr <thread_control_block> tcb, u32 index)
 		{
 			tcb->thread_id = std::this_thread::get_id();
 
@@ -150,18 +166,19 @@ namespace spark
 			{
 				std::function<void()> task;
 				{
-					std::unique_lock<std::mutex> lock(s_queue_mutex);
-					s_condition.wait(lock, [index]
-									 {
-										 return s_stop || !s_tasks_queues[index].m_queue.empty();
-									 });
+					std::unique_lock <std::mutex> lock(s_queue_mutex);
+					s_condition.wait(
+							lock, [index]
+							{
+								return s_stop || !s_tasks_queues[index].m_queue.empty();
+							});
 
 					if (s_stop && s_tasks_queues[index].m_queue.empty())
 					{
 						return; // Exit the thread if the pool is stopped and no tasks are left
 					}
 
-					std::lock_guard<std::mutex> queue_lock(s_tasks_queues[index].m_mutex);
+					std::lock_guard <std::mutex> queue_lock(s_tasks_queues[index].m_mutex);
 					auto& queue = s_tasks_queues[index].m_queue;
 					task = std::move(queue.top().second);
 					queue.pop();
@@ -179,12 +196,17 @@ namespace spark
 		struct task_queue
 		{
 			task_queue(const task_queue&) = delete;
+
 			task_queue& operator=(const task_queue&) = delete;
 
-			task_queue(task_queue&& other) noexcept
-				: m_queue(std::move(other.m_queue)) {}
+			task_queue(task_queue&& other)
 
-			task_queue& operator=(task_queue&& other) noexcept
+			noexcept
+					: m_queue(std::move(other.m_queue)) { }
+
+			task_queue& operator=(task_queue&& other)
+
+			noexcept
 			{
 				if (this != &other)
 				{
@@ -195,23 +217,33 @@ namespace spark
 
 			task_queue() = default;
 
-			std::priority_queue<
-				std::pair<task_priority, std::function<void()>>,
-				std::vector<std::pair<task_priority, std::function<void()>>>,
-				task_comparator
-			> m_queue;
+			std::priority_queue <std::pair<task_priority, std::function < void()>>,
+			std::vector <std::pair<task_priority, std::function < void()>>>,
+			task_comparator
+			>
+
+			m_queue;
+
 			std::mutex m_mutex;
 		};
 
-		static inline std::vector<std::thread> s_workers;
-		static inline std::vector<std::shared_ptr<thread_control_block>> s_threads_control;
-		static inline std::vector<task_queue> s_tasks_queues;
+		static inline std::vector <std::thread> s_workers;
+
+		static inline std::vector <std::shared_ptr<thread_control_block>> s_threads_control;
+
+		static inline std::vector <task_queue> s_tasks_queues;
+
 		static inline std::mutex s_queue_mutex;
+
 		static inline std::condition_variable s_condition;
+
 		static inline std::mutex s_sync_mutex;
+
 		static inline std::condition_variable s_sync_condition;
-		static inline std::atomic<u64> s_active_tasks{ 0 };
-		static inline std::atomic<bool> s_stop{ false };
+
+		static inline std::atomic <u64> s_active_tasks { 0 };
+
+		static inline std::atomic<bool> s_stop { false };
 	};
 }
 

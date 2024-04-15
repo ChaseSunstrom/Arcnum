@@ -13,8 +13,7 @@ namespace spark
 	struct component_info_base
 	{
 		component_info_base(const std::type_index& type) :
-			m_type(type)
-		{}
+				m_type(type) { }
 
 		virtual ~component_info_base() = default;
 
@@ -29,12 +28,11 @@ namespace spark
 	// For type information when returning all components in an entity
 	template <typename T>
 	class component_info :
-		public component_info_base
+			public component_info_base
 	{
 	public:
 		component_info(const T& component) :
-			component_info_base(typeid(T)), m_component(component)
-		{}
+				component_info_base(typeid(T)), m_component(component) { }
 
 		const std::type_index& get_type() const override
 		{
@@ -66,7 +64,8 @@ namespace spark
 	};
 
 	template <typename T>
-	class component_array : public component_array_base
+	class component_array :
+			public component_array_base
 	{
 	public:
 		component_array() = default;
@@ -94,9 +93,12 @@ namespace spark
 			}
 		}
 
-		void entity_destroyed(entity entity)
+		void entity_destroyed(entity entity) override
 		{
-			m_component_array[entity] = T();
+			if (entity < m_component_array.size())
+			{
+				m_component_array[entity] = T(); // Resets the component to its default state.
+			}
 		}
 
 		const T& operator[](entity entity) const
@@ -126,6 +128,7 @@ namespace spark
 
 	private:
 		std::vector <T> m_component_array = std::vector<T>();
+
 		SERIALIZE_MEMBERS(component_array, m_component_array)
 	};
 
@@ -137,6 +140,7 @@ namespace spark
 			static component_manager instance;
 			return instance;
 		}
+
 		template <typename T>
 		component_array<T>& get_component_array()
 		{
@@ -152,14 +156,14 @@ namespace spark
 		}
 
 		template <typename T>
-		constexpr  void register_component()
+		constexpr void register_component()
 		{
 			std::string type = std::type_index(typeid(T)).name();
 			m_components[type] = std::make_unique<component_array<T>>();
 		}
 
 		template <typename... components>
-		constexpr  void register_components()
+		constexpr void register_components()
 		{
 			(register_component<components>(), ...);
 		}
@@ -198,7 +202,7 @@ namespace spark
 		{
 			std::vector <component_info_base> components;
 
-			for (auto& [type, array] : m_components)
+			for (auto& [type, array]: m_components)
 			{
 				if (array->has_component(entity))
 				{
@@ -211,7 +215,7 @@ namespace spark
 
 		void destroy_component_array(entity entity)
 		{
-			for (const auto& [type, array] : m_components)
+			for (const auto& [type, array]: m_components)
 			{
 				array->entity_destroyed(entity);
 			}
@@ -232,6 +236,7 @@ namespace spark
 
 			return false;
 		}
+
 	private:
 
 		component_manager() = default;
@@ -240,6 +245,7 @@ namespace spark
 
 	private:
 		std::unordered_map <std::string, std::unique_ptr<component_array_base>> m_components;
+
 		SERIALIZE_MEMBERS(component_manager, m_components)
 	};
 }

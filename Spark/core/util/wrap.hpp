@@ -15,7 +15,7 @@ namespace spark
 #ifdef __SPARK_DEBUG__
 
 #define check_gl_error(_type) \
-	do { \
+    do { \
         GLenum err; \
         while ((err = glGetError()) != GL_NO_ERROR) { \
             std::string error; \
@@ -45,9 +45,9 @@ namespace spark
 
 	void set_blending(bool enabled);
 
-	void use_shader_program(GLuint program);
+	void use_shader_program(u32 program);
 
-	void bind_vertex_array(GLuint vao);
+	void bind_vertex_array(u32 vao);
 
 	void bind_vertex_buffer(u32 vbo);
 
@@ -56,7 +56,7 @@ namespace spark
 	void draw_elements(u32 mode, i32 count, u32 type, const void* indices);
 
 	void set_vertex_attribute_ptr(u32 index, i32 size, u32 type, i32 stride, const void* pointer);
-	
+
 	void enable_vertex_attribute_ptr(u32 index);
 
 	void generate_vertex_array(u32& vao);
@@ -75,10 +75,10 @@ namespace spark
 
 	void buffer_index_subdata(u32 ibo, const std::vector <u32>& data);
 
-	GLuint create_program();
+	u32 create_program();
 
 	void delete_program(u32 program);
-	
+
 	void delete_shader(u32 shader);
 
 	void attach_shader(u32 program, u32 shader);
@@ -87,31 +87,31 @@ namespace spark
 
 	void use_program(u32 program);
 
-	GLuint create_shader(u32 type);
+	u32 create_shader(u32 type);
 
 	void shader_source(u32 shader, const std::string& source);
 
 	void compile_shader(u32 shader);
 
-	void set_uniform(const std::string& name, const i32 value, GLuint shader_program);
+	void set_uniform(const std::string& name, const i32 value, u32 shader_program);
 
-	void set_uniform(const std::string& name, const f32 value, GLuint shader_program);
+	void set_uniform(const std::string& name, const f32 value, u32 shader_program);
 
-	void set_uniform(const std::string& name, const f64 value, GLuint shader_program);
+	void set_uniform(const std::string& name, const f64 value, u32 shader_program);
 
-	void set_uniform(const std::string& name, const math::mat2& value, GLuint shader_program);
+	void set_uniform(const std::string& name, const math::mat2& value, u32 shader_program);
 
-	void set_uniform(const std::string& name, const math::mat3& value, GLuint shader_program);
+	void set_uniform(const std::string& name, const math::mat3& value, u32 shader_program);
 
-	void set_uniform(const std::string& name, const math::mat4& value, GLuint shader_program);
+	void set_uniform(const std::string& name, const math::mat4& value, u32 shader_program);
 
-	void set_uniform(const std::string& name, const math::vec2& value, GLuint shader_program);
+	void set_uniform(const std::string& name, const math::vec2& value, u32 shader_program);
 
-	void set_uniform(const std::string& name, const math::vec3& value, GLuint shader_program);
+	void set_uniform(const std::string& name, const math::vec3& value, u32 shader_program);
 
-	void set_uniform(const std::string& name, const math::vec4& value, GLuint shader_program);
+	void set_uniform(const std::string& name, const math::vec4& value, u32 shader_program);
 
-	void set_uniform(const std::string& name, const bool value, GLuint shader_program);
+	void set_uniform(const std::string& name, const bool value, u32 shader_program);
 
 	void generate_mipmap(GLenum target);
 
@@ -120,7 +120,7 @@ namespace spark
 	void generate_texture(u32& texture);
 
 	void bind_texture(GLenum target, u32 texture);
-	
+
 	template <typename T>
 	void buffer_vertex_data(u32 vbo, const std::vector <T>& data)
 	{

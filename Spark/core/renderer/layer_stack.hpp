@@ -31,7 +31,7 @@ namespace spark
 			overlay->on_attach();
 			m_layers.emplace_back(std::move(overlay));
 		}
-		
+
 		inline void pop_layer()
 		{
 			m_layers.pop_back();
@@ -45,7 +45,7 @@ namespace spark
 		inline std::vector <std::unique_ptr<layer>>& get_layers() { return m_layers; }
 
 	private:
-		std::vector <std::unique_ptr<layer>> m_layers = std::vector<std::unique_ptr<layer>>();
+		std::vector <std::unique_ptr<layer>> m_layers = std::vector < std::unique_ptr < layer >> ();
 	};
 
 }

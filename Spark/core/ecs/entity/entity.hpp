@@ -16,6 +16,7 @@ namespace spark
 			static entity_manager instance;
 			return instance;
 		}
+
 		entity create_entity()
 		{
 			if (m_recycled_ids.empty())
@@ -37,14 +38,17 @@ namespace spark
 		{
 			m_recycled_ids.push_front(e);
 		}
+
 	private:
 		entity_manager() = default;
 
-		~entity_manager() = default; 
+		~entity_manager() = default;
+
 	private:
 		entity m_next_id = 0;
 
 		std::deque <entity> m_recycled_ids;
+
 		SERIALIZE_MEMBERS(entity_manager, m_next_id, m_recycled_ids)
 	};
 }

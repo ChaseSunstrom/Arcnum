@@ -5,6 +5,8 @@
 #include "../spark.hpp"
 #include "../logging/log.hpp"
 
+#include "window_type.hpp"
+
 
 namespace spark
 {
@@ -13,12 +15,12 @@ namespace spark
 		window_data() = default;
 
 		window_data(
-			std::string title,
-			bool vsync,
-			i32 height,
-			i32 width,
-			std::function<void(std::shared_ptr<event>)> event_callback) :
-			m_title(title), m_vsync(vsync), m_height(height), m_width(width), m_event_callback(event_callback) { }
+				std::string title,
+				bool vsync,
+				i32 height,
+				i32 width,
+				std::function<void(std::shared_ptr < event > )> event_callback) :
+				m_title(title), m_vsync(vsync), m_height(height), m_width(width), m_event_callback(event_callback) { }
 
 		virtual ~window_data() = default;
 
@@ -30,16 +32,7 @@ namespace spark
 
 		i32 m_height = 1080;
 
-		std::function<void(std::shared_ptr<event>)> m_event_callback;
-	};
-
-	enum class window_type
-	{
-		UNKNOWN = 0,
-		OPENGL,
-		VULKAN,
-		METAL,
-		DIRECTX
+		std::function<void(std::shared_ptr < event > )> m_event_callback;
 	};
 
 	class window
@@ -60,8 +53,10 @@ namespace spark
 		virtual window_data& get_window_data() = 0;
 
 		window_type get_window_type() { return m_type; }
+
 	protected:
-		window(window_type type) : m_type(type) {}
+		window(window_type type) :
+				m_type(type) { }
 
 		virtual ~window() = default;
 

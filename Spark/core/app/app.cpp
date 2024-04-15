@@ -9,10 +9,15 @@
 namespace spark
 {
 	f64 application::s_fixed_delta_time = 0.005;
+
 	f64 application::s_delta_time = 0;
+
 	f64 application::s_last_frame_time = 0;
+
 	f64 application::s_total_time = 0;
+
 	u64 application::s_tick_speed = 60;
+
 	std::unique_ptr<timer> application::s_timer = std::make_unique<timer>();
 
 	void application::on_start()
@@ -70,13 +75,14 @@ namespace spark
 		spark::thread_pool::synchronize_registered_threads();
 	}
 
-	void application::on_event(std::shared_ptr <event> event)
+	void application::on_event(std::shared_ptr<event> event)
 	{
-		thread_pool::enqueue(task_priority::CRITICAL, false, [event]()
-			{
-				spark::event_dispatcher dispatcher(event);
-				return dispatcher.dispatch(app_functions::s_on_event);
-			});
+		thread_pool::enqueue(
+				task_priority::CRITICAL, false, [event]()
+				{
+					spark::event_dispatcher dispatcher(event);
+					return dispatcher.dispatch(app_functions::s_on_event);
+				});
 	}
 
 	void application::set_window_title(const std::string& title)

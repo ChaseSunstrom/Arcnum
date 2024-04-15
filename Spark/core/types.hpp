@@ -8,7 +8,7 @@ namespace spark
 #if !defined(u8)
 	using u8 = std::uint8_t;
 #endif
-	
+
 #if !defined(i8)
 	using i8 = std::int8_t;
 #endif

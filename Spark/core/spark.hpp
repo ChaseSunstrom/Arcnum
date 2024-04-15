@@ -11,7 +11,7 @@
 #define __SPARK_ERROR__
 #define __SPARK_FATAL__
 
-#define __SPARK_ASSERT__(_expression) _expression ? 1 : 0 
+#define __SPARK_ASSERT__(_expression) _expression ? 1 : 0
 
 #include "std_include.hpp"
 #include "types.hpp"
@@ -20,7 +20,7 @@
 #include "util/macros.hpp"
 
 #ifdef _MSC_VER
-	#pragma warning(disable : 4996)
+#pragma warning(disable : 4996)
 #endif
 
 namespace spark

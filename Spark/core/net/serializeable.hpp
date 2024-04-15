@@ -57,7 +57,7 @@
             BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__) \
         ) \
         friend class boost::serialization::access; \
-		friend class class_name; \
+        friend class class_name; \
         template<class Archive> \
         void serialize(Archive& ar, const unsigned int version) { \
             BOOST_PP_SEQ_FOR_EACH_I( \
@@ -84,27 +84,27 @@
     }
 
 #define SERIALIZE_EMPTY() \
-		friend class boost::serialization::access; \
-	template<class Archive> \
-	void serialize(Archive& ar, const unsigned int version) { \
-	} \
-	struct state { \
-		friend class boost::serialization::access; \
-		template<class Archive> \
-		void serialize(Archive& ar, const unsigned int version) { \
-		} \
-	}; \
-	std::string export_state_to_binary() const { \
-		return ""; \
-	} \
-	void apply_state_from_binary(const std::string& serialized_state) { }
+        friend class boost::serialization::access; \
+    template<class Archive> \
+    void serialize(Archive& ar, const unsigned int version) { \
+    } \
+    struct state { \
+        friend class boost::serialization::access; \
+        template<class Archive> \
+        void serialize(Archive& ar, const unsigned int version) { \
+        } \
+    }; \
+    std::string export_state_to_binary() const { \
+        return ""; \
+    } \
+    void apply_state_from_binary(const std::string& serialized_state) { }
 
-template<typename T>
+template <typename T>
 struct packet_traits;
 
 namespace spark
 {
-	template<typename T>
+	template <typename T>
 	std::string serialize_to_binary(const T& obj)
 	{
 		std::ostringstream obj_stream;
@@ -115,7 +115,7 @@ namespace spark
 		return obj_stream.str();
 	}
 
-	template<typename T>
+	template <typename T>
 	T deserialize_from_binary(const std::string& data)
 	{
 		T obj;
@@ -131,34 +131,40 @@ namespace spark
 	class serializeable
 	{
 	protected:
-		serializeable(const std::string& type, uint16_t version)
-			: m_type(type), m_version(version) {}
+		serializeable(const std::string& type, uint16_t version) :
+				m_type(type), m_version(version) { }
 
 	public:
 		virtual ~serializeable() = default;
+
 		virtual void process() const = 0;
 
-		const std::string& get_type() const {
+		const std::string& get_type() const
+		{
 			return m_type;
 		}
-		uint16_t get_version() const {
+
+		uint16_t get_version() const
+		{
 			return m_version;
 		}
 
 	protected:
 		std::string m_type;
+
 		uint16_t m_version;
+
 		SERIALIZE_MEMBERS(serializeable, m_type, m_version)
 	};
 
 	BOOST_SERIALIZATION_ASSUME_ABSTRACT(serializeable);
 
-	template<typename T>
-	void save_to_file(const T& obj, const std::string& filepath) 
+	template <typename T>
+	void save_to_file(const T& obj, const std::string& filepath)
 	{
 		std::ofstream file(filepath, std::ios::binary);
-		
-		if (!file.is_open()) 
+
+		if (!file.is_open())
 		{
 			SPARK_ERROR("[ FILE SAVING ]: Failed to save to file: " << filepath);
 		}
@@ -167,8 +173,8 @@ namespace spark
 		oa << obj;
 	}
 
-	template<typename T>
-	T load_from_file(const std::string& filepath) 
+	template <typename T>
+	T load_from_file(const std::string& filepath)
 	{
 		// Open a file stream for reading in binary mode
 		std::ifstream file(filepath, std::ios::binary);
@@ -192,20 +198,26 @@ namespace spark
 		class base_packet_factory
 		{
 		public:
-			virtual std::unique_ptr<serializeable> create(const std::string& data) = 0;
+			virtual std::unique_ptr <serializeable> create(const std::string& data) = 0;
 		};
 
 		class packet_factory_registry
 		{
 		public:
-			static void register_factory(const std::string& type, uint16_t version, std::unique_ptr<base_packet_factory> factory)
+			static void register_factory(
+					const std::string& type,
+					uint16_t version,
+					std::unique_ptr <base_packet_factory> factory)
 			{
 				std::string key = generate_key(type, version);
 				SPARK_TRACE("[PACKET FACTORY REGISTERED]: " << key);
 				get_factories()[key] = std::move(factory);
 			}
 
-			static std::unique_ptr<serializeable> create_packet(const std::string& type, uint16_t version, const std::string& data)
+			static std::unique_ptr <serializeable> create_packet(
+					const std::string& type,
+					uint16_t version,
+					const std::string& data)
 			{
 				std::string key = generate_key(type, version);
 				auto& factory = get_factories();
@@ -217,9 +229,9 @@ namespace spark
 				return nullptr;
 			}
 
-			static std::unordered_map<std::string, std::unique_ptr<base_packet_factory>>& get_factories()
+			static std::unordered_map <std::string, std::unique_ptr<base_packet_factory>>& get_factories()
 			{
-				static std::unordered_map<std::string, std::unique_ptr<base_packet_factory>> s_factories;
+				static std::unordered_map <std::string, std::unique_ptr<base_packet_factory>> s_factories;
 				return s_factories;
 			}
 
@@ -228,24 +240,28 @@ namespace spark
 			{
 				return type + "_" + std::to_string(version);
 			}
+
 		private:
-			static std::unordered_map<std::string, std::unique_ptr<base_packet_factory>> s_factories;
+			static std::unordered_map <std::string, std::unique_ptr<base_packet_factory>> s_factories;
 		};
 
 		struct envelope
 		{
 			envelope() = default;
 
-			envelope(const std::string& type, uint16_t version, const std::string& data)
-				: m_type(type), m_version(version), m_data(data) {}
+			envelope(const std::string& type, uint16_t version, const std::string& data) :
+					m_type(type), m_version(version), m_data(data) { }
 
 			std::string m_type;
+
 			uint16_t m_version;
-			std::string m_data; 
+
+			std::string m_data;
+
 			SERIALIZE_MEMBERS(envelope, m_type, m_version, m_data)
 		};
 
-		template<typename T>
+		template <typename T>
 		std::string serialize(const T& obj)
 		{
 			// Serialize the object into a string stream
@@ -268,7 +284,7 @@ namespace spark
 			return env_stream.str();
 		}
 
-		inline std::tuple<std::string, uint16_t, std::string> deserialize(const std::string& data)
+		inline std::tuple <std::string, uint16_t, std::string> deserialize(const std::string& data)
 		{
 			std::istringstream iss(data);
 			::boost::archive::text_iarchive ia(iss);
@@ -281,29 +297,29 @@ namespace spark
 
 		// Macro to register a packet type and its traits
 #define REGISTER_PACKET_TYPE(NAMESPACE, PACKET_TYPE, VERSION) \
-				BOOST_CLASS_EXPORT_GUID(NAMESPACE::PACKET_TYPE, #PACKET_TYPE) \
-				template<> \
-				struct ::packet_traits<NAMESPACE::PACKET_TYPE> { \
-					static const std::string type() { return #PACKET_TYPE; } \
-					static const uint16_t version() { return VERSION; } \
-				}; \
-				class PACKET_TYPE##_factory : public ::spark::net::base_packet_factory { \
-				public: \
-					std::unique_ptr<::spark::net::packet> create(const std::string& data) override { \
-						auto p = std::make_unique<NAMESPACE::PACKET_TYPE>(); \
-						std::istringstream iss(data); \
-						boost::archive::text_iarchive ia(iss); \
-						ia >> *p; \
-						return p; \
-					} \
-				}; \
-				static bool registered_##PACKET_TYPE = []() { \
-					::spark::net::packet_factory_registry::register_factory( \
-						packet_traits<NAMESPACE::PACKET_TYPE>::type(), \
-						packet_traits<NAMESPACE::PACKET_TYPE>::version(), \
-						std::make_unique<PACKET_TYPE##_factory>()); \
-					return true; \
-				}();
+                BOOST_CLASS_EXPORT_GUID(NAMESPACE::PACKET_TYPE, #PACKET_TYPE) \
+                template<> \
+                struct ::packet_traits<NAMESPACE::PACKET_TYPE> { \
+                    static const std::string type() { return #PACKET_TYPE; } \
+                    static const uint16_t version() { return VERSION; } \
+                }; \
+                class PACKET_TYPE##_factory : public ::spark::net::base_packet_factory { \
+                public: \
+                    std::unique_ptr<::spark::net::packet> create(const std::string& data) override { \
+                        auto p = std::make_unique<NAMESPACE::PACKET_TYPE>(); \
+                        std::istringstream iss(data); \
+                        boost::archive::text_iarchive ia(iss); \
+                        ia >> *p; \
+                        return p; \
+                    } \
+                }; \
+                static bool registered_##PACKET_TYPE = []() { \
+                    ::spark::net::packet_factory_registry::register_factory( \
+                        packet_traits<NAMESPACE::PACKET_TYPE>::type(), \
+                        packet_traits<NAMESPACE::PACKET_TYPE>::version(), \
+                        std::make_unique<PACKET_TYPE##_factory>()); \
+                    return true; \
+                }();
 	}
 }
 

@@ -4,7 +4,7 @@
 // This needs to be used along with a Platform Backend (e.g. GLFW, SDL, Win32, custom..)
 
 // Implemented features:
-//  [X] Renderer: User texture binding. Use 'GLuint' OpenGL texture identifier as void*/ImTextureID. Read the FAQ about ImTextureID!
+//  [X] Renderer: User texture binding. Use 'u32' OpenGL texture identifier as void*/ImTextureID. Read the FAQ about ImTextureID!
 //  [x] Renderer: Large meshes support (64k+ vertices) with 16-bit indices (Desktop OpenGL only).
 
 // About WebGL/ES:
@@ -214,19 +214,19 @@
 // OpenGL Data
 struct ImGui_ImplOpenGL3_Data
 {
-    GLuint          GlVersion;               // Extracted at runtime using GL_MAJOR_VERSION, GL_MINOR_VERSION queries (e.g. 320 for GL 3.2)
+    u32          GlVersion;               // Extracted at runtime using GL_MAJOR_VERSION, GL_MINOR_VERSION queries (e.g. 320 for GL 3.2)
     char            GlslVersionString[32];   // Specified by user or detected based on compile time GL settings.
     bool            GlProfileIsES2;
     bool            GlProfileIsES3;
     bool            GlProfileIsCompat;
     GLint           GlProfileMask;
-    GLuint          FontTexture;
-    GLuint          ShaderHandle;
+    u32          FontTexture;
+    u32          ShaderHandle;
     GLint           AttribLocationTex;       // Uniforms location
     GLint           AttribLocationProjMtx;
-    GLuint          AttribLocationVtxPos;    // Vertex attributes location
-    GLuint          AttribLocationVtxUV;
-    GLuint          AttribLocationVtxColor;
+    u32          AttribLocationVtxPos;    // Vertex attributes location
+    u32          AttribLocationVtxUV;
+    u32          AttribLocationVtxColor;
     unsigned int    VboHandle, ElementsHandle;
     GLsizeiptr      VertexBufferSize;
     GLsizeiptr      IndexBufferSize;
@@ -304,7 +304,7 @@ bool    ImGui_ImplOpenGL3_Init(const char* glsl_version)
         const char* gl_version = (const char*)glGetString(GL_VERSION);
         sscanf(gl_version, "%d.%d", &major, &minor);
     }
-    bd->GlVersion = (GLuint)(major * 100 + minor * 10);
+    bd->GlVersion = (u32)(major * 100 + minor * 10);
 #if defined(GL_CONTEXT_PROFILE_MASK)
     if (bd->GlVersion >= 320)
         glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &bd->GlProfileMask);
@@ -396,7 +396,7 @@ void    ImGui_ImplOpenGL3_NewFrame()
         ImGui_ImplOpenGL3_CreateDeviceObjects();
 }
 
-static void ImGui_ImplOpenGL3_SetupRenderState(ImDrawData* draw_data, int fb_width, int fb_height, GLuint vertex_array_object)
+static void ImGui_ImplOpenGL3_SetupRenderState(ImDrawData* draw_data, int fb_width, int fb_height, u32 vertex_array_object)
 {
     ImGui_ImplOpenGL3_Data* bd = ImGui_ImplOpenGL3_GetBackendData();
 
@@ -485,12 +485,12 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
     // Backup GL state
     GLenum last_active_texture; glGetIntegerv(GL_ACTIVE_TEXTURE, (GLint*)&last_active_texture);
     glActiveTexture(GL_TEXTURE0);
-    GLuint last_program; glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*)&last_program);
-    GLuint last_texture; glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint*)&last_texture);
+    u32 last_program; glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*)&last_program);
+    u32 last_texture; glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint*)&last_texture);
 #ifdef IMGUI_IMPL_OPENGL_MAY_HAVE_BIND_SAMPLER
-    GLuint last_sampler; if (bd->GlVersion >= 330 || bd->GlProfileIsES3) { glGetIntegerv(GL_SAMPLER_BINDING, (GLint*)&last_sampler); } else { last_sampler = 0; }
+    u32 last_sampler; if (bd->GlVersion >= 330 || bd->GlProfileIsES3) { glGetIntegerv(GL_SAMPLER_BINDING, (GLint*)&last_sampler); } else { last_sampler = 0; }
 #endif
-    GLuint last_array_buffer; glGetIntegerv(GL_ARRAY_BUFFER_BINDING, (GLint*)&last_array_buffer);
+    u32 last_array_buffer; glGetIntegerv(GL_ARRAY_BUFFER_BINDING, (GLint*)&last_array_buffer);
 #ifndef IMGUI_IMPL_OPENGL_USE_VERTEX_ARRAY
     // This is part of VAO on OpenGL 3.0+ and OpenGL ES 3.0+.
     GLint last_element_array_buffer; glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &last_element_array_buffer);
@@ -499,7 +499,7 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
     ImGui_ImplOpenGL3_VtxAttribState last_vtx_attrib_state_color; last_vtx_attrib_state_color.GetState(bd->AttribLocationVtxColor);
 #endif
 #ifdef IMGUI_IMPL_OPENGL_USE_VERTEX_ARRAY
-    GLuint last_vertex_array_object; glGetIntegerv(GL_VERTEX_ARRAY_BINDING, (GLint*)&last_vertex_array_object);
+    u32 last_vertex_array_object; glGetIntegerv(GL_VERTEX_ARRAY_BINDING, (GLint*)&last_vertex_array_object);
 #endif
 #ifdef IMGUI_IMPL_OPENGL_HAS_POLYGON_MODE
     GLint last_polygon_mode[2]; glGetIntegerv(GL_POLYGON_MODE, last_polygon_mode);
@@ -524,7 +524,7 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
     // Setup desired GL state
     // Recreate the VAO every time (this is to easily allow multiple GL contexts to be rendered to. VAO are not shared among GL contexts)
     // The renderer would actually work without any VAO bound, but then our VertexAttrib calls would overwrite the default one currently bound.
-    GLuint vertex_array_object = 0;
+    u32 vertex_array_object = 0;
 #ifdef IMGUI_IMPL_OPENGL_USE_VERTEX_ARRAY
     GL_CALL(glGenVertexArrays(1, &vertex_array_object));
 #endif
@@ -594,7 +594,7 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
                 GL_CALL(glScissor((int)clip_min.x, (int)((float)fb_height - clip_max.y), (int)(clip_max.x - clip_min.x), (int)(clip_max.y - clip_min.y)));
 
                 // Bind texture, Draw
-                GL_CALL(glBindTexture(GL_TEXTURE_2D, (GLuint)(intptr_t)pcmd->GetTexID()));
+                GL_CALL(glBindTexture(GL_TEXTURE_2D, (u32)(intptr_t)pcmd->GetTexID()));
 #ifdef IMGUI_IMPL_OPENGL_MAY_HAVE_VTX_OFFSET
                 if (bd->GlVersion >= 320)
                     GL_CALL(glDrawElementsBaseVertex(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)(intptr_t)(pcmd->IdxOffset * sizeof(ImDrawIdx)), (GLint)pcmd->VtxOffset));
@@ -703,7 +703,7 @@ void ImGui_ImplOpenGL3_DestroyFontsTexture()
 }
 
 // If you get an error please report on github. You may try different GL context version or GLSL version. See GL<>GLSL version table at the top of this file.
-static bool CheckShader(GLuint handle, const char* desc)
+static bool CheckShader(u32 handle, const char* desc)
 {
     ImGui_ImplOpenGL3_Data* bd = ImGui_ImplOpenGL3_GetBackendData();
     GLint status = 0, log_length = 0;
@@ -722,7 +722,7 @@ static bool CheckShader(GLuint handle, const char* desc)
 }
 
 // If you get an error please report on GitHub. You may try different GL context version or GLSL version.
-static bool CheckProgram(GLuint handle, const char* desc)
+static bool CheckProgram(u32 handle, const char* desc)
 {
     ImGui_ImplOpenGL3_Data* bd = ImGui_ImplOpenGL3_GetBackendData();
     GLint status = 0, log_length = 0;
@@ -887,13 +887,13 @@ bool    ImGui_ImplOpenGL3_CreateDeviceObjects()
 
     // Create shaders
     const GLchar* vertex_shader_with_version[2] = { bd->GlslVersionString, vertex_shader };
-    GLuint vert_handle = glCreateShader(GL_VERTEX_SHADER);
+    u32 vert_handle = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vert_handle, 2, vertex_shader_with_version, nullptr);
     glCompileShader(vert_handle);
     CheckShader(vert_handle, "vertex shader");
 
     const GLchar* fragment_shader_with_version[2] = { bd->GlslVersionString, fragment_shader };
-    GLuint frag_handle = glCreateShader(GL_FRAGMENT_SHADER);
+    u32 frag_handle = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(frag_handle, 2, fragment_shader_with_version, nullptr);
     glCompileShader(frag_handle);
     CheckShader(frag_handle, "fragment shader");
@@ -912,9 +912,9 @@ bool    ImGui_ImplOpenGL3_CreateDeviceObjects()
 
     bd->AttribLocationTex = glGetUniformLocation(bd->ShaderHandle, "Texture");
     bd->AttribLocationProjMtx = glGetUniformLocation(bd->ShaderHandle, "ProjMtx");
-    bd->AttribLocationVtxPos = (GLuint)glGetAttribLocation(bd->ShaderHandle, "Position");
-    bd->AttribLocationVtxUV = (GLuint)glGetAttribLocation(bd->ShaderHandle, "UV");
-    bd->AttribLocationVtxColor = (GLuint)glGetAttribLocation(bd->ShaderHandle, "Color");
+    bd->AttribLocationVtxPos = (u32)glGetAttribLocation(bd->ShaderHandle, "Position");
+    bd->AttribLocationVtxUV = (u32)glGetAttribLocation(bd->ShaderHandle, "UV");
+    bd->AttribLocationVtxColor = (u32)glGetAttribLocation(bd->ShaderHandle, "Color");
 
     // Create buffers
     glGenBuffers(1, &bd->VboHandle);

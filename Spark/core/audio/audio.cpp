@@ -7,7 +7,7 @@ namespace spark
 	{
 		audio_manager& audio_man = engine::get<audio_manager>();
 
-		for (const auto& component : m_audio_components)
+		for (const auto& component: m_audio_components)
 		{
 			if (component.m_play_condition(m_component_manager))
 			{

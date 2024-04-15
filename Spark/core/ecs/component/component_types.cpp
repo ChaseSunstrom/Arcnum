@@ -2,20 +2,19 @@
 
 #include "../../util/wrap.hpp"
 #include "../../window/window_manager.hpp"
-#include "../../window/vulkan/mesh.hpp"
-
 // Because stb_image is fucking weird
 #define STB_IMAGE_IMPLEMENTATION
+
 #include <OTHER/stb_image.h>
 
 namespace spark
 {
 	texture::texture(
-		const std::filesystem::path& path,
-		texture_type type,
-		std::optional <i32> depth,
-		const std::vector <std::pair<GLenum, GLenum>>& params
-	) : m_type(type), m_depth(depth)
+			const std::filesystem::path& path,
+			texture_type type,
+			std::optional <i32> depth,
+			const std::vector <std::pair<GLenum, GLenum>>& params) :
+			m_type(type), m_depth(depth)
 	{
 		spark::generate_texture(m_texture);
 		load_texture(path, params);
@@ -47,11 +46,17 @@ namespace spark
 
 		GLenum format = GL_RGB;
 		if (m_nr_channels == 1)
+		{
 			format = GL_RED;
+		}
 		else if (m_nr_channels == 3)
+		{
 			format = GL_RGB;
+		}
 		else if (m_nr_channels == 4)
+		{
 			format = GL_RGBA;
+		}
 
 		GLenum target = (m_type == texture_type::TWO_D) ? GL_TEXTURE_2D : GL_TEXTURE_3D;
 
@@ -77,7 +82,7 @@ namespace spark
 
 	void texture::set_texture_parameters(GLenum target, const std::vector <std::pair<GLenum, GLenum>>& params)
 	{
-		for (const auto& [pname, param] : params)
+		for (const auto& [pname, param]: params)
 		{
 			glTexParameteri(target, pname, param);
 		}
@@ -99,16 +104,13 @@ namespace spark
 		return *m_textures[name];
 	}
 
-	void set_uniform(const material& material, GLuint shader_program)
+	void set_uniform(const material& material, u32 shader_program)
 	{
 		set_uniform("material", material, shader_program);
 	}
 
 	void set_uniform(
-		const std::string& uniform_name,
-		const material& material,
-		GLuint shader_program
-	)
+			const std::string& uniform_name, const material& material, u32 shader_program)
 	{
 		i32 texture_unit = 0;
 
@@ -120,12 +122,13 @@ namespace spark
 		// uniforms=
 		active_texture(GL_TEXTURE0 + texture_unit);       // Activate texture unit
 		bind_texture(texture_type, material.m_diffuse);  // Bind the diffuse texture
-		set_uniform(uniform_name + ".diffuse", texture_unit, shader_program);  // Set the sampler to use this texture unit
+		set_uniform(
+				uniform_name + ".diffuse", texture_unit, shader_program);  // Set the sampler to use this texture unit
 		texture_unit++;               // Move to the next texture unit
 
 		active_texture(GL_TEXTURE0 + texture_unit);
 		bind_texture(texture_type, material.m_specular);
-		
+
 		set_uniform(uniform_name + ".specular", texture_unit, shader_program);
 		texture_unit++;
 
@@ -144,17 +147,5 @@ namespace spark
 		set_uniform(uniform_name + ".color", material.m_color, shader_program);
 	}
 
-	mesh& mesh_manager::create_mesh(const std::string& name, const std::vector <vertex>& vertices, const std::vector<u32> indices)
-	{
-		if (m_meshes.contains(name))
-		{
-			return *m_meshes[name];
-		}
 
-		if (get_current_window_type() == window_type::VULKAN)
-		{
-			m_meshes[name] = std::make_unique<vulkan_mesh>(vertices, indices);
-			return *m_meshes[name];
-		}
-	}
 }  // namespace spark

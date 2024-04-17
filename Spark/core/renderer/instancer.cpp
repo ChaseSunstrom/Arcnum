@@ -151,14 +151,15 @@ namespace spark
 
 					VkBuffer vertex_buffers[] = { _vulkan_mesh.m_vertex_buffer };
 					VkDeviceSize offsets[] = { 0 };
-					vkCmdBindVertexBuffers(
-							vk_window.get_window_data().m_command_buffers[vk_window.get_window_data().m_current_frame],
-							0,
-							1,
-							vertex_buffers,
-							offsets);
 
-					
+					_vulkan_mesh.update_uniform_buffers();
+
+					vkCmdBindVertexBuffers(
+						vk_window.get_window_data().m_command_buffers[vk_window.get_window_data().m_current_frame],
+						0,
+						1,
+						vertex_buffers,
+						offsets);
 
 					if (!_vulkan_mesh.m_indices.empty())
 					{

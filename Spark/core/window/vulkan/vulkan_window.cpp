@@ -33,8 +33,6 @@ namespace spark
 		init_descriptor_pool();
 		init_descriptor_sets();
 		init_sync_objects();
-		// Uncomment this when done fully implementing vulkan
-		//init_imgui();
 	}
 
 	vulkan_window::~vulkan_window()
@@ -1016,31 +1014,6 @@ namespace spark
 		}
 	}
 
-	void vulkan_window::init_imgui()
-	{
-		ImGui::CreateContext();
-		ImGuiIO& io = ImGui::GetIO();
-		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
-
-		// Set up Dear ImGui style
-		ImGui::StyleColorsDark();
-
-		// Initialize ImGui for Vulkan
-		ImGui_ImplGlfw_InitForVulkan(m_window, true);
-
-		ImGui_ImplVulkan_InitInfo init_info = { };
-		init_info.Instance = m_window_data->m_instance;
-		init_info.PhysicalDevice = m_window_data->m_physical_device;
-		init_info.Device = m_window_data->m_device;
-		init_info.QueueFamily = find_queue_families(m_window_data->m_physical_device).m_graphics_family.value();
-		init_info.Queue = m_window_data->m_graphics_queue;
-		init_info.PipelineCache = VK_NULL_HANDLE;
-		init_info.Allocator = nullptr;
-		init_info.MinImageCount = 2;
-		init_info.ImageCount = m_window_data->m_swapchain_images.size();
-		ImGui_ImplVulkan_Init(&init_info);
-	}
-
 	void vulkan_window::init_framebuffers()
 	{
 		m_window_data->m_swapchain_framebuffers.resize(m_window_data->m_swapchain_image_views.size());
@@ -1118,8 +1091,8 @@ namespace spark
 		VkViewport viewport { };
 		viewport.x = 0.0f;
 		viewport.y = 0.0f;
-		viewport.width = static_cast<float>(m_window_data->m_swapchain_extent.width);
-		viewport.height = static_cast<float>(m_window_data->m_swapchain_extent.height);
+		viewport.width = static_cast<f32>(m_window_data->m_swapchain_extent.width);
+		viewport.height = static_cast<f32>(m_window_data->m_swapchain_extent.height);
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
 		vkCmdSetViewport(command_buffer, 0, 1, &viewport);
@@ -1198,8 +1171,6 @@ namespace spark
 			SPARK_ERROR("[VULKAN] Failed to allocate descriptor sets!");
 			assert(false);
 		}
-
-
 	}
 
 	void vulkan_window::init_debug()

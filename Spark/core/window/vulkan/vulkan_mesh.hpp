@@ -15,25 +15,14 @@ namespace spark
 	public:
 		struct uniform_buffer_object
 		{
-			std::any data;
-
-			std::function<void()> create_func;
-
-			std::function<void*()> data_func;
-
-			std::function<u64()> size_func;
-
-			VkBuffer buffer;
-
-			VkDeviceMemory buffer_memory;
-
 			template <typename UBOType>
 			explicit uniform_buffer_object(const UBOType& ubo_data)
 					:
-					data(ubo_data), create_func([this, ubo_data]() { this->create_buffer<UBOType>(ubo_data); }), data_func(
-					[this]()->void* { return &std::any_cast<UBOType&>(this->data); }), size_func([]()->u64 { return sizeof(UBOType); })
+					m_data(ubo_data), m_create_func([this, ubo_data]() { this->create_buffer<UBOType>(ubo_data); }), m_data_func(
+					[this]()->void* { return &std::any_cast<UBOType&>(this->m_data); }), m_size_func([]()->u64 { return sizeof(UBOType); }),
+					m_type(typeid(UBOType))
 			{
-				create_func(); 
+				m_create_func(); 
 			}
 
 			template <typename UBOType>
@@ -46,14 +35,44 @@ namespace spark
 						buffer_size,
 						VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 						VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-						this->buffer,
-						this->buffer_memory);
+						this->m_buffer,
+						this->m_buffer_memory);
 
 				void* data_ptr;
-				vkMapMemory(vk_window.get_window_data().m_device, this->buffer_memory, 0, buffer_size, 0, &data_ptr);
+				vkMapMemory(vk_window.get_window_data().m_device, this->m_buffer_memory, 0, buffer_size, 0, &data_ptr);
 				std::memcpy(data_ptr, &ubo_data, buffer_size);
-				vkUnmapMemory(vk_window.get_window_data().m_device, this->buffer_memory);
+				vkUnmapMemory(vk_window.get_window_data().m_device, this->m_buffer_memory);
+
+				SPARK_INFO("[VULKAN] Created uniform buffer object of size: " << buffer_size);
 			}
+
+			void update_data(void* new_data)
+			{
+				if (m_type == typeid(decltype(std::any_cast<decltype(m_data)>(m_data))))
+				{
+					m_data = *static_cast<decltype(std::any_cast<decltype(m_data)>(m_data))*>(new_data);
+					// Logging updated data
+					SPARK_INFO("[VULKAN] Updated UBO data.");
+				}
+				else
+				{
+					SPARK_ERROR("[VULKAN] Type mismatch when trying to update UBO data.");
+				}
+			}
+
+			std::any m_data;
+
+			std::function<void()> m_create_func;
+
+			std::function<void*()> m_data_func;
+
+			std::function<u64()> m_size_func;
+
+			VkBuffer m_buffer;
+
+			VkDeviceMemory m_buffer_memory;
+
+			std::type_index m_type;
 		};
 
 		template <typename... UBOTypes>
@@ -73,8 +92,8 @@ namespace spark
 
 			for (auto& ubo: m_ubo_list)
 			{
-				vkDestroyBuffer(vk_window.get_window_data().m_device, ubo.buffer, nullptr);
-				vkFreeMemory(vk_window.get_window_data().m_device, ubo.buffer_memory, nullptr);
+				vkDestroyBuffer(vk_window.get_window_data().m_device, ubo.m_buffer, nullptr);
+				vkFreeMemory(vk_window.get_window_data().m_device, ubo.m_buffer_memory, nullptr);
 			}
 
 			vkDestroyBuffer(vk_window.get_window_data().m_device, m_index_buffer, nullptr);
@@ -82,6 +101,7 @@ namespace spark
 
 			vkDestroyBuffer(vk_window.get_window_data().m_device, m_vertex_buffer, nullptr);
 			vkFreeMemory(vk_window.get_window_data().m_device, m_vertex_buffer_memory, nullptr);
+
 		}
 
 		void create_mesh()
@@ -110,7 +130,7 @@ namespace spark
 		{
 			for (auto& ubo: m_ubo_list)
 			{
-				ubo.create_func();
+				ubo.m_create_func();
 			}
 		}
 
@@ -118,6 +138,35 @@ namespace spark
 		void add_ubo(const UBOType& ubo_data)
 		{
 			m_ubo_list.emplace_back(uniform_buffer_object(ubo_data));
+		}
+
+		void update_uniform_buffers()
+		{
+			auto& vk_window = engine::get<vulkan_window>();
+
+			for (auto& ubo : m_ubo_list)
+			{
+				void* data_ptr;
+				VkDeviceSize buffer_size = ubo.m_size_func(); // Get size from stored function
+				vkMapMemory(vk_window.get_window_data().m_device, ubo.m_buffer_memory, 0, buffer_size, 0, &data_ptr);
+				// This will check the type in Debug mode, not release, this is because its called multiple times
+				// Every frame which is slow
+#ifdef DEBUG
+				if (ubo.m_type == typeid(decltype(std::any_cast<decltype(ubo.m_data)>(ubo.m_data))))
+				{
+					auto& casted_data = std::any_cast<decltype(ubo.m_data)&>(ubo.m_data);
+					std::memcpy(data_ptr, &casted_data, buffer_size);
+				}
+				else
+				{
+					SPARK_ERROR("[VULKAN] Type mismatch when trying to map memory for UBO.");
+				}
+#else
+				auto& casted_data = std::any_cast<decltype(ubo.m_data)&>(ubo.m_data);
+				std::memcpy(data_ptr, &casted_data, buffer_size);
+#endif
+				vkUnmapMemory(vk_window.get_window_data().m_device, ubo.m_buffer_memory);
+			}
 		}
 
 		template <typename UBOType>
@@ -139,12 +188,6 @@ namespace spark
 		VkBuffer m_index_buffer;
 
 		VkDeviceMemory m_index_buffer_memory;
-
-		std::vector <VkBuffer> m_uniform_buffers;
-
-		std::vector <VkDeviceMemory> m_uniform_buffers_memory;
-
-		std::vector<void*> m_uniform_buffers_mapped;
 
 		std::vector <uniform_buffer_object> m_ubo_list;
 
@@ -333,50 +376,51 @@ namespace spark
 						VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 						buffers[i],
 						buffer_memories[i]);
+
 				void* data;
 				vkMapMemory(vk_window.get_window_data().m_device, buffer_memories[i], 0, buffer_size, 0, &data);
-				memcpy(data, &ubos[i], buffer_size);
-				vkUnmapMemory(vk_window.get_window_data().m_device, buffer_memories[i]);
+				//memcpy(data, &ubos[i], buffer_size);
+				//vkUnmapMemory(vk_window.get_window_data().m_device, buffer_memories[i]);
 			}
 		}
 
 
-		template <typename... UBOTypes, std::size_t... Is>
+		template <typename... UBOTypes, u64... Is>
 		void update_descriptor_set_impl(
 				VkDevice device,
 				VkDescriptorSet descriptor_set,
 				std::index_sequence<Is...>,
 				std::array<VkDescriptorBufferInfo, sizeof...(UBOTypes)>& buffer_infos,
 				std::array<VkWriteDescriptorSet, sizeof...(UBOTypes)>& write_descriptor_sets,
-				const UBOTypes& ... ubos)
+				const UBOTypes&... ubos)
 		{
 			// Lambda to create a VkDescriptorBufferInfo from a UBO
-			auto createBufferInfo = [&](const auto& ubo, std::size_t index)
+			auto create_buffer_info = [&](const auto& ubo, u64 index)
 			{
-				VkDescriptorBufferInfo bufferInfo { };
-				bufferInfo.buffer = m_ubo_list[index].buffer;
-				bufferInfo.offset = 0;
-				bufferInfo.range = sizeof(ubo);
-				return bufferInfo;
+				VkDescriptorBufferInfo buffer_info { };
+				buffer_info.buffer = m_ubo_list[index].m_buffer;
+				buffer_info.offset = 0;
+				buffer_info.range = sizeof(ubo);
+				return buffer_info;
 			};
 
 			// Lambda to create a VkWriteDescriptorSet from a VkDescriptorBufferInfo
-			auto createWriteDescriptorSet = [&](const VkDescriptorBufferInfo& bufferInfo, std::size_t index)
+			auto create_write_descriptor_set = [&](const VkDescriptorBufferInfo& bufferInfo, u64 index)
 			{
-				VkWriteDescriptorSet descriptorWrite { };
-				descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				descriptorWrite.dstSet = descriptor_set;
-				descriptorWrite.dstBinding = static_cast<u32>(index);
-				descriptorWrite.dstArrayElement = 0;
-				descriptorWrite.descriptorCount = 1;
-				descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				descriptorWrite.pBufferInfo = &bufferInfo;
-				return descriptorWrite;
+				VkWriteDescriptorSet descriptor_write { };
+				descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptor_write.dstSet = descriptor_set;
+				descriptor_write.dstBinding = static_cast<u32>(index);
+				descriptor_write.dstArrayElement = 0;
+				descriptor_write.descriptorCount = 1;
+				descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				descriptor_write.pBufferInfo = &bufferInfo;
+				return descriptor_write;
 			};
 
 			// Unpack the ubos and populate the buffer info and write descriptor sets arrays
-			(void(buffer_infos[Is] = createBufferInfo(ubos, Is)), ...);
-			(void(write_descriptor_sets[Is] = createWriteDescriptorSet(buffer_infos[Is], Is)), ...);
+			(void(buffer_infos[Is] = create_buffer_info(ubos, Is)), ...);
+			(void(write_descriptor_sets[Is] = create_write_descriptor_set(buffer_infos[Is], Is)), ...);
 
 			// Update the descriptor sets with the new buffer information
 			vkUpdateDescriptorSets(device, sizeof...(UBOTypes), write_descriptor_sets.data(), 0, nullptr);
@@ -392,16 +436,13 @@ namespace spark
 			{
 				VkDescriptorSet descriptor_set = vk_window.get_window_data().m_descriptor_sets[i];
 
-				// Create an array for buffer info and write descriptor for each UBO type.
 				std::array<VkDescriptorBufferInfo, sizeof...(UBOTypes)> buffer_infos;
 				std::array<VkWriteDescriptorSet, sizeof...(UBOTypes)> write_descriptor_sets;
-
+				
 				// Use index sequence to iterate over each UBO type and its corresponding index.
-				update_descriptor_set_impl(device, descriptor_set, std::index_sequence_for <UBOTypes...>
-				{ }, buffer_infos, write_descriptor_sets, ubo_data...);
+				update_descriptor_set_impl(device, descriptor_set, std::index_sequence_for<UBOTypes...>{}, buffer_infos, write_descriptor_sets, ubo_data...);
 			}
 		}
-
 	private:
 		friend class uniform_buffer_object;
 	};

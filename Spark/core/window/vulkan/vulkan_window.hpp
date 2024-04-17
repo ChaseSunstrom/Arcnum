@@ -208,8 +208,6 @@ namespace spark
 
 		void init_descriptor_sets();
 
-		void init_imgui();
-
 		void reinit_swap_chain();
 
 		bool check_validation_layer_support();
@@ -259,7 +257,9 @@ namespace spark
 		std::unique_ptr <vulkan_window_data> m_window_data = std::make_unique<vulkan_window_data>();
 
 #ifdef DEBUG
+
 		const bool m_enable_validation_layers = true;
+
 #else
 
 		const bool m_enable_validation_layers = false;

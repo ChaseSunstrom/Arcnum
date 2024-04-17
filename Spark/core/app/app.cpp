@@ -67,8 +67,6 @@ namespace spark
 
 			_window.on_update();
 
-			//_ui.on_update();
-
 			_window.post_draw();
 		}
 
@@ -83,6 +81,13 @@ namespace spark
 					spark::event_dispatcher dispatcher(event);
 					return dispatcher.dispatch(app_functions::s_on_event);
 				});
+	}
+
+	void application::on_shutdown()
+	{
+		auto& _ecs = engine::get<ecs>();
+
+		_ecs.shutdown_systems();
 	}
 
 	void application::set_window_title(const std::string& title)

@@ -15,8 +15,10 @@ namespace spark
 		draw_components();
 
 		ImGui::Render();
+
 		ImGui_ImplVulkan_RenderDrawData(
 				ImGui::GetDrawData(),
-				vk_window.get_window_data().m_command_buffers[vk_window.get_window_data().m_current_frame]);
+				vk_window.get_window_data().m_command_buffers[vk_window.get_window_data().m_current_frame],
+			    vk_window.get_window_data().m_graphics_pipeline);
 	}
 }

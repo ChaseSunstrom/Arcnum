@@ -21,6 +21,7 @@ namespace spark
 		thread_pool::initialize(num_threads);
 
 		instancer::get();
+		vulkan_window::get();
 		application::on_start();
 	}
 }

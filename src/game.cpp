@@ -73,11 +73,11 @@ void setup_client_ui(spark::window_component& client_window) {
 		}));
 }
 
-struct ubo
+struct alignas(16) ubo
 {
-	spark::math::mat4 m_model;
 	spark::math::mat4 m_proj;
 	spark::math::mat4 m_view;
+	spark::math::mat4 m_model;
 };
 
 void on_start()
@@ -145,10 +145,10 @@ void on_start()
 		}));
 
 	std::vector<spark::vertex> vertices = {
-		{ { -0.5f, -0.5f, 0.0f }},
-		{ { 0.5f, -0.5f, 0.0f }},
-		{ { 0.5f, 0.5f, 0.0f }},
-		{ { -0.5f, 0.5f, 0.0f }}
+		{ { -1000.5f, -1000.5f, 1000.0f }},
+		{ { 1000.5f, -1000.5f, 1000.0f }},
+		{ { 10000.5f, 1000.5f, 1000.0f }},
+		{ { -1000.5f, 1000.5f, 1000.0f }}
 	};
 
 	std::vector<spark::u32> indices = {
@@ -164,12 +164,12 @@ void on_start()
 	_mesh_manager.create_mesh("quad", vertices, indices, _ubo);
 
 	_ecs.create_entity(
-spark::mesh_component("quad"),
-spark::material_component("__default__"),
-	spark::transform_component(spark::math::vec3(0.0f, 0.0f, 0.0f), spark::math::vec3(1.0f, 1.0f, 1.0f), spark::math::vec3(0.0f, 0.0f, 0.0f))
-	);
+		spark::mesh_component("quad"),
+		spark::material_component("__default__"),
+		spark::transform_component()
+	); 
 
-	spark::create_shape<spark::square>("material");
+	spark::create_shape<spark::square>();
 }
 
 void update_material_color(spark::material& mat, spark::f32 time)
@@ -186,19 +186,7 @@ void update_material_color(spark::material& mat, spark::f32 time)
 
 void on_update()
 {
-	static spark::f32 x = 3; // Static to keep its value between calls
-	static spark::f32 time = 0.0f;
 
-	auto& _renderer = spark::engine::get<spark::renderer>();
-	auto& _material = spark::engine::get<spark::material_manager>().get_material("material");
-
-	update_material_color(_material, time);
-
-	spark::camera& camera = *_renderer.get_cameras()[0];
-
-	camera.m_position = spark::math::vec3(0.0f, 0.0f, x);
-	x += 0.0001f;
-	time += 0.001f;
 }
 
 // required function

@@ -209,8 +209,7 @@ namespace spark
 
 			std::shared_ptr<entity_created_event> event = std::make_shared<entity_created_event>(
 					new_entity,
-					std::move(
-							components_map));
+					std::move(components_map));
 
 			notify_observers(event);
 

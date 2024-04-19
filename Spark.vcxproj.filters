@@ -156,9 +156,6 @@
     <ClInclude Include="Spark\core\renderer\layer_stack.hpp">
       <Filter>core\renderer</Filter>
     </ClInclude>
-    <ClInclude Include="Spark\core\renderer\octree.hpp">
-      <Filter>core\renderer</Filter>
-    </ClInclude>
     <ClInclude Include="Spark\core\renderer\renderer.hpp">
       <Filter>core\renderer</Filter>
     </ClInclude>
@@ -259,6 +256,11 @@
     <ClInclude Include="Spark\core\window\window_type.hpp" />
     <ClInclude Include="Spark\core\window\vulkan\vulkan_mesh.hpp" />
     <ClInclude Include="Spark\core\util\singelton.hpp" />
+    <ClInclude Include="Spark\core\physics\rigid_body.hpp" />
+    <ClInclude Include="Spark\core\physics\physics.hpp" />
+    <ClInclude Include="Spark\core\scene\scene_partition.hpp" />
+    <ClInclude Include="Spark\core\scene\octree.hpp" />
+    <ClInclude Include="Spark\core\util\math.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spark\core\app\app.cpp">
@@ -295,9 +297,6 @@
       <Filter>core\renderer</Filter>
     </ClCompile>
     <ClCompile Include="Spark\core\renderer\instancer.cpp">
-      <Filter>core\renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Spark\core\renderer\octree.cpp">
       <Filter>core\renderer</Filter>
     </ClCompile>
     <ClCompile Include="Spark\core\renderer\renderer.cpp">

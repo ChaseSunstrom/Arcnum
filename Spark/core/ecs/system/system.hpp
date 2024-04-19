@@ -6,7 +6,7 @@
 #include "../../util/thread_pool.hpp"
 #include "../component/component.hpp"
 #include "../../util/memory.hpp"
-#include "../util/singelton.hpp"
+#include "../../util/singelton.hpp"
 
 #include "../../net/serializeable.hpp"
 
@@ -47,7 +47,7 @@ namespace spark
 		template <typename T, typename... Args>
 		T& register_update_system(Args&& ... args)
 		{
-			std::unique_ptr<T> _system = std::make_unique<T>(m_component_manager, std::forward<Args>(args)...);
+			std::unique_ptr<T> _system = std::make_unique<T>(std::forward<Args>(args)...);
 			T& s = *_system;
 			m_update_systems.push_back(std::static_pointer_cast<system>(std::move(_system)));
 			return s;
@@ -56,7 +56,7 @@ namespace spark
 		template <typename T, typename... Args>
 		T& register_start_system(Args&& ... args)
 		{
-			std::unique_ptr<T> system = std::make_unique<T>(m_component_manager, std::forward<Args>(args)...);
+			std::unique_ptr<T> system = std::make_unique<T>(std::forward<Args>(args)...);
 			T& s = *system;
 			m_start_systems.push_back(std::move(system));
 			return s;
@@ -65,7 +65,7 @@ namespace spark
 		template <typename T, typename... Args>
 		T& register_shutdown_system(Args&& ... args)
 		{
-			std::unique_ptr<T> system = std::make_unique<T>(m_component_manager, std::forward<Args>(args)...);
+			std::unique_ptr<T> system = std::make_unique<T>(std::forward<Args>(args)...);
 			T& s = *system;
 			m_shutdown_systems.push_back(std::move(system));
 			return s;
@@ -83,7 +83,7 @@ namespace spark
 		{
 			for (auto& system : m_update_systems)
 			{
-				thread_pool::enqueue(task_priority::HIGH, true,
+				thread_pool::enqueue(task_priority::VERY_HIGH, true,
 									 [system = system.get(), delta_time]
 									 {
 										 system->on_update(delta_time);

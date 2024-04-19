@@ -54,6 +54,20 @@ namespace spark
     } \
 } while(0)
 
+#define EXPECT_TRUE(a) do { \
+	if (!(a)) { \
+		SPARK_ERROR("[TEST FAILED]: Expected " << (a) << " == true"); \
+		throw std::runtime_error("Test failed."); \
+	} \
+} while(0)
+
+#define EXPECT_FALSE(a) do { \
+	if ((a)) { \
+		SPARK_ERROR("[TEST FAILED]: Expected " << (a) << " == false"); \
+		throw std::runtime_error("Test failed."); \
+	} \
+} while(0)
+
 #define TEST(name) \
              void name(); \
              namespace { \

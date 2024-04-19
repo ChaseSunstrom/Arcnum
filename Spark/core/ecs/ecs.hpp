@@ -87,13 +87,21 @@ namespace spark
 		}
 
 		template <typename T>
-		inline void add_component(entity entity, T component)
+		inline void add_component(entity entity, const T& component)
 		{
 			m_component_manager.add_component<T>(entity, component);
+
+			std::shared_ptr<entity_updated_event> event = std::make_shared<entity_updated_event>(
+				entity,
+				std::unordered_map<std::type_index, std::shared_ptr<component_info_base>>{
+					{ typeid(T), std::make_shared<component_info<T>>(component) }
+				});
+
+			notify_observers(event);
 		}
 
 		template <typename T>
-		inline void set_component(entity entity, T component)
+		inline void set_component(entity entity, const T& component)
 		{
 			m_component_manager.set_component<T>(entity, component);
 		}
@@ -191,13 +199,13 @@ namespace spark
 		}
 
 		template <typename... Components>
-		entity create_entity(Components&& ... components)
+		entity create_entity(const Components&... components)
 		{
 			entity new_entity = m_entity_manager.create_entity();
 
 			std::unordered_map<std::type_index, std::shared_ptr<component_info_base>> components_map;
 
-			auto add_component = [this, &components_map, &new_entity](auto&& component)
+			auto add_component = [this, &components_map, &new_entity](const auto& component)
 			{
 				using component_type = std::decay_t<decltype(component)>;
 				m_component_manager.add_component<component_type>(new_entity, component);
@@ -205,7 +213,7 @@ namespace spark
 				components_map[typeid(component_type)] = std::make_shared<component_info<component_type>>(component);
 			};
 
-			(add_component(std::forward<Components>(components)), ...);
+			(add_component(components), ...);
 
 			std::shared_ptr<entity_created_event> event = std::make_shared<entity_created_event>(
 					new_entity,

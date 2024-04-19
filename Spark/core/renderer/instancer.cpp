@@ -70,7 +70,8 @@ namespace spark
 				auto _entity_created_event = std::static_pointer_cast<entity_created_event>(event);
 				entity e = _entity_created_event->m_entity;
 
-				if (_ecs.has_component<transform_component>(e) && _ecs.has_component<mesh_component>(e) &&
+				if (_ecs.has_component<transform_component>(e) && 
+					_ecs.has_component<mesh_component>(e) &&
 				    _ecs.has_component<material_component>(e))
 				{
 					auto mesh_name = _ecs.get_component<mesh_component>(e).m_mesh_name;
@@ -144,22 +145,17 @@ namespace spark
 				{
 					auto& _vulkan_mesh = dynamic_cast<vulkan_mesh&>(mesh);
 
-					vkCmdBindPipeline(
-							vk_window.get_window_data().m_command_buffers[vk_window.get_window_data().m_current_frame],
-							VK_PIPELINE_BIND_POINT_GRAPHICS,
-							vk_window.get_window_data().m_graphics_pipeline);
-
 					VkBuffer vertex_buffers[] = { _vulkan_mesh.m_vertex_buffer };
 					VkDeviceSize offsets[] = { 0 };
 
 					_vulkan_mesh.update_uniform_buffers();
 
 					vkCmdBindVertexBuffers(
-						vk_window.get_window_data().m_command_buffers[vk_window.get_window_data().m_current_frame],
-						0,
-						1,
-						vertex_buffers,
-						offsets);
+							vk_window.get_window_data().m_command_buffers[vk_window.get_window_data().m_current_frame],
+							0,
+							1,
+							vertex_buffers,
+							offsets);
 
 					if (!_vulkan_mesh.m_indices.empty())
 					{
@@ -171,14 +167,14 @@ namespace spark
 								VK_INDEX_TYPE_UINT32);
 
 						vkCmdBindDescriptorSets(
-							vk_window.get_window_data().m_command_buffers[vk_window.get_window_data().m_current_frame],
-							VK_PIPELINE_BIND_POINT_GRAPHICS,
-							vk_window.get_window_data().m_pipeline_layout,
-							0,
-							1,
-							&vk_window.get_window_data().m_descriptor_sets[vk_window.get_window_data().m_current_frame],
-							0,
-							nullptr);
+								vk_window.get_window_data().m_command_buffers[vk_window.get_window_data().m_current_frame],
+								VK_PIPELINE_BIND_POINT_GRAPHICS,
+								vk_window.get_window_data().m_pipeline_layout,
+								0,
+								1,
+								&vk_window.get_window_data().m_descriptor_sets[vk_window.get_window_data().m_current_frame],
+								0,
+								nullptr);
 
 						vkCmdDrawIndexed(
 								vk_window.get_window_data().m_command_buffers[vk_window.get_window_data()
@@ -193,14 +189,14 @@ namespace spark
 					else
 					{
 						vkCmdBindDescriptorSets(
-							vk_window.get_window_data().m_command_buffers[vk_window.get_window_data().m_current_frame],
-							VK_PIPELINE_BIND_POINT_GRAPHICS,
-							vk_window.get_window_data().m_pipeline_layout,
-							0,
-							1,
-							&vk_window.get_window_data().m_descriptor_sets[vk_window.get_window_data().m_current_frame],
-							0,
-							nullptr);
+								vk_window.get_window_data().m_command_buffers[vk_window.get_window_data().m_current_frame],
+								VK_PIPELINE_BIND_POINT_GRAPHICS,
+								vk_window.get_window_data().m_pipeline_layout,
+								0,
+								1,
+								&vk_window.get_window_data().m_descriptor_sets[vk_window.get_window_data().m_current_frame],
+								0,
+								nullptr);
 
 						vkCmdDraw(
 								vk_window.get_window_data().m_command_buffers[vk_window.get_window_data()

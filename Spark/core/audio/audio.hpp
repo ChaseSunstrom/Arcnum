@@ -162,27 +162,25 @@ namespace spark
 	{
 		audio_component() = default;
 
-		audio_component(const std::string& name, const std::function<bool(component_manager&)>& play_condition) :
+		audio_component(const std::string& name, const std::function<bool()>& play_condition) :
 				m_name(name), m_play_condition(play_condition) { }
 
 		std::string m_name;
 
-		std::function<bool(component_manager&)> m_play_condition;
+		std::function<bool()> m_play_condition;
 	};
 
 	class audio_system :
 			public system
 	{
 	public:
-		audio_system(component_manager& component_manager, std::vector<audio_component>* audio_components) :
-				system(), m_component_manager(component_manager), m_audio_components(*audio_components) { }
+		audio_system(std::vector<std::optional<audio_component>>* audio_components) :
+				system(), m_audio_components(*audio_components) { }
 
 		void on_update(f64 delta_time);
 
 	private:
-		std::vector<audio_component>& m_audio_components;
-
-		component_manager& m_component_manager;
+		std::vector<std::optional<audio_component>>& m_audio_components;
 	};
 }
 

@@ -219,10 +219,7 @@ namespace spark
 
 			std::priority_queue <std::pair<task_priority, std::function < void()>>,
 			std::vector <std::pair<task_priority, std::function < void()>>>,
-			task_comparator
-			>
-
-			m_queue;
+			task_comparator> m_queue;
 
 			std::mutex m_mutex;
 		};

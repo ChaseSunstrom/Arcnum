@@ -38,18 +38,18 @@ namespace spark
 			m_current_window = m_windows[typeid(T)];
 		}
 
-		window& get_current_window()
+		window& get_current_window() const
 		{
 			return *m_current_window;
 		}
 
-		window_type get_current_window_type()
+		window_type get_current_window_type() const
 		{
 			return m_current_window->get_window_type();
 		}
 
 		template <is_window_type T>
-		bool is_window_type(window_type type)
+		bool is_window_type(window_type type) const
 		{
 			return type == type_to_enum(T);
 		}

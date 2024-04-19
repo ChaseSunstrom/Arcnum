@@ -13,66 +13,60 @@ namespace spark
 			public mesh
 	{
 	public:
-		struct uniform_buffer_object
+		struct uniform_buffer_base
 		{
-			template <typename UBOType>
+			virtual ~uniform_buffer_base() = default;
+			virtual void update_data(void* new_data) = 0;
+			virtual void* get_data_ptr() = 0;
+			virtual u64 get_size() const = 0;
+
+			VkBuffer m_buffer;
+			VkDeviceMemory m_buffer_memory;
+		};
+
+		template <typename UBOType>
+		struct uniform_buffer_object : public uniform_buffer_base
+		{
 			explicit uniform_buffer_object(const UBOType& ubo_data)
-					:
-					m_data(ubo_data), m_create_func([this, ubo_data]() { this->create_buffer<UBOType>(ubo_data); }), m_data_func(
-					[this]()->void* { return &std::any_cast<UBOType&>(this->m_data); }), m_size_func([]()->u64 { return sizeof(UBOType); }),
-					m_type(typeid(UBOType))
+				: m_data(ubo_data)
 			{
-				m_create_func(); 
+				create_buffer(ubo_data);
 			}
 
-			template <typename UBOType>
 			void create_buffer(const UBOType& ubo_data)
 			{
 				auto& vk_window = engine::get<vulkan_window>();
 				VkDeviceSize buffer_size = sizeof(UBOType);
 
 				create_vulkan_buffer(
-						buffer_size,
-						VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-						VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-						this->m_buffer,
-						this->m_buffer_memory);
+					buffer_size,
+					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+					VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+					m_buffer,
+					m_buffer_memory);
 
 				void* data_ptr;
-				vkMapMemory(vk_window.get_window_data().m_device, this->m_buffer_memory, 0, buffer_size, 0, &data_ptr);
+				vkMapMemory(vk_window.get_window_data().m_device, m_buffer_memory, 0, buffer_size, 0, &data_ptr);
 				std::memcpy(data_ptr, &ubo_data, buffer_size);
-				vkUnmapMemory(vk_window.get_window_data().m_device, this->m_buffer_memory);
-
-				SPARK_INFO("[VULKAN] Created uniform buffer object of size: " << buffer_size);
+				vkUnmapMemory(vk_window.get_window_data().m_device, m_buffer_memory);
 			}
 
-			void update_data(void* new_data)
+			void update_data(void* new_data) override
 			{
-				if (m_type == typeid(decltype(std::any_cast<decltype(m_data)>(m_data))))
-				{
-					m_data = *static_cast<decltype(std::any_cast<decltype(m_data)>(m_data))*>(new_data);
-					// Logging updated data
-					SPARK_INFO("[VULKAN] Updated UBO data.");
-				}
-				else
-				{
-					SPARK_ERROR("[VULKAN] Type mismatch when trying to update UBO data.");
-				}
+				m_data = *static_cast<UBOType*>(new_data);
 			}
 
-			std::any m_data;
+			void* get_data_ptr() override
+			{
+				return &m_data;
+			}
 
-			std::function<void()> m_create_func;
+			u64 get_size() const override
+			{
+				return sizeof(UBOType);
+			}
 
-			std::function<void*()> m_data_func;
-
-			std::function<u64()> m_size_func;
-
-			VkBuffer m_buffer;
-
-			VkDeviceMemory m_buffer_memory;
-
-			std::type_index m_type;
+			UBOType m_data;
 		};
 
 		template <typename... UBOTypes>
@@ -82,7 +76,7 @@ namespace spark
 				mesh(vertices, indices)
 		{
 			create_mesh();
-			(m_ubo_list.emplace_back(ubo_data), ...);
+			(add_ubo(ubo_data), ...);
 			update_descriptor_sets(ubo_data...);
 		}
 
@@ -92,8 +86,8 @@ namespace spark
 
 			for (auto& ubo: m_ubo_list)
 			{
-				vkDestroyBuffer(vk_window.get_window_data().m_device, ubo.m_buffer, nullptr);
-				vkFreeMemory(vk_window.get_window_data().m_device, ubo.m_buffer_memory, nullptr);
+				vkDestroyBuffer(vk_window.get_window_data().m_device, ubo->m_buffer, nullptr);
+				vkFreeMemory(vk_window.get_window_data().m_device, ubo->m_buffer_memory, nullptr);
 			}
 
 			vkDestroyBuffer(vk_window.get_window_data().m_device, m_index_buffer, nullptr);
@@ -120,24 +114,16 @@ namespace spark
 		{
 			m_vertices = vertices;
 			m_indices = indices;
-			(m_ubo_list.emplace_back(ubo_data), ...);
+			(add_ubo(ubo_data), ...);
 
 			create_mesh();
 			update_descriptor_sets();
 		}
 
-		void create_uniform_buffers()
-		{
-			for (auto& ubo: m_ubo_list)
-			{
-				ubo.m_create_func();
-			}
-		}
-
 		template <typename UBOType>
 		void add_ubo(const UBOType& ubo_data)
 		{
-			m_ubo_list.emplace_back(uniform_buffer_object(ubo_data));
+			m_ubo_list.emplace_back(std::make_unique<uniform_buffer_object<UBOType>>(ubo_data));
 		}
 
 		void update_uniform_buffers()
@@ -147,25 +133,10 @@ namespace spark
 			for (auto& ubo : m_ubo_list)
 			{
 				void* data_ptr;
-				VkDeviceSize buffer_size = ubo.m_size_func(); // Get size from stored function
-				vkMapMemory(vk_window.get_window_data().m_device, ubo.m_buffer_memory, 0, buffer_size, 0, &data_ptr);
-				// This will check the type in Debug mode, not release, this is because its called multiple times
-				// Every frame which is slow
-#ifdef DEBUG
-				if (ubo.m_type == typeid(decltype(std::any_cast<decltype(ubo.m_data)>(ubo.m_data))))
-				{
-					auto& casted_data = std::any_cast<decltype(ubo.m_data)&>(ubo.m_data);
-					std::memcpy(data_ptr, &casted_data, buffer_size);
-				}
-				else
-				{
-					SPARK_ERROR("[VULKAN] Type mismatch when trying to map memory for UBO.");
-				}
-#else
-				auto& casted_data = std::any_cast<decltype(ubo.m_data)&>(ubo.m_data);
-				std::memcpy(data_ptr, &casted_data, buffer_size);
-#endif
-				vkUnmapMemory(vk_window.get_window_data().m_device, ubo.m_buffer_memory);
+				VkDeviceSize buffer_size = ubo->get_size();
+				vkMapMemory(vk_window.get_window_data().m_device, ubo->m_buffer_memory, 0, buffer_size, 0, &data_ptr);
+				std::memcpy(data_ptr, ubo->get_data_ptr(), buffer_size);
+				vkUnmapMemory(vk_window.get_window_data().m_device, ubo->m_buffer_memory);
 			}
 		}
 
@@ -189,7 +160,7 @@ namespace spark
 
 		VkDeviceMemory m_index_buffer_memory;
 
-		std::vector <uniform_buffer_object> m_ubo_list;
+		std::vector<std::unique_ptr<uniform_buffer_base>> m_ubo_list;
 
 	private:
 		void create_vertex_buffer()
@@ -379,8 +350,8 @@ namespace spark
 
 				void* data;
 				vkMapMemory(vk_window.get_window_data().m_device, buffer_memories[i], 0, buffer_size, 0, &data);
-				//memcpy(data, &ubos[i], buffer_size);
-				//vkUnmapMemory(vk_window.get_window_data().m_device, buffer_memories[i]);
+				std::memcpy(data, &ubos[i], buffer_size);
+				vkUnmapMemory(vk_window.get_window_data().m_device, buffer_memories[i]);
 			}
 		}
 
@@ -398,7 +369,7 @@ namespace spark
 			auto create_buffer_info = [&](const auto& ubo, u64 index)
 			{
 				VkDescriptorBufferInfo buffer_info { };
-				buffer_info.buffer = m_ubo_list[index].m_buffer;
+				buffer_info.buffer = m_ubo_list[index]->m_buffer;
 				buffer_info.offset = 0;
 				buffer_info.range = sizeof(ubo);
 				return buffer_info;
@@ -444,7 +415,7 @@ namespace spark
 			}
 		}
 	private:
-		friend class uniform_buffer_object;
+		friend class uniform_buffer_base;
 	};
 }
 

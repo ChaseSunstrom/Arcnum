@@ -18,27 +18,42 @@ namespace spark
 	{
 		transform(
 				const math::vec3& position = math::vec3(0.0f),
-				const math::vec3& rotation = math::vec3(1.0f),
+				const math::vec3& rotation = math::vec3(0.0f),
 				const math::vec3& scale = math::vec3(1.0f))
 		{
 			math::mat4 mat = math::mat4(1.0f); // Start with identity matrix
 
-			// Apply translation
+			// Apply translation, rotation, and scaling
 			mat = math::translate(mat, position);
-
-			// Apply rotations around the Z, Y, and X axes, in that order
 			mat = math::rotate(mat, math::radians(rotation.z), math::vec3(0.0f, 0.0f, 1.0f));
 			mat = math::rotate(mat, math::radians(rotation.y), math::vec3(0.0f, 1.0f, 0.0f));
 			mat = math::rotate(mat, math::radians(rotation.x), math::vec3(1.0f, 0.0f, 0.0f));
-
-			// Apply scaling
 			mat = math::scale(mat, scale);
+
 			m_transform = mat;
 		}
 
-		bool operator!=(const transform& other) const
+		void update_matrix(const math::vec3& position, const math::vec3& rotation, const math::vec3& scale)
 		{
-			return m_transform != other.m_transform;
+			m_transform = math::mat4(1.0f);  // Reset to identity matrix
+			m_transform = math::translate(m_transform, position);
+			m_transform = math::rotate(m_transform, math::radians(rotation.z), math::vec3(0.0f, 0.0f, 1.0f));
+			m_transform = math::rotate(m_transform, math::radians(rotation.y), math::vec3(0.0f, 1.0f, 0.0f));
+			m_transform = math::rotate(m_transform, math::radians(rotation.x), math::vec3(1.0f, 0.0f, 0.0f));
+			m_transform = math::scale(m_transform, scale);
+		}
+
+		transform& operator*=(const transform& rhs)
+		{
+			this->m_transform = this->m_transform * rhs.m_transform;
+			return *this;
+		}
+
+		transform operator*(const transform& rhs) const
+		{
+			transform result = *this; // Copy current transform
+			result *= rhs;            // Apply multiplication
+			return result;
 		}
 
 		math::mat4 m_transform;
@@ -54,9 +69,7 @@ namespace spark
 				texture_type type,
 				std::optional <i32> depth = std::nullopt,
 				const std::vector <std::pair<GLenum, GLenum>>& params = std::vector < std::pair < GLenum,
-				GLenum
-
-		>>());
+				GLenum>>());
 
 		~texture();
 
@@ -153,11 +166,6 @@ namespace spark
 
 		~mesh_component() = default;
 
-		bool operator!=(const mesh_component& other) const
-		{
-			return m_mesh_name != other.m_mesh_name;
-		}
-
 		std::string m_mesh_name = "";
 	};
 
@@ -185,10 +193,6 @@ namespace spark
 		render_component(bool has_mesh, bool has_transform, bool has_material) :
 				m_renderable(has_mesh && has_transform && has_material) { }
 
-		bool operator!=(const render_component& other) const
-		{
-			return m_renderable != other.m_renderable;
-		}
 
 		bool m_renderable = false;
 	};

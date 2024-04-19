@@ -62,12 +62,15 @@ namespace spark
 			auto& _material_manager = engine::get<material_manager>();
 
 			std::vector<vertex> vertices = {
-					vertex(math::vec3(-size.x, -size.y, 0.0f)), vertex(math::vec3(size.x, -size.y, 0.0f)),
-					vertex(math::vec3(size.x, size.y, 0.0f)), vertex(math::vec3(-size.x, size.y, 0.0f)),
+					vertex(math::vec3(-size.x, -size.y, 0.0f)), 
+					vertex(math::vec3(size.x, -size.y, 0.0f)),
+					vertex(math::vec3(size.x, size.y, 0.0f)), 
+					vertex(math::vec3(-size.x, size.y, 0.0f)),
 			};
 
 			std::vector<u32> indices = {
-					0, 1, 2, 2, 3, 0
+					0, 1, 2,
+					2, 3, 0
 			};
 
 			_mesh_manager.create_mesh("__square__", vertices, indices);
@@ -446,7 +449,7 @@ namespace spark
 	};
 
 	template <typename T, typename... Args>
-	entity create_shape(Args&& ... args)
+	entity create_shape(Args&&... args)
 	{
 		return T::create(std::forward<Args>(args)...);
 	}

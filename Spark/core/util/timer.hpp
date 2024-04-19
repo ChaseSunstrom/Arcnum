@@ -23,7 +23,7 @@ namespace spark
 			m_is_running = false;
 		}
 
-		f64 elapsed_seconds() const
+		i64 elapsed_seconds() const
 		{
 			if (m_is_running)
 			{
@@ -31,10 +31,10 @@ namespace spark
 				auto duration = std::chrono::duration_cast<std::chrono::seconds>(end_time - m_start_time);
 				return duration.count();
 			}
-			return 0.0;
+			return 0;
 		}
 
-		f64 elapsed_milliseconds() const
+		i64 elapsed_milliseconds() const
 		{
 			if (m_is_running)
 			{
@@ -42,10 +42,10 @@ namespace spark
 				auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - m_start_time);
 				return duration.count();
 			}
-			return 0.0;
+			return 0;
 		}
 
-		f64 elapsed_microseconds() const
+		i64 elapsed_microseconds() const
 		{
 			if (m_is_running)
 			{
@@ -53,7 +53,8 @@ namespace spark
 				auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - m_start_time);
 				return duration.count();
 			}
-			return 0.0;
+
+			return 0;
 		}
 
 	private:

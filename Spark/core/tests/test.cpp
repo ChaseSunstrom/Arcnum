@@ -1,64 +1,146 @@
 #include "test.hpp"
 
+#include "../ecs/ecs.hpp"
+#include "../scene/octree.hpp"
 #include "../util/memory.hpp"
 
 namespace spark
 {
 	namespace test
 	{
-		struct test_resource
-		{
-			i32 value;
+        struct octree_fixture
+        {
+            ecs& _ecs;
+            octree _octree;
+            std::vector<entity> _entities;
 
-			explicit test_resource(i32 val) :
-					value(val) { }
-		};
+            // Setup octree with a center and half-size
+            octree_fixture() :
+                _ecs(ecs::get()),
+                _octree(math::vec3(0.0f), math::vec3(50.0f)) // Large enough for multiple entities
+            {
+                // Register required components
+                _ecs.register_component<transform>();
 
-		TEST(test_unique_shield_ptr)
-		{
-			unique_shield_ptr<test_resource> ptr(new test_resource(10));
-			EXPECT_EQ(ptr.access()->value, 10);
-			ptr.reset(new test_resource(20));
-			EXPECT_EQ(ptr.access()->value, 20);
-		}
+                // Create some entities with random positions
+                std::default_random_engine generator;
+                std::uniform_real_distribution<float> distribution(-49.0f, 49.0f);
+                for (i32 i = 0; i < 10; ++i) // Create 10 entities
+                {
+                    entity ent = _ecs.create_entity();
+                    transform t;
+                    t.m_transform = glm::translate(glm::mat4(1.0f), math::vec3(distribution(generator), distribution(generator), distribution(generator)));
+                    _ecs.add_component(ent, t);
 
-		TEST(test_shared_shield_ptr)
-		{
-			shared_shield_ptr<test_resource> ptr1(new test_resource(10));
-			EXPECT_EQ(ptr1.access()->value, 10);
-			{
-				shared_shield_ptr<test_resource> ptr2 = ptr1;
-				EXPECT_EQ(ptr1.access()->value, ptr2.access()->value);
-				EXPECT_EQ(ptr2.use_count(), 2);
-			}
-			EXPECT_EQ(ptr1.use_count(), 1);
-		}
+                    _entities.push_back(ent);
+                }
+            }
 
-		TEST(test_make_threaded_unique_ptr)
-		{
-			auto ptr = std::make_unique<test_resource>(30);
-			auto ptr2 = make_threaded<test_resource>(std::move(ptr));
-			EXPECT_EQ(ptr2.access()->value, 30);
-		}
+            // Cleanup function to remove all entities
+            ~octree_fixture()
+            {
+                for (auto& ent : _entities)
+                {
+                    _ecs.destroy_entity(ent);
+                }
+            }
+        };
 
-		TEST(test_make_threaded_shared_ptr)
-		{
-			auto ptr = std::make_shared<test_resource>(40);
-			auto ptr2 = make_threaded<test_resource>(ptr);
-			EXPECT_EQ(ptr2.access()->value, 40);
-		}
+        entity create_transformed_entity(ecs& instance, const math::vec3& position)
+        {
+            entity ent = instance.create_entity();
+            transform t;
+            t.m_transform = glm::translate(glm::mat4(1.0f), position);
+            instance.add_component(ent, t);
+            return ent;
+        }
+        // Test adding entities to the octree
+        TEST(test_octree_add_entity)
+        {
+            ecs& instance = ecs::get();
+            octree test_octree(math::vec3(0.0f), math::vec3(50.0f), nullptr);
+            std::vector<entity> entities;
 
-		TEST(test_threaded_shared_ptr)
-		{
-			shared_shield_ptr<i32> ptr(new i32(0));
-			std::thread t1([&ptr] { for (i32 i = 0; i < 1000; ++i) { ++(*ptr.access()); } });
-			std::thread t2([&ptr] { for (i32 i = 0; i < 1000; ++i) { ++(*ptr.access()); } });
-			t1.join();
-			t2.join();
-			EXPECT_EQ(*ptr.access(),
-			          2000); // This should pass if the shared_shield_ptr properly locks around the int increment.
-		}
+            // Create entities within bounds
+            entities.push_back(create_transformed_entity(instance, math::vec3(0.0f, 0.0f, 0.0f)));
+            entities.push_back(create_transformed_entity(instance, math::vec3(25.0f, 25.0f, 25.0f)));
+            entities.push_back(create_transformed_entity(instance, math::vec3(-25.0f, -25.0f, -25.0f)));
 
+            // Add entities to the octree and check if they are inside
+            for (auto& ent : entities)
+            {
+                test_octree.add_entity(ent);
+                bool is_inside = test_octree.entity_is_inside(ent);
+                EXPECT_TRUE(is_inside);
+
+                if (!is_inside)
+                {
+                    auto& _transform = instance.get_component<transform>(ent);
+                    auto position = extract_position(_transform.m_transform);
+                    std::cout << "Entity expected to be inside octree is outside. Position: " << position.x << ", " << position.y << ", " << position.z << std::endl;
+                }
+
+                // Clean up
+                instance.destroy_entity(ent);
+            }
+        }
+
+        
+
+        TEST(test_octree_expansion)
+        {
+            octree_fixture fixture;
+
+            entity ent = create_transformed_entity(fixture._ecs, math::vec3(100.0f, 100.0f, 100.0f)); // Position outside the initial bounds
+            fixture._octree.add_entity(ent);
+            EXPECT_TRUE(fixture._octree.entity_is_inside(ent)); // Entity should now be inside after expansion
+
+            fixture._ecs.destroy_entity(ent); // Clean up
+        }
+
+        TEST(test_octree_update_entity)
+        {
+            octree_fixture fixture;
+
+            entity ent = fixture._entities.front();
+            transform& t = fixture._ecs.get_component<transform>(ent);
+            t.m_transform = glm::translate(glm::mat4(1.0f), math::vec3(0.0f)); // Move to the origin
+            fixture._ecs.set_component(ent, t);
+
+            fixture._octree.update_entity(ent);
+            EXPECT_TRUE(fixture._octree.entity_is_inside(ent)); // Check if the entity is inside after update
+        }
+
+        TEST(test_octree_query_with_filter)
+        {
+            octree_fixture fixture;
+
+            auto filter_func = [&fixture](entity e) -> bool {
+                const auto& t = fixture._ecs.get_component<transform>(e);
+                return extract_position(t.m_transform).x > 0.0f; // Filter for positive x
+                };
+
+            auto results = fixture._octree.query(math::vec3(0.0f), 50.0f, filter_func);
+            for (auto& ent : results)
+            {
+                const auto& t = fixture._ecs.get_component<transform>(ent);
+                EXPECT_TRUE(extract_position(t.m_transform).x > 0.0f); // Verify filter effectiveness
+            }
+        }
+
+        TEST(test_octree_subdivision)
+        {
+            octree_fixture fixture;
+
+            // Ensure subdivision occurs when adding entities beyond the threshold
+            for (i32 i = 0; i < 20; ++i)
+            {
+                entity ent = create_transformed_entity(fixture._ecs, math::vec3(0.0f)); // All entities at the origin
+                fixture._octree.add_entity(ent);
+            }
+
+            EXPECT_FALSE(fixture._octree.is_leaf()); // Octree should not be a leaf after subdivision
+        }
 
 		bool core_test_main()
 		{

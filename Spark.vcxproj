@@ -124,14 +124,17 @@
     <ClInclude Include="Spark\core\net\udp.hpp" />
     <ClInclude Include="Spark\core\physics\aabb.hpp" />
     <ClInclude Include="Spark\core\physics\gravity.hpp" />
+    <ClInclude Include="Spark\core\physics\physics.hpp" />
+    <ClInclude Include="Spark\core\physics\rigid_body.hpp" />
     <ClInclude Include="Spark\core\renderer\frustum.hpp" />
     <ClInclude Include="Spark\core\renderer\instancer.hpp" />
     <ClInclude Include="Spark\core\renderer\layer.hpp" />
     <ClInclude Include="Spark\core\renderer\layer_stack.hpp" />
-    <ClInclude Include="Spark\core\renderer\octree.hpp" />
     <ClInclude Include="Spark\core\renderer\renderer.hpp" />
+    <ClInclude Include="Spark\core\scene\octree.hpp" />
     <ClInclude Include="Spark\core\scene\scene.hpp" />
     <ClInclude Include="Spark\core\scene\scene_manager.hpp" />
+    <ClInclude Include="Spark\core\scene\scene_partition.hpp" />
     <ClInclude Include="Spark\core\spark.hpp" />
     <ClInclude Include="Spark\core\spark_main.hpp" />
     <ClInclude Include="Spark\core\std_include.hpp" />
@@ -142,6 +145,7 @@
     <ClInclude Include="Spark\core\user\control.hpp" />
     <ClInclude Include="Spark\core\util\file.hpp" />
     <ClInclude Include="Spark\core\util\macros.hpp" />
+    <ClInclude Include="Spark\core\util\math.hpp" />
     <ClInclude Include="Spark\core\util\memory.hpp" />
     <ClInclude Include="Spark\core\util\singelton.hpp" />
     <ClInclude Include="Spark\core\util\thread_pool.hpp" />
@@ -181,7 +185,6 @@
     <ClCompile Include="Spark\core\physics\aabb.cpp" />
     <ClCompile Include="Spark\core\renderer\frustum.cpp" />
     <ClCompile Include="Spark\core\renderer\instancer.cpp" />
-    <ClCompile Include="Spark\core\renderer\octree.cpp" />
     <ClCompile Include="Spark\core\renderer\renderer.cpp" />
     <ClCompile Include="Spark\core\spark_main.cpp" />
     <ClCompile Include="Spark\core\tests\test.cpp" />

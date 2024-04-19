@@ -199,10 +199,6 @@ namespace spark
 			return m_cameras;
 		}
 
-		void render_octree(camera& camera, octree& octree, math::mat4& modelMatrix);
-
-		void render_frustum(camera& camera, frustum& frustum);
-
 	private:
 
 		renderer() :

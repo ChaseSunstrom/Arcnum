@@ -3,15 +3,23 @@
 
 namespace spark
 {
-	observer::observer()
+	observer::observer(bool manual_register) :
+		m_manual_register(manual_register)
 	{
-		// Automatically register this observer with the ecs system upon creation
-		ecs::get().add_observer(this);
+		if (!manual_register)
+		{
+			register_observer();
+		}
 	}
 
 	observer::~observer()
 	{
 		// Automatically unregister this observer upon destruction
 		ecs::get().remove_observer(*this);
+	}
+
+	void observer::register_observer()
+	{
+		ecs::get().add_observer(this);
 	}
 }

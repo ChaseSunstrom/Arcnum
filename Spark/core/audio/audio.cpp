@@ -9,9 +9,12 @@ namespace spark
 
 		for (const auto& component: m_audio_components)
 		{
-			if (component.m_play_condition(m_component_manager))
+			if (!component.has_value())
+				continue;
+
+			if (component.value().m_play_condition())
 			{
-				audio_man.play_sound(component.m_name);
+				audio_man.play_sound(component.value().m_name);
 			}
 		}
 	}

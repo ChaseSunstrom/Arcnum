@@ -6,7 +6,7 @@
 #include "shader.hpp"
 #include "../../net/serializeable.hpp"
 
-#include "../util/singelton.hpp"
+#include "../../util/singelton.hpp"
 
 #include <boost/serialization/access.hpp>
 
@@ -72,18 +72,17 @@ namespace spark
 	public:
 		component_array() = default;
 
-		std::vector <T>& get_array()
+		std::vector <std::optional<T>>& get_array()
 		{
 			return m_component_array;
 		}
 
-		void insert(entity entity, T component)
+		void insert(entity entity, T component) 
 		{
-			if (entity >= m_component_array.size())
+			if (entity >= m_component_array.size()) 
 			{
-				m_component_array.resize(entity + 1);
+				m_component_array.resize(entity + 1, std::optional<T>());
 			}
-
 			m_component_array[entity] = component;
 		}
 
@@ -107,20 +106,31 @@ namespace spark
 		{
 			if (__SPARK_ASSERT__(entity > m_component_array.size()))
 			{
-				SPARK_FATAL("Entity index out of bounds.");
+				SPARK_ERROR("[ECS] Entity index out of bounds.");
+
 			}
 
-			return m_component_array[entity];
+			return m_component_array[entity].value();
 		}
 
-		bool has_component(entity entity) const override
+		T& operator[](entity entity)
 		{
-			return entity < m_component_array.size();
+			if (__SPARK_ASSERT__(entity > m_component_array.size()))
+			{
+				SPARK_ERROR("[ECS] Entity index out of bounds.");
+			}
+
+			return m_component_array[entity].value();
 		}
 
-		const component_info_base get_component(entity entity) override
+		bool has_component(entity entity) const override 
 		{
-			return component_info<T>(m_component_array[entity]);
+			return entity < m_component_array.size() && m_component_array[entity].has_value();
+		}
+
+		const component_info_base get_component(entity entity) override 
+		{
+			return component_info<T>(m_component_array[entity].value());
 		}
 
 		u32 size() const
@@ -129,7 +139,7 @@ namespace spark
 		}
 
 	private:
-		std::vector <T> m_component_array = std::vector<T>();
+		std::vector<std::optional<T>> m_component_array;
 
 		SERIALIZE_MEMBERS(component_array, m_component_array)
 	};
@@ -172,13 +182,13 @@ namespace spark
 		}
 
 		template <typename T>
-		void add_component(entity entity, T component)
+		void add_component(entity entity, const T& component)
 		{
 			get_component_array<T>().insert(entity, component);
 		}
 
 		template <typename T>
-		void set_component(entity entity, T component)
+		void set_component(entity entity, const T& component)
 		{
 			get_component_array<T>()[entity] = component;
 		}
@@ -225,20 +235,19 @@ namespace spark
 		}
 
 		template <typename T>
-		bool has_component(entity id) const
+		bool has_component(entity id) const 
 		{
 			std::string type = std::type_index(typeid(T)).name();
-
 			auto found = m_components.find(type);
-
-			if (found != m_components.end())
+			
+			if (found != m_components.end()) 
 			{
 				auto array = static_cast<component_array<T>*>(found->second.get());
-				return id < array->get_array().size() && array->get_array()[id] != T();
+				return id < array->get_array().size() && array->get_array()[id].has_value(); // Adjusted for optional
 			}
-
 			return false;
 		}
+
 
 	private:
 

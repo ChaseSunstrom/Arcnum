@@ -3,6 +3,7 @@
 
 #include "../../util/file.hpp"
 #include "../../events/sub.hpp"
+#include "../../scene/scene_manager.hpp"
 #include "../../renderer/renderer.hpp"
 
 #include "IMGUI/imgui.h"
@@ -216,7 +217,19 @@ namespace spark
 		return !glfwWindowShouldClose(m_window);
 	}
 
-	void vulkan_window::set_vsync(bool vsync) { }
+	void vulkan_window::set_vsync(bool vsync) 
+	{
+		m_window_data->m_vsync = vsync;
+
+		if (m_window_data->m_vsync)
+		{
+			glfwSwapInterval(1);
+		}
+		else
+		{
+			glfwSwapInterval(0);
+		}
+	}
 
 	void vulkan_window::set_window_title(const std::string& title)
 	{
@@ -531,6 +544,8 @@ namespace spark
 				m_window_data->m_width, m_window_data->m_height, m_window_data->m_title.c_str(), NULL, NULL);
 
 		glfwSetWindowUserPointer(m_window, m_window_data.get());
+
+		set_vsync(false);
 
 		glfwSetFramebufferSizeCallback(m_window, framebuffer_resize_callback);
 		glfwSetWindowCloseCallback(m_window, close_event_callback);
@@ -1080,7 +1095,11 @@ namespace spark
 		render_pass_info.renderArea.offset = { 0, 0 };
 		render_pass_info.renderArea.extent = m_window_data->m_swapchain_extent;
 
-		VkClearValue clear_color = { { { 0.0f, 0.0f, 0.0f, 1.0f } } };
+		spark::math::vec4 scene_color = engine::get<scene_manager>().get_current_scene()
+																	.get_scene_config()
+																	.m_background_color;
+
+		VkClearValue clear_color = { { { scene_color.r, scene_color.g, scene_color.b, scene_color.a } } };
 		render_pass_info.clearValueCount = 1;
 		render_pass_info.pClearValues = &clear_color;
 

@@ -50,9 +50,9 @@ namespace spark
 
 		virtual void set_window_title(const std::string& title) = 0;
 
-		virtual window_data& get_window_data() = 0;
+		virtual window_data& get_window_data() const = 0;
 
-		window_type get_window_type() { return m_type; }
+		window_type get_window_type() const { return m_type; }
 
 	protected:
 		window(window_type type) :

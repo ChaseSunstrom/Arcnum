@@ -94,7 +94,8 @@ namespace spark
 		const i32 m_max_frames_in_flight = 2;
 
 		const std::vector<const char*> m_validation_layers = {
-				"VK_LAYER_KHRONOS_validation"
+				"VK_LAYER_KHRONOS_validation",
+				"VK_LAYER_LUNARG_monitor"
 		};
 
 		const std::vector<const char*> m_device_extensions = {
@@ -124,7 +125,7 @@ namespace spark
 
 		void set_window_title(const std::string& title) override;
 
-		vulkan_window_data& get_window_data()
+		vulkan_window_data& get_window_data() const
 		{
 			return *m_window_data;
 		}

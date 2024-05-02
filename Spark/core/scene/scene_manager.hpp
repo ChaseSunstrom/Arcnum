@@ -9,16 +9,16 @@
 namespace spark
 {
 	// Seperate file to prevent circular dependencies
-	class scene_manager
+	class SceneManager
 	{
 	public:
-		static scene_manager& get()
+		static SceneManager& get()
 		{
-			static scene_manager instance;
+			static SceneManager instance;
 			return instance;
 		}
 
-		void add_scene(const std::string& name, std::unique_ptr<scene> scene)
+		void add_scene(const std::string& name, std::unique_ptr<Scene> scene)
 		{
 			m_scenes[name] = std::move(scene);
 			m_scenes_vector.push_back(&*m_scenes[name]);
@@ -34,7 +34,7 @@ namespace spark
 			m_scenes.erase(name);
 		}
 
-		scene& get_scene(const std::string& name)
+		Scene& get_scene(const std::string& name)
 		{
 			return *m_scenes[name];
 		}
@@ -44,30 +44,30 @@ namespace spark
 			m_current_scene_name = name;
 		}
 
-		scene& get_current_scene()
+		Scene& get_current_scene()
 		{
 			return *m_scenes[m_current_scene_name];
 		}
 
 		void update_current_scene(f64 time_step)
 		{
-			scene& current_scene = *m_scenes[m_current_scene_name];
+			Scene& current_scene = *m_scenes[m_current_scene_name];
 		}
 
-		std::vector<scene*>& get_all_scenes()
+		std::vector<Scene*>& get_all_scenes()
 		{
 			return m_scenes_vector;
 		}
 
 	private:
-		scene_manager() = default;
+		SceneManager() = default;
 
-		~scene_manager() = default;
+		~SceneManager() = default;
 
 	private:
-		std::unordered_map<std::string, std::unique_ptr<scene>> m_scenes = std::unordered_map<std::string, std::unique_ptr<scene>>();
+		std::unordered_map<std::string, std::unique_ptr<Scene>> m_scenes = std::unordered_map<std::string, std::unique_ptr<Scene>>();
 
-		std::vector<scene*> m_scenes_vector = std::vector<scene*>();
+		std::vector<Scene*> m_scenes_vector = std::vector<Scene*>();
 
 		std::string m_current_scene_name = "";
 	};

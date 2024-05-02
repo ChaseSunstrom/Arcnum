@@ -8,32 +8,32 @@
 
 namespace spark
 {
-	f64 application::s_fixed_delta_time = 0.005;
+	f64 Application::s_fixed_delta_time = 0.005;
 
-	f64 application::s_delta_time = 0;
+	f64 Application::s_delta_time = 0;
 
-	f64 application::s_last_frame_time = 0;
+	f64 Application::s_last_frame_time = 0;
 
-	f64 application::s_total_time = 0;
+	f64 Application::s_total_time = 0;
 
-	u64 application::s_tick_speed = 60;
+	u64 Application::s_tick_speed = 60;
 
-	std::unique_ptr<timer> application::s_timer = std::make_unique<timer>();
+	std::unique_ptr<Timer> Application::s_timer = std::make_unique<Timer>();
 
-	void application::on_start()
+	void Application::on_start()
 	{
-		application::add_scene("Main Scene", scene_config(math::vec4(0)));
+		Application::add_scene("Main Scene", SceneConfig(math::vec4(0)));
 
-		auto& _window_man = window_manager::get();
+		auto& _window_man = WindowManager::get();
 		auto& _window = _window_man.get_current_window();
-		auto& _ecs = engine::get<ecs>();
-		auto& _ui = engine::get<ui_manager>();
+		auto& _ecs = Engine::get<ECS>();
+		auto& _ui = Engine::get<UIManager>();
 
-		app_functions::s_on_start();
+		AppFunctions::s_on_start();
 
 		_ecs.start_systems();
 
-		subscription<event>::create(EVERY_EVENT_TOPIC, app_functions::s_on_event);
+		Subscription<Event>::create(EVERY_EVENT_TOPIC, AppFunctions::s_on_event);
 
 		s_timer->start();
 
@@ -43,21 +43,21 @@ namespace spark
 		}
 	}
 
-	void application::on_update()
+	void Application::on_update()
 	{
 		calculate_delta_time();
 
-		app_functions::s_on_update();
+		AppFunctions::s_on_update();
 
-		auto& _window = engine::get<window_manager>().get_current_window();
-		auto& _renderer = engine::get<renderer>();
-		auto& _scene_manager = engine::get<scene_manager>();
-		auto& _ecs = engine::get<ecs>();
-		auto& _ui = engine::get<ui_manager>();
+		auto& _window = Engine::get<WindowManager>().get_current_window();
+		auto& _renderer = Engine::get<Renderer>();
+		auto& _scene_manager = Engine::get<SceneManager>();
+		auto& _ecs = Engine::get<ECS>();
+		auto& _ui = Engine::get<UIManager>();
 
-		if (get_current_window_type() == window_type::VULKAN)
+		if (get_current_window_type() == WindowType::VULKAN)
 		{
-			vulkan_window& opengl_win = dynamic_cast<vulkan_window&>(_window);
+			VulkanWindow& opengl_win = dynamic_cast<VulkanWindow&>(_window);
 
 			_ecs.update_systems(s_delta_time);
 
@@ -70,45 +70,45 @@ namespace spark
 			_window.post_draw();
 		}
 
-		spark::thread_pool::synchronize_registered_threads();
+		spark::ThreadPool::synchronize_registered_threads();
 	}
 
-	void application::on_event(std::shared_ptr<event> event)
+	void Application::on_event(std::shared_ptr<Event> event)
 	{
-		thread_pool::enqueue(
-				task_priority::CRITICAL, false, [event]()
+		ThreadPool::enqueue(
+				TaskPriority::CRITICAL, false, [event]()
 				{
-					spark::event_dispatcher dispatcher(event);
-					return dispatcher.dispatch(app_functions::s_on_event);
+					spark::EventDispatcher dispatcher(event);
+					return dispatcher.dispatch(AppFunctions::s_on_event);
 				});
 	}
 
-	void application::on_shutdown()
+	void Application::on_shutdown()
 	{
-		auto& _ecs = engine::get<ecs>();
+		auto& _ecs = Engine::get<ECS>();
 
 		_ecs.shutdown_systems();
 	}
 
-	void application::set_window_title(const std::string& title)
+	void Application::set_window_title(const std::string& title)
 	{
-		auto& _window = engine::get<window_manager>().get_current_window();
+		auto& _window = Engine::get<WindowManager>().get_current_window();
 
 		_window.set_window_title(title);
 	}
 
-	void application::add_scene(const std::string& name, const scene_config& config)
+	void Application::add_scene(const std::string& name, const SceneConfig& config)
 	{
-		auto& _scene_manager = engine::get<scene_manager>();
-		_scene_manager.add_scene(name, std::make_unique<scene>(config));
+		auto& _scene_manager = Engine::get<SceneManager>();
+		_scene_manager.add_scene(name, std::make_unique<Scene>(config));
 	}
 
-	void application::set_delta_time(u64 delta_time)
+	void Application::set_delta_time(u64 delta_time)
 	{
 		s_delta_time = delta_time;
 	}
 
-	void application::calculate_delta_time()
+	void Application::calculate_delta_time()
 	{
 		// Update last frame time for frame rate calculations
 		f64 time = s_timer->elapsed_milliseconds();
@@ -117,38 +117,43 @@ namespace spark
 		s_total_time = time;
 	}
 
-	f64 application::get_delta_time()
+	f64 Application::get_delta_time()
 	{
 		return s_last_frame_time / 1000.0; // Convert milliseconds to seconds
 	}
 
-	f64 application::get_fixed_delta_time()
+	f64 Application::get_fixed_delta_time()
 	{
 		return s_fixed_delta_time;
 	}
 
-	f64 application::get_last_frame_time()
+	f64 Application::get_last_frame_time()
 	{
 		return s_last_frame_time;
 	}
 
-	f64 application::get_total_time()
+	f64 Application::get_total_time()
 	{
 		return s_total_time;
 	}
 
-	u64 application::get_tick_speed()
+	u64 Application::get_tick_speed()
 	{
 		return s_tick_speed;
 	}
 
-	void application::set_fixed_delta_time(f64 time)
+	void Application::set_fixed_delta_time(f64 time)
 	{
 		s_fixed_delta_time = time;
 	}
 
-	void application::set_tick_speed(u64 speed)
+	void Application::set_tick_speed(u64 speed)
 	{
 		s_tick_speed = speed;
+	}
+
+	Scene& Application::get_current_scene()
+	{
+		return Engine::get<SceneManager>().get_current_scene();
 	}
 }

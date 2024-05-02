@@ -11,10 +11,10 @@ namespace spark
 	// LAYER:        | Used for organizing related data in the layer stack and application
 	// ==============================================================================
 
-	class layer
+	class Layer
 	{
 	public:
-		virtual ~layer() = default;
+		virtual ~Layer() = default;
 
 		virtual void on_attach() = 0;
 
@@ -22,7 +22,7 @@ namespace spark
 
 		virtual void on_update() = 0;
 
-		virtual void on_event(std::shared_ptr <event>) = 0;
+		virtual void on_event(std::shared_ptr <Event>) = 0;
 	};
 }
 

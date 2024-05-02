@@ -10,19 +10,19 @@
 
 namespace spark
 {
-	struct window_data
+	struct WindowData
 	{
-		window_data() = default;
+		WindowData() = default;
 
-		window_data(
+		WindowData(
 				std::string title,
 				bool vsync,
 				i32 height,
 				i32 width,
-				std::function<void(std::shared_ptr < event > )> event_callback) :
+				std::function<void(std::shared_ptr < Event > )> event_callback) :
 				m_title(title), m_vsync(vsync), m_height(height), m_width(width), m_event_callback(event_callback) { }
 
-		virtual ~window_data() = default;
+		virtual ~WindowData() = default;
 
 		std::string m_title = "Title";
 
@@ -32,10 +32,10 @@ namespace spark
 
 		i32 m_height = 1080;
 
-		std::function<void(std::shared_ptr < event > )> m_event_callback;
+		std::function<void(std::shared_ptr < Event > )> m_event_callback;
 	};
 
-	class window
+	class Window
 	{
 	public:
 		virtual void pre_draw() = 0;
@@ -50,19 +50,19 @@ namespace spark
 
 		virtual void set_window_title(const std::string& title) = 0;
 
-		virtual window_data& get_window_data() const = 0;
+		virtual WindowData& get_window_data() const = 0;
 
-		window_type get_window_type() const { return m_type; }
+		WindowType get_window_type() const { return m_type; }
 
 	protected:
-		window(window_type type) :
+		Window(WindowType type) :
 				m_type(type) { }
 
-		virtual ~window() = default;
+		virtual ~Window() = default;
 
 		bool m_running = true;
 
-		window_type m_type = window_type::UNKNOWN;
+		WindowType m_type = WindowType::UNKNOWN;
 	};
 
 }

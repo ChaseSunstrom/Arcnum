@@ -21,10 +21,10 @@ namespace spark
 		using boost::asio::ip::udp;
 		namespace asio = boost::asio;
 
-		class udp_client
+		class UDPClient
 		{
 		public:
-			udp_client(
+			UDPClient(
 					const std::string& host = "127.0.0.1",
 					const std::string& port = "8080",
 					asio::io_context& io_context = default_io_context()) :
@@ -35,7 +35,7 @@ namespace spark
 				m_socket.open(udp::v4());
 			}
 
-			~udp_client()
+			~UDPClient()
 			{
 				if (m_socket.is_open())
 				{
@@ -55,13 +55,13 @@ namespace spark
 								auto [type, version, data] = deserialize(
 										std::string(
 												m_receive_buffer.begin(), m_receive_buffer.begin() + bytes_recvd));
-								auto packet = packet_factory_registry::create_packet(type, version, data);
+								auto packet = PacketFactoryRegistry::create_packet(type, version, data);
 								SPARK_TRACE("[UDP CLIENT RECEIVED PACKET]: [TYPE]:" << type << " [VERSION]:"
 								                                                    << std::to_string(version));
 								if (packet)
 								{
 									packet->process();
-									std::shared_ptr <udp_server_receive_event> event = std::make_shared<udp_server_receive_event>(
+									std::shared_ptr <UDPServerReceiveEvent> event = std::make_shared<UDPServerReceiveEvent>(
 											std::move(packet));
 									// Publish the packet data to the event pipeline so other stuff can use the data the server recieves
 									publish_to_topic(UDP_CLIENT_RECEIVE_TOPIC, event);
@@ -81,8 +81,8 @@ namespace spark
 			// Call this method after initializing the client to start listening
 			void run()
 			{
-				thread_pool::enqueue(
-						task_priority::HIGH, false, [this]()
+				ThreadPool::enqueue(
+						TaskPriority::HIGH, false, [this]()
 						{
 							start_receive();
 							m_io_context.get().run();
@@ -108,10 +108,10 @@ namespace spark
 			std::array<uint8_t, 4096> m_receive_buffer;
 		};
 
-		class udp_server
+		class UDPServer
 		{
 		public:
-			udp_server(
+			UDPServer(
 					const std::string& ip = "127.0.0.1",
 					const std::string& port = "8080",
 					asio::io_context& io_context = default_io_context()) :
@@ -126,7 +126,7 @@ namespace spark
 
 			}
 
-			~udp_server()
+			~UDPServer()
 			{
 				if (m_socket.is_open())
 				{
@@ -165,14 +165,14 @@ namespace spark
 									auto [type, version, data] = deserialize(
 											std::string(
 													m_receive_buffer.begin(), m_receive_buffer.begin() + bytes_recvd));
-									auto packet = packet_factory_registry::create_packet(type, version, data);
+									auto packet = PacketFactoryRegistry::create_packet(type, version, data);
 									SPARK_TRACE("[UDP SERVER RECEIVED PACKET]: [TYPE]:" << type << " [VERSION]:"
 									                                                    << std::to_string(version));
 									if (packet)
 									{
 										packet->process();
 										broadcast(*packet);
-										std::shared_ptr <udp_server_receive_event> event = std::make_shared<udp_server_receive_event>(
+										std::shared_ptr <UDPServerReceiveEvent> event = std::make_shared<UDPServerReceiveEvent>(
 												std::move(packet));
 										// Publish the packet data to the event pipeline so other stuff can use the data the server recieves
 										publish_to_topic(UDP_SERVER_RECEIVE_TOPIC, event);
@@ -194,7 +194,7 @@ namespace spark
 						});
 			}
 
-			void broadcast(const serializeable& packet)
+			void broadcast(const Serializeable& packet)
 			{
 				std::string serialized_packet = serialize(packet);
 

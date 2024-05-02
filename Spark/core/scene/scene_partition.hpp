@@ -6,42 +6,42 @@
 
 namespace spark
 {
-	class spatial_partition : public virtual observer
+	class SpatialPartition : public virtual Observer
 	{
 	public:
-		spatial_partition(spatial_partition* parent = nullptr) : observer() {}
-		virtual ~spatial_partition() = default;
+		SpatialPartition(SpatialPartition* parent = nullptr) : Observer() {}
+		virtual ~SpatialPartition() = default;
 
-		virtual void add_entity(entity e) {}
-		virtual void remove_entity(entity e) {}
-		virtual void update_entity(entity e) {}
+		virtual void add_entity(Entity e) {}
+		virtual void remove_entity(Entity e) {}
+		virtual void update_entity(Entity e) {}
 
-		virtual void on_notify(std::shared_ptr<event> event) {}
+		virtual void on_notify(std::shared_ptr<Event> event) {}
 
-		virtual bool entity_is_inside(entity e) const {
+		virtual bool entity_is_inside(Entity e) const {
 			return false; 
 		}
 		
-		virtual std::vector<entity> query(const math::vec3& position, f32 radius) const 
+		virtual std::vector<Entity> query(const math::vec3& position, f32 radius) const 
 		{
-			return std::vector<entity>();
+			return std::vector<Entity>();
 		}
-		virtual std::vector<entity> query(const math::vec3& position, f32 radius, std::function<bool(entity)> filter) const 
+		virtual std::vector<Entity> query(const math::vec3& position, f32 radius, std::function<bool(Entity)> filter) const 
 		{
-			return std::vector<entity>();
+			return std::vector<Entity>();
 		}
-		virtual std::vector<entity> query(const math::vec3& min, const math::vec3& max) const 
+		virtual std::vector<Entity> query(const math::vec3& min, const math::vec3& max) const 
 		{
-			return std::vector<entity>();
+			return std::vector<Entity>();
 		}
-		virtual std::vector<entity> query(const math::vec3& min, const math::vec3& max, std::function<bool(entity)> filter) const 
+		virtual std::vector<Entity> query(const math::vec3& min, const math::vec3& max, std::function<bool(Entity)> filter) const 
 		{
-			return std::vector<entity>();
+			return std::vector<Entity>();
 		}
 
 	protected:
-		std::vector<entity> m_entities;
-		spatial_partition* m_parent;
+		std::vector<Entity> m_entities;
+		SpatialPartition* m_parent;
 	};
 }
 

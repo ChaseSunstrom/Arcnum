@@ -6,12 +6,12 @@
 
 namespace spark
 {
-    class octree : public spatial_partition
+    class Octree : public SpatialPartition
     {
     public:
-        octree(const math::vec3& center, const math::vec3& half_size, octree* parent = nullptr) :
-            observer(true),
-            spatial_partition(),
+        Octree(const math::vec3& center, const math::vec3& half_size, Octree* parent = nullptr) :
+            Observer(true),
+            SpatialPartition(),
             m_center(center),
 			m_half_size(half_size),
 			m_parent(parent)
@@ -25,12 +25,12 @@ namespace spark
 			}
 		}
 
-        ~octree() = default;
+        ~Octree() = default;
 
-        void add_entity(entity e) override
+        void add_entity(Entity e) override
         {
-            auto& _ecs = engine::get<ecs>();
-            math::vec3 position = extract_position(_ecs.get_component<transform>(e).m_transform);
+            auto& ecs = Engine::get<ECS>();
+            math::vec3 position = extract_position(ecs.get_component<Transform>(e).m_transform);
 
             if (!point_is_inside(position)) 
             {
@@ -59,10 +59,10 @@ namespace spark
             }
         }
 
-        void remove_entity(entity e)
+        void remove_entity(Entity e)
         {
-            auto& _ecs = engine::get<ecs>();
-            math::vec3 position = extract_position(_ecs.get_component<transform>(e).m_transform);
+            auto& ecs = Engine::get<ECS>();
+            math::vec3 position = extract_position(ecs.get_component<Transform>(e).m_transform);
 
             if (!point_is_inside(position)) 
             {
@@ -84,7 +84,7 @@ namespace spark
             }
         }
 
-        void update_entity(entity e) override
+        void update_entity(Entity e) override
         {
             remove_entity(e);
             add_entity(e);
@@ -97,10 +97,10 @@ namespace spark
                 (point.z >= m_center.z - m_half_size.z && point.z <= m_center.z + m_half_size.z);
         }
 
-        bool entity_is_inside(entity e) const override
+        bool entity_is_inside(Entity e) const override
         {
-            auto& _ecs = engine::get<ecs>();
-            math::vec3 position = extract_position(_ecs.get_component<transform>(e).m_transform);
+            auto& ecs = Engine::get<ECS>();
+            math::vec3 position = extract_position(ecs.get_component<Transform>(e).m_transform);
             return point_is_inside(position);
         }
 
@@ -140,16 +140,16 @@ namespace spark
         }
 
 
-        std::vector<entity> query(const math::vec3& query_position, f32 radius) const override
+        std::vector<Entity> query(const math::vec3& query_position, f32 radius) const override
         {
-            std::vector<entity> result;
+            std::vector<Entity> result;
             if (intersects(m_center, m_half_size, query_position, radius))
             {
                 if (is_leaf())
                 {
-                    std::copy_if(m_entities.begin(), m_entities.end(), std::back_inserter(result), [&](const entity& e)
+                    std::copy_if(m_entities.begin(), m_entities.end(), std::back_inserter(result), [&](const Entity& e)
                         {
-                            math::vec3 entity_pos = extract_position(engine::get<ecs>().get_component<transform>(e).m_transform);
+                            math::vec3 entity_pos = extract_position(Engine::get<ECS>().get_component<Transform>(e).m_transform);
                             math::vec3 diff = entity_pos - query_position;
                             return math::dot(diff, diff) <= radius * radius;
                         });
@@ -166,17 +166,17 @@ namespace spark
             return result;
         }
 
-        std::vector<entity> query(const math::vec3& query_position, f32 radius, std::function<bool(entity)> filter) const override
+        std::vector<Entity> query(const math::vec3& query_position, f32 radius, std::function<bool(Entity)> filter) const override
         {
-            std::vector<entity> result;
+            std::vector<Entity> result;
             if (intersects(m_center, m_half_size, query_position, radius))
             {
                 if (is_leaf())
                 {
-                    std::copy_if(m_entities.begin(), m_entities.end(), std::back_inserter(result), [&](const entity& e)
+                    std::copy_if(m_entities.begin(), m_entities.end(), std::back_inserter(result), [&](const Entity& e)
                         {
                             if (!filter(e)) return false;
-                            math::vec3 entity_pos = extract_position(engine::get<ecs>().get_component<transform>(e).m_transform);
+                            math::vec3 entity_pos = extract_position(Engine::get<ECS>().get_component<Transform>(e).m_transform);
                             math::vec3 diff = entity_pos - query_position;
                             return math::dot(diff, diff) <= radius * radius;
                         });
@@ -193,16 +193,16 @@ namespace spark
             return result;
         }
 
-        std::vector<entity> query(const math::vec3& min, const math::vec3& max) const override
+        std::vector<Entity> query(const math::vec3& min, const math::vec3& max) const override
         {
-            std::vector<entity> result;
+            std::vector<Entity> result;
             if (intersects(m_center, m_half_size, min, max))
             {
                 if (is_leaf())
                 {
-                    std::copy_if(m_entities.begin(), m_entities.end(), std::back_inserter(result), [&](const entity& e)
+                    std::copy_if(m_entities.begin(), m_entities.end(), std::back_inserter(result), [&](const Entity& e)
                         {
-                            math::vec3 entity_pos = extract_position(engine::get<ecs>().get_component<transform>(e).m_transform);
+                            math::vec3 entity_pos = extract_position(Engine::get<ECS>().get_component<Transform>(e).m_transform);
                             return (entity_pos.x >= min.x && entity_pos.x <= max.x) &&
                                 (entity_pos.y >= min.y && entity_pos.y <= max.y) &&
                                 (entity_pos.z >= min.z && entity_pos.z <= max.z);
@@ -220,17 +220,17 @@ namespace spark
             return result;
         }
 
-        std::vector<entity> query(const math::vec3& min, const math::vec3& max, std::function<bool(entity)> filter) const override
+        std::vector<Entity> query(const math::vec3& min, const math::vec3& max, std::function<bool(Entity)> filter) const override
         {
-            std::vector<entity> result;
+            std::vector<Entity> result;
             if (intersects(m_center, m_half_size, min, max))
             {
                 if (is_leaf())
                 {
-                    std::copy_if(m_entities.begin(), m_entities.end(), std::back_inserter(result), [&](const entity& e)
+                    std::copy_if(m_entities.begin(), m_entities.end(), std::back_inserter(result), [&](const Entity& e)
                         {
                             if (!filter(e)) return false;
-                            math::vec3 entity_pos = extract_position(engine::get<ecs>().get_component<transform>(e).m_transform);
+                            math::vec3 entity_pos = extract_position(Engine::get<ECS>().get_component<Transform>(e).m_transform);
                             return (entity_pos.x >= min.x && entity_pos.x <= max.x) &&
                                 (entity_pos.y >= min.y && entity_pos.y <= max.y) &&
                                 (entity_pos.z >= min.z && entity_pos.z <= max.z);
@@ -248,25 +248,25 @@ namespace spark
             return result;
         }
 
-        void on_notify(std::shared_ptr<event> event) override
+        void on_notify(std::shared_ptr<Event> event) override
         {
             switch (event->m_type)
             {
             case ENTITY_CREATED_EVENT:
             {
-                auto e = std::static_pointer_cast<entity_created_event>(event);
+                auto e = std::static_pointer_cast<EntityCreatedEvent>(event);
                 add_entity(e->m_entity);
                 break;
             }
             case ENTITY_UPDATED_EVENT:
             {
-                auto e = std::static_pointer_cast<entity_updated_event>(event);
+                auto e = std::static_pointer_cast<EntityUpdatedEvent>(event);
                 update_entity(e->m_entity);
                 break;
             }
             case ENTITY_DESTROYED_EVENT:
             {
-                auto e = std::static_pointer_cast<entity_destroyed_event>(event);
+                auto e = std::static_pointer_cast<EntityDestroyedEvent>(event);
                 remove_entity(e->m_entity);
                 break;
             }
@@ -278,7 +278,7 @@ namespace spark
             if (m_parent != nullptr) return; // Ensure only the root can expand
 
             // Store old entities temporarily
-            std::vector<entity> old_entities;
+            std::vector<Entity> old_entities;
             if (is_leaf()) 
             {
                 old_entities.swap(m_entities); // Take entities from root if it's a leaf
@@ -298,7 +298,7 @@ namespace spark
             m_half_size = new_half_size;
 
             // Reinsert entities according to the new boundaries
-            for (const entity& e : old_entities) 
+            for (const Entity& e : old_entities) 
             {
                 add_entity(e);
             }
@@ -309,7 +309,7 @@ namespace spark
         {
             if (!is_leaf()) return; // Already subdivided
 
-            auto& _ecs = engine::get<ecs>();
+            auto& ecs = Engine::get<ECS>();
 
             const math::vec3 child_half_size = m_half_size * 0.5f;
             for (int i = 0; i < 8; ++i)
@@ -324,13 +324,13 @@ namespace spark
                 if (i & 1) child_center.z += child_half_size.z;
                 else child_center.z -= child_half_size.z;
 
-                m_children[i] = std::make_unique<octree>(child_center, child_half_size, this);
+                m_children[i] = std::make_unique<Octree>(child_center, child_half_size, this);
             }
 
             // Move entities to appropriate children
             for (const auto& e : m_entities)
             {
-                auto position = extract_position(_ecs.get_component<transform_component>(e).m_transform);
+                auto position = extract_position(ecs.get_component<TransformComponent>(e).m_transform);
                 i32 octant = get_octant(position);
                 m_children[octant]->add_entity(e);
             }
@@ -360,7 +360,7 @@ namespace spark
             return octant;
         }
 
-        void collect_entities(std::vector<entity>& all_entities)
+        void collect_entities(std::vector<Entity>& all_entities)
         {
             if (is_leaf())
             {
@@ -380,8 +380,8 @@ namespace spark
 
         math::vec3 m_center;
         math::vec3 m_half_size;
-        octree* m_parent;
-        std::array<std::unique_ptr<octree>, 8> m_children;
+        Octree* m_parent;
+        std::array<std::unique_ptr<Octree>, 8> m_children;
     };
 }
 

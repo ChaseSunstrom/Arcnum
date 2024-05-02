@@ -3,35 +3,35 @@
 
 namespace spark
 {
-	void renderer::apply_dynamic_resolution() { }
+	void Renderer::apply_dynamic_resolution() { }
 
-	void renderer::render_with_anti_aliasing() { }
+	void Renderer::render_with_anti_aliasing() { }
 
-	void renderer::render_shadows() { }
+	void Renderer::render_shadows() { }
 
-	void renderer::render_reflections() { }
+	void Renderer::render_reflections() { }
 
-	void renderer::apply_hdr() { }
+	void Renderer::apply_hdr() { }
 
-	void renderer::apply_bloom() { }
+	void Renderer::apply_bloom() { }
 
-	void renderer::render_volumetric_lighting() { }
+	void Renderer::render_volumetric_lighting() { }
 
-	void renderer::apply_motion_blur() { }
+	void Renderer::apply_motion_blur() { }
 
-	void renderer::apply_depth_of_field() { }
+	void Renderer::apply_depth_of_field() { }
 
-	void renderer::apply_ambient_occlusion() { }
+	void Renderer::apply_ambient_occlusion() { }
 
-	void renderer::apply_color_grading() { }
+	void Renderer::apply_color_grading() { }
 
-	void renderer::toggle_wireframe_mode() { }
+	void Renderer::toggle_wireframe_mode() { }
 
-	void renderer::render_debugging_tools() { }
+	void Renderer::render_debugging_tools() { }
 
-	void renderer::finalize_frame() { }
+	void Renderer::finalize_frame() { }
 
-	void renderer::render()
+	void Renderer::render()
 	{
 		apply_dynamic_resolution();    // Adjusts resolution based on performance settings
 		render_with_anti_aliasing();   // Applies anti-aliasing if enabled
@@ -47,6 +47,6 @@ namespace spark
 		toggle_wireframe_mode();       // Toggles wireframe mode if enabled for debugging
 		render_debugging_tools();      // Renders any additional debugging tools like bounding boxes, normals visualizer, etc.
 
-		instancer::get().render_instanced(m_cameras, scene_manager::get().get_current_scene());
+		Instancer::get().render_instanced(m_cameras, SceneManager::get().get_current_scene());
 	}
 }

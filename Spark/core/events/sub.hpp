@@ -8,14 +8,14 @@ namespace spark
 {
 	static u64 subscription_count = 0;
 
-	struct base_subscription
+	struct ISubscription
 	{
-		base_subscription(i32 topic) :
+		ISubscription(i32 topic) :
 				m_topic(topic), m_subscription_id(subscription_count++) { }
 
-		virtual ~base_subscription() = default;
+		virtual ~ISubscription() = default;
 
-		virtual void publish(i32 topic, std::shared_ptr <event> value) = 0;
+		virtual void publish(i32 topic, std::shared_ptr <Event> value) = 0;
 
 		virtual void unsubscribe() = 0;
 
@@ -24,21 +24,21 @@ namespace spark
 		i32 m_topic;
 	};
 
-	inline std::vector <std::shared_ptr<base_subscription>> subscriptions =
-			std::vector < std::shared_ptr < base_subscription >> ();
+	inline std::vector <std::shared_ptr<ISubscription>> subscriptions =
+			std::vector < std::shared_ptr < ISubscription >> ();
 
 	template <typename T>
-	struct subscription :
-			base_subscription
+	struct Subscription :
+			ISubscription
 	{
-		static std::shared_ptr <subscription<T>> create(i32 topic, std::function<void(std::shared_ptr < T > )> cb)
+		static std::shared_ptr <Subscription<T>> create(i32 topic, std::function<void(std::shared_ptr < T > )> cb)
 		{
-			auto sub = std::shared_ptr<subscription<T>>(new subscription(topic, cb));
-			subscriptions.push_back(std::static_pointer_cast<base_subscription>(sub));
+			auto sub = std::shared_ptr<Subscription<T>>(new Subscription(topic, cb));
+			subscriptions.push_back(std::static_pointer_cast<ISubscription>(sub));
 			return sub;
 		}
 
-		inline void publish(i32 topic, std::shared_ptr <event> value) override
+		inline void publish(i32 topic, std::shared_ptr <Event> value) override
 		{
 			if (topic == m_topic)
 			{
@@ -49,7 +49,7 @@ namespace spark
 		inline void unsubscribe() override
 		{
 			auto it = std::find_if(
-					subscriptions.begin(), subscriptions.end(), [this](const std::shared_ptr <base_subscription>& sub)
+					subscriptions.begin(), subscriptions.end(), [this](const std::shared_ptr <ISubscription>& sub)
 					{
 						return sub->m_subscription_id == this->m_subscription_id;
 					});
@@ -64,12 +64,12 @@ namespace spark
 
 	private:
 		// Make the constructor private to force usage of the factory method
-		subscription(i32 topic, std::function<void(std::shared_ptr < T > )> cb) :
-				base_subscription(topic), callback(cb) { }
+		Subscription(i32 topic, std::function<void(std::shared_ptr < T > )> cb) :
+				ISubscription(topic), callback(cb) { }
 	};
 
 	// Function to publish events to subscriptions of a specific topic.
-	void publish_to_topic(i32 topic, std::shared_ptr <event> value);
+	void publish_to_topic(i32 topic, std::shared_ptr <Event> value);
 }
 
 #endif

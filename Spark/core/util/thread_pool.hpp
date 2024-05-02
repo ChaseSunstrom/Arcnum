@@ -6,34 +6,34 @@
 
 namespace spark
 {
-	enum class task_priority
+	enum class TaskPriority
 	{
 		CRITICAL, VERY_HIGH, HIGH, NORMAL, LOW, VERY_LOW, BACKGROUND
 	};
 
-	struct thread_control_block
+	struct ThreadControlBlock
 	{
 		std::thread::id thread_id;
 		std::atomic<bool> is_registered_for_sync { false };
 		std::atomic<bool> has_reached_sync_point { false };
 	};
 
-	struct task_comparator
+	struct TaskComparator
 	{
 		bool operator()(
-				const std::pair <task_priority, std::function<void()>>& lhs,
-				const std::pair <task_priority, std::function<void()>>& rhs) const
+				const std::pair <TaskPriority, std::function<void()>>& lhs,
+				const std::pair <TaskPriority, std::function<void()>>& rhs) const
 		{
 			return lhs.first < rhs.first; // Higher priority tasks first
 		}
 	};
 
-	class thread_pool
+	class ThreadPool
 	{
 	public:
-		thread_pool() = delete;
+		ThreadPool() = delete;
 
-		~thread_pool() = delete;
+		~ThreadPool() = delete;
 
 		static void initialize(u32 num_threads)
 		{
@@ -44,14 +44,14 @@ namespace spark
 
 			for (u32 i = 0; i < num_threads; ++i)
 			{
-				s_threads_control[i] = std::make_shared<thread_control_block>();
+				s_threads_control[i] = std::make_shared<ThreadControlBlock>();
 				s_workers.emplace_back(worker_thread, s_threads_control[i], i);
 			}
 		}
 
 		template <class F, class... Args>
 		static auto enqueue(
-				task_priority priority,
+				TaskPriority priority,
 				bool synchronize,
 				F&& f,
 				Args&& ... args)->std::future<typename std::invoke_result<F, Args...>::type>
@@ -73,7 +73,7 @@ namespace spark
 
 				// Find the least loaded queue or with the highest priority task to insert this task
 				auto min_it = std::min_element(
-						s_tasks_queues.begin(), s_tasks_queues.end(), [](const task_queue& a, const task_queue& b)
+						s_tasks_queues.begin(), s_tasks_queues.end(), [](const TaskQueue& a, const TaskQueue& b)
 						{
 							return a.m_queue.size() < b.m_queue.size();
 						});
@@ -87,7 +87,7 @@ namespace spark
 								auto it = std::find_if(
 										s_threads_control.begin(),
 										s_threads_control.end(),
-										[](const std::shared_ptr <thread_control_block>& tcb)
+										[](const std::shared_ptr <ThreadControlBlock>& tcb)
 										{
 											return tcb->thread_id == std::this_thread::get_id();
 										});
@@ -109,7 +109,7 @@ namespace spark
 			auto it = std::find_if(
 					s_threads_control.begin(),
 					s_threads_control.end(),
-					[](const std::shared_ptr <thread_control_block>& tcb)
+					[](const std::shared_ptr <ThreadControlBlock>& tcb)
 					{
 						return tcb->thread_id == std::this_thread::get_id();
 					});
@@ -135,7 +135,7 @@ namespace spark
 						return std::all_of(
 								s_threads_control.begin(),
 								s_threads_control.end(),
-								[](const std::shared_ptr <thread_control_block>& tcb)
+								[](const std::shared_ptr <ThreadControlBlock>& tcb)
 								{
 									return !tcb->is_registered_for_sync || tcb->has_reached_sync_point;
 								});
@@ -158,7 +158,7 @@ namespace spark
 		}
 
 	private:
-		static void worker_thread(std::shared_ptr <thread_control_block> tcb, u32 index)
+		static void worker_thread(std::shared_ptr <ThreadControlBlock> tcb, u32 index)
 		{
 			tcb->thread_id = std::this_thread::get_id();
 
@@ -193,18 +193,18 @@ namespace spark
 		}
 
 	private:
-		struct task_queue
+		struct TaskQueue
 		{
-			task_queue(const task_queue&) = delete;
+			TaskQueue(const TaskQueue&) = delete;
 
-			task_queue& operator=(const task_queue&) = delete;
+			TaskQueue& operator=(const TaskQueue&) = delete;
 
-			task_queue(task_queue&& other)
+			TaskQueue(TaskQueue&& other)
 
 			noexcept
 					: m_queue(std::move(other.m_queue)) { }
 
-			task_queue& operator=(task_queue&& other)
+			TaskQueue& operator=(TaskQueue&& other)
 
 			noexcept
 			{
@@ -215,20 +215,20 @@ namespace spark
 				return *this;
 			}
 
-			task_queue() = default;
+			TaskQueue() = default;
 
-			std::priority_queue <std::pair<task_priority, std::function < void()>>,
-			std::vector <std::pair<task_priority, std::function < void()>>>,
-			task_comparator> m_queue;
+			std::priority_queue <std::pair<TaskPriority, std::function < void()>>,
+			std::vector <std::pair<TaskPriority, std::function < void()>>>,
+			TaskComparator> m_queue;
 
 			std::mutex m_mutex;
 		};
 
 		static inline std::vector <std::thread> s_workers;
 
-		static inline std::vector <std::shared_ptr<thread_control_block>> s_threads_control;
+		static inline std::vector <std::shared_ptr<ThreadControlBlock>> s_threads_control;
 
-		static inline std::vector <task_queue> s_tasks_queues;
+		static inline std::vector <TaskQueue> s_tasks_queues;
 
 		static inline std::mutex s_queue_mutex;
 

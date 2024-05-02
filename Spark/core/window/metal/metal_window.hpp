@@ -1,11 +1,11 @@
 #ifndef SPARK_METAL_WINDOW_HPP
 #define SPARK_METAL_WINDOW_HPP
 
-#include "window.hpp"
+#include "../window.hpp"
 
 namespace spark
 {
-	class metal_window
+	class MetalWindow
 	{
 
 	};

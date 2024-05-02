@@ -17,26 +17,26 @@ namespace std
 namespace spark
 {
 	template <typename T>
-	class unique_shield_ptr;
+	class UniqueShieldPtr;
 
 	template <typename T>
-	class unique_proxy
+	class UniqueProxy
 	{
 	public:
 		T* operator->() { return m_ptr; }
 
 		T& operator*() { return *m_ptr; }
 
-		unique_proxy(const unique_proxy&) = delete;
+		UniqueProxy(const UniqueProxy&) = delete;
 
-		unique_proxy& operator=(const unique_proxy&) = delete;
+		UniqueProxy& operator=(const UniqueProxy&) = delete;
 
-		~unique_proxy() = default;
+		~UniqueProxy() = default;
 
 	private:
-		friend class unique_shield_ptr<T>;
+		friend class UniqueShieldPtr<T>;
 
-		unique_proxy(T* ptr, std::recursive_mutex& mtx) :
+		UniqueProxy(T* ptr, std::recursive_mutex& mtx) :
 				m_ptr(ptr), m_lock(mtx) { }
 
 		T* m_ptr;
@@ -45,24 +45,24 @@ namespace spark
 	};
 
 	template <typename T>
-	class unique_shield_ptr
+	class UniqueShieldPtr
 	{
 	public:
-		explicit unique_shield_ptr(T* ptr = nullptr) :
+		explicit UniqueShieldPtr(T* ptr = nullptr) :
 				m_data(ptr), m_mutex(new std::recursive_mutex) { }
 
-		~unique_shield_ptr()
+		~UniqueShieldPtr()
 		{
 			delete m_data;
 			delete m_mutex;
 		}
 
 		// Delete copy semantics
-		unique_shield_ptr(const unique_shield_ptr&) = delete;
+		UniqueShieldPtr(const UniqueShieldPtr&) = delete;
 
-		unique_shield_ptr& operator=(const unique_shield_ptr&) = delete;
+		UniqueShieldPtr& operator=(const UniqueShieldPtr&) = delete;
 
-		unique_shield_ptr(unique_shield_ptr&& other)
+		UniqueShieldPtr(UniqueShieldPtr&& other)
 
 		noexcept
 				: m_data(other.m_data), m_mutex(other
@@ -73,7 +73,7 @@ namespace spark
 			other.m_mutex = nullptr;
 		}
 
-		unique_shield_ptr& operator=(unique_shield_ptr&& other)
+		UniqueShieldPtr& operator=(UniqueShieldPtr&& other)
 
 		noexcept
 		{
@@ -100,11 +100,11 @@ namespace spark
 			m_data = ptr;
 		}
 
-		unique_proxy<T> access()
+		UniqueProxy<T> access()
 		{
 			if (m_mutex)
 			{
-				return unique_proxy<T>(m_data, *m_mutex);
+				return UniqueProxy<T>(m_data, *m_mutex);
 			}
 			else
 			{
@@ -119,26 +119,26 @@ namespace spark
 	};
 
 	template <typename T>
-	class shared_shield_ptr;
+	class SharedShieldPtr;
 
 	template <typename T>
-	class shared_proxy
+	class SharedProxy
 	{
 	public:
 		T* operator->() { return m_ptr.get(); }
 
 		T& operator*() { return *m_ptr.get(); }
 
-		shared_proxy(const shared_proxy&) = delete;
+		SharedProxy(const SharedProxy&) = delete;
 
-		shared_proxy& operator=(const shared_proxy&) = delete;
+		SharedProxy& operator=(const SharedProxy&) = delete;
 
-		~shared_proxy() = default;
+		~SharedProxy() = default;
 
 	private:
-		friend class shared_shield_ptr<T>;
+		friend class SharedShieldPtr<T>;
 
-		shared_proxy(std::shared_ptr <T> ptr, std::recursive_mutex& mtx) :
+		SharedProxy(std::shared_ptr <T> ptr, std::recursive_mutex& mtx) :
 				m_ptr(std::move(ptr)), m_lock(mtx) { }
 
 		std::shared_ptr <T> m_ptr;
@@ -147,22 +147,22 @@ namespace spark
 	};
 
 	template <typename T>
-	class shared_shield_ptr
+	class SharedShieldPtr
 	{
 	public:
-		explicit shared_shield_ptr(T* ptr = nullptr) :
+		explicit SharedShieldPtr(T* ptr = nullptr) :
 				m_data(std::shared_ptr<T>(ptr)), m_mutex(std::make_shared<std::recursive_mutex>()) { }
 
-		explicit shared_shield_ptr(std::shared_ptr <T> data, std::shared_ptr <std::recursive_mutex> mutex) :
+		explicit SharedShieldPtr(std::shared_ptr <T> data, std::shared_ptr <std::recursive_mutex> mutex) :
 				m_data(std::move(data)), m_mutex(std::move(mutex)) { }
 
-		shared_shield_ptr(const shared_shield_ptr& other) = default;
+		SharedShieldPtr(const SharedShieldPtr& other) = default;
 
-		shared_shield_ptr& operator=(const shared_shield_ptr& other) = default;
+		SharedShieldPtr& operator=(const SharedShieldPtr& other) = default;
 
-		shared_shield_ptr(shared_shield_ptr&& other) = default;
+		SharedShieldPtr(SharedShieldPtr&& other) = default;
 
-		shared_shield_ptr& operator=(shared_shield_ptr&& other) = default;
+		SharedShieldPtr& operator=(SharedShieldPtr&& other) = default;
 
 		T* get() const { return m_data.get(); }
 
@@ -176,11 +176,11 @@ namespace spark
 			m_data.reset(ptr);
 		}
 
-		shared_proxy<T> access()
+		SharedProxy<T> access()
 		{
 			if (m_mutex)
 			{
-				return shared_proxy<T>(m_data, *m_mutex);
+				return SharedProxy<T>(m_data, *m_mutex);
 			}
 			else
 			{
@@ -200,40 +200,40 @@ namespace spark
 	};
 
 	template <typename T, typename... Args>
-	unique_shield_ptr<T> make_unique_shield(Args&& ... args)
+	UniqueShieldPtr<T> make_unique_shield(Args&& ... args)
 	{
-		return unique_shield_ptr<T>(new T(std::forward<Args>(args)...));
+		return UniqueShieldPtr<T>(new T(std::forward<Args>(args)...));
 	}
 
 	template <typename T, typename... Args>
-	shared_shield_ptr<T> make_shared_shield(Args&& ... args)
+	SharedShieldPtr<T> make_shared_shield(Args&& ... args)
 	{
-		return shared_shield_ptr<T>(std::make_shared<T>(std::forward<Args>(args)...));
+		return SharedShieldPtr<T>(std::make_shared<T>(std::forward<Args>(args)...));
 	}
 
 	template <typename T>
-	unique_shield_ptr<T> make_threaded(std::unique_ptr <T>&& ptr)
+	UniqueShieldPtr<T> make_threaded(std::unique_ptr <T>&& ptr)
 	{
-		return unique_shield_ptr<T>(ptr.release());
+		return UniqueShieldPtr<T>(ptr.release());
 	}
 
 	template <typename T>
-	shared_shield_ptr<T> make_threaded(std::shared_ptr <T> ptr)
+	SharedShieldPtr<T> make_threaded(std::shared_ptr <T> ptr)
 	{
-		return shared_shield_ptr<T>(std::move(ptr), std::make_shared<std::recursive_mutex>());
+		return SharedShieldPtr<T>(std::move(ptr), std::make_shared<std::recursive_mutex>());
 	}
 
 	template <typename T, typename U>
-	unique_shield_ptr<T> threaded_pointer_cast(const unique_shield_ptr<U>& ptr)
+	UniqueShieldPtr<T> threaded_pointer_cast(const UniqueShieldPtr<U>& ptr)
 	{
-		return unique_shield_ptr<T>((T*) ptr.get(), ptr.get_mutex());
+		return UniqueShieldPtr<T>((T*) ptr.get(), ptr.get_mutex());
 	}
 
 	template <typename T, typename U>
-	shared_shield_ptr<T> threaded_pointer_cast(const shared_shield_ptr<U>& ptr)
+	SharedShieldPtr<T> threaded_pointer_cast(const SharedShieldPtr<U>& ptr)
 	{
 		auto casted_ptr = std::static_pointer_cast<T>(ptr.get_shared_ptr());
-		return shared_shield_ptr<T>(std::move(casted_ptr), ptr.get_mutex());
+		return SharedShieldPtr<T>(std::move(casted_ptr), ptr.get_mutex());
 	}
 }
 

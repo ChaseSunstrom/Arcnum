@@ -5,15 +5,15 @@
 
 namespace spark
 {
-	struct vertex
+	struct Vertex
 	{
-		vertex(
+		Vertex(
 				const math::vec3& position = math::vec3(0),
 				const math::vec3& normal = math::vec3(0),
 				const math::vec2& texcoord = math::vec2(0)) :
 				m_position(position), m_normal(normal), m_texcoords(texcoord) { }
 
-		~vertex() = default;
+		~Vertex() = default;
 
 		math::vec3 m_position;
 

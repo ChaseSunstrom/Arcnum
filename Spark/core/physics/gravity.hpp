@@ -8,10 +8,10 @@
 
 namespace spark
 {
-	class gravity_system : public system
+	class GravitySystem : public System
 	{
 	public:
-		gravity_system(f64 gravity = 0, f64 terminal_velocity = 1) :
+		GravitySystem(f64 gravity = 0, f64 terminal_velocity = 1) :
 			m_gravity(gravity), m_terminal_velocity(terminal_velocity) {}
 
 		void on_init() override 
@@ -22,7 +22,7 @@ namespace spark
 
         void on_update(f64 delta_time) override
         {
-            auto& _ecs = engine::get<ecs>();
+            auto& _ecs = Engine::get<ECS>();
             auto& _rigid_body_array = _ecs.get_component_array<rigid_body_component>();
 
             // Iterate over all entities with rigid body components

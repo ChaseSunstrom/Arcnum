@@ -6,18 +6,18 @@
 #include "shader.hpp"
 #include "../../net/serializeable.hpp"
 
-#include "../../util/singelton.hpp"
+#include "../../util/Singleton.hpp"
 
 #include <boost/serialization/access.hpp>
 
 namespace spark
 {
-	struct component_info_base
+	struct IComponentInfo
 	{
-		component_info_base(const std::type_index& type) :
+		IComponentInfo(const std::type_index& type) :
 				m_type(type) { }
 
-		virtual ~component_info_base() = default;
+		virtual ~IComponentInfo() = default;
 
 		virtual const std::type_index& get_type() const
 		{
@@ -29,12 +29,12 @@ namespace spark
 
 	// For type information when returning all components in an entity
 	template <typename T>
-	class component_info :
-			public component_info_base
+	class ComponentInfo :
+			public IComponentInfo
 	{
 	public:
-		component_info(const T& component) :
-				component_info_base(typeid(T)), m_component(component) { }
+		ComponentInfo(const T& component) :
+				IComponentInfo(typeid(T)), m_component(component) { }
 
 		const std::type_index& get_type() const override
 		{
@@ -50,34 +50,34 @@ namespace spark
 		T m_component;
 	};
 
-	struct component_array_base
+	struct IComponentArray
 	{
-		component_array_base() = default;
+		IComponentArray() = default;
 
-		virtual ~component_array_base() = default;
+		virtual ~IComponentArray() = default;
 
-		virtual void entity_destroyed(entity entity) = 0;
+		virtual void entity_destroyed(Entity entity) = 0;
 
-		virtual bool has_component(entity entity) const = 0;
+		virtual bool has_component(Entity entity) const = 0;
 
-		virtual const component_info_base get_component(entity entity) = 0;
+		virtual const IComponentInfo get_component(Entity entity) = 0;
 
 		SERIALIZE_EMPTY()
 	};
 
 	template <typename T>
-	class component_array :
-			public component_array_base
+	class ComponentArray :
+			public IComponentArray
 	{
 	public:
-		component_array() = default;
+		ComponentArray() = default;
 
 		std::vector <std::optional<T>>& get_array()
 		{
 			return m_component_array;
 		}
 
-		void insert(entity entity, T component) 
+		void insert(Entity entity, T component) 
 		{
 			if (entity >= m_component_array.size()) 
 			{
@@ -86,7 +86,7 @@ namespace spark
 			m_component_array[entity] = component;
 		}
 
-		void remove(entity entity)
+		void remove(Entity entity)
 		{
 			if (entity < m_component_array.size())
 			{
@@ -94,7 +94,7 @@ namespace spark
 			}
 		}
 
-		void entity_destroyed(entity entity) override
+		void entity_destroyed(Entity entity) override
 		{
 			if (entity < m_component_array.size())
 			{
@@ -102,7 +102,7 @@ namespace spark
 			}
 		}
 
-		const T& operator[](entity entity) const
+		const T& operator[](Entity entity) const
 		{
 			if (__SPARK_ASSERT__(entity > m_component_array.size()))
 			{
@@ -113,7 +113,7 @@ namespace spark
 			return m_component_array[entity].value();
 		}
 
-		T& operator[](entity entity)
+		T& operator[](Entity entity)
 		{
 			if (__SPARK_ASSERT__(entity > m_component_array.size()))
 			{
@@ -123,14 +123,14 @@ namespace spark
 			return m_component_array[entity].value();
 		}
 
-		bool has_component(entity entity) const override 
+		bool has_component(Entity entity) const override 
 		{
 			return entity < m_component_array.size() && m_component_array[entity].has_value();
 		}
 
-		const component_info_base get_component(entity entity) override 
+		const IComponentInfo get_component(Entity entity) override 
 		{
-			return component_info<T>(m_component_array[entity].value());
+			return ComponentInfo<T>(m_component_array[entity].value());
 		}
 
 		u32 size() const
@@ -141,21 +141,21 @@ namespace spark
 	private:
 		std::vector<std::optional<T>> m_component_array;
 
-		SERIALIZE_MEMBERS(component_array, m_component_array)
+		SERIALIZE_MEMBERS(ComponentArray, m_component_array)
 	};
 
-	class component_manager :
-		public singelton<component_manager>
+	class ComponentManager :
+		public Singleton<ComponentManager>
 	{
 	public:
-		static component_manager& get()
+		static ComponentManager& get()
 		{
-			static component_manager instance;
+			static ComponentManager instance;
 			return instance;
 		}
 
 		template <typename T>
-		component_array<T>& get_component_array()
+		ComponentArray<T>& get_component_array()
 		{
 			std::string type = std::type_index(typeid(T)).name();
 
@@ -165,14 +165,14 @@ namespace spark
 				register_component<T>();
 			}
 
-			return static_cast<component_array<T>&>(*m_components[type]);
+			return static_cast<ComponentArray<T>&>(*m_components[type]);
 		}
 
 		template <typename T>
 		constexpr void register_component()
 		{
 			std::string type = std::type_index(typeid(T)).name();
-			m_components[type] = std::make_unique<component_array<T>>();
+			m_components[type] = std::make_unique<ComponentArray<T>>();
 		}
 
 		template <typename... components>
@@ -182,25 +182,25 @@ namespace spark
 		}
 
 		template <typename T>
-		void add_component(entity entity, const T& component)
+		void add_component(Entity entity, const T& component)
 		{
 			get_component_array<T>().insert(entity, component);
 		}
 
 		template <typename T>
-		void set_component(entity entity, const T& component)
+		void set_component(Entity entity, const T& component)
 		{
 			get_component_array<T>()[entity] = component;
 		}
 
 		template <typename T>
-		void remove_component(entity entity)
+		void remove_component(Entity entity)
 		{
 			get_component_array<T>().remove(entity);
 		}
 
 		template <typename T>
-		T& get_component(entity entity)
+		T& get_component(Entity entity)
 		{
 			if (__SPARK_ASSERT__(entity > get_component_array<T>().size()))
 			{
@@ -211,9 +211,9 @@ namespace spark
 			return const_cast<T&>(get_component_array<T>()[entity]);
 		}
 
-		std::vector <component_info_base> get_all_components(entity entity)
+		std::vector <IComponentInfo> get_all_components(Entity entity)
 		{
-			std::vector <component_info_base> components;
+			std::vector <IComponentInfo> components;
 
 			for (auto& [type, array]: m_components)
 			{
@@ -226,7 +226,7 @@ namespace spark
 			return components;
 		}
 
-		void destroy_component_array(entity entity)
+		void destroy_component_array(Entity entity)
 		{
 			for (const auto& [type, array]: m_components)
 			{
@@ -235,14 +235,14 @@ namespace spark
 		}
 
 		template <typename T>
-		bool has_component(entity id) const 
+		bool has_component(Entity id) const 
 		{
 			std::string type = std::type_index(typeid(T)).name();
 			auto found = m_components.find(type);
 			
 			if (found != m_components.end()) 
 			{
-				auto array = static_cast<component_array<T>*>(found->second.get());
+				auto array = static_cast<ComponentArray<T>*>(found->second.get());
 				return id < array->get_array().size() && array->get_array()[id].has_value(); // Adjusted for optional
 			}
 			return false;
@@ -251,14 +251,14 @@ namespace spark
 
 	private:
 
-		component_manager() = default;
+		ComponentManager() = default;
 
-		~component_manager() = default;
+		~ComponentManager() = default;
 
 	private:
-		std::unordered_map <std::string, std::unique_ptr<component_array_base>> m_components;
+		std::unordered_map <std::string, std::unique_ptr<IComponentArray>> m_components;
 
-		SERIALIZE_MEMBERS(component_manager, m_components)
+		SERIALIZE_MEMBERS(ComponentManager, m_components)
 	};
 }
 

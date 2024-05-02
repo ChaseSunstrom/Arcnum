@@ -2,11 +2,11 @@
 #define SPARKvk_window_HPP
 
 #include "../window.hpp"
-#include "../../util/singelton.hpp"
+#include "../../util/singleton.hpp"
 
 namespace spark
 {
-	struct queue_family_indices
+	struct VulkanQueueFamilyIndices
 	{
 		bool is_complete()
 		{
@@ -18,26 +18,26 @@ namespace spark
 		std::optional <u32> m_present_family;
 	};
 
-	struct swap_chain_support_details
+	struct VulkanSwapChainSupportDetails
 	{
 		VkSurfaceCapabilitiesKHR m_capabilities;
 		std::vector <VkSurfaceFormatKHR> m_formats;
 		std::vector <VkPresentModeKHR> m_present_modes;
 	};
 
-	struct vulkan_window_data :
-			public window_data
+	struct VulkanWindowData :
+			public WindowData
 	{
-		vulkan_window_data() :
-				window_data() { }
+		VulkanWindowData() :
+				WindowData() { }
 
-		vulkan_window_data(
+		VulkanWindowData(
 				std::string title,
 				bool vsync,
 				i32 height,
 				i32 width,
-				std::function<void(std::shared_ptr < event > )> event_callback) :
-				window_data(title, vsync, height, width, event_callback) { }
+				std::function<void(std::shared_ptr < Event > )> event_callback) :
+				WindowData(title, vsync, height, width, event_callback) { }
 
 		bool m_framebuffer_resized = false;
 
@@ -103,13 +103,13 @@ namespace spark
 		};
 	};
 
-	class vulkan_window :
-			public window, public singelton<vulkan_window>
+	class VulkanWindow :
+			public Window, public Singleton<VulkanWindow>
 	{
 	public:
-		static vulkan_window& get()
+		static VulkanWindow& get()
 		{
-			static vulkan_window instance;
+			static VulkanWindow instance;
 			return instance;
 		}
 
@@ -125,7 +125,7 @@ namespace spark
 
 		void set_window_title(const std::string& title) override;
 
-		vulkan_window_data& get_window_data() const
+		VulkanWindowData& get_window_data() const
 		{
 			return *m_window_data;
 		}
@@ -156,7 +156,7 @@ namespace spark
 			return VK_FALSE; // Indicate that the message has been handled
 		}
 
-		static void event_callback(std::shared_ptr <event> event);
+		static void event_callback(std::shared_ptr <Event> event);
 
 		static void framebuffer_resize_callback(GLFWwindow* window, i32 width, i32 hieght);
 
@@ -171,9 +171,9 @@ namespace spark
 		static void mouse_move_event_callback(GLFWwindow* window, f64 x, f64 y);
 
 	private:
-		vulkan_window();
+		VulkanWindow();
 
-		~vulkan_window();
+		~VulkanWindow();
 
 		void init_gl();
 
@@ -240,9 +240,9 @@ namespace spark
 
 		i32 rate_device(VkPhysicalDevice device);
 
-		queue_family_indices find_queue_families(VkPhysicalDevice device);
+		VulkanQueueFamilyIndices find_queue_families(VkPhysicalDevice device);
 
-		swap_chain_support_details query_swap_chain_support(VkPhysicalDevice device);
+		VulkanSwapChainSupportDetails query_swap_chain_support(VkPhysicalDevice device);
 
 		VkSurfaceFormatKHR choose_swap_surface_format(const std::vector <VkSurfaceFormatKHR>& available_formats);
 
@@ -255,7 +255,7 @@ namespace spark
 	private:
 		GLFWwindow* m_window;
 
-		std::unique_ptr <vulkan_window_data> m_window_data = std::make_unique<vulkan_window_data>();
+		std::unique_ptr <VulkanWindowData> m_window_data = std::make_unique<VulkanWindowData>();
 
 #ifdef DEBUG
 

@@ -9,13 +9,13 @@
 
 namespace spark
 {
-	struct vulkan_mesh :
-			public mesh
+	struct VulkanMesh :
+			public Mesh
 	{
 	public:
-		struct uniform_buffer_base
+		struct IUniformBuffer
 		{
-			virtual ~uniform_buffer_base() = default;
+			virtual ~IUniformBuffer() = default;
 			virtual void update_data(void* new_data) = 0;
 			virtual void* get_data_ptr() = 0;
 			virtual u64 get_size() const = 0;
@@ -25,9 +25,9 @@ namespace spark
 		};
 
 		template <typename UBOType>
-		struct uniform_buffer_object : public uniform_buffer_base
+		struct UniformBufferObject : public IUniformBuffer
 		{
-			explicit uniform_buffer_object(const UBOType& ubo_data)
+			explicit UniformBufferObject(const UBOType& ubo_data)
 				: m_data(ubo_data)
 			{
 				create_buffer(ubo_data);
@@ -35,7 +35,7 @@ namespace spark
 
 			void create_buffer(const UBOType& ubo_data)
 			{
-				auto& vk_window = engine::get<vulkan_window>();
+				auto& vk_window = Engine::get<VulkanWindow>();
 				VkDeviceSize buffer_size = sizeof(UBOType);
 
 				create_vulkan_buffer(
@@ -70,19 +70,19 @@ namespace spark
 		};
 
 		template <typename... UBOTypes>
-		vulkan_mesh(
-				const std::vector <vertex>& vertices, const std::vector <u32>& indices, const UBOTypes& ... ubo_data)
+		VulkanMesh(
+				const std::vector <Vertex>& vertices, const std::vector <u32>& indices, const UBOTypes& ... ubo_data)
 				:
-				mesh(vertices, indices)
+				Mesh(vertices, indices)
 		{
 			create_mesh();
 			(add_ubo(ubo_data), ...);
 			update_descriptor_sets(ubo_data...);
 		}
 
-		~vulkan_mesh()
+		~VulkanMesh()
 		{
-			auto& vk_window = engine::get<vulkan_window>();
+			auto& vk_window = Engine::get<VulkanWindow>();
 
 			for (auto& ubo: m_ubo_list)
 			{
@@ -110,7 +110,7 @@ namespace spark
 
 		template <typename... UBOTypes>
 		void update(
-				const std::vector <vertex>& vertices, const std::vector <u32>& indices, const UBOTypes& ... ubo_data)
+				const std::vector <Vertex>& vertices, const std::vector <u32>& indices, const UBOTypes& ... ubo_data)
 		{
 			m_vertices = vertices;
 			m_indices = indices;
@@ -123,12 +123,12 @@ namespace spark
 		template <typename UBOType>
 		void add_ubo(const UBOType& ubo_data)
 		{
-			m_ubo_list.emplace_back(std::make_unique<uniform_buffer_object<UBOType>>(ubo_data));
+			m_ubo_list.emplace_back(std::make_unique<UniformBufferObject<UBOType>>(ubo_data));
 		}
 
 		void update_uniform_buffers()
 		{
-			auto& vk_window = engine::get<vulkan_window>();
+			auto& vk_window = Engine::get<VulkanWindow>();
 
 			for (auto& ubo : m_ubo_list)
 			{
@@ -160,12 +160,12 @@ namespace spark
 
 		VkDeviceMemory m_index_buffer_memory;
 
-		std::vector<std::unique_ptr<uniform_buffer_base>> m_ubo_list;
+		std::vector<std::unique_ptr<IUniformBuffer>> m_ubo_list;
 
 	private:
 		void create_vertex_buffer()
 		{
-			auto& vk_window = engine::get<vulkan_window>();
+			auto& vk_window = Engine::get<VulkanWindow>();
 
 			VkBuffer staging_buffer;
 			VkDeviceMemory staging_buffer_memory;
@@ -196,7 +196,7 @@ namespace spark
 
 		void copy_buffer(VkBuffer src_buffer, VkBuffer dst_buffer, VkDeviceSize size)
 		{
-			auto& vk_window = engine::get<vulkan_window>();
+			auto& vk_window = Engine::get<VulkanWindow>();
 
 			VkCommandBufferAllocateInfo alloc_info { };
 			alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -239,7 +239,7 @@ namespace spark
 
 		void create_index_buffer()
 		{
-			auto& vk_window = engine::get<vulkan_window>();
+			auto& vk_window = Engine::get<VulkanWindow>();
 
 			VkDeviceSize buffer_size = sizeof(m_indices[0]) * m_indices.size();
 
@@ -277,7 +277,7 @@ namespace spark
 				VkBuffer& buffer,
 				VkDeviceMemory& buffer_memory)
 		{
-			auto& vk_window = engine::get<vulkan_window>();
+			auto& vk_window = Engine::get<VulkanWindow>();
 
 			VkBufferCreateInfo buffer_info { };
 			buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -311,7 +311,7 @@ namespace spark
 
 		static u32 find_memory_type(u32 type_filter, VkMemoryPropertyFlags properties)
 		{
-			auto& vk_window = engine::get<vulkan_window>();
+			auto& vk_window = Engine::get<VulkanWindow>();
 
 			VkPhysicalDeviceMemoryProperties mem_properties;
 			vkGetPhysicalDeviceMemoryProperties(vk_window.get_window_data().m_physical_device, &mem_properties);
@@ -333,7 +333,7 @@ namespace spark
 		template <typename UBO>
 		void create_uniform_buffers(const std::vector <UBO>& ubos)
 		{
-			auto& vk_window = engine::get<vulkan_window>();
+			auto& vk_window = Engine::get<VulkanWindow>();
 			VkDeviceSize buffer_size = sizeof(UBO);
 
 			std::vector <VkBuffer> buffers(ubos.size());
@@ -400,7 +400,7 @@ namespace spark
 		template <typename... UBOTypes>
 		void update_descriptor_sets(const UBOTypes& ... ubo_data)
 		{
-			auto& vk_window = engine::get<vulkan_window>();
+			auto& vk_window = Engine::get<VulkanWindow>();
 			VkDevice device = vk_window.get_window_data().m_device;
 
 			for (u64 i = 0; i < vk_window.get_window_data().m_max_frames_in_flight; i++)
@@ -415,7 +415,7 @@ namespace spark
 			}
 		}
 	private:
-		friend class uniform_buffer_base;
+		friend class IUniformBuffer;
 	};
 }
 

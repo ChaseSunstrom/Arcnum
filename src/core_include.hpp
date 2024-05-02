@@ -12,7 +12,6 @@
 #include <core/renderer/layer_stack.hpp>
 #include <core/window/window.hpp>
 #include <core/util/file.hpp>
-#include <core/util/wrap.hpp>
 #include <core/scene/scene_manager.hpp>
 #include <core/app/app_interface.hpp>
 #include <core/app/app.hpp>

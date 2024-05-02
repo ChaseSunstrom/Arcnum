@@ -9,12 +9,12 @@ namespace spark
 	// LAYER STACK:   | Used for different application layers
 	// ==============================================================================
 
-	class layer_stack
+	class LayerStack
 	{
 	public:
-		layer_stack() = default;
+		LayerStack() = default;
 
-		~layer_stack() = default;
+		~LayerStack() = default;
 
 		template <typename T, typename... Args>
 		void push_layer(Args&& ... args)
@@ -42,10 +42,10 @@ namespace spark
 			m_layers.pop_back();
 		}
 
-		inline std::vector <std::unique_ptr<layer>>& get_layers() { return m_layers; }
+		inline std::vector <std::unique_ptr<Layer>>& get_layers() { return m_layers; }
 
 	private:
-		std::vector <std::unique_ptr<layer>> m_layers = std::vector < std::unique_ptr < layer >> ();
+		std::vector <std::unique_ptr<Layer>> m_layers = std::vector < std::unique_ptr < Layer >> ();
 	};
 
 }

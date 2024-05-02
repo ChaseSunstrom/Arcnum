@@ -6,124 +6,121 @@
 namespace spark
 {
 
-	struct event
+	struct Event
 	{
-		event() = default;
+		Event() = default;
 
-		event(i32 type) :
-				m_type(type) { }
+		Event(i32 type) :
+			m_type(type) { }
 
-		virtual ~event() = default;
+		virtual ~Event() = default;
 
 		bool m_handled = false;
 
 		i32 m_type = NO_EVENT;
 	};
 
-	using app_update_event = event;
-	using app_tick_event = event;
-	using app_render_event = event;
-	using window_closed_event = event;
+	using WindowClosedEvent = Event;
 
-	struct window_resized_event :
-			event
+	struct WindowResizedEvent :
+		Event
 	{
-		window_resized_event() = default;
+		WindowResizedEvent() = default;
 
-		window_resized_event(i32 width, i32 height) :
-				event(WINDOW_RESIZED_EVENT), m_width(width), m_height(height) { }
+		WindowResizedEvent(i32 width, i32 height) :
+			Event(WINDOW_RESIZED_EVENT), m_width(width), m_height(height) { }
 
 		i32 m_width;
 
 		i32 m_height;
 	};
 
-	struct window_moved_event :
-			event
+	struct WindowMovedEvent :
+		Event
 	{
-		window_moved_event() = default;
+		WindowMovedEvent() = default;
 
-		window_moved_event(i32 x_pos, i32 y_pos) :
-				event(WINDOW_MOVED_EVENT), m_x_pos(x_pos), m_y_pos(y_pos) { }
+		WindowMovedEvent(i32 x_pos, i32 y_pos) :
+			Event(WINDOW_MOVED_EVENT), m_x_pos(x_pos), m_y_pos(y_pos) { }
 
 		i32 m_x_pos;
 
 		i32 m_y_pos;
 	};
 
-	struct key_pressed_event :
-			event
+	struct KeyPressedEvent :
+			Event
 	{
-		key_pressed_event() = default;
+		KeyPressedEvent() = default;
 
-		key_pressed_event(i32 key_code) :
-				event(KEY_PRESSED_EVENT), m_key_code(key_code) { }
+		KeyPressedEvent(i32 key_code) :
+				Event(KEY_PRESSED_EVENT), m_key_code(key_code) { }
 
 		i32 m_key_code;
 	};
 
-	struct key_released_event :
-			event
+	struct KeyReleasedEvent :
+			Event
 	{
-		key_released_event(i32 key_code) :
-				event(KEY_RELEASED_EVENT), m_key_code(key_code) { }
+		KeyReleasedEvent(i32 key_code) :
+				Event(KEY_RELEASED_EVENT), m_key_code(key_code) { }
 
 		i32 m_key_code;
 	};
 
-	struct key_repeat_event :
-			event
+	struct KeyRepeatedEvent :
+			Event
 	{
-		key_repeat_event() = default;
+		KeyRepeatedEvent() = default;
 
-		key_repeat_event(i32 key_code) :
-				event(KEY_REPEAT_EVENT), m_key_code(key_code) { }
+		KeyRepeatedEvent(i32 key_code) :
+				Event(KEY_REPEAT_EVENT), m_key_code(key_code) { }
 
 		i32 m_key_code;
 	};
 
-	struct mouse_pressed_event :
-			event
+	struct MousePressedEvent :
+			Event
 	{
-		mouse_pressed_event() = default;
+		MousePressedEvent() = default;
 
-		mouse_pressed_event(i32 button) :
-				event(MOUSE_PRESSED_EVENT), m_button(button) { }
+		MousePressedEvent(i32 button) :
+				Event(MOUSE_PRESSED_EVENT), m_button(button) { }
 
 		i32 m_button;
 	};
 
-	struct mouse_released_event :
-			event
+	struct MouseReleasedEvent :
+			Event
 	{
-		mouse_released_event() = default;
+		MouseReleasedEvent() = default;
 
-		mouse_released_event(i32 button) :
-				event(MOUSE_RELEASED_EVENT), m_button(button) { }
+		MouseReleasedEvent(i32 button) :
+				Event(MOUSE_RELEASED_EVENT), m_button(button) { }
 
 		i32 m_button;
 	};
 
-	struct mouse_moved_event :
-			event
+	struct MouseMovedEvent :
+			Event
 	{
-		mouse_moved_event() = default;
+		MouseMovedEvent() = default;
 
-		mouse_moved_event(f64 x_pos, f64 y_pos) :
-				event(MOUSE_MOVE_EVENT), m_x_pos(x_pos), m_y_pos(y_pos) { }
+		MouseMovedEvent(f64 x_pos, f64 y_pos) :
+				Event(MOUSE_MOVE_EVENT), m_x_pos(x_pos), m_y_pos(y_pos) { }
 
 		f64 m_x_pos;
 
 		f64 m_y_pos;
 	};
 
-	struct mouse_scrolled_event :
-			event
+	struct MouseScrolledEvent :
+			Event
 	{
-		mouse_scrolled_event() = default;
+		MouseScrolledEvent() = default;
 
-		mouse_scrolled_event(f64 x_offset, f64 y_offset) :
-				event(MOUSE_SCROLLED_EVENT), m_x_offset(x_offset), m_y_offset(y_offset) { }
+		MouseScrolledEvent(f64 x_offset, f64 y_offset) :
+				Event(MOUSE_SCROLLED_EVENT), m_x_offset(x_offset), m_y_offset(y_offset) { }
 
 		f64 m_x_offset;
 
@@ -132,21 +129,21 @@ namespace spark
 
 	// ===============================================================
 
-	class event_dispatcher
+	class EventDispatcher
 	{
 	public:
-		event_dispatcher() = default;
+		EventDispatcher() = default;
 
-		event_dispatcher(std::shared_ptr <event> event) :
+		EventDispatcher(std::shared_ptr <Event> event) :
 				m_event(event) { }
 
-		inline bool dispatch(std::function<bool(std::shared_ptr < event > )> fn)
+		inline bool dispatch(std::function<bool(std::shared_ptr < Event > )> fn)
 		{
 			return fn(m_event);
 		}
 
 	private:
-		std::shared_ptr <event> m_event;
+		std::shared_ptr <Event> m_event;
 	};
 }
 

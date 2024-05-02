@@ -3,65 +3,65 @@
 
 #include "../ecs/ecs.hpp"
 #include "../scene/scene.hpp"
-#include "../util/singelton.hpp"
+#include "../util/Singleton.hpp"
 
 namespace spark
 {
-	struct transforms
+	struct Transforms
 	{
-		transforms() = default;
+		Transforms() = default;
 
-		void add_transform(const transform& transform);
+		void add_transform(const Transform& transform);
 
 		void update();
 
 		void update_render_transforms();
 
-		std::vector<transform> m_data;
+		std::vector<Transform> m_data;
 
-		std::unordered_map<entity, transform> m_entity_transforms;
+		std::unordered_map<Entity, Transform> m_entity_transforms;
 	};
 
-	class instancer :
-			public observer, public singelton<instancer>
+	class Instancer :
+			public Observer, public Singleton<Instancer>
 	{
 	public:
-		static instancer& get()
+		static Instancer& get()
 		{
-			static instancer instance;
+			static Instancer instance;
 			return instance;
 		}
 
 		void add_renderable(
-				entity e,
-				const scene& scene,
+				Entity e,
+				const Scene& scene,
 				const std::string& mesh_name,
 				const std::string& material_name,
-				const transform& transform);
+				const Transform& transform);
 
 		void bind_renderables(
-				const std::vector<std::unique_ptr<camera>>& cameras,
+				const std::vector<std::unique_ptr<Camera>>& cameras,
 				const std::string& mesh_name,
 				const std::string& material_name);
 
-		void render_instanced(const std::vector<std::unique_ptr<camera>>& cameras, scene& scene);
+		void render_instanced(const std::vector<std::unique_ptr<Camera>>& cameras, Scene& scene);
 
-		void remove_renderable_for_entity(entity e);
+		void remove_renderable_for_entity(Entity e);
 
-		void update_renderable(entity e, scene& scene);
+		void update_renderable(Entity e, Scene& scene);
 
-		void on_notify(std::shared_ptr<event> event) override;
-
-	private:
-
-		instancer() = default;
-
-		~instancer() = default;
+		void on_notify(std::shared_ptr<Event> event) override;
 
 	private:
-		std::unordered_map<std::string, std::unordered_map<std::string, std::unique_ptr<transforms>>> m_renderables;
 
-		std::unordered_map<entity, std::pair<std::string, std::string>> m_entity_mesh_materials;
+		Instancer() = default;
+
+		~Instancer() = default;
+
+	private:
+		std::unordered_map<std::string, std::unordered_map<std::string, std::unique_ptr<Transforms>>> m_renderables;
+
+		std::unordered_map<Entity, std::pair<std::string, std::string>> m_entity_mesh_materials;
 	};
 }
 

@@ -8,14 +8,14 @@
 #include "../ecs/ecs.hpp"
 #include "../user/camera.hpp"
 #include "../logging/log.hpp"
-#include "../util/singelton.hpp"
+#include "../util/Singleton.hpp"
 #include "instancer.hpp"
 
 namespace spark
 {
-	struct renderer_settings
+	struct RendererSettings
 	{
-		renderer_settings(
+		RendererSettings(
 				i32 resolution_width = 1920,
 				i32 resolution_height = 1080,
 				i32 min_width = 800,
@@ -142,7 +142,7 @@ namespace spark
 		// Extended Debugging and development
 		bool m_normals_visualizer = false; // Visualize normal vectors, useful for debugging shading issues
 		bool m_uv_debug_mode = false; // Display UV coordinates as colors, to debug texture mappings
-		bool m_physics_debug_drawer = false; // Enable debug drawer for physics engine (collision shapes, etc.)
+		bool m_physics_debug_drawer = false; // Enable debug drawer for physics Engine (collision shapes, etc.)
 		bool m_lighting_only_mode = false; // Render lighting information only, ignoring textures and materials
 
 		f32 m_ui_scale = 1.0f; // Adjust the scale of UI elements for accessibility
@@ -154,13 +154,13 @@ namespace spark
 	// RENDERER:     | Used for rendering and storing rendering data
 	// ==============================================================================
 
-	class renderer :
-		public singelton<renderer>
+	class Renderer :
+		public Singleton<Renderer>
 	{
 	public:
-		static renderer& get()
+		static Renderer& get()
 		{
-			static renderer instance;
+			static Renderer instance;
 			return instance;
 		}
 
@@ -194,25 +194,25 @@ namespace spark
 
 		void finalize_frame();
 
-		std::vector<std::unique_ptr<camera>>& get_cameras()
+		std::vector<std::unique_ptr<Camera>>& get_cameras()
 		{
 			return m_cameras;
 		}
 
 	private:
 
-		renderer() :
-			singelton()
+		Renderer() :
+			Singleton()
 		{
-			m_cameras.emplace_back(std::make_unique<camera>());
+			m_cameras.emplace_back(std::make_unique<Camera>());
 		}
 
-		~renderer() = default;
+		~Renderer() = default;
 
 	private:
-		std::unique_ptr<renderer_settings> m_settings = std::make_unique<renderer_settings>();
+		std::unique_ptr<RendererSettings> m_settings = std::make_unique<RendererSettings>();
 
-		std::vector<std::unique_ptr<camera>> m_cameras;
+		std::vector<std::unique_ptr<Camera>> m_cameras;
 	};
 }
 

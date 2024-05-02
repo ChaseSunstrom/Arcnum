@@ -4,9 +4,9 @@
 
 namespace spark
 {
-	void ui_manager::on_update()
+	void UIManager::on_update()
 	{
-		auto& vk_window = engine::get<vulkan_window>();
+		auto& vk_window = Engine::get<VulkanWindow>();
 
 		ImGui_ImplVulkan_NewFrame();
 		ImGui_ImplGlfw_NewFrame();

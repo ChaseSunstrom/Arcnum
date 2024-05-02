@@ -20,49 +20,49 @@ namespace spark
 			return io_context;
 		}
 
-		struct udp_server_receive_event :
-				public event
+		struct UDPServerReceiveEvent :
+				public Event
 		{
-			udp_server_receive_event() = default;
+			UDPServerReceiveEvent() = default;
 
-			udp_server_receive_event(std::unique_ptr <serializeable> packet) :
-					event(UDP_SERVER_RECEIVE_EVENT), m_packet(std::move(packet)) { }
+			UDPServerReceiveEvent(std::unique_ptr <Serializeable> packet) :
+					Event(UDP_SERVER_RECEIVE_EVENT), m_packet(std::move(packet)) { }
 
-			std::unique_ptr <serializeable> m_packet;
+			std::unique_ptr <Serializeable> m_packet;
 		};
 
-		struct udp_client_receive_event :
-				public event
+		struct UDPClientReceiveEvent :
+				public Event
 		{
-			udp_client_receive_event() = default;
+			UDPClientReceiveEvent() = default;
 
-			udp_client_receive_event(std::unique_ptr <serializeable> packet) :
-					event(UDP_CLIENT_RECEIVE_EVENT), m_packet(std::move(packet)) { }
+			UDPClientReceiveEvent(std::unique_ptr <Serializeable> packet) :
+					Event(UDP_CLIENT_RECEIVE_EVENT), m_packet(std::move(packet)) { }
 
-			std::unique_ptr <serializeable> m_packet;
+			std::unique_ptr <Serializeable> m_packet;
 		};
 
 		// Similar thing to UDP, need both for event organization
-		struct tcp_client_receive_event :
-				public event
+		struct TCPClientReceiveEvent :
+				public Event
 		{
-			tcp_client_receive_event() = default;
+			TCPClientReceiveEvent() = default;
 
-			tcp_client_receive_event(std::unique_ptr <serializeable> packet) :
-					event(TCP_CLIENT_RECEIVE_EVENT), m_packet(std::move(packet)) { }
+			TCPClientReceiveEvent(std::unique_ptr <Serializeable> packet) :
+					Event(TCP_CLIENT_RECEIVE_EVENT), m_packet(std::move(packet)) { }
 
-			std::unique_ptr <serializeable> m_packet;
+			std::unique_ptr <Serializeable> m_packet;
 		};
 
-		struct tcp_server_receive_event :
-				public event
+		struct TCPServerReceiveEvent :
+				public Event
 		{
-			tcp_server_receive_event() = default;
+			TCPServerReceiveEvent() = default;
 
-			tcp_server_receive_event(std::unique_ptr <serializeable> packet) :
-					event(TCP_SERVER_RECEIVE_EVENT), m_packet(std::move(packet)) { }
+			TCPServerReceiveEvent(std::unique_ptr <Serializeable> packet) :
+					Event(TCP_SERVER_RECEIVE_EVENT), m_packet(std::move(packet)) { }
 
-			std::unique_ptr <serializeable> m_packet;
+			std::unique_ptr <Serializeable> m_packet;
 		};
 	}
 }

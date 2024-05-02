@@ -5,15 +5,15 @@
 
 namespace spark
 {
-	struct dir_light_component
+	struct DirectionalLightComponent
 	{
-		dir_light_component() = default;
+		DirectionalLightComponent() = default;
 
-		dir_light_component(
+		DirectionalLightComponent(
 				math::vec3 direction, math::vec3 ambient, math::vec3 diffuse, math::vec3 specular) :
 				m_direction(direction), m_ambient(ambient), m_diffuse(diffuse), m_specular(specular) { }
 
-		bool operator!=(const dir_light_component& other) const
+		bool operator!=(const DirectionalLightComponent& other) const
 		{
 			return m_direction != other.m_direction || m_ambient != other.m_ambient || m_diffuse != other.m_diffuse ||
 			       m_specular != other.m_specular;
@@ -28,11 +28,11 @@ namespace spark
 		math::vec3 m_specular;
 	};
 
-	struct point_light_component
+	struct PointLightComponent
 	{
-		point_light_component() = default;
+		PointLightComponent() = default;
 
-		point_light_component(
+		PointLightComponent(
 				math::vec3 position,
 				f32 constant,
 				f32 linear,
@@ -43,7 +43,7 @@ namespace spark
 				m_position(position), m_constant(constant), m_linear(linear), m_quadratic(quadratic), m_ambient(ambient), m_diffuse(
 				diffuse), m_specular(specular) { }
 
-		bool operator!=(const point_light_component& other) const
+		bool operator!=(const PointLightComponent& other) const
 		{
 			return m_position != other.m_position || m_constant != other.m_constant || m_linear != other.m_linear ||
 			       m_quadratic != other.m_quadratic || m_ambient != other.m_ambient || m_diffuse != other.m_diffuse ||
@@ -65,11 +65,11 @@ namespace spark
 		math::vec3 m_specular;
 	};
 
-	struct spot_light_component
+	struct SpotLightComponent
 	{
-		spot_light_component() = default;
+		SpotLightComponent() = default;
 
-		spot_light_component(
+		SpotLightComponent(
 				math::vec3 position,
 				math::vec3 direction,
 				f32 cut_off,
@@ -84,7 +84,7 @@ namespace spark
 				constant), m_linear(linear), m_quadratic(quadratic), m_ambient(ambient), m_diffuse(diffuse), m_specular(
 				specular) { }
 
-		bool operator!=(const spot_light_component& other) const
+		bool operator!=(const SpotLightComponent& other) const
 		{
 			return m_position != other.m_position || m_direction != other.m_direction || m_cut_off != other.m_cut_off ||
 			       m_outer_cut_off != other.m_outer_cut_off || m_constant != other.m_constant ||

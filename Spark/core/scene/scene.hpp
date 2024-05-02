@@ -6,34 +6,34 @@
 
 namespace spark
 {
-	struct scene_config
+	struct SceneConfig
 	{
-		scene_config() = default;
+		SceneConfig() = default;
 
-		scene_config(const math::vec4& background_color) :
+		SceneConfig(const math::vec4& background_color) :
 				m_background_color(background_color) { }
 
-		~scene_config() = default;
+		~SceneConfig() = default;
 
 		math::vec4 m_background_color = math::vec4(0);
 	};
 
-	class scene
+	class Scene
 	{
 	public:
-		scene() = default;
+		Scene() = default;
 
-		scene(const scene_config& config) :
-				m_config(const_cast<scene_config&>(config)) { }
+		Scene(const SceneConfig& config) :
+				m_config(const_cast<SceneConfig&>(config)) { }
 
-		~scene() = default;
+		~Scene() = default;
 
-		scene_config& get_scene_config() const { return m_config; }
+		SceneConfig& get_scene_config() const { return m_config; }
 
 		void set_background_color(const math::vec4& color) { m_config.m_background_color = color; }
 
 	private:
-		scene_config& m_config;
+		SceneConfig& m_config;
 	};
 }
 

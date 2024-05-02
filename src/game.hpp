@@ -5,7 +5,7 @@
 
 void on_start();
 void on_update();
-bool on_event(std::shared_ptr<spark::event> event);
+bool on_event(std::shared_ptr<spark::Event> event);
 
 void register_functions();
 

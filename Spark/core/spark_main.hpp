@@ -5,8 +5,8 @@
 
 namespace spark
 {
-	// Start function for the core engine, must be called to automatically 
-	// initialize certain engine features
+	// Start function for the core Engine, must be called to automatically 
+	// initialize certain Engine features
 	void spark_main();
 }
 

@@ -8,12 +8,12 @@
 
 namespace spark
 {
-	void transforms::add_transform(const transform& transform)
+	void Transforms::add_transform(const Transform& transform)
 	{
 		m_data.emplace_back(transform);
 	}
 
-	void transforms::update_render_transforms()
+	void Transforms::update_render_transforms()
 	{
 		m_data.clear();
 		for (auto& [entity, transform]: m_entity_transforms)
@@ -22,17 +22,17 @@ namespace spark
 		}
 	}
 
-	void instancer::add_renderable(
-			entity e,
-			const scene& scene,
+	void Instancer::add_renderable(
+			Entity e,
+			const Scene& scene,
 			const std::string& mesh_name,
 			const std::string& material_name,
-			const transform& _transform)
+			const Transform& _transform)
 	{
 		auto& material_map = m_renderables[mesh_name];
 		if (!material_map[material_name])
 		{
-			material_map[material_name] = std::make_unique<transforms>();
+			material_map[material_name] = std::make_unique<Transforms>();
 		}
 		material_map[material_name]->add_transform(_transform);
 		m_entity_mesh_materials[e] = { mesh_name, material_name };
@@ -40,7 +40,7 @@ namespace spark
 		//scene.get_octree().insert(const_cast<transform*>(&_transform));
 	}
 
-	void instancer::remove_renderable_for_entity(entity e)
+	void Instancer::remove_renderable_for_entity(Entity e)
 	{
 		auto [mesh_name, material_name] = m_entity_mesh_materials[e];
 
@@ -58,42 +58,42 @@ namespace spark
 		}
 	}
 
-	void instancer::on_notify(std::shared_ptr<event> event)
+	void Instancer::on_notify(std::shared_ptr<Event> event)
 	{
-		auto& _ecs = engine::get<ecs>();
-		auto& _scene = engine::get<scene_manager>().get_current_scene();
+		auto& ecs = Engine::get<ECS>();
+		auto& scene = Engine::get<SceneManager>().get_current_scene();
 
 		switch (event->m_type)
 		{
 			case ENTITY_CREATED_EVENT:
 			{
-				auto _entity_created_event = std::static_pointer_cast<entity_created_event>(event);
-				entity e = _entity_created_event->m_entity;
+				auto _entity_created_event = std::static_pointer_cast<EntityCreatedEvent>(event);
+				Entity e = _entity_created_event->m_entity;
 
-				if (_ecs.has_component<transform_component>(e) && 
-					_ecs.has_component<mesh_component>(e) &&
-				    _ecs.has_component<material_component>(e))
+				if (ecs.has_component<TransformComponent>(e) && 
+					ecs.has_component<MeshComponent>(e) &&
+				    ecs.has_component<MaterialComponent>(e))
 				{
-					auto mesh_name = _ecs.get_component<mesh_component>(e).m_mesh_name;
-					auto material_name = _ecs.get_component<material_component>(e).m_material_name;
-					auto& transform = _ecs.get_component<transform_component>(e);
+					auto mesh_name = ecs.get_component<MeshComponent>(e).m_mesh_name;
+					auto material_name = ecs.get_component<MaterialComponent>(e).m_material_name;
+					auto& transform = ecs.get_component<TransformComponent>(e);
 
-					add_renderable(e, _scene, mesh_name, material_name, transform);
+					add_renderable(e, scene, mesh_name, material_name, transform);
 				}
 				break;
 			}
 			case ENTITY_UPDATED_EVENT:
 			{
-				auto _entity_updated_event = std::static_pointer_cast<entity_updated_event>(event);
-				entity e = _entity_updated_event->m_entity;
+				auto _entity_updated_event = std::static_pointer_cast<EntityUpdatedEvent>(event);
+				Entity e = _entity_updated_event->m_entity;
 
-				update_renderable(e, _scene);
+				update_renderable(e, scene);
 				break;
 			}
 			case ENTITY_DESTROYED_EVENT:
 			{
-				auto _entity_destroyed_event = std::static_pointer_cast<entity_destroyed_event>(event);
-				entity e = _entity_destroyed_event->m_entity;
+				auto _entity_destroyed_event = std::static_pointer_cast<EntityDestroyedEvent>(event);
+				Entity e = _entity_destroyed_event->m_entity;
 
 				remove_renderable_for_entity(e);
 				break;
@@ -101,7 +101,7 @@ namespace spark
 		}
 	}
 
-	void instancer::update_renderable(entity e, scene& scene)
+	void Instancer::update_renderable(Entity e, Scene& scene)
 	{
 		// Check if the entity exists in the map
 		if (m_entity_mesh_materials.find(e) != m_entity_mesh_materials.end())
@@ -118,7 +118,7 @@ namespace spark
 				if (transform_storage)
 				{
 					// Get the transform component from the ECS
-					auto& transform = engine::get<ecs>().get_component<transform_component>(e);
+					auto& transform = Engine::get<ECS>().get_component<TransformComponent>(e);
 
 					// Update the transform in the storage
 					transform_storage->m_entity_transforms[e] = transform;
@@ -130,20 +130,20 @@ namespace spark
 		}
 	}
 
-	void instancer::render_instanced(const std::vector<std::unique_ptr<camera>>& cameras, scene& scene)
+	void Instancer::render_instanced(const std::vector<std::unique_ptr<Camera>>& cameras, Scene& scene)
 	{
-		auto& vk_window = engine::get<vulkan_window>();
+		auto& vk_window = Engine::get<VulkanWindow>();
 
 		for (auto& [mesh_name, material_map]: m_renderables)
 		{
 			for (auto& [material_name, transforms_ptr]: material_map)
 			{
 				// Perform the instanced draw call
-				auto& mesh = engine::get<mesh_manager>().get_mesh(mesh_name);
+				auto& mesh = Engine::get<MeshManager>().get_mesh(mesh_name);
 
-				if (get_current_window_type() == window_type::VULKAN)
+				if (get_current_window_type() == WindowType::VULKAN)
 				{
-					auto& _vulkan_mesh = dynamic_cast<vulkan_mesh&>(mesh);
+					auto& _vulkan_mesh = dynamic_cast<VulkanMesh&>(mesh);
 
 					VkBuffer vertex_buffers[] = { _vulkan_mesh.m_vertex_buffer };
 					VkDeviceSize offsets[] = { 0 };

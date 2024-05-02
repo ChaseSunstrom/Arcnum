@@ -5,7 +5,7 @@
 
 namespace spark
 {
-	class physics_system : public system
+	class PhysicsSystem : public System
 	{
 	public:
 

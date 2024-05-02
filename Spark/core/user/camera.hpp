@@ -6,9 +6,9 @@
 
 namespace spark
 {
-	struct camera
+	struct Camera
 	{
-		camera(
+		Camera(
 				const math::vec3& position = math::vec3(0.0f, 0.0f, 3.0f),
 				const math::vec3& direction = math::vec3(0.0f, 0.0f, -1.0f),
 				f32 fov = 90.0f,
@@ -18,7 +18,7 @@ namespace spark
 				m_position(position), m_direction(direction), m_fov(fov), m_aspect_ratio(aspect_ratio), m_near_plane(
 				near_plane), m_far_plane(far_plane)
 		{
-			m_frustum = std::make_unique<frustum>(get_view_projection_matrix());
+			m_frustum = std::make_unique<Frustum>(get_view_projection_matrix());
 		}
 
 		math::mat4 get_view_matrix() const
@@ -36,7 +36,7 @@ namespace spark
 			return get_projection_matrix() * get_view_matrix();
 		}
 
-		bool operator!=(const camera& other) const
+		bool operator!=(const Camera& other) const
 		{
 			return !(m_position == other.m_position && m_direction == other.m_direction && m_fov == other.m_fov &&
 			         m_aspect_ratio == other.m_aspect_ratio && m_near_plane == other.m_near_plane &&
@@ -55,7 +55,7 @@ namespace spark
 
 		f32 m_far_plane;
 
-		std::unique_ptr<frustum> m_frustum;
+		std::unique_ptr<Frustum> m_frustum;
 	};
 }
 

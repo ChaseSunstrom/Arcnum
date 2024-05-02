@@ -9,17 +9,17 @@
 
 namespace spark
 {
-	enum class texture_type
+	enum class TextureType
 	{
 		TWO_D = 2, THREE_D = 3
 	};
 
-	struct transform
+	struct Transform
 	{
-		transform(
-				const math::vec3& position = math::vec3(0.0f),
-				const math::vec3& rotation = math::vec3(0.0f),
-				const math::vec3& scale = math::vec3(1.0f))
+		Transform(
+			const math::vec3& position = math::vec3(0.0f),
+			const math::vec3& rotation = math::vec3(0.0f),
+			const math::vec3& scale = math::vec3(1.0f))
 		{
 			math::mat4 mat = math::mat4(1.0f); // Start with identity matrix
 
@@ -43,15 +43,15 @@ namespace spark
 			m_transform = math::scale(m_transform, scale);
 		}
 
-		transform& operator*=(const transform& rhs)
+		Transform& operator*=(const Transform& rhs)
 		{
 			this->m_transform = this->m_transform * rhs.m_transform;
 			return *this;
 		}
 
-		transform operator*(const transform& rhs) const
+		Transform operator*(const Transform& rhs) const
 		{
-			transform result = *this; // Copy current transform
+			Transform result = *this; // Copy current transform
 			result *= rhs;            // Apply multiplication
 			return result;
 		}
@@ -59,89 +59,23 @@ namespace spark
 		math::mat4 m_transform;
 	};
 
-	class texture
+	class Texture
 	{
 	public:
-		texture() = default;
-
-		texture(
-				const std::filesystem::path& path,
-				texture_type type,
-				std::optional <i32> depth = std::nullopt,
-				const std::vector <std::pair<GLenum, GLenum>>& params = std::vector < std::pair < GLenum,
-				GLenum>>());
-
-		~texture();
-
-		void bind(GLenum texture_unit = GL_TEXTURE0);
-
-		static texture& create_default_texture()
-		{
-			static bool created = false;
-
-			static texture default_tex;
-
-			if (created)
-			{
-				return default_tex;
-			}
-
-			created = true;
-
-			std::vector <std::pair<GLenum, GLenum>> default_params = {
-					{   GL_TEXTURE_MIN_FILTER, GL_LINEAR }
-					, { GL_TEXTURE_MAG_FILTER, GL_LINEAR }
-					, { GL_TEXTURE_WRAP_S    , GL_CLAMP_TO_EDGE }
-					, { GL_TEXTURE_WRAP_T    , GL_CLAMP_TO_EDGE }
-			};
-
-			unsigned char white_pixel[3] = { 255, 255, 255 };
-			default_tex.m_width = 1;
-			default_tex.m_height = 1;
-			default_tex.m_nr_channels = 3;
-			default_tex.m_type = texture_type::TWO_D;
-			default_tex.generate_texture(GL_TEXTURE_2D, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, &white_pixel);
-			default_tex.set_texture_parameters(GL_TEXTURE_2D, default_params);
-
-			return default_tex;
-		}
-
-		void set_texture_parameters(GLenum target, const std::vector <std::pair<GLenum, GLenum>>& params);
-
-		GLenum get_gl_texture_type() const;
-
-	public:
-
-		u32 m_texture;
-
-		void* m_image_data = nullptr;
-
-		i32 m_width;
-
-		i32 m_height;
-
-		i32 m_nr_channels;
-
-		std::optional <i32> m_depth;
-
-		texture_type m_type;
+		Texture() = default;
 
 	private:
 
-		void load_texture(const std::filesystem::path& path, const std::vector <std::pair<GLenum, GLenum>>& params);
-
-		void generate_texture(GLenum target, GLenum internal_format, GLenum format, GLenum type);
 	};
 
-	struct material
+	struct Material
 	{
-		material(
-				const math::vec4& color, texture& tex, i32 diffuse, i32 specular, i32 ambient, f32 shininess) :
-				m_color(color), m_diffuse(diffuse), m_specular(specular), m_ambient(ambient), m_shininess(shininess), m_texture(
+		Material(
+			const math::vec4& color, Texture& tex, i32 diffuse, i32 specular, i32 ambient, f32 shininess) :
+			m_color(color), m_diffuse(diffuse), m_specular(specular), m_ambient(ambient), m_shininess(shininess), m_texture(
 				tex) { }
 
-		~material() = default;
+		~Material() = default;
 
 		math::vec4 m_color;
 
@@ -153,32 +87,31 @@ namespace spark
 
 		f32 m_shininess;
 
-		texture& m_texture;
+		Texture& m_texture;
 	};
 
-
-	struct mesh_component
+	struct MeshComponent
 	{
-		mesh_component() = default;
+		MeshComponent() = default;
 
-		mesh_component(const std::string& name) :
-				m_mesh_name(name) { }
+		MeshComponent(const std::string& name) :
+			m_mesh_name(name) { }
 
-		~mesh_component() = default;
+		~MeshComponent() = default;
 
 		std::string m_mesh_name = "";
 	};
 
-	struct material_component
+	struct MaterialComponent
 	{
-		material_component() = default;
+		MaterialComponent() = default;
 
-		material_component(const std::string& name) :
-				m_material_name(name) { }
+		MaterialComponent(const std::string& name) :
+			m_material_name(name) { }
 
-		~material_component() = default;
+		~MaterialComponent() = default;
 
-		bool operator!=(const material_component& other) const
+		bool operator!=(const MaterialComponent& other) const
 		{
 			return m_material_name != other.m_material_name;
 		}
@@ -186,127 +119,65 @@ namespace spark
 		std::string m_material_name = "";
 	};
 
-	struct render_component
-	{
-		render_component() = default;
-
-		render_component(bool has_mesh, bool has_transform, bool has_material) :
-				m_renderable(has_mesh && has_transform && has_material) { }
-
-
-		bool m_renderable = false;
-	};
-
-	class texture_manager
+	class TextureManager
 	{
 	public:
-		static texture_manager& get()
+		static TextureManager& get()
 		{
-			static texture_manager instance;
+			static TextureManager instance;
 			return instance;
-		}
-
-		texture& create_texture(
-				const std::string& name,
-				const std::filesystem::path& path,
-				texture_type type,
-				std::optional <i32> depth = std::nullopt,
-				const std::vector <std::pair<GLenum, GLenum>>& params = {
-						{   GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR }
-						, { GL_TEXTURE_MAG_FILTER, GL_LINEAR }
-						, { GL_TEXTURE_WRAP_S    , GL_REPEAT }
-						, { GL_TEXTURE_WRAP_T    , GL_REPEAT }
-				})
-		{
-			m_textures[name] = std::make_unique<texture>(path, type, depth, params);
-			return *m_textures[name];
-		}
-
-		texture& get_texture(const std::string& name);
-
-		std::unordered_map <std::string, std::unique_ptr<texture>>& get_textures()
-		{
-			return m_textures;
-		}
-
-		texture& create_default_texture()
-		{
-			static std::string default_texture_name = "__default__";
-
-			auto found = m_textures.find(default_texture_name);
-			if (found != m_textures.end())
-			{
-				return *found->second;
-			}
-
-			// Create a new texture object
-			texture default_tex;
-			default_tex.m_type = texture_type::TWO_D;
-			default_tex.m_width = 1;
-			default_tex.m_height = 1;
-			default_tex.m_nr_channels = 3;
-
-			// Generate and bind the texture
-			glGenTextures(1, &default_tex.m_texture);
-			glBindTexture(GL_TEXTURE_2D, default_tex.m_texture);
-
-			// Define the texture image (1x1 white pixel)
-			uint8_t white_pixel[3] = { 255, 255, 255 };
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, white_pixel);
-
-			std::vector <std::pair<GLenum, GLenum>> default_params = {
-					{   GL_TEXTURE_MIN_FILTER, GL_LINEAR }
-					, { GL_TEXTURE_MAG_FILTER, GL_LINEAR }
-					, { GL_TEXTURE_WRAP_S    , GL_CLAMP_TO_EDGE }
-					, { GL_TEXTURE_WRAP_T    , GL_CLAMP_TO_EDGE }
-			};
-			default_tex.set_texture_parameters(GL_TEXTURE_2D, default_params);
-
-			glBindTexture(GL_TEXTURE_2D, 0);
-
-			m_textures[default_texture_name] = std::make_unique<texture>(std::move(default_tex));
-
-			return *m_textures[default_texture_name];
 		}
 
 		void destroy_texture(const std::string& name);
 
-	private:
-		texture_manager() = default;
+		Texture& get_texture(const std::string& name);
 
-		~texture_manager() = default;
+		Texture& create_texture(
+			const std::string& name,
+			const std::string& path,
+			TextureType type = TextureType::TWO_D,
+			bool flip = true);
+
+		Texture& create_default_texture();
+
+		std::unordered_map<std::string, std::unique_ptr<Texture>>& get_textures();
 
 	private:
-		std::unordered_map <std::string, std::unique_ptr<texture>> m_textures;
+		TextureManager() = default;
+
+		~TextureManager() = default;
+
+	private:
+		std::unordered_map <std::string, std::unique_ptr<Texture>> m_textures;
 	};
 
-	class material_manager
+	class MaterialManager
 	{
 	public:
-		static material_manager& get()
+		static MaterialManager& get()
 		{
-			static material_manager instance;
+			static MaterialManager instance;
 			return instance;
 		}
 
-		material& create_material(
-				const std::string& name,
-				const std::pair <std::optional<std::string>, std::optional<std::string>>& shader_paths = {
-						std::nullopt, std::nullopt
-				},
-				const math::vec4& color = math::vec4(1),
-				const std::string& texture_name = "",
-				i32 diffuse = 0,
-				i32 specular = 0,
-				i32 ambient = 1,
-				f32 shininess = 0)
+		Material& create_material(
+			const std::string& name,
+			const std::pair <std::optional<std::string>, std::optional<std::string>>& shader_paths = {
+					std::nullopt, std::nullopt
+			},
+			const math::vec4& color = math::vec4(1),
+			const std::string& texture_name = "",
+			i32 diffuse = 0,
+			i32 specular = 0,
+			i32 ambient = 1,
+			f32 shininess = 0)
 		{
 			if (m_materials.contains(name))
 			{
 				return *m_materials[name];
 			}
 
-			texture* tex = nullptr;
+			Texture* tex = nullptr;
 
 			if (!texture_name.empty() && m_texture_manager.get_textures().contains(texture_name))
 			{
@@ -317,18 +188,18 @@ namespace spark
 				tex = &(m_texture_manager.create_default_texture());
 			}
 
-			m_materials[name] = std::make_unique<material>(
-					color, *tex, diffuse, specular, ambient, shininess);
+			m_materials[name] = std::make_unique<Material>(
+				color, *tex, diffuse, specular, ambient, shininess);
 
 			return *m_materials[name];
 		}
 
-		void load_material(const std::string& name, std::unique_ptr <material> mat)
+		void load_material(const std::string& name, std::unique_ptr <Material> mat)
 		{
 			m_materials[name] = std::move(mat);
 		}
 
-		material& get_material(const std::string& name)
+		Material& get_material(const std::string& name)
 		{
 			return *m_materials.at(name);
 		}
@@ -338,71 +209,56 @@ namespace spark
 			m_materials.erase(name);
 		}
 
-		texture& create_texture(
-				const std::string& name,
-				const std::filesystem::path& path,
-				texture_type type,
-				std::optional <i32> depth = std::nullopt,
-				const std::vector <std::pair<GLenum, GLenum>>& params = {
-						{   GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR }
-						, { GL_TEXTURE_MAG_FILTER, GL_LINEAR }
-						, { GL_TEXTURE_WRAP_S    , GL_REPEAT }
-						, { GL_TEXTURE_WRAP_T    , GL_REPEAT }
-				})
-		{
-			return m_texture_manager.create_texture(name, path, type, depth, params);
-		}
-
 	private:
-		material_manager()
+		MaterialManager()
 		{
 			create_material("__default__");
 		}
 
-		~material_manager() = default;
+		~MaterialManager() = default;
 
 	private:
-		shader_manager& m_shader_manager = shader_manager::get();
+		ShaderManager& m_shader_manager = ShaderManager::get();
 
-		texture_manager& m_texture_manager = texture_manager::get();
+		TextureManager& m_texture_manager = TextureManager::get();
 
-		std::unordered_map <std::string, std::unique_ptr<material>> m_materials;
+		std::unordered_map <std::string, std::unique_ptr<Material>> m_materials;
 	};
 
-	class mesh_manager
+	class MeshManager
 	{
 	public:
-		static mesh_manager& get()
+		static MeshManager& get()
 		{
-			static mesh_manager instance;
+			static MeshManager instance;
 			return instance;
 		}
 
 		template <typename... Args>
-		mesh& create_mesh(
-				const std::string& name,
-				const std::vector <vertex>& vertices,
-				const std::vector <u32> indices = { },
-				Args&& ... args)
+		Mesh& create_mesh(
+			const std::string& name,
+			const std::vector <Vertex>& vertices,
+			const std::vector <u32> indices = { },
+			Args&& ... args)
 		{
 			if (m_meshes.contains(name))
 			{
 				return *m_meshes[name];
 			}
 
-			if (get_current_window_type() == window_type::VULKAN)
+			if (get_current_window_type() == WindowType::VULKAN)
 			{
-				m_meshes[name] = std::make_unique<vulkan_mesh>(vertices, indices, std::forward<Args>(args)...);
+				m_meshes[name] = std::make_unique<VulkanMesh>(vertices, indices, std::forward<Args>(args)...);
 				return *m_meshes[name];
 			}
 		}
 
-		void load_mesh(const std::string& name, std::unique_ptr <mesh> mesh)
+		void load_mesh(const std::string& name, std::unique_ptr <Mesh> mesh)
 		{
 			m_meshes[name] = std::move(mesh);
 		}
 
-		mesh& get_mesh(const std::string& name)
+		Mesh& get_mesh(const std::string& name)
 		{
 			return *m_meshes[name];
 		}
@@ -413,25 +269,25 @@ namespace spark
 		}
 
 	private:
-		mesh_manager() = default;
+		MeshManager() = default;
 
-		~mesh_manager() = default;
+		~MeshManager() = default;
 
 	private:
-		std::unordered_map <std::string, std::unique_ptr<mesh>> m_meshes;
+		std::unordered_map <std::string, std::unique_ptr<Mesh>> m_meshes;
 	};
 
 	// ==============================================================================
 	// GLSL FUNCTIONS: 
 
-	void set_uniform(const material& material, u32 shader_program);
+	void set_uniform(const Material& material, u32 shader_program);
 
-	void set_uniform(const std::string& uniform_name, const material& material, u32 shader_program);
+	void set_uniform(const std::string& uniform_name, const Material& material, u32 shader_program);
 
 	// ==============================================================================
 
 	// Types
-	using transform_component = transform;
+	using TransformComponent = Transform;
 }
 
 #endif

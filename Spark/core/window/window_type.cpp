@@ -3,9 +3,9 @@
 
 namespace spark
 {
-	window_type get_current_window_type()
+	WindowType get_current_window_type()
 	{
-		auto& _window_manager = engine::get<window_manager>();
+		auto& _window_manager = Engine::get<WindowManager>();
 
 		return _window_manager.get_current_window_type();
 	}

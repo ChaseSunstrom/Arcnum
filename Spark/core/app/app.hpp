@@ -6,27 +6,27 @@
 #include "../scene/scene_manager.hpp"
 #include "../window/window.hpp"
 #include "../audio/audio.hpp"
-#include "../util/singelton.hpp"
+#include "../util/singleton.hpp"
 
 #include "../util/timer.hpp"
 
 namespace spark
 {
-	class application :
-		public singelton<application>
+	class Application :
+		public Singleton<Application>
 	{
 	public:
 		static void on_start();
 
 		static void on_update();
 
-		static void on_event(std::shared_ptr<event> event);
+		static void on_event(std::shared_ptr<Event> event);
 
 		static void on_shutdown();
 
 		static void set_window_title(const std::string& title);
 
-		static void add_scene(const std::string& name, const scene_config& config);
+		static void add_scene(const std::string& name, const SceneConfig& config);
 
 		static void set_delta_time(u64 delta_time);
 
@@ -50,6 +50,8 @@ namespace spark
 
 		static void set_tick_speed(u64 speed);
 
+		static Scene& get_current_scene();
+
 	private:
 		static f64 s_fixed_delta_time;
 
@@ -61,7 +63,7 @@ namespace spark
 
 		static u64 s_tick_speed;
 
-		static std::unique_ptr<timer> s_timer;
+		static std::unique_ptr<Timer> s_timer;
 	};
 }
 

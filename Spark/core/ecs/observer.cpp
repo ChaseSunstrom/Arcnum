@@ -3,7 +3,7 @@
 
 namespace spark
 {
-	observer::observer(bool manual_register) :
+	Observer::Observer(bool manual_register) :
 		m_manual_register(manual_register)
 	{
 		if (!manual_register)
@@ -12,14 +12,14 @@ namespace spark
 		}
 	}
 
-	observer::~observer()
+	Observer::~Observer()
 	{
 		// Automatically unregister this observer upon destruction
-		ecs::get().remove_observer(*this);
+		ECS::get().remove_observer(*this);
 	}
 
-	void observer::register_observer()
+	void Observer::register_observer()
 	{
-		ecs::get().add_observer(this);
+		ECS::get().add_observer(this);
 	}
 }

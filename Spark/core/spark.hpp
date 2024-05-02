@@ -15,7 +15,7 @@
 
 #include "std_include.hpp"
 #include "types.hpp"
-#include "engine.hpp"
+#include "Engine.hpp"
 
 #include "util/macros.hpp"
 

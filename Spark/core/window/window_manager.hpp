@@ -10,14 +10,14 @@
 
 namespace spark
 {
-	template <typename W> concept is_window_type = std::is_base_of_v<window, W>;
+	template <typename W> concept is_window_type = std::is_base_of_v<Window, W>;
 
-	class window_manager
+	class WindowManager
 	{
 	public:
-		static window_manager& get()
+		static WindowManager& get()
 		{
-			static window_manager instance;
+			static WindowManager instance;
 			return instance;
 		}
 
@@ -38,37 +38,37 @@ namespace spark
 			m_current_window = m_windows[typeid(T)];
 		}
 
-		window& get_current_window() const
+		Window& get_current_window() const
 		{
 			return *m_current_window;
 		}
 
-		window_type get_current_window_type() const
+		WindowType get_current_window_type() const
 		{
 			return m_current_window->get_window_type();
 		}
 
 		template <is_window_type T>
-		bool is_window_type(window_type type) const
+		bool is_window_type(WindowType type) const
 		{
 			return type == type_to_enum(T);
 		}
 
 	private:
-		window_manager()
+		WindowManager()
 		{
-			auto& vk_window = engine::get<vulkan_window>();
+			auto& vk_window = Engine::get<VulkanWindow>();
 			add_window(vk_window);
 		}
 
-		~window_manager() = default;
+		~WindowManager() = default;
 
 	private:
-		window* m_current_window;
+		Window* m_current_window;
 
 		// Needs window pointers because you cant store references in an unordered_map
 		// its a pointer to the static windows anyway, it should be fine
-		std::unordered_map<std::type_index, window*> m_windows;
+		std::unordered_map<std::type_index, Window*> m_windows;
 	};
 }
 

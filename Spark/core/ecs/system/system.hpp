@@ -6,17 +6,17 @@
 #include "../../util/thread_pool.hpp"
 #include "../component/component.hpp"
 #include "../../util/memory.hpp"
-#include "../../util/singelton.hpp"
+#include "../../util/Singleton.hpp"
 
 #include "../../net/serializeable.hpp"
 
 namespace spark
 {
-	class system
+	class System
 	{
 	public:
-		system() = default;
-		virtual ~system() = default;
+		System() = default;
+		virtual ~System() = default;
 
 		virtual void on_init()
 		{}
@@ -30,17 +30,15 @@ namespace spark
 		virtual void on_shutdown()
 		{}
 		SERIALIZE_EMPTY()
-	private:
-		component_manager& m_component_manager = component_manager::get();
 	};
 
-	class system_manager :
-		public singelton<system_manager>
+	class SystemManager :
+		public Singleton<SystemManager>
 	{
 	public:
-		static system_manager& get()
+		static SystemManager& get()
 		{
-			static system_manager instance;
+			static SystemManager instance;
 			return instance;
 		}
 
@@ -49,7 +47,7 @@ namespace spark
 		{
 			std::unique_ptr<T> _system = std::make_unique<T>(std::forward<Args>(args)...);
 			T& s = *_system;
-			m_update_systems.push_back(std::static_pointer_cast<system>(std::move(_system)));
+			m_update_systems.push_back(std::static_pointer_cast<System>(std::move(_system)));
 			return s;
 		}
 
@@ -83,7 +81,7 @@ namespace spark
 		{
 			for (auto& system : m_update_systems)
 			{
-				thread_pool::enqueue(task_priority::VERY_HIGH, true,
+				ThreadPool::enqueue(TaskPriority::VERY_HIGH, true,
 									 [system = system.get(), delta_time]
 									 {
 										 system->on_update(delta_time);
@@ -99,24 +97,22 @@ namespace spark
 			}
 		}
 	private:
-		system_manager() = default;
+		SystemManager() = default;
 
-		~system_manager()
+		~SystemManager()
 		{
 			shutdown_systems();
 		}
 	private:
-		std::vector<std::unique_ptr<system>> m_start_systems = std::vector<std::unique_ptr<system>>();
+		std::vector<std::unique_ptr<System>> m_start_systems = std::vector<std::unique_ptr<System>>();
 
-		std::vector<std::unique_ptr<system>> m_update_systems = std::vector<std::unique_ptr<system>>();
+		std::vector<std::unique_ptr<System>> m_update_systems = std::vector<std::unique_ptr<System>>();
 
-		std::vector<std::unique_ptr<system>> m_shutdown_systems =
-			std::vector<std::unique_ptr<system>>();
-
-		component_manager& m_component_manager = component_manager::get();
+		std::vector<std::unique_ptr<System>> m_shutdown_systems =
+			std::vector<std::unique_ptr<System>>();
 
 		SERIALIZE_MEMBERS(
-			system_manager,
+			SystemManager,
 			m_start_systems,
 			m_update_systems,
 			m_shutdown_systems

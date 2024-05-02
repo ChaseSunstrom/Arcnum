@@ -5,10 +5,10 @@
 
 namespace spark
 {
-	class timer
+	class Timer
 	{
 	public:
-		timer() :
+		Timer() :
 				m_is_running(false) { }
 
 		void start()

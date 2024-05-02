@@ -6,15 +6,15 @@
 
 namespace spark
 {
-	class aabb
+	class AABB
 	{
 	public:
-		aabb(math::vec3 min, math::vec3 max) :
+		AABB(math::vec3 min, math::vec3 max) :
 				m_min(min), m_max(max) { }
 
-		aabb(const std::vector <vertex>& vertices);
+		AABB(const std::vector <Vertex>& vertices);
 
-		bool check_collision(const aabb& other) const;
+		bool check_collision(const AABB& other) const;
 
 	private:
 		math::vec3 m_min;

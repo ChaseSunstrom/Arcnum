@@ -2,51 +2,51 @@
 
 namespace spark
 {
-	frustum::frustum(const math::mat4& pv_matrix)
+	Frustum::Frustum(const math::mat4& pv_matrix)
 	{
 		m_view_projection = pv_matrix;
 		update(pv_matrix);
 	}
 
-	void frustum::update(const math::mat4& pv_matrix)
+	void Frustum::update(const math::mat4& pv_matrix)
 	{
 		// Left Plane
-		m_planes[0] = plane(
+		m_planes[0] = Plane(
 				math::vec3(
 						pv_matrix[0][3] + pv_matrix[0][0],
 						pv_matrix[1][3] + pv_matrix[1][0],
 						pv_matrix[2][3] + pv_matrix[2][0]), pv_matrix[3][3] + pv_matrix[3][0]);
 
 		// Right Plane
-		m_planes[1] = plane(
+		m_planes[1] = Plane(
 				math::vec3(
 						pv_matrix[0][3] - pv_matrix[0][0],
 						pv_matrix[1][3] - pv_matrix[1][0],
 						pv_matrix[2][3] - pv_matrix[2][0]), pv_matrix[3][3] - pv_matrix[3][0]);
 
 		// Bottom Plane
-		m_planes[2] = plane(
+		m_planes[2] = Plane(
 				math::vec3(
 						pv_matrix[0][3] + pv_matrix[0][1],
 						pv_matrix[1][3] + pv_matrix[1][1],
 						pv_matrix[2][3] + pv_matrix[2][1]), pv_matrix[3][3] + pv_matrix[3][1]);
 
 		// Top Plane
-		m_planes[3] = plane(
+		m_planes[3] = Plane(
 				math::vec3(
 						pv_matrix[0][3] - pv_matrix[0][1],
 						pv_matrix[1][3] - pv_matrix[1][1],
 						pv_matrix[2][3] - pv_matrix[2][1]), pv_matrix[3][3] - pv_matrix[3][1]);
 
 		// Near Plane
-		m_planes[4] = plane(
+		m_planes[4] = Plane(
 				math::vec3(
 						pv_matrix[0][3] + pv_matrix[0][2],
 						pv_matrix[1][3] + pv_matrix[1][2],
 						pv_matrix[2][3] + pv_matrix[2][2]), pv_matrix[3][3] + pv_matrix[3][2]);
 
 		// Far Plane
-		m_planes[5] = plane(
+		m_planes[5] = Plane(
 				math::vec3(
 						pv_matrix[0][3] - pv_matrix[0][2],
 						pv_matrix[1][3] - pv_matrix[1][2],
@@ -61,7 +61,7 @@ namespace spark
 		}
 	}
 
-	std::array<math::vec3, 8> frustum::get_corners() const
+	std::array<math::vec3, 8> Frustum::get_corners() const
 	{
 		// Define an array to hold the corners
 		std::array<math::vec3, 8> corners = std::array<math::vec3, 8>();
@@ -95,7 +95,7 @@ namespace spark
 	}
 
 
-	bool frustum::is_inside(const math::vec3& center, float radius) const
+	bool Frustum::is_inside(const math::vec3& center, float radius) const
 	{
 		for (const auto& plane: m_planes)
 		{

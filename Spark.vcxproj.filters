@@ -201,9 +201,6 @@
     <ClInclude Include="Spark\core\util\thread_pool.hpp">
       <Filter>core\util</Filter>
     </ClInclude>
-    <ClInclude Include="Spark\core\util\wrap.hpp">
-      <Filter>core\util</Filter>
-    </ClInclude>
     <ClInclude Include="Spark\core\window\directx\directx_window.hpp">
       <Filter>core\window</Filter>
     </ClInclude>
@@ -255,12 +252,14 @@
     <ClInclude Include="Spark\core\ecs\component\vertex.hpp" />
     <ClInclude Include="Spark\core\window\window_type.hpp" />
     <ClInclude Include="Spark\core\window\vulkan\vulkan_mesh.hpp" />
-    <ClInclude Include="Spark\core\util\singelton.hpp" />
+    <ClInclude Include="Spark\core\util\singleton.hpp" />
     <ClInclude Include="Spark\core\physics\rigid_body.hpp" />
     <ClInclude Include="Spark\core\physics\physics.hpp" />
     <ClInclude Include="Spark\core\scene\scene_partition.hpp" />
     <ClInclude Include="Spark\core\scene\octree.hpp" />
     <ClInclude Include="Spark\core\util\math.hpp" />
+    <ClInclude Include="Spark\core\asset\asset.hpp" />
+    <ClInclude Include="Spark\core\app\asset.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spark\core\app\app.cpp">
@@ -315,9 +314,6 @@
       <Filter>core\user</Filter>
     </ClCompile>
     <ClCompile Include="Spark\core\util\file.cpp">
-      <Filter>core\util</Filter>
-    </ClCompile>
-    <ClCompile Include="Spark\core\util\wrap.cpp">
       <Filter>core\util</Filter>
     </ClCompile>
     <ClCompile Include="Spark\core\window\vulkan\vulkan_window.cpp">

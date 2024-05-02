@@ -6,14 +6,14 @@
 
 namespace spark
 {
-	class observer
+	class Observer
 	{
 	public:
-		explicit observer(bool manual_register = false);
+		explicit Observer(bool manual_register = false);
 
-		virtual ~observer();
+		virtual ~Observer();
 
-		virtual void on_notify(std::shared_ptr <event> event) { }
+		virtual void on_notify(std::shared_ptr <Event> event) { }
 
 		void register_observer();
 

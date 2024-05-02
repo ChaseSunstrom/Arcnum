@@ -1,12 +1,12 @@
-#ifndef SPARK_SINGELTON_HPP
-#define SPARK_SINGELTON_HPP
+#ifndef SPARK_Singleton_HPP
+#define SPARK_Singleton_HPP
 
 #include "../spark.hpp"
 
 namespace spark
 {
 	template <typename T>
-	class singelton
+	class Singleton
 	{
 	public:
 		static T& get()
@@ -15,12 +15,12 @@ namespace spark
 		}
 
 	protected:
-		singelton() { }  // Constructor needs to be accessible to derived classes.
-		virtual ~singelton() { }
+		Singleton() { }  // Constructor needs to be accessible to derived classes.
+		virtual ~Singleton() { }
 	private:
-		singelton(const singelton&) = delete;
+		Singleton(const Singleton&) = delete;
 
-		singelton& operator=(const singelton&) = delete;
+		Singleton& operator=(const Singleton&) = delete;
 
 		static std::unique_ptr <T> create_instance()
 		{
@@ -33,7 +33,7 @@ namespace spark
 		{
 			initializer()
 			{
-				singelton<T>::m_instance = create_instance();
+				Singleton<T>::m_instance = create_instance();
 			}
 		} m_initializer;
 	};

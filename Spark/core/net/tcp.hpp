@@ -14,10 +14,10 @@ namespace spark
 		using boost::asio::ip::tcp;
 		namespace asio = boost::asio;
 
-		class tcp_client
+		class TCPClient
 		{
 		public:
-			tcp_client(
+			TCPClient(
 					const std::string& host = "127.0.0.1",
 					const std::string& port = "8080",
 					asio::io_context& io_context = default_io_context()) :
@@ -35,7 +35,7 @@ namespace spark
 				boost::asio::write(m_socket, asio::buffer(serialized_packet));
 			}
 
-			~tcp_client()
+			~TCPClient()
 			{
 				m_socket.close();
 			}
@@ -46,10 +46,10 @@ namespace spark
 			tcp::socket m_socket;
 		};
 
-		class tcp_server
+		class TCPServer
 		{
 		public:
-			tcp_server(
+			TCPServer(
 					const std::string& ip = "127.0.0.1",
 					const std::string& port = "8080",
 					asio::io_context& io_context = default_io_context()) :
@@ -67,7 +67,7 @@ namespace spark
 				io_context.run();
 			}
 
-			~tcp_server()
+			~TCPServer()
 			{
 				if (m_socket.is_open())
 				{
@@ -109,14 +109,14 @@ namespace spark
 									auto [type, version, data] = deserialize(
 											std::string(
 													m_receive_buffer.begin(), m_receive_buffer.begin() + bytes_recvd));
-									auto packet = packet_factory_registry::create_packet(type, version, data);
+									auto packet = PacketFactoryRegistry::create_packet(type, version, data);
 									SPARK_TRACE("[TCP SERVER RECEIVED PACKET]: [TYPE]:" << type << " [VERSION]:"
 									                                                    << std::to_string(version));
 									if (packet)
 									{
 										packet->process();
 
-										std::shared_ptr <tcp_server_receive_event> event = std::make_shared<tcp_server_receive_event>(
+										std::shared_ptr <TCPServerReceiveEvent> event = std::make_shared<TCPServerReceiveEvent>(
 												std::move(packet));
 										publish_to_topic(TCP_SERVER_RECEIVE_TOPIC, event);
 

@@ -5,27 +5,27 @@
 
 namespace spark
 {
-	class sound
+	class Sound
 	{
 	public:
-		sound(ISound* s) :
+		Sound(ISound* s) :
 				m_sound(s)
 		{
 			m_sound->grab();
 		}
 
-		sound(sound& sound)
+		Sound(Sound& sound)
 		{
 			m_sound = sound.m_sound;
 			m_sound->grab();
 		}
 
-		~sound()
+		~Sound()
 		{
 			m_sound->drop();
 		}
 
-		sound& operator=(sound& sound)
+		Sound& operator=(Sound& sound)
 		{
 			m_sound = sound.m_sound;
 			m_sound->grab();

@@ -2,309 +2,309 @@
 
 namespace spark
 {
-	std::string to_string(key key)
+	std::string to_string(Key key)
 	{
 		switch (key)
 		{
-			case key::SPACE:
+			case Key::SPACE:
 				return "SPACE";
-			case key::APOSTROPHE:
+			case Key::APOSTROPHE:
 				return "APOSTROPHE";
-			case key::COMMA:
+			case Key::COMMA:
 				return "COMMA";
-			case key::MINUS:
+			case Key::MINUS:
 				return "MINUS";
-			case key::PERIOD:
+			case Key::PERIOD:
 				return "PERIOD";
-			case key::SLASH:
+			case Key::SLASH:
 				return "SLASH";
-			case key::_0:
+			case Key::_0:
 				return "0";
-			case key::_1:
+			case Key::_1:
 				return "1";
-			case key::_2:
+			case Key::_2:
 				return "2";
-			case key::_3:
+			case Key::_3:
 				return "3";
-			case key::_4:
+			case Key::_4:
 				return "4";
-			case key::_5:
+			case Key::_5:
 				return "5";
-			case key::_6:
+			case Key::_6:
 				return "6";
-			case key::_7:
+			case Key::_7:
 				return "7";
-			case key::_8:
+			case Key::_8:
 				return "8";
-			case key::_9:
+			case Key::_9:
 				return "9";
-			case key::SEMICOLON:
+			case Key::SEMICOLON:
 				return "SEMICOLON";
-			case key::EQUAL:
+			case Key::EQUAL:
 				return "EQUAL";
-			case key::A:
+			case Key::A:
 				return "A";
-			case key::B:
+			case Key::B:
 				return "B";
-			case key::C:
+			case Key::C:
 				return "C";
-			case key::D:
+			case Key::D:
 				return "D";
-			case key::E:
+			case Key::E:
 				return "E";
-			case key::F:
+			case Key::F:
 				return "F";
-			case key::G:
+			case Key::G:
 				return "G";
-			case key::H:
+			case Key::H:
 				return "H";
-			case key::I:
+			case Key::I:
 				return "I";
-			case key::J:
+			case Key::J:
 				return "J";
-			case key::K:
+			case Key::K:
 				return "K";
-			case key::L:
+			case Key::L:
 				return "L";
-			case key::M:
+			case Key::M:
 				return "M";
-			case key::N:
+			case Key::N:
 				return "N";
-			case key::O:
+			case Key::O:
 				return "O";
-			case key::P:
+			case Key::P:
 				return "P";
-			case key::Q:
+			case Key::Q:
 				return "Q";
-			case key::R:
+			case Key::R:
 				return "R";
-			case key::S:
+			case Key::S:
 				return "S";
-			case key::T:
+			case Key::T:
 				return "T";
-			case key::U:
+			case Key::U:
 				return "U";
-			case key::V:
+			case Key::V:
 				return "V";
-			case key::W:
+			case Key::W:
 				return "W";
-			case key::X:
+			case Key::X:
 				return "X";
-			case key::Y:
+			case Key::Y:
 				return "Y";
-			case key::Z:
+			case Key::Z:
 				return "Z";
-			case key::LEFT_BRACKET:
+			case Key::LEFT_BRACKET:
 				return "LEFT_BRACKET";
-			case key::BACKSLASH:
+			case Key::BACKSLASH:
 				return "BACKSLASH";
-			case key::RIGHT_BRACKET:
+			case Key::RIGHT_BRACKET:
 				return "RIGHT_BRACKET";
-			case key::GRAVE_ACCENT:
+			case Key::GRAVE_ACCENT:
 				return "GRAVE_ACCENT";
-			case key::ESCAPE:
+			case Key::ESCAPE:
 				return "ESCAPE";
-			case key::ENTER:
+			case Key::ENTER:
 				return "ENTER";
-			case key::TAB:
+			case Key::TAB:
 				return "TAB";
-			case key::BACKSPACE:
+			case Key::BACKSPACE:
 				return "BACKSPACE";
-			case key::INSERT:
+			case Key::INSERT:
 				return "INSERT";
-			case key::DELETE_KEY:
+			case Key::DELETE_KEY:
 				return "DELETE";
-			case key::RIGHT:
+			case Key::RIGHT:
 				return "RIGHT";
-			case key::LEFT:
+			case Key::LEFT:
 				return "LEFT";
-			case key::DOWN:
+			case Key::DOWN:
 				return "DOWN";
-			case key::UP:
+			case Key::UP:
 				return "UP";
-			case key::PAGE_UP:
+			case Key::PAGE_UP:
 				return "PAGE_UP";
-			case key::PAGE_DOWN:
+			case Key::PAGE_DOWN:
 				return "PAGE_DOWN";
-			case key::HOME:
+			case Key::HOME:
 				return "HOME";
-			case key::END:
+			case Key::END:
 				return "END";
-			case key::CAPS_LOCK:
+			case Key::CAPS_LOCK:
 				return "CAPS_LOCK";
-			case key::SCROLL_LOCK:
+			case Key::SCROLL_LOCK:
 				return "SCROLL_LOCK";
-			case key::NUM_LOCK:
+			case Key::NUM_LOCK:
 				return "NUM_LOCK";
-			case key::PRINT_SCREEN:
+			case Key::PRINT_SCREEN:
 				return "PRINT_SCREEN";
-			case key::PAUSE:
+			case Key::PAUSE:
 				return "PAUSE";
-			case key::F1:
+			case Key::F1:
 				return "F1";
-			case key::F2:
+			case Key::F2:
 				return "F2";
-			case key::F3:
+			case Key::F3:
 				return "F3";
-			case key::F4:
+			case Key::F4:
 				return "F4";
-			case key::F5:
+			case Key::F5:
 				return "F5";
-			case key::F6:
+			case Key::F6:
 				return "F6";
-			case key::F7:
+			case Key::F7:
 				return "F7";
-			case key::F8:
+			case Key::F8:
 				return "F8";
-			case key::F9:
+			case Key::F9:
 				return "F9";
-			case key::F10:
+			case Key::F10:
 				return "F10";
-			case key::F11:
+			case Key::F11:
 				return "F11";
-			case key::F12:
+			case Key::F12:
 				return "F12";
-			case key::F13:
+			case Key::F13:
 				return "F13";
-			case key::F14:
+			case Key::F14:
 				return "F14";
-			case key::F15:
+			case Key::F15:
 				return "F15";
-			case key::F16:
+			case Key::F16:
 				return "F16";
-			case key::F17:
+			case Key::F17:
 				return "F17";
-			case key::F18:
+			case Key::F18:
 				return "F18";
-			case key::F19:
+			case Key::F19:
 				return "F19";
-			case key::F20:
+			case Key::F20:
 				return "F20";
-			case key::F21:
+			case Key::F21:
 				return "F21";
-			case key::F22:
+			case Key::F22:
 				return "F22";
-			case key::F23:
+			case Key::F23:
 				return "F23";
-			case key::F24:
+			case Key::F24:
 				return "F24";
-			case key::F25:
+			case Key::F25:
 				return "F25";
-			case key::KP_0:
+			case Key::KP_0:
 				return "KP_0";
-			case key::KP_1:
+			case Key::KP_1:
 				return "KP_1";
-			case key::KP_2:
+			case Key::KP_2:
 				return "KP_2";
-			case key::KP_3:
+			case Key::KP_3:
 				return "KP_3";
-			case key::KP_4:
+			case Key::KP_4:
 				return "KP_4";
-			case key::KP_5:
+			case Key::KP_5:
 				return "KP_5";
-			case key::KP_6:
+			case Key::KP_6:
 				return "KP_6";
-			case key::KP_7:
+			case Key::KP_7:
 				return "KP_7";
-			case key::KP_8:
+			case Key::KP_8:
 				return "KP_8";
-			case key::KP_9:
+			case Key::KP_9:
 				return "KP_9";
-			case key::KP_DECIMAL:
+			case Key::KP_DECIMAL:
 				return "KP_DECIMAL";
-			case key::KP_DIVIDE:
+			case Key::KP_DIVIDE:
 				return "KP_DIVIDE";
-			case key::KP_MULTIPLY:
+			case Key::KP_MULTIPLY:
 				return "KP_MULTIPLY";
-			case key::KP_SUBTRACT:
+			case Key::KP_SUBTRACT:
 				return "KP_SUBTRACT";
-			case key::KP_ADD:
+			case Key::KP_ADD:
 				return "KP_ADD";
-			case key::KP_ENTER:
+			case Key::KP_ENTER:
 				return "KP_ENTER";
-			case key::KP_EQUAL:
+			case Key::KP_EQUAL:
 				return "KP_EQUAL";
-			case key::LEFT_SHIFT:
+			case Key::LEFT_SHIFT:
 				return "LEFT_SHIFT";
-			case key::LEFT_CONTROL:
+			case Key::LEFT_CONTROL:
 				return "LEFT_CONTROL";
-			case key::LEFT_ALT:
+			case Key::LEFT_ALT:
 				return "LEFT_ALT";
-			case key::LEFT_SUPER:
+			case Key::LEFT_SUPER:
 				return "LEFT_SUPER";
-			case key::RIGHT_SHIFT:
+			case Key::RIGHT_SHIFT:
 				return "RIGHT_SHIFT";
-			case key::RIGHT_CONTROL:
+			case Key::RIGHT_CONTROL:
 				return "RIGHT_CONTROL";
-			case key::RIGHT_ALT:
+			case Key::RIGHT_ALT:
 				return "RIGHT_ALT";
-			case key::RIGHT_SUPER:
+			case Key::RIGHT_SUPER:
 				return "RIGHT_SUPER";
-			case key::MENU:
+			case Key::MENU:
 				return "MENU";
 			default:
 				return "UNKNOWN KEY";
 		}
 	}
 
-	std::string to_string(mouse_button button)
+	std::string to_string(MouseButton button)
 	{
 		switch (button)
 		{
-			case mouse_button::LEFT_CLICK:
+			case MouseButton::LEFT_CLICK:
 				return "LEFT_CLICK";
-			case mouse_button::RIGHT_CLICK:
+			case MouseButton::RIGHT_CLICK:
 				return "RIGHT_CLICK";
-			case mouse_button::MIDDLE_CLICK:
+			case MouseButton::MIDDLE_CLICK:
 				return "MIDDLE_CLICK";
-			case mouse_button::MOUSE_BUTTON_1:
+			case MouseButton::MOUSE_BUTTON_1:
 				return "MOUSE_BUTTON_1";
-			case mouse_button::MOUSE_BUTTON_2:
+			case MouseButton::MOUSE_BUTTON_2:
 				return "MOUSE_BUTTON_2";
-			case mouse_button::MOUSE_BUTTON_3:
+			case MouseButton::MOUSE_BUTTON_3:
 				return "MOUSE_BUTTON_3";
-			case mouse_button::MOUSE_BUTTON_4:
+			case MouseButton::MOUSE_BUTTON_4:
 				return "MOUSE_BUTTON_4";
-			case mouse_button::MOUSE_BUTTON_5:
+			case MouseButton::MOUSE_BUTTON_5:
 				return "MOUSE_BUTTON_5";
 			default:
 				return "UNKNOWN MOUSE BUTTON";
 		}
 	}
 
-	std::string to_string(controller_button button)
+	std::string to_string(ControllerButton button)
 	{
 		switch (button)
 		{
-			case controller_button::A:
+			case ControllerButton::A:
 				return "A";
-			case controller_button::B:
+			case ControllerButton::B:
 				return "B";
-			case controller_button::X:
+			case ControllerButton::X:
 				return "X";
-			case controller_button::Y:
+			case ControllerButton::Y:
 				return "Y";
-			case controller_button::LEFT_BUMPER:
+			case ControllerButton::LEFT_BUMPER:
 				return "LEFT_BUMPER";
-			case controller_button::RIGHT_BUMPER:
+			case ControllerButton::RIGHT_BUMPER:
 				return "RIGHT_BUMPER";
-			case controller_button::BACK:
+			case ControllerButton::BACK:
 				return "BACK";
-			case controller_button::START:
+			case ControllerButton::START:
 				return "START";
-			case controller_button::GUIDE:
+			case ControllerButton::GUIDE:
 				return "GUIDE";
-			case controller_button::LEFT_THUMB:
+			case ControllerButton::LEFT_THUMB:
 				return "LEFT_THUMB";
-			case controller_button::RIGHT_THUMB:
+			case ControllerButton::RIGHT_THUMB:
 				return "RIGHT_THUMB";
-			case controller_button::DPAD_UP:
+			case ControllerButton::DPAD_UP:
 				return "DPAD_UP";
-			case controller_button::DPAD_RIGHT:
+			case ControllerButton::DPAD_RIGHT:
 				return "DPAD_RIGHT";
-			case controller_button::DPAD_DOWN:
+			case ControllerButton::DPAD_DOWN:
 				return "DPAD_DOWN";
-			case controller_button::DPAD_LEFT:
+			case ControllerButton::DPAD_LEFT:
 				return "DPAD_LEFT";
 				// No need for separate cases for CROSS, CIRCLE, SQUARE, and TRIANGLE as they are aliases
 			default:

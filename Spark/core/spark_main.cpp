@@ -18,17 +18,17 @@ namespace spark
 			num_threads = 2;
 		}
 
-		thread_pool::initialize(num_threads);
+		ThreadPool::initialize(num_threads);
 
-#define SPARK_TEST
+//#define SPARK_TEST
 #ifndef SPARK_TEST
-		instancer::get();
-		vulkan_window::get();
-		application::on_start();
+		Instancer::get();
+		VulkanWindow::get();
+		Application::on_start();
 #else	
 		test::core_test_main();
 #endif
 
-		thread_pool::shutdown();
+		ThreadPool::shutdown();
 	}
 }

@@ -2,7 +2,7 @@
 
 namespace spark
 {
-	void publish_to_topic(i32 topic, std::shared_ptr <event> value)
+	void publish_to_topic(i32 topic, std::shared_ptr <Event> value)
 	{
 		for (auto& sub: subscriptions)
 		{

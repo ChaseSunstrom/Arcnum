@@ -7,15 +7,15 @@ namespace spark
 {
 	namespace net
 	{
-		class chat_message :
-				public packet
+		class ChatMessage :
+				public Packet
 		{
 		public:
-			chat_message() :
-					packet("chat_message", 1) { };
+			ChatMessage() :
+					Packet("chat_message", 1) { };
 
-			chat_message(const std::string& msg) :
-					packet("chat_message", 1), m_message(msg) { }
+			ChatMessage(const std::string& msg) :
+				Packet("chat_message", 1), m_message(msg) { }
 
 			void process() const override
 			{
@@ -25,7 +25,7 @@ namespace spark
 		public:
 			std::string m_message;
 
-			SERIALIZE_MEMBERS(chat_message, m_message)
+			SERIALIZE_MEMBERS(ChatMessage, m_message)
 
 		private:
 			friend class ::boost::serialization::access;
@@ -36,7 +36,8 @@ namespace spark
 #ifndef CHAT_MESSAGE_PACKET
 #define CHAT_MESSAGE_PACKET
 
-REGISTER_PACKET_TYPE(spark::net, chat_message, 1);
+REGISTER_PACKET_TYPE(spark::net, ChatMessage, 1);
+
 #endif // CHAT_MESSAGE_PACKET
 
 #endif // SPARK_CHAT_MESSAGE_HPP

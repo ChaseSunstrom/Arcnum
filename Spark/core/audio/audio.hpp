@@ -3,30 +3,30 @@
 
 #include "sound.hpp"
 
-#include "../util/singelton.hpp"
+#include "../util/singleton.hpp"
 #include "../ecs/system/system.hpp"
 
 namespace spark
 {
-	class audio_manager :
-		public singelton<audio_manager>
+	class AudioManager :
+		public Singleton<AudioManager>
 	{
 	public:
 
-		static audio_manager& get()
+		static AudioManager& get()
 		{
-			static audio_manager instance;
+			static AudioManager instance;
 			return instance;
 		}
 
-		sound& create_sound(
+		Sound& create_sound(
 				const std::string& name,
 				const std::filesystem::path& source,
 				bool loops = false,
 				bool pause_on_create = true)
 		{
-			std::unique_ptr<sound> s = std::make_unique<sound>(
-					m_engine->play2D(
+			std::unique_ptr<Sound> s = std::make_unique<Sound>(
+					m_Engine->play2D(
 							source.string().c_str(),
 							loops,
 							pause_on_create,
@@ -35,7 +35,7 @@ namespace spark
 			return *m_sounds[name];
 		}
 
-		sound& create_sound(
+		Sound& create_sound(
 				const std::string& name,
 				const std::filesystem::path& source,
 				const math::vec3& position,
@@ -44,8 +44,8 @@ namespace spark
 		{
 			vec3df position_3d(position.x, position.y, position.z);
 
-			std::unique_ptr<sound> s = std::make_unique<sound>(
-					m_engine->play3D(
+			std::unique_ptr<Sound> s = std::make_unique<Sound>(
+					m_Engine->play3D(
 							source.string().c_str(),
 							position_3d,
 							loops,
@@ -55,14 +55,14 @@ namespace spark
 			return *m_sounds[name];
 		}
 
-		sound& get_sound(const std::string& name)
+		Sound& get_sound(const std::string& name)
 		{
 			return *m_sounds[name];
 		}
 
 		void play_sound(const std::string& name, bool loops = false)
 		{
-			sound& s = *m_sounds[name];
+			Sound& s = *m_sounds[name];
 
 			if (s.get_raw_sound()->isFinished())
 			{
@@ -78,7 +78,7 @@ namespace spark
 
 		void play_sound(const std::string& name, const math::vec3& position, bool loops = false)
 		{
-			sound& s = *m_sounds[name];
+			Sound& s = *m_sounds[name];
 
 			if (s.get_raw_sound()->isFinished())
 			{
@@ -115,54 +115,54 @@ namespace spark
 
 		void stop_all()
 		{
-			m_engine->stopAllSounds();
+			m_Engine->stopAllSounds();
 		}
 
 		void set_sound_pan(const std::string& name, f32 pan)
 		{
 			m_sounds[name]->set_pan(pan);
 
-			m_engine->update();
+			m_Engine->update();
 		}
 
 		void set_sound_volume(const std::string& name, f32 volume)
 		{
 			m_sounds[name]->set_volume(volume);
 
-			m_engine->update();
+			m_Engine->update();
 		}
 
 		void set_sound_position(const std::string& name, const math::vec3& position)
 		{
 			m_sounds[name]->set_position(position);
 
-			m_engine->update();
+			m_Engine->update();
 		}
 
-		ISoundEngine* get_engine() const
+		ISoundEngine* get_Engine() const
 		{
-			return m_engine;
+			return m_Engine;
 		}
 
 	private:
-		audio_manager() = default;
+		AudioManager() = default;
 
-		~audio_manager()
+		~AudioManager()
 		{
-			m_engine->drop();
+			m_Engine->drop();
 		}
 
 	private:
-		ISoundEngine* m_engine = createIrrKlangDevice();
+		ISoundEngine* m_Engine = createIrrKlangDevice();
 
-		std::unordered_map<std::string, std::unique_ptr<sound>> m_sounds;
+		std::unordered_map<std::string, std::unique_ptr<Sound>> m_sounds;
 	};
 
-	struct audio_component
+	struct AudioComponent
 	{
-		audio_component() = default;
+		AudioComponent() = default;
 
-		audio_component(const std::string& name, const std::function<bool()>& play_condition) :
+		AudioComponent(const std::string& name, const std::function<bool()>& play_condition) :
 				m_name(name), m_play_condition(play_condition) { }
 
 		std::string m_name;
@@ -170,17 +170,17 @@ namespace spark
 		std::function<bool()> m_play_condition;
 	};
 
-	class audio_system :
-			public system
+	class AudioSystem :
+			public System
 	{
 	public:
-		audio_system(std::vector<std::optional<audio_component>>* audio_components) :
-				system(), m_audio_components(*audio_components) { }
+		AudioSystem(std::vector<std::optional<AudioComponent>>* audio_components) :
+				System(), m_audio_components(*audio_components) { }
 
 		void on_update(f64 delta_time);
 
 	private:
-		std::vector<std::optional<audio_component>>& m_audio_components;
+		std::vector<std::optional<AudioComponent>>& m_audio_components;
 	};
 }
 

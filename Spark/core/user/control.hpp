@@ -7,7 +7,7 @@ namespace spark
 {
 	// Key codes for all GLFW keys and possibly other API's as well
 	// https://www.glfw.org/docs/latest/group__keys.html
-	enum class key
+	enum class Key
 	{
 		SPACE = 32,
 		APOSTROPHE = 39, /* ' */
@@ -129,7 +129,7 @@ namespace spark
 		MENU = 348
 	};
 
-	enum class mouse_button
+	enum class MouseButton
 	{
 		LEFT_CLICK = 0,
 		RIGHT_CLICK = 1,
@@ -141,7 +141,7 @@ namespace spark
 		MOUSE_BUTTON_5 = 7
 	};
 
-	enum class controller_button
+	enum class ControllerButton
 	{
 		A = 0,
 		B = 1,
@@ -165,22 +165,22 @@ namespace spark
 		LAST = DPAD_LEFT
 	};
 
-	std::string to_string(key key);
+	std::string to_string(Key key);
 
-	std::string to_string(mouse_button button);
+	std::string to_string(MouseButton button);
 
-	std::string to_string(controller_button button);
+	std::string to_string(ControllerButton button);
 
-	enum class control_state
+	enum class ControlState
 	{
 		UNCONTROLLED = 0, CONTROLLED = 1
 	};
 
-	struct control_component
+	struct ControlComponent
 	{
-		control_component() = default;
+		ControlComponent() = default;
 
-		control_state m_control_state = control_state::UNCONTROLLED;
+		ControlState m_control_state = ControlState::UNCONTROLLED;
 	};
 }
 

@@ -1,67 +1,66 @@
 #include "shader.hpp"
 
 #include "../../util/file.hpp"
-#include "../../util/wrap.hpp"
 #include "../../window/window_manager.hpp"
 
 namespace spark
 {
-	shader_type shader_wrapper::get_shader_type_from_extension(const std::string& file_extension)
+	ShaderType ShaderWrapper::get_shader_type_from_extension(const std::string& file_extension)
 	{
 		if (file_extension == ".vert")
 		{
-			return shader_type::VERTEX;
+			return ShaderType::VERTEX;
 		}
 		else if (file_extension == ".frag")
 		{
-			return shader_type::FRAGMENT;
+			return ShaderType::FRAGMENT;
 		}
 		else if (file_extension == ".geom")
 		{
-			return shader_type::GEOMETRY;
+			return ShaderType::GEOMETRY;
 		}
 		else if (file_extension == ".comp")
 		{
-			return shader_type::COMPUTE;
+			return ShaderType::COMPUTE;
 		}
 		else if (file_extension == ".tesc")
 		{
-			return shader_type::TESS_CONTROL;
+			return ShaderType::TESS_CONTROL;
 		}
 		else if (file_extension == ".tese")
 		{
-			return shader_type::TESS_EVAL;
+			return ShaderType::TESS_EVAL;
 		}
 		else
 		{
 			SPARK_ERROR("[SHADER] Shader type not supported");
-			return shader_type::UNKNOWN;
+			return ShaderType::UNKNOWN;
 		}
 	}
 
-	vulkan_shader_wrapper::vulkan_shader_wrapper(shader_type type, VkShaderModule module)
+	VulkanShaderWrapper::VulkanShaderWrapper(ShaderType type, VkShaderModule module)
 	{
 		m_pipeline_shader.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 
 		VkShaderStageFlagBits vk_shader_type;
 		switch (type)
 		{
-			case shader_type::VERTEX:
+			case ShaderType::VERTEX:
 				vk_shader_type = VK_SHADER_STAGE_VERTEX_BIT;
 				break;
-			case shader_type::FRAGMENT:
+			case ShaderType::FRAGMENT:
 				vk_shader_type = VK_SHADER_STAGE_FRAGMENT_BIT;
 				break;
-			case shader_type::COMPUTE:
+			case ShaderType::COMPUTE:
 				vk_shader_type = VK_SHADER_STAGE_COMPUTE_BIT;
 				break;
-			case shader_type::GEOMETRY:
+			case ShaderType::GEOMETRY:
 				vk_shader_type = VK_SHADER_STAGE_GEOMETRY_BIT;
 				break;
-			case shader_type::TESS_CONTROL:
+			case ShaderType::TESS_CONTROL:
 				vk_shader_type = VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
 				break;
-			case shader_type::TESS_EVAL:
+			case ShaderType::TESS_EVAL:
 				vk_shader_type = VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
 				break;
 		}
@@ -71,9 +70,9 @@ namespace spark
 		m_pipeline_shader.pName = "main";
 	}
 
-	void shader_wrapper::create_vulkan_shader(const std::filesystem::path& shader_code)
+	void ShaderWrapper::create_vulkan_shader(const std::filesystem::path& shader_code)
 	{
-		auto& vk_window = engine::get<vulkan_window>();
+		auto& vk_window = Engine::get<VulkanWindow>();
 
 		std::string code = read_file(shader_code);
 		VkShaderModuleCreateInfo create_info = { };
@@ -88,29 +87,29 @@ namespace spark
 			SPARK_ERROR("[SHADER] Failed to create shader module");
 		}
 
-		m_shader_variant = std::make_unique<vulkan_shader_wrapper>(m_shader_type, shader_module);
+		m_shader_variant = std::make_unique<VulkanShaderWrapper>(m_shader_type, shader_module);
 	}
 
-	void shader::create_shader(const std::filesystem::path& shader_path)
+	void Shader::create_shader(const std::filesystem::path& shader_path)
 	{
 		std::string file_extension = get_file_extension(shader_path);
-		shader_type type = m_shader->get_shader_type_from_extension(file_extension);
+		ShaderType type = m_shader->get_shader_type_from_extension(file_extension);
 
 		m_shader->m_shader_type = type;
 
 		switch (get_current_window_type())
 		{
-			case window_type::DIRECTX:
+			case WindowType::DIRECTX:
 			{
 				// Create DirectX shader
 				break;
 			}
-			case window_type::VULKAN:
+			case WindowType::VULKAN:
 			{
 				m_shader->create_vulkan_shader(shader_path);
 				break;
 			}
-			case window_type::METAL:
+			case WindowType::METAL:
 			{
 				// Create Metal shader
 				break;
@@ -118,21 +117,15 @@ namespace spark
 		}
 	}
 
-	shader_manager::~shader_manager()
+	Shader& ShaderManager::load_shader(const std::filesystem::path& shader_path)
 	{
-		for (auto& it: m_shaders)
-		{
-			delete_program(it.second);
-		}
+		std::unique_ptr<Shader> shader = std::make_unique<Shader>(shader_path);
+		m_shaders[shader_path.string()] = std::move(shader);
+		return *m_shaders[shader_path.string()];
 	}
 
-	shader shader_manager::load_shader(const std::filesystem::path& shader_path)
+	Shader& ShaderManager::get_shader(const std::string& path)
 	{
-		return shader(shader_path);
-	}
-
-	u32 shader_manager::get_shader(const std::string& path)
-	{
-		return m_shaders[path];
+		return *m_shaders[path];
 	}
 }

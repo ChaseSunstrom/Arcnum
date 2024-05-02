@@ -4,22 +4,22 @@
 #include "../../spark.hpp"
 #include "entity_type.hpp"
 #include "../../net/serializeable.hpp"
-#include "../util/singelton.hpp"
+#include "../util/Singleton.hpp"
 #include "../component/component.hpp"
 
 namespace spark
 {
-	class entity_manager :
-		public singelton<entity_manager>
+	class EntityManager :
+		public Singleton<EntityManager>
 	{
 	public:
-		static entity_manager& get()
+		static EntityManager& get()
 		{
-			static entity_manager instance;
+			static EntityManager instance;
 			return instance;
 		}
 
-		entity create_entity()
+		Entity create_entity()
 		{
 			if (m_recycled_ids.empty())
 			{
@@ -36,22 +36,22 @@ namespace spark
 			return m_next_id;
 		}
 
-		void destroy_entity(entity e)
+		void destroy_entity(Entity e)
 		{
 			m_recycled_ids.push_front(e);
 		}
 
 	private:
-		entity_manager() = default;
+		EntityManager() = default;
 
-		~entity_manager() = default;
+		~EntityManager() = default;
 
 	private:
-		entity m_next_id = 0;
+		Entity m_next_id = 0;
 
-		std::deque <entity> m_recycled_ids;
+		std::deque <Entity> m_recycled_ids;
 
-		SERIALIZE_MEMBERS(entity_manager, m_next_id, m_recycled_ids)
+		SERIALIZE_MEMBERS(EntityManager, m_next_id, m_recycled_ids)
 	};
 }
 

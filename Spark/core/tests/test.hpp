@@ -9,15 +9,15 @@ namespace spark
 {
 	namespace test
 	{
-		class test_register
+		class TestRegistry
 		{
 		public:
 
-			struct test
+			struct Test
 			{
-				test() = default;
+				Test() = default;
 
-				test(const std::string& name, std::function<void()> function) :
+				Test(const std::string& name, std::function<void()> function) :
 						name(name), function(function) { }
 
 				std::string name;
@@ -27,12 +27,12 @@ namespace spark
 
 			static void add_test(const std::string& name, std::function<void()> function)
 			{
-				get_tests().emplace_back(test(name, function));
+				get_tests().emplace_back(Test(name, function));
 			}
 
-			static std::vector <test>& get_tests()
+			static std::vector <Test>& get_tests()
 			{
-				static std::vector <test> tests;
+				static std::vector <Test> tests;
 				return tests;
 			}
 		};
@@ -71,11 +71,11 @@ namespace spark
 #define TEST(name) \
              void name(); \
              namespace { \
-                struct CONCAT(test_register_, name) { \
-                    CONCAT(test_register_, name)() { \
-                        test_register::add_test(#name, name); \
+                struct CONCAT(TestRegistry, name) { \
+                    CONCAT(TestRegistry, name)() { \
+                        TestRegistry::add_test(#name, name); \
                     } \
-                } CONCAT(test_register_instance_, name); \
+                } CONCAT(TestRegistryInstance, name); \
              } \
              void name()
 

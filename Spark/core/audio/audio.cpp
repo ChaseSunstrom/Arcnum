@@ -3,9 +3,9 @@
 
 namespace spark
 {
-	void audio_system::on_update(f64 delta_time)
+	void AudioSystem::on_update(f64 delta_time)
 	{
-		audio_manager& audio_man = engine::get<audio_manager>();
+		AudioManager& audio_man = Engine::get<AudioManager>();
 
 		for (const auto& component: m_audio_components)
 		{

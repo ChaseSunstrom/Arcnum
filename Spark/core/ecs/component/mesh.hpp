@@ -5,18 +5,18 @@
 
 namespace spark
 {
-	struct mesh
+	struct Mesh
 	{
-		mesh(const std::vector <vertex>& vertices, const std::vector <u32>& indices) :
+		Mesh(const std::vector <Vertex>& vertices, const std::vector <u32>& indices) :
 				m_vertices(vertices), m_indices(indices) { }
 
-		virtual ~mesh() = default;
+		virtual ~Mesh() = default;
 
-		virtual void update(const std::vector <vertex>& vertices, const std::vector <u32>& indices) { }
+		virtual void update(const std::vector <Vertex>& vertices, const std::vector <u32>& indices) { }
 
 		virtual void create_mesh() { }
 
-		std::vector <vertex> m_vertices = std::vector<vertex>();
+		std::vector <Vertex> m_vertices = std::vector<Vertex>();
 
 		std::vector <u32> m_indices = std::vector<u32>();
 	};

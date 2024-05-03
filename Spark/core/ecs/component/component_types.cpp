@@ -32,8 +32,8 @@ namespace spark
 	Texture& TextureManager::create_texture(
 		const std::string& name,
 		const std::string& path,
-		TextureType type = TextureType::TWO_D,
-		bool flip = true)
+		TextureType type,
+		bool flip)
 	{
 		// Placeholder for now
 		return create_default_texture();

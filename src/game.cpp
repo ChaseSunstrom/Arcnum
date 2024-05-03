@@ -44,10 +44,10 @@ void on_start()
 	_ubo.m_model = spark::math::mat4(1.0f);
 	_ubo.m_proj = spark::math::perspective(45.0f, 1.0f, 0.1f, 100.0f);
 	_ubo.m_view = spark::math::lookAt(spark::math::vec3(0.0f, 0.0f, 3.0f), spark::math::vec3(0.0f, 0.0f, 0.0f), spark::math::vec3(0.0f, 1.0f, 0.0f));
+	
+	spark::AssetManager::create_asset<spark::Mesh>("quad", vertices, indices, _ubo);
 
-	_mesh_manager.create_mesh("quad", vertices, indices, _ubo);
-
-	spark::Entity e = _ecs.create_entity(
+	spark::Entity e = ecs.create_entity(
 		spark::MeshComponent("quad"),
 		spark::MaterialComponent("material"),
 		spark::TransformComponent()

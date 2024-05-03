@@ -24,7 +24,7 @@ void on_start()
 	cur_scene.set_background_color(spark::math::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 
 	// Create material and mesh
-	spark::Material& material = spark::AssetManager::create_asset<spark::Material>("material", {}, spark::math::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	spark::Material& material = spark::AssetManager::create_asset<spark::Material>("material", spark::math::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	std::default_random_engine random_engine;
 	std::uniform_real_distribution<spark::f32> distribution(0.0f, 1.0f);
 

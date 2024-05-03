@@ -705,7 +705,7 @@ namespace spark
 		}
 
 		template <typename T, typename... Args>
-		void create_component(const std::string& window_name, const std::string& id, Args&& ... args)
+		void create(const std::string& window_name, const std::string& id, Args&& ... args)
 		{
 			auto component = std::make_unique<T>(id, std::forward<Args>(args)...);
 

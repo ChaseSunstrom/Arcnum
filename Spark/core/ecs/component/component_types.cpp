@@ -29,7 +29,7 @@ namespace spark
 		return texture;
 	}
 
-	Texture& TextureManager::create_texture(
+	Texture& TextureManager::create(
 		const std::string& name,
 		const std::string& path,
 		TextureType type,

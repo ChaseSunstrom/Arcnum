@@ -20,8 +20,8 @@ namespace spark
 			virtual void* get_data_ptr() = 0;
 			virtual u64 get_size() const = 0;
 
-			VkBuffer m_buffer;
-			VkDeviceMemory m_buffer_memory;
+			internal::VkBuffer m_buffer;
+			internal::VkDeviceMemory m_buffer_memory;
 		};
 
 		template <typename UBOType>
@@ -36,12 +36,12 @@ namespace spark
 			void create_buffer(const UBOType& ubo_data)
 			{
 				auto& vk_window = Engine::get<VulkanWindow>();
-				VkDeviceSize buffer_size = sizeof(UBOType);
+				internal::VkDeviceSize buffer_size = sizeof(UBOType);
 
 				create_vulkan_buffer(
 					buffer_size,
-					VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-					VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+					internal::VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+					internal::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | internal::VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 					m_buffer,
 					m_buffer_memory);
 
@@ -75,7 +75,7 @@ namespace spark
 				:
 				Mesh(vertices, indices)
 		{
-			create_mesh();
+			create();
 			(add_ubo(ubo_data), ...);
 			update_descriptor_sets(ubo_data...);
 		}
@@ -98,7 +98,7 @@ namespace spark
 
 		}
 
-		void create_mesh()
+		void create()
 		{
 			create_vertex_buffer();
 
@@ -116,7 +116,7 @@ namespace spark
 			m_indices = indices;
 			(add_ubo(ubo_data), ...);
 
-			create_mesh();
+			create();
 			update_descriptor_sets();
 		}
 
@@ -133,7 +133,7 @@ namespace spark
 			for (auto& ubo : m_ubo_list)
 			{
 				void* data_ptr;
-				VkDeviceSize buffer_size = ubo->get_size();
+				internal::VkDeviceSize buffer_size = ubo->get_size();
 				vkMapMemory(vk_window.get_window_data().m_device, ubo->m_buffer_memory, 0, buffer_size, 0, &data_ptr);
 				std::memcpy(data_ptr, ubo->get_data_ptr(), buffer_size);
 				vkUnmapMemory(vk_window.get_window_data().m_device, ubo->m_buffer_memory);
@@ -152,13 +152,13 @@ namespace spark
 			return sizeof(UBOType);
 		}
 
-		VkBuffer m_vertex_buffer;
+		internal::VkBuffer m_vertex_buffer;
 
-		VkDeviceMemory m_vertex_buffer_memory;
+		internal::VkDeviceMemory m_vertex_buffer_memory;
 
-		VkBuffer m_index_buffer;
+		internal::VkBuffer m_index_buffer;
 
-		VkDeviceMemory m_index_buffer_memory;
+		internal::VkDeviceMemory m_index_buffer_memory;
 
 		std::vector<std::unique_ptr<IUniformBuffer>> m_ubo_list;
 
@@ -167,13 +167,13 @@ namespace spark
 		{
 			auto& vk_window = Engine::get<VulkanWindow>();
 
-			VkBuffer staging_buffer;
-			VkDeviceMemory staging_buffer_memory;
-			VkDeviceSize buffer_size = sizeof(m_vertices[0]) * m_vertices.size();
+			internal::VkBuffer staging_buffer;
+			internal::VkDeviceMemory staging_buffer_memory;
+			internal::VkDeviceSize buffer_size = sizeof(m_vertices[0]) * m_vertices.size();
 			create_vulkan_buffer(
 					buffer_size,
-					VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-					VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+				internal::VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+				internal::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | internal::VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 					staging_buffer,
 					staging_buffer_memory);
 
@@ -184,8 +184,8 @@ namespace spark
 
 			create_vulkan_buffer(
 					buffer_size,
-					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-					VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+				internal::VK_BUFFER_USAGE_TRANSFER_DST_BIT | internal::VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+				internal::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 					m_vertex_buffer,
 					m_vertex_buffer_memory);
 			copy_buffer(staging_buffer, m_vertex_buffer, buffer_size);
@@ -194,26 +194,26 @@ namespace spark
 			vkFreeMemory(vk_window.get_window_data().m_device, staging_buffer_memory, nullptr);
 		}
 
-		void copy_buffer(VkBuffer src_buffer, VkBuffer dst_buffer, VkDeviceSize size)
+		void copy_buffer(internal::VkBuffer src_buffer, internal::VkBuffer dst_buffer, internal::VkDeviceSize size)
 		{
 			auto& vk_window = Engine::get<VulkanWindow>();
 
-			VkCommandBufferAllocateInfo alloc_info { };
-			alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-			alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+			internal::VkCommandBufferAllocateInfo alloc_info { };
+			alloc_info.sType = internal::VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+			alloc_info.level = internal::VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 			alloc_info.commandPool = vk_window.get_window_data().m_command_pool;
 			alloc_info.commandBufferCount = 1;
 
-			VkCommandBuffer command_buffer;
+			internal::VkCommandBuffer command_buffer;
 			vkAllocateCommandBuffers(vk_window.get_window_data().m_device, &alloc_info, &command_buffer);
 
-			VkCommandBufferBeginInfo begin_info { };
-			begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-			begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+			internal::VkCommandBufferBeginInfo begin_info { };
+			begin_info.sType = internal::VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			begin_info.flags = internal::VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
 			vkBeginCommandBuffer(command_buffer, &begin_info);
 
-			VkBufferCopy copy_region { };
+			internal::VkBufferCopy copy_region { };
 			copy_region.srcOffset = 0;
 			copy_region.dstOffset = 0;
 			copy_region.size = size;
@@ -222,8 +222,8 @@ namespace spark
 
 			vkEndCommandBuffer(command_buffer);
 
-			VkSubmitInfo submit_info { };
-			submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+			internal::VkSubmitInfo submit_info { };
+			submit_info.sType = internal::VK_STRUCTURE_TYPE_SUBMIT_INFO;
 			submit_info.commandBufferCount = 1;
 			submit_info.pCommandBuffers = &command_buffer;
 
@@ -241,14 +241,14 @@ namespace spark
 		{
 			auto& vk_window = Engine::get<VulkanWindow>();
 
-			VkDeviceSize buffer_size = sizeof(m_indices[0]) * m_indices.size();
+			internal::VkDeviceSize buffer_size = sizeof(m_indices[0]) * m_indices.size();
 
-			VkBuffer staging_buffer;
-			VkDeviceMemory staging_buffer_memory;
+			internal::VkBuffer staging_buffer;
+			internal::VkDeviceMemory staging_buffer_memory;
 			create_vulkan_buffer(
 					buffer_size,
-					VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-					VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+				internal::VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+				internal::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | internal::VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 					staging_buffer,
 					staging_buffer_memory);
 
@@ -259,8 +259,8 @@ namespace spark
 
 			create_vulkan_buffer(
 					buffer_size,
-					VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-					VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+				internal::VK_BUFFER_USAGE_TRANSFER_DST_BIT | internal::VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+				internal::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 					m_index_buffer,
 					m_index_buffer_memory);
 
@@ -271,36 +271,36 @@ namespace spark
 		}
 
 		static void create_vulkan_buffer(
-				VkDeviceSize size,
-				VkBufferUsageFlags usage,
-				VkMemoryPropertyFlags properties,
-				VkBuffer& buffer,
-				VkDeviceMemory& buffer_memory)
+			internal::VkDeviceSize size,
+			internal::VkBufferUsageFlags usage,
+			internal::VkMemoryPropertyFlags properties,
+			internal::VkBuffer& buffer,
+			internal::VkDeviceMemory& buffer_memory)
 		{
 			auto& vk_window = Engine::get<VulkanWindow>();
 
-			VkBufferCreateInfo buffer_info { };
-			buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+			internal::VkBufferCreateInfo buffer_info { };
+			buffer_info.sType = internal::VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 			buffer_info.size = size;
 			buffer_info.usage = usage;
-			buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+			buffer_info.sharingMode = internal::VK_SHARING_MODE_EXCLUSIVE;
 
-			if (vkCreateBuffer(vk_window.get_window_data().m_device, &buffer_info, nullptr, &buffer) != VK_SUCCESS)
+			if (vkCreateBuffer(vk_window.get_window_data().m_device, &buffer_info, nullptr, &buffer) != internal::VK_SUCCESS)
 			{
 				SPARK_ERROR("[VULKAN] Failed to create buffer!");
 				assert(false);
 			}
 
-			VkMemoryRequirements mem_requirements;
+			internal::VkMemoryRequirements mem_requirements;
 			vkGetBufferMemoryRequirements(vk_window.get_window_data().m_device, buffer, &mem_requirements);
 
-			VkMemoryAllocateInfo alloc_info { };
-			alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+			internal::VkMemoryAllocateInfo alloc_info { };
+			alloc_info.sType = internal::VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 			alloc_info.allocationSize = mem_requirements.size;
 			alloc_info.memoryTypeIndex = find_memory_type(mem_requirements.memoryTypeBits, properties);
 
 			if (vkAllocateMemory(vk_window.get_window_data().m_device, &alloc_info, nullptr, &buffer_memory) !=
-			    VK_SUCCESS)
+				internal::VK_SUCCESS)
 			{
 				SPARK_ERROR("[VULKAN] Failed to allocate buffer memory!");
 				assert(false);
@@ -309,11 +309,11 @@ namespace spark
 			vkBindBufferMemory(vk_window.get_window_data().m_device, buffer, buffer_memory, 0);
 		}
 
-		static u32 find_memory_type(u32 type_filter, VkMemoryPropertyFlags properties)
+		static u32 find_memory_type(u32 type_filter, internal::VkMemoryPropertyFlags properties)
 		{
 			auto& vk_window = Engine::get<VulkanWindow>();
 
-			VkPhysicalDeviceMemoryProperties mem_properties;
+			internal::VkPhysicalDeviceMemoryProperties mem_properties;
 			vkGetPhysicalDeviceMemoryProperties(vk_window.get_window_data().m_physical_device, &mem_properties);
 
 			for (u32 i = 0; i < mem_properties.memoryTypeCount; i++)
@@ -334,17 +334,17 @@ namespace spark
 		void create_uniform_buffers(const std::vector <UBO>& ubos)
 		{
 			auto& vk_window = Engine::get<VulkanWindow>();
-			VkDeviceSize buffer_size = sizeof(UBO);
+			internal::VkDeviceSize buffer_size = sizeof(UBO);
 
-			std::vector <VkBuffer> buffers(ubos.size());
-			std::vector <VkDeviceMemory> buffer_memories(ubos.size());
+			std::vector <internal::VkBuffer> buffers(ubos.size());
+			std::vector <internal::VkDeviceMemory> buffer_memories(ubos.size());
 
 			for (size_t i = 0; i < ubos.size(); i++)
 			{
 				create_vulkan_buffer(
 						buffer_size,
-						VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-						VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+					internal::VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+					internal::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | internal::VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 						buffers[i],
 						buffer_memories[i]);
 
@@ -358,17 +358,17 @@ namespace spark
 
 		template <typename... UBOTypes, u64... Is>
 		void update_descriptor_set_impl(
-				VkDevice device,
-				VkDescriptorSet descriptor_set,
+			internal::VkDevice device,
+			internal::VkDescriptorSet descriptor_set,
 				std::index_sequence<Is...>,
-				std::array<VkDescriptorBufferInfo, sizeof...(UBOTypes)>& buffer_infos,
-				std::array<VkWriteDescriptorSet, sizeof...(UBOTypes)>& write_descriptor_sets,
+				std::array<internal::VkDescriptorBufferInfo, sizeof...(UBOTypes)>& buffer_infos,
+				std::array<internal::VkWriteDescriptorSet, sizeof...(UBOTypes)>& write_descriptor_sets,
 				const UBOTypes&... ubos)
 		{
 			// Lambda to create a VkDescriptorBufferInfo from a UBO
 			auto create_buffer_info = [&](const auto& ubo, u64 index)
 			{
-				VkDescriptorBufferInfo buffer_info { };
+					internal::VkDescriptorBufferInfo buffer_info { };
 				buffer_info.buffer = m_ubo_list[index]->m_buffer;
 				buffer_info.offset = 0;
 				buffer_info.range = sizeof(ubo);
@@ -376,15 +376,15 @@ namespace spark
 			};
 
 			// Lambda to create a VkWriteDescriptorSet from a VkDescriptorBufferInfo
-			auto create_write_descriptor_set = [&](const VkDescriptorBufferInfo& bufferInfo, u64 index)
+			auto create_write_descriptor_set = [&](const internal::VkDescriptorBufferInfo& bufferInfo, u64 index)
 			{
-				VkWriteDescriptorSet descriptor_write { };
-				descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+					internal::VkWriteDescriptorSet descriptor_write { };
+				descriptor_write.sType = internal::VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 				descriptor_write.dstSet = descriptor_set;
 				descriptor_write.dstBinding = static_cast<u32>(index);
 				descriptor_write.dstArrayElement = 0;
 				descriptor_write.descriptorCount = 1;
-				descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				descriptor_write.descriptorType = internal::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 				descriptor_write.pBufferInfo = &bufferInfo;
 				return descriptor_write;
 			};
@@ -401,14 +401,14 @@ namespace spark
 		void update_descriptor_sets(const UBOTypes& ... ubo_data)
 		{
 			auto& vk_window = Engine::get<VulkanWindow>();
-			VkDevice device = vk_window.get_window_data().m_device;
+			internal::VkDevice device = vk_window.get_window_data().m_device;
 
 			for (u64 i = 0; i < vk_window.get_window_data().m_max_frames_in_flight; i++)
 			{
-				VkDescriptorSet descriptor_set = vk_window.get_window_data().m_descriptor_sets[i];
+				internal::VkDescriptorSet descriptor_set = vk_window.get_window_data().m_descriptor_sets[i];
 
-				std::array<VkDescriptorBufferInfo, sizeof...(UBOTypes)> buffer_infos;
-				std::array<VkWriteDescriptorSet, sizeof...(UBOTypes)> write_descriptor_sets;
+				std::array<internal::VkDescriptorBufferInfo, sizeof...(UBOTypes)> buffer_infos;
+				std::array<internal::VkWriteDescriptorSet, sizeof...(UBOTypes)> write_descriptor_sets;
 				
 				// Use index sequence to iterate over each UBO type and its corresponding index.
 				update_descriptor_set_impl(device, descriptor_set, std::index_sequence_for<UBOTypes...>{}, buffer_infos, write_descriptor_sets, ubo_data...);

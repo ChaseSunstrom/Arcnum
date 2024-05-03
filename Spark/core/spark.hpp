@@ -25,9 +25,12 @@
 
 namespace spark
 {
-	namespace math = glm;
+	namespace math = internal::glm;
 
-	using namespace irrklang;
+	namespace internal
+	{
+		using namespace irrklang;
+	}
 }
 
 #endif // CORE_CORE_H

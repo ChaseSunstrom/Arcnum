@@ -6,9 +6,7 @@
 #include "../../scene/scene_manager.hpp"
 #include "../../renderer/renderer.hpp"
 
-#include "IMGUI/imgui.h"
-#include "IMGUI/imgui_impl_glfw.h"
-#include "IMGUI/imgui_impl_vulkan.h"
+using namespace spark::internal;
 
 namespace spark
 {

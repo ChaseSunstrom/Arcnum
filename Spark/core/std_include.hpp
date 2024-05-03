@@ -41,13 +41,16 @@
 #include <array>
 #include <new>
 
-#include <GLEW/glew.h>
+#include <IRRKLANG/irrKlang.h>
 
+namespace spark
+{
+	namespace internal
+	{
+#include <GLEW/glew.h>
 #include <VULKAN/vulkan.h>
 #include <GLFW/glfw3.h>
-
 #include <GLM/glm.hpp>
-#include <IRRKLANG/irrKlang.h>
 #include <GLM/gtx/quaternion.hpp>
 #include <GLM/gtc/quaternion.hpp>
 #include <GLM/gtc/matrix_transform.hpp>
@@ -55,5 +58,8 @@
 #include <GLM/gtx/transform.hpp>
 #include <GLM/gtc/type_ptr.hpp>
 #include <GLM/common.hpp>
+	}
+
+}
 
 #endif

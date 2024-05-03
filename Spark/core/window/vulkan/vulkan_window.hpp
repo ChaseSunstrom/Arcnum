@@ -20,9 +20,9 @@ namespace spark
 
 	struct VulkanSwapChainSupportDetails
 	{
-		VkSurfaceCapabilitiesKHR m_capabilities;
-		std::vector <VkSurfaceFormatKHR> m_formats;
-		std::vector <VkPresentModeKHR> m_present_modes;
+		internal::VkSurfaceCapabilitiesKHR m_capabilities;
+		std::vector <internal::VkSurfaceFormatKHR> m_formats;
+		std::vector <internal::VkPresentModeKHR> m_present_modes;
 	};
 
 	struct VulkanWindowData :
@@ -43,53 +43,53 @@ namespace spark
 
 		u64 m_current_frame = 0;
 
-		VkInstance m_instance;
+		internal::VkInstance m_instance;
 
-		VkDebugUtilsMessengerEXT m_debug_messenger;
+		internal::VkDebugUtilsMessengerEXT m_debug_messenger;
 
-		VkPhysicalDevice m_physical_device = VK_NULL_HANDLE;
+		internal::VkPhysicalDevice m_physical_device = VK_NULL_HANDLE;
 
-		VkDevice m_device;
+		internal::VkDevice m_device;
 
-		VkQueue m_graphics_queue;
+		internal::VkQueue m_graphics_queue;
 
-		VkQueue m_present_queue;
+		internal::VkQueue m_present_queue;
 
-		VkSurfaceKHR m_surface;
+		internal::VkSurfaceKHR m_surface;
 
-		VkSwapchainKHR m_swapchain;
+		internal::VkSwapchainKHR m_swapchain;
 
-		VkFormat m_swapchain_image_format;
+		internal::VkFormat m_swapchain_image_format;
 
-		VkExtent2D m_swapchain_extent;
+		internal::VkExtent2D m_swapchain_extent;
 
-		VkRenderPass m_render_pass;
+		internal::VkRenderPass m_render_pass;
 
-		VkDescriptorSetLayout m_descriptor_set_layout;
+		internal::VkDescriptorSetLayout m_descriptor_set_layout;
 
-		VkPipelineLayout m_pipeline_layout;
+		internal::VkPipelineLayout m_pipeline_layout;
 
-		VkPipeline m_graphics_pipeline;
+		internal::VkPipeline m_graphics_pipeline;
 
-		VkCommandPool m_command_pool;
+		internal::VkCommandPool m_command_pool;
 
-		VkDescriptorPool m_descriptor_pool;
+		internal::VkDescriptorPool m_descriptor_pool;
 
-		std::vector <VkImage> m_swapchain_images;
+		std::vector <internal::VkImage> m_swapchain_images;
 
-		std::vector <VkImageView> m_swapchain_image_views;
+		std::vector <internal::VkImageView> m_swapchain_image_views;
 
-		std::vector <VkFramebuffer> m_swapchain_framebuffers;
+		std::vector <internal::VkFramebuffer> m_swapchain_framebuffers;
 
-		std::vector <VkCommandBuffer> m_command_buffers;
+		std::vector <internal::VkCommandBuffer> m_command_buffers;
 
-		std::vector <VkSemaphore> m_image_available_semaphores;
+		std::vector <internal::VkSemaphore> m_image_available_semaphores;
 
-		std::vector <VkSemaphore> m_render_finished_semaphores;
+		std::vector <internal::VkSemaphore> m_render_finished_semaphores;
 
-		std::vector <VkFence> m_in_flight_fences;
+		std::vector <internal::VkFence> m_in_flight_fences;
 
-		std::vector <VkDescriptorSet> m_descriptor_sets;
+		std::vector <internal::VkDescriptorSet> m_descriptor_sets;
 
 		const i32 m_max_frames_in_flight = 2;
 
@@ -130,25 +130,23 @@ namespace spark
 			return *m_window_data;
 		}
 
-		static VKAPI_ATTR VkBool32
-
-		VKAPI_CALL debug_callback(
-				VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
-				VkDebugUtilsMessageTypeFlagsEXT message_type,
-				const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
+		static VKAPI_ATTR internal::VkBool32 VKAPI_CALL debug_callback(
+			internal::VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
+			internal::VkDebugUtilsMessageTypeFlagsEXT message_type,
+				const internal::VkDebugUtilsMessengerCallbackDataEXT* callback_data,
 				void* user_data)
 		{
 			// Check if the message includes an error severity bit
-			if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+			if (message_severity & internal::VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
 			{
 				SPARK_ERROR("[VULKAN] Validation layer: " << callback_data->pMessage);
 			}
-			else if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+			else if (message_severity & internal::VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
 			{
 				SPARK_WARN("[VULKAN] Validation layer: " << callback_data->pMessage);
 			}
-			else if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
-			         VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
+			else if (message_severity & internal::VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
+				internal::VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
 			{
 				SPARK_INFO("[VULKAN] Validation layer: " << callback_data->pMessage);
 			}
@@ -158,17 +156,17 @@ namespace spark
 
 		static void event_callback(std::shared_ptr <Event> event);
 
-		static void framebuffer_resize_callback(GLFWwindow* window, i32 width, i32 hieght);
+		static void framebuffer_resize_callback(internal::GLFWwindow* window, i32 width, i32 hieght);
 
-		static void close_event_callback(GLFWwindow* window);
+		static void close_event_callback(internal::GLFWwindow* window);
 
-		static void key_event_callback(GLFWwindow* window, i32 key, i32 scancode, i32 action, i32 mods);
+		static void key_event_callback(internal::GLFWwindow* window, i32 key, i32 scancode, i32 action, i32 mods);
 
-		static void mouse_button_event_callback(GLFWwindow* window, i32 button, i32 action, i32 mods);
+		static void mouse_button_event_callback(internal::GLFWwindow* window, i32 button, i32 action, i32 mods);
 
-		static void mouse_scroll_event_callback(GLFWwindow* window, f64 xoffset, f64 yoffset);
+		static void mouse_scroll_event_callback(internal::GLFWwindow* window, f64 xoffset, f64 yoffset);
 
-		static void mouse_move_event_callback(GLFWwindow* window, f64 x, f64 y);
+		static void mouse_move_event_callback(internal::GLFWwindow* window, f64 x, f64 y);
 
 	private:
 		VulkanWindow();
@@ -215,45 +213,45 @@ namespace spark
 
 		std::vector<const char*> get_required_extensions();
 
-		VkResult create_debug_utils_messenger_ext(
-				VkInstance instance,
-				const VkDebugUtilsMessengerCreateInfoEXT* create_info,
-				const VkAllocationCallbacks* allocator,
-				VkDebugUtilsMessengerEXT* debug_messenger);
+		internal::VkResult create_debug_utils_messenger_ext(
+			internal::VkInstance instance,
+				const internal::VkDebugUtilsMessengerCreateInfoEXT* create_info,
+				const internal::VkAllocationCallbacks* allocator,
+			internal::VkDebugUtilsMessengerEXT* debug_messenger);
 
 		void destroy_debug_utils_messenger_ext(
-				VkInstance instance,
-				VkDebugUtilsMessengerEXT debug_messenger,
-				const VkAllocationCallbacks* allocator);
+			internal::VkInstance instance,
+			internal::VkDebugUtilsMessengerEXT debug_messenger,
+				const internal::VkAllocationCallbacks* allocator);
 
-		void populate_debug_messenger(VkDebugUtilsMessengerCreateInfoEXT& create_info);
+		void populate_debug_messenger(internal::VkDebugUtilsMessengerCreateInfoEXT& create_info);
 
-		void record_command_buffer(VkCommandBuffer command_buffer, u32 image_index);
+		void record_command_buffer(internal::VkCommandBuffer command_buffer, u32 image_index);
 
 		void draw_frame();
 
 		void cleanup_swap_chain();
 
-		bool is_device_suitable(VkPhysicalDevice device);
+		bool is_device_suitable(internal::VkPhysicalDevice device);
 
-		bool check_device_extension_support(VkPhysicalDevice device);
+		bool check_device_extension_support(internal::VkPhysicalDevice device);
 
-		i32 rate_device(VkPhysicalDevice device);
+		i32 rate_device(internal::VkPhysicalDevice device);
 
-		VulkanQueueFamilyIndices find_queue_families(VkPhysicalDevice device);
+		VulkanQueueFamilyIndices find_queue_families(internal::VkPhysicalDevice device);
 
-		VulkanSwapChainSupportDetails query_swap_chain_support(VkPhysicalDevice device);
+		VulkanSwapChainSupportDetails query_swap_chain_support(internal::VkPhysicalDevice device);
 
-		VkSurfaceFormatKHR choose_swap_surface_format(const std::vector <VkSurfaceFormatKHR>& available_formats);
+		internal::VkSurfaceFormatKHR choose_swap_surface_format(const std::vector <internal::VkSurfaceFormatKHR>& available_formats);
 
-		VkPresentModeKHR choose_swap_present_mode(const std::vector <VkPresentModeKHR>& available_present_modes);
+		internal::VkPresentModeKHR choose_swap_present_mode(const std::vector <internal::VkPresentModeKHR>& available_present_modes);
 
-		VkExtent2D choose_swap_extent(const VkSurfaceCapabilitiesKHR& capabilities);
+		internal::VkExtent2D choose_swap_extent(const internal::VkSurfaceCapabilitiesKHR& capabilities);
 
-		VkShaderModule create_shader_module(const std::vector<char>& code);
+		internal::VkShaderModule create_shader_module(const std::vector<char>& code);
 
 	private:
-		GLFWwindow* m_window;
+		internal::GLFWwindow* m_window;
 
 		std::unique_ptr <VulkanWindowData> m_window_data = std::make_unique<VulkanWindowData>();
 

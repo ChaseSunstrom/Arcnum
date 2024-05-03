@@ -19,7 +19,7 @@ namespace spark
 			return instance;
 		}
 
-		Sound& create_sound(
+		Sound& create(
 				const std::string& name,
 				const std::filesystem::path& source,
 				bool loops = false,
@@ -35,14 +35,14 @@ namespace spark
 			return *m_sounds[name];
 		}
 
-		Sound& create_sound(
+		Sound& create(
 				const std::string& name,
 				const std::filesystem::path& source,
 				const math::vec3& position,
 				bool loops = false,
 				bool pause_on_create = true)
 		{
-			vec3df position_3d(position.x, position.y, position.z);
+			internal::vec3df position_3d(position.x, position.y, position.z);
 
 			std::unique_ptr<Sound> s = std::make_unique<Sound>(
 					m_Engine->play3D(
@@ -139,7 +139,7 @@ namespace spark
 			m_Engine->update();
 		}
 
-		ISoundEngine* get_Engine() const
+		internal::ISoundEngine* get_Engine() const
 		{
 			return m_Engine;
 		}
@@ -153,7 +153,7 @@ namespace spark
 		}
 
 	private:
-		ISoundEngine* m_Engine = createIrrKlangDevice();
+		internal::ISoundEngine* m_Engine = internal::createIrrKlangDevice();
 
 		std::unordered_map<std::string, std::unique_ptr<Sound>> m_sounds;
 	};

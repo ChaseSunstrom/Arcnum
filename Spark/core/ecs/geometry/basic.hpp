@@ -30,7 +30,7 @@ namespace spark
 					Vertex(math::vec3(0.0f, size.y, 0.0f)),
 			};
 
-			_mesh_manager.create_mesh("__triangle__", vertices);
+			_mesh_manager.create("__triangle__", vertices);
 
 			Entity triangle_entity = _ecs.create_entity(
 					MeshComponent("__triangle__"),
@@ -73,7 +73,7 @@ namespace spark
 					2, 3, 0
 			};
 
-			_mesh_manager.create_mesh("__square__", vertices, indices);
+			_mesh_manager.create("__square__", vertices, indices);
 
 			Entity square_entity = _ecs.create_entity(
 					MeshComponent("__square__"),
@@ -112,7 +112,7 @@ namespace spark
 				vertices.push_back(Vertex(math::vec3(size.x * cos(angle), size.y * sin(angle), 0.0f)));
 			}
 
-			_mesh_manager.create_mesh("__circle__", vertices);
+			_mesh_manager.create("__circle__", vertices);
 
 			Entity circle_entity = _ecs.create_entity(
 					MeshComponent("__circle__"),
@@ -143,7 +143,7 @@ namespace spark
 					Vertex(start), Vertex(end),
 			};
 
-			_mesh_manager.create_mesh("__line__", vertices);
+			_mesh_manager.create("__line__", vertices);
 
 			Entity line_entity = _ecs.create_entity(
 					MeshComponent("__line__"), MaterialComponent(material));
@@ -227,7 +227,7 @@ namespace spark
 							spark::math::vec3(-size.x, size.y, -size.z))
 			};
 
-			_mesh_manager.create_mesh("__cube__", vertices);
+			_mesh_manager.create("__cube__", vertices);
 
 			Entity cube_entity = _ecs.create_entity(
 					MeshComponent("__cube__"),
@@ -301,7 +301,7 @@ namespace spark
 				}
 			}
 
-			_mesh_manager.create_mesh("__sphere__", vertices, indices);
+			_mesh_manager.create("__sphere__", vertices, indices);
 
 			Entity sphere_entity = _ecs.create_entity(
 					MeshComponent("__sphere__"),
@@ -346,7 +346,7 @@ namespace spark
 				}
 			}
 
-			_mesh_manager.create_mesh("__capsule__", vertices);
+			_mesh_manager.create("__capsule__", vertices);
 
 			Entity capsule_entity = _ecs.create_entity(
 					MeshComponent("__capsule__"),
@@ -391,7 +391,7 @@ namespace spark
 				}
 			}
 
-			_mesh_manager.create_mesh("__cone__", vertices);
+			_mesh_manager.create("__cone__", vertices);
 
 			Entity cone_entity = _ecs.create_entity(
 					MeshComponent("__cone__"),
@@ -436,7 +436,7 @@ namespace spark
 				}
 			}
 
-			_mesh_manager.create_mesh("__cylinder__", vertices);
+			_mesh_manager.create("__cylinder__", vertices);
 
 			Entity cylinder_entity = _ecs.create_entity(
 					MeshComponent("__cylinder__"),

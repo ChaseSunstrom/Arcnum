@@ -145,8 +145,8 @@ namespace spark
 				{
 					auto& _vulkan_mesh = dynamic_cast<VulkanMesh&>(mesh);
 
-					VkBuffer vertex_buffers[] = { _vulkan_mesh.m_vertex_buffer };
-					VkDeviceSize offsets[] = { 0 };
+					internal::VkBuffer vertex_buffers[] = { _vulkan_mesh.m_vertex_buffer };
+					internal::VkDeviceSize offsets[] = { 0 };
 
 					_vulkan_mesh.update_uniform_buffers();
 
@@ -164,11 +164,11 @@ namespace spark
 								                                                       .m_current_frame],
 								_vulkan_mesh.m_index_buffer,
 								0,
-								VK_INDEX_TYPE_UINT32);
+							internal::VK_INDEX_TYPE_UINT32);
 
 						vkCmdBindDescriptorSets(
 								vk_window.get_window_data().m_command_buffers[vk_window.get_window_data().m_current_frame],
-								VK_PIPELINE_BIND_POINT_GRAPHICS,
+							internal::VK_PIPELINE_BIND_POINT_GRAPHICS,
 								vk_window.get_window_data().m_pipeline_layout,
 								0,
 								1,
@@ -190,7 +190,7 @@ namespace spark
 					{
 						vkCmdBindDescriptorSets(
 								vk_window.get_window_data().m_command_buffers[vk_window.get_window_data().m_current_frame],
-								VK_PIPELINE_BIND_POINT_GRAPHICS,
+							internal::VK_PIPELINE_BIND_POINT_GRAPHICS,
 								vk_window.get_window_data().m_pipeline_layout,
 								0,
 								1,

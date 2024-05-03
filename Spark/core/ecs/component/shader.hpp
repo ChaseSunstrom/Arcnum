@@ -14,11 +14,11 @@ namespace spark
 	struct VulkanShaderWrapper
 	{
 		// Forwards the shader type and vk_shader_module
-		VulkanShaderWrapper(ShaderType type, VkShaderModule module);
+		VulkanShaderWrapper(ShaderType type, internal::VkShaderModule module);
 
-		VkPipelineShaderStageCreateInfo m_pipeline_shader { };
+		internal::VkPipelineShaderStageCreateInfo m_pipeline_shader { };
 
-		std::optional <VkPipelineVertexInputStateCreateInfo> m_vertex_input;
+		std::optional <internal::VkPipelineVertexInputStateCreateInfo> m_vertex_input;
 
 	private:
 		void create_vertex_input();
@@ -78,7 +78,7 @@ namespace spark
 			return instance;
 		}
 
-		Shader& load_shader(const std::filesystem::path& shader_path);
+		Shader& create(const std::filesystem::path& shader_path);
 
 		Shader& get_shader(const std::string& path);
 	private:

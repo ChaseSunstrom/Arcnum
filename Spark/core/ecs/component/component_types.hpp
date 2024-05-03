@@ -132,7 +132,7 @@ namespace spark
 
 		Texture& get_texture(const std::string& name);
 
-		Texture& create_texture(
+		Texture& create(
 			const std::string& name,
 			const std::string& path,
 			TextureType type = TextureType::TWO_D,
@@ -160,13 +160,13 @@ namespace spark
 			return instance;
 		}
 
-		Material& create_material(
+		Material& create(
 			const std::string& name,
+			const math::vec4& color = math::vec4(1),
+			const std::string& texture_name = "",
 			const std::pair <std::optional<std::string>, std::optional<std::string>>& shader_paths = {
 					std::nullopt, std::nullopt
 			},
-			const math::vec4& color = math::vec4(1),
-			const std::string& texture_name = "",
 			i32 diffuse = 0,
 			i32 specular = 0,
 			i32 ambient = 1,
@@ -212,7 +212,7 @@ namespace spark
 	private:
 		MaterialManager()
 		{
-			create_material("__default__");
+			create("__default__");
 		}
 
 		~MaterialManager() = default;
@@ -235,7 +235,7 @@ namespace spark
 		}
 
 		template <typename... Args>
-		Mesh& create_mesh(
+		Mesh& create(
 			const std::string& name,
 			const std::vector <Vertex>& vertices,
 			const std::vector <u32> indices = { },

@@ -14,7 +14,7 @@ namespace spark
 
 		virtual void update(const std::vector <Vertex>& vertices, const std::vector <u32>& indices) { }
 
-		virtual void create_mesh() { }
+		virtual void create() { }
 
 		std::vector <Vertex> m_vertices = std::vector<Vertex>();
 

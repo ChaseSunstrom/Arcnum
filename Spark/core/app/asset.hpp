@@ -32,13 +32,13 @@ namespace spark
 				case AssetType::MESH:
 				{
 					auto& mesh_manager = Engine::get<MeshManager>();
-					return mesh_manager.create_mesh(args...);
+					return mesh_manager.create(args...);
 				}
 
 				case AssetType::MATERIAL:
 				{
 					auto& material_manager = Engine::get<MaterialManager>();
-					return material_manager.create_material(args...);
+					return material_manager.create(args...);
 				}
 
 				case AssetType::SOUND:
@@ -50,7 +50,7 @@ namespace spark
 				case AssetType::TEXTURE:
 				{
 					auto& texture_manager = Engine::get<TextureManager>();
-					return texture_manager.create_texture(args...);
+					return texture_manager.create(args...);
 				}
 
 				case AssetType::SHADER:
@@ -62,13 +62,13 @@ namespace spark
 				case AssetType::UI_ELEMENT:
 				{
 					auto& ui_manager = Engine::get<UIManager>();
-					return ui_manager.create_component(args...);
+					return ui_manager.create(args...);
 				}
 
 				case AssetType::SCENE:
 				{
 					auto& scene_manager = Engine::get<SceneManager>();
-					return scene_manager.create_component(args...);
+					return scene_manager.create(args...);
 				}
 			}
 		}

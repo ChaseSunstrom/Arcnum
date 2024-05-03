@@ -18,6 +18,20 @@ namespace spark
 			return instance;
 		}
 
+		Scene& create(const std::string& name, const SceneConfig& scene_config)
+		{
+			std::unique_ptr<Scene> scene = std::make_unique<Scene>(scene_config);
+			m_scenes[name] = std::move(scene);
+			m_scenes_vector.push_back(&*m_scenes[name]);
+
+			if (m_scenes.size() == 1)
+			{
+				m_current_scene_name = name;
+			}
+
+			return *m_scenes[name];
+		}
+
 		void add_scene(const std::string& name, std::unique_ptr<Scene> scene)
 		{
 			m_scenes[name] = std::move(scene);

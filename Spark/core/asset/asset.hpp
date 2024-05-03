@@ -10,62 +10,62 @@
 
 namespace spark
 {
+    template<typename AssetType>
+    struct AssetManagerTraits;
+
+    template<>
+    struct AssetManagerTraits<Mesh>
+    {
+        using Manager = MeshManager;
+    };
+
+    template<>
+    struct AssetManagerTraits<Material>
+    {
+        using Manager = MaterialManager;
+    };
+
+    template<>
+    struct AssetManagerTraits<Sound>
+    {
+        using Manager = AudioManager;
+    };
+
+    template<>
+    struct AssetManagerTraits<Texture>
+    {
+        using Manager = TextureManager;
+    };
+
+    template<>
+    struct AssetManagerTraits<Shader>
+    {
+        using Manager = ShaderManager;
+    };
+
+    template<>
+    struct AssetManagerTraits<UIComponent>
+    {
+        using Manager = UIManager;
+    };
+
+    template<>
+    struct AssetManagerTraits<Scene>
+    {
+        using Manager = SceneManager;
+    };
+
     class AssetManager
     {
     public:
-        template<typename T, typename... Args>
-        static T& create_asset(Args&&... args);
+        template<typename AssetType, typename... Args>
+        static decltype(auto) create_asset(Args&&... args)
+        {
+            using ManagerType = typename AssetManagerTraits<AssetType>::Manager;
+            auto& manager = Engine::get<ManagerType>();
+            return manager.create(std::forward<Args>(args)...);
+        }
     };
-
-    template<typename... Args>
-    Mesh& AssetManager::create_asset<Mesh>(Args&&... args)
-    {
-        auto& mesh_manager = Engine::get<MeshManager>();
-        return mesh_manager.create_mesh(std::forward<Args>(args)...);
-    }
-
-    template<typename... Args>
-    Material& AssetManager::create_asset<Material>(Args&&... args)
-    {
-        auto& material_manager = Engine::get<MaterialManager>();
-        return material_manager.create_material(std::forward<Args>(args)...);
-    }
-
-    template<typename... Args>
-    Sound& AssetManager::create_asset<Sound>(Args&&... args)
-    {
-        auto& sound_manager = Engine::get<AudioManager>();
-        return sound_manager.create_sound(std::forward<Args>(args)...);
-    }
-
-    template<typename... Args>
-    Texture& AssetManager::create_asset<Texture>(Args&&... args)
-    {
-        auto& texture_manager = Engine::get<TextureManager>();
-        return texture_manager.create_texture(std::forward<Args>(args)...);
-    }
-
-    template<typename... Args>
-    Shader& AssetManager::create_asset<Shader>(Args&&... args)
-    {
-        auto& shader_manager = Engine::get<ShaderManager>();
-        return shader_manager.load_shader(std::forward<Args>(args)...);
-    }
-
-    template<typename... Args>
-    UIComponent& AssetManager::create_asset<UIComponent>(Args&&... args)
-    {
-        auto& ui_manager = Engine::get<UIManager>();
-        return ui_manager.create_component(std::forward<Args>(args)...);
-    }
-
-    template<typename... Args>
-    Scene& AssetManager::create_asset<Scene>(const std::string& name, Args&&... args)
-    {
-        auto& scene_manager = Engine::get<SceneManager>();
-        std::unique_ptr<Scene> scene = std::make_unique<Scene>(SceneConfig(std::forward<Args>(args)...));
-        return scene_manager.add_scene(name, std::move(scene));
-    }
 }
 
 #endif  // SPARK_CORE_ASSET_HPP

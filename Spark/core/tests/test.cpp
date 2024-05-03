@@ -29,7 +29,7 @@ namespace spark
                 {
                     Entity ent = _ecs.create_entity();
                     Transform t;
-                    t.m_transform = glm::translate(glm::mat4(1.0f), math::vec3(distribution(generator), distribution(generator), distribution(generator)));
+                    t.m_transform = math::translate(math::mat4(1.0f), math::vec3(distribution(generator), distribution(generator), distribution(generator)));
                     _ecs.add_component(ent, t);
 
                     _entities.push_back(ent);
@@ -50,7 +50,7 @@ namespace spark
         {
             Entity ent = instance.create_entity();
             Transform t;
-            t.m_transform = glm::translate(glm::mat4(1.0f), position);
+            t.m_transform = math::translate(math::mat4(1.0f), position);
             instance.add_component(ent, t);
             return ent;
         }
@@ -104,7 +104,7 @@ namespace spark
 
             Entity ent = fixture._entities.front();
             Transform& t = fixture._ecs.get_component<Transform>(ent);
-            t.m_transform = glm::translate(glm::mat4(1.0f), math::vec3(0.0f)); // Move to the origin
+            t.m_transform = math::translate(math::mat4(1.0f), math::vec3(0.0f)); // Move to the origin
             fixture._ecs.set_component(ent, t);
 
             fixture._octree.update_entity(ent);

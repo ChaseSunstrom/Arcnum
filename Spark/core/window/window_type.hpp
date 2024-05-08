@@ -3,14 +3,10 @@
 
 #include "../spark.hpp"
 
-namespace spark
-{
-	enum class WindowType
-	{
-		UNKNOWN = 0, OPENGL, VULKAN, METAL, DIRECTX
-	};
+namespace Spark {
+enum class WindowType { UNKNOWN = 0, OPENGL, VULKAN, METAL, DIRECTX };
 
-	WindowType get_current_window_type();
-}
+WindowType get_current_window_type();
+} // namespace spark
 
 #endif

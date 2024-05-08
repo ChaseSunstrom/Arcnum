@@ -3,15 +3,11 @@
 
 #include "../ecs/ecs.hpp"
 
-namespace spark
-{
-	class PhysicsSystem : public System
-	{
-	public:
-
-	private:
-	};
-}
-
+namespace Spark {
+class PhysicsSystem : public System {
+public:
+private:
+};
+} // namespace spark
 
 #endif

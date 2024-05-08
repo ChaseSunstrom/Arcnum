@@ -260,6 +260,8 @@
     <ClInclude Include="Spark\core\util\math.hpp" />
     <ClInclude Include="Spark\core\asset\asset.hpp" />
     <ClInclude Include="Spark\core\app\asset.hpp" />
+    <ClInclude Include="Spark\include\GLFW\glfw3.h" />
+    <ClInclude Include="Spark\include\GLFW\glfw3native.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spark\core\app\app.cpp">

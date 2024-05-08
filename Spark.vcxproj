@@ -160,6 +160,8 @@
     <ClInclude Include="Spark\core\window\window.hpp" />
     <ClInclude Include="Spark\core\window\window_manager.hpp" />
     <ClInclude Include="Spark\core\window\window_type.hpp" />
+    <ClInclude Include="Spark\include\GLFW\glfw3.h" />
+    <ClInclude Include="Spark\include\GLFW\glfw3native.h" />
     <ClInclude Include="Spark\include\IMGUI\imconfig.h" />
     <ClInclude Include="Spark\include\IMGUI\imgui.h" />
     <ClInclude Include="Spark\include\IMGUI\imgui_impl_dx12.h" />

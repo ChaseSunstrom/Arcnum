@@ -1,58 +1,46 @@
 #ifndef SPARK_ENTITY_HPP
 #define SPARK_ENTITY_HPP
 
-#include "../../spark.hpp"
-#include "entity_type.hpp"
 #include "../../net/serializeable.hpp"
-#include "../util/Singleton.hpp"
+#include "../../spark.hpp"
 #include "../component/component.hpp"
+#include "../util/Singleton.hpp"
+#include "entity_type.hpp"
 
-namespace spark
-{
-	class EntityManager :
-		public Singleton<EntityManager>
-	{
-	public:
-		static EntityManager& get()
-		{
-			static EntityManager instance;
-			return instance;
-		}
+namespace Spark {
+class EntityManager : public Singleton<EntityManager> {
+public:
+  static EntityManager &get() {
+    static EntityManager instance;
+    return instance;
+  }
 
-		Entity create_entity()
-		{
-			if (m_recycled_ids.empty())
-			{
-				return m_next_id++;
-			}
+  Entity create_entity() {
+    if (m_recycled_ids.empty()) {
+      return m_next_id++;
+    }
 
-			u64 id = m_recycled_ids.front();
-			m_recycled_ids.pop_front();
-			return id;
-		}
+    u64 id = m_recycled_ids.front();
+    m_recycled_ids.pop_front();
+    return id;
+  }
 
-		u64 get_entity_count() const
-		{
-			return m_next_id;
-		}
+  u64 get_entity_count() const { return m_next_id; }
 
-		void destroy_entity(Entity e)
-		{
-			m_recycled_ids.push_front(e);
-		}
+  void destroy_entity(Entity e) { m_recycled_ids.push_front(e); }
 
-	private:
-		EntityManager() = default;
+private:
+  EntityManager() = default;
 
-		~EntityManager() = default;
+  ~EntityManager() = default;
 
-	private:
-		Entity m_next_id = 0;
+private:
+  Entity m_next_id = 0;
 
-		std::deque <Entity> m_recycled_ids;
+  std::deque<Entity> m_recycled_ids;
 
-		SERIALIZE_MEMBERS(EntityManager, m_next_id, m_recycled_ids)
-	};
-}
+  SERIALIZE_MEMBERS(EntityManager, m_next_id, m_recycled_ids)
+};
+} // namespace spark
 
-#endif //CORE_ENTITY_H
+#endif // CORE_ENTITY_H

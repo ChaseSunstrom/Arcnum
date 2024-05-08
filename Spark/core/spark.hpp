@@ -13,9 +13,9 @@
 
 #define __SPARK_ASSERT__(_expression) _expression ? 1 : 0
 
+#include "Engine.hpp"
 #include "std_include.hpp"
 #include "types.hpp"
-#include "Engine.hpp"
 
 #include "util/macros.hpp"
 
@@ -23,14 +23,12 @@
 #pragma warning(disable : 4996)
 #endif
 
-namespace spark
-{
-	namespace math = internal::glm;
+namespace Spark {
+namespace math = internal::glm;
 
-	namespace internal
-	{
-		using namespace irrklang;
-	}
+namespace internal {
+using namespace irrklang;
 }
+} // namespace spark
 
 #endif // CORE_CORE_H

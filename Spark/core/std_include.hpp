@@ -42,9 +42,12 @@
 
 #include <IRRKLANG/irrKlang.h>
 
-namespace Spark {
-namespace internal {
+namespace Spark
+{
+namespace internal
+{
 #include <GLEW/glew.h>
+#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <GLM/common.hpp>
 #include <GLM/glm.hpp>
@@ -57,6 +60,6 @@ namespace internal {
 #include <VULKAN/vulkan.h>
 } // namespace internal
 
-} // namespace spark
+} // namespace Spark
 
 #endif

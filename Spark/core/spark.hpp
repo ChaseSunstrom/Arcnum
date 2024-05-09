@@ -23,12 +23,14 @@
 #pragma warning(disable : 4996)
 #endif
 
-namespace Spark {
+namespace Spark
+{
 namespace math = internal::glm;
 
-namespace internal {
+namespace internal
+{
 using namespace irrklang;
 }
-} // namespace spark
+} // namespace Spark
 
 #endif // CORE_CORE_H

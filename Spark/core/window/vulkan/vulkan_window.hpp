@@ -4,259 +4,261 @@
 #include "../../util/singleton.hpp"
 #include "../window.hpp"
 
-namespace Spark {
-namespace internal {
-struct VulkanQueueFamilyIndices {
-  bool is_complete() {
-    return m_graphics_family.has_value() && m_present_family.has_value();
-  }
+namespace Spark
+{
+namespace internal
+{
+struct VulkanQueueFamilyIndices
+{
+    bool is_complete()
+    {
+        return m_graphics_family.has_value() && m_present_family.has_value();
+    }
 
-  std::optional<u32> m_graphics_family;
+    std::optional<u32> m_graphics_family;
 
-  std::optional<u32> m_present_family;
+    std::optional<u32> m_present_family;
 };
 
-struct VulkanSwapChainSupportDetails {
-  internal::VkSurfaceCapabilitiesKHR m_capabilities;
-  std::vector<internal::VkSurfaceFormatKHR> m_formats;
-  std::vector<internal::VkPresentModeKHR> m_present_modes;
+struct VulkanSwapChainSupportDetails
+{
+    internal::VkSurfaceCapabilitiesKHR m_capabilities;
+    std::vector<internal::VkSurfaceFormatKHR> m_formats;
+    std::vector<internal::VkPresentModeKHR> m_present_modes;
 };
 } // namespace internal
 
-struct VulkanWindowData : public WindowData {
-  VulkanWindowData() : WindowData() {}
-
-  VulkanWindowData(std::string title, bool vsync, i32 height, i32 width,
-                   std::function<void(std::shared_ptr<Event>)> event_callback)
-      : WindowData(title, vsync, height, width, event_callback) {}
-
-  bool m_framebuffer_resized = false;
-
-  u64 m_current_frame = 0;
-
-  internal::VkInstance m_instance;
-
-  internal::VkDebugUtilsMessengerEXT m_debug_messenger;
-
-  internal::VkPhysicalDevice m_physical_device = VK_NULL_HANDLE;
-
-  internal::VkDevice m_device;
-
-  internal::VkQueue m_graphics_queue;
-
-  internal::VkQueue m_present_queue;
-
-  internal::VkSurfaceKHR m_surface;
-
-  internal::VkSwapchainKHR m_swapchain;
-
-  internal::VkFormat m_swapchain_image_format;
-
-  internal::VkExtent2D m_swapchain_extent;
-
-  internal::VkRenderPass m_render_pass;
-
-  internal::VkDescriptorSetLayout m_descriptor_set_layout;
-
-  internal::VkPipelineLayout m_pipeline_layout;
-
-  internal::VkPipeline m_graphics_pipeline;
-
-  internal::VkCommandPool m_command_pool;
-
-  internal::VkDescriptorPool m_descriptor_pool;
-
-  std::vector<internal::VkImage> m_swapchain_images;
-
-  std::vector<internal::VkImageView> m_swapchain_image_views;
-
-  std::vector<internal::VkFramebuffer> m_swapchain_framebuffers;
-
-  std::vector<internal::VkCommandBuffer> m_command_buffers;
-
-  std::vector<internal::VkSemaphore> m_image_available_semaphores;
-
-  std::vector<internal::VkSemaphore> m_render_finished_semaphores;
-
-  std::vector<internal::VkFence> m_in_flight_fences;
-
-  std::vector<internal::VkDescriptorSet> m_descriptor_sets;
-
-  const i32 m_max_frames_in_flight = 2;
-
-  const std::vector<const char *> m_validation_layers = {
-      "VK_LAYER_KHRONOS_validation", "VK_LAYER_LUNARG_monitor"};
-
-  const std::vector<const char *> m_device_extensions = {
-      VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-};
-
-class VulkanWindow : public Window, public Singleton<VulkanWindow> {
-public:
-  static VulkanWindow &get() {
-    static VulkanWindow instance;
-    return instance;
-  }
-
-  void pre_draw() override;
-
-  void on_update() override;
-
-  void post_draw() override;
-
-  bool is_running() override;
-
-  void set_vsync(bool vsync) override;
-
-  void set_window_title(const std::string &title) override;
-
-  VulkanWindowData &get_window_data() const { return *m_window_data; }
-
-  static VKAPI_ATTR internal::VkBool32 VKAPI_CALL debug_callback(
-      internal::VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
-      internal::VkDebugUtilsMessageTypeFlagsEXT message_type,
-      const internal::VkDebugUtilsMessengerCallbackDataEXT *callback_data,
-      void *user_data) {
-    // Check if the message includes an error severity bit
-    if (message_severity &
-        internal::VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
-      SPARK_ERROR("[VULKAN] Validation layer: " << callback_data->pMessage);
-    } else if (message_severity &
-               internal::VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
-      SPARK_WARN("[VULKAN] Validation layer: " << callback_data->pMessage);
-    } else if (message_severity &
-                   internal::VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
-               internal::VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) {
-      SPARK_INFO("[VULKAN] Validation layer: " << callback_data->pMessage);
+struct VulkanWindowData : public WindowData
+{
+    VulkanWindowData() : WindowData()
+    {
     }
 
-    return VK_FALSE; // Indicate that the message has been handled
-  }
+    VulkanWindowData(std::string title, bool vsync, i32 height, i32 width,
+                     std::function<void(std::shared_ptr<Event>)> event_callback)
+        : WindowData(title, vsync, height, width, event_callback)
+    {
+    }
 
-  static void event_callback(std::shared_ptr<Event> event);
+    bool m_framebuffer_resized = false;
 
-  static void framebuffer_resize_callback(internal::GLFWwindow *window,
-                                          i32 width, i32 hieght);
+    u64 m_current_frame = 0;
 
-  static void close_event_callback(internal::GLFWwindow *window);
+    internal::VkInstance m_instance;
 
-  static void key_event_callback(internal::GLFWwindow *window, i32 key,
-                                 i32 scancode, i32 action, i32 mods);
+    internal::VkDebugUtilsMessengerEXT m_debug_messenger;
 
-  static void mouse_button_event_callback(internal::GLFWwindow *window,
-                                          i32 button, i32 action, i32 mods);
+    internal::VkPhysicalDevice m_physical_device = VK_NULL_HANDLE;
 
-  static void mouse_scroll_event_callback(internal::GLFWwindow *window,
-                                          f64 xoffset, f64 yoffset);
+    internal::VkDevice m_device;
 
-  static void mouse_move_event_callback(internal::GLFWwindow *window, f64 x,
-                                        f64 y);
+    internal::VkQueue m_graphics_queue;
 
-private:
-  VulkanWindow();
+    internal::VkQueue m_present_queue;
 
-  ~VulkanWindow();
+    internal::VkSurfaceKHR m_surface;
 
-  void init_gl();
+    internal::VkSwapchainKHR m_swapchain;
 
-  void init_vulkan();
+    internal::VkFormat m_swapchain_image_format;
 
-  void init_debug();
+    internal::VkExtent2D m_swapchain_extent;
 
-  void init_logical_device();
+    internal::VkRenderPass m_render_pass;
 
-  void init_physical_device();
+    internal::VkDescriptorSetLayout m_descriptor_set_layout;
 
-  void init_surface();
+    internal::VkPipelineLayout m_pipeline_layout;
 
-  void init_swap_chain();
+    internal::VkPipeline m_graphics_pipeline;
 
-  void init_image_views();
+    internal::VkCommandPool m_command_pool;
 
-  void init_render_pass();
+    internal::VkDescriptorPool m_descriptor_pool;
 
-  void init_descriptor_set();
+    std::vector<internal::VkImage> m_swapchain_images;
 
-  void init_pipeline();
+    std::vector<internal::VkImageView> m_swapchain_image_views;
 
-  void init_framebuffers();
+    std::vector<internal::VkFramebuffer> m_swapchain_framebuffers;
 
-  void init_command_pool();
+    std::vector<internal::VkCommandBuffer> m_command_buffers;
 
-  void init_command_buffers();
+    std::vector<internal::VkSemaphore> m_image_available_semaphores;
 
-  void init_sync_objects();
+    std::vector<internal::VkSemaphore> m_render_finished_semaphores;
 
-  void init_descriptor_pool();
+    std::vector<internal::VkFence> m_in_flight_fences;
 
-  void init_descriptor_sets();
+    std::vector<internal::VkDescriptorSet> m_descriptor_sets;
 
-  void reinit_swap_chain();
+    const i32 m_max_frames_in_flight = 2;
 
-  bool check_validation_layer_support();
+    const std::vector<const char *> m_validation_layers = {"VK_LAYER_KHRONOS_validation", "VK_LAYER_LUNARG_monitor"};
 
-  std::vector<const char *> get_required_extensions();
+    const std::vector<const char *> m_device_extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+};
 
-  internal::VkResult create_debug_utils_messenger_ext(
-      internal::VkInstance instance,
-      const internal::VkDebugUtilsMessengerCreateInfoEXT *create_info,
-      const internal::VkAllocationCallbacks *allocator,
-      internal::VkDebugUtilsMessengerEXT *debug_messenger);
+class VulkanWindow : public Window, public Singleton<VulkanWindow>
+{
+  public:
+    static VulkanWindow &get()
+    {
+        static VulkanWindow instance;
+        return instance;
+    }
 
-  void destroy_debug_utils_messenger_ext(
-      internal::VkInstance instance,
-      internal::VkDebugUtilsMessengerEXT debug_messenger,
-      const internal::VkAllocationCallbacks *allocator);
+    void pre_draw() override;
 
-  void populate_debug_messenger(
-      internal::VkDebugUtilsMessengerCreateInfoEXT &create_info);
+    void on_update() override;
 
-  void record_command_buffer(internal::VkCommandBuffer command_buffer,
-                             u32 image_index);
+    void post_draw() override;
 
-  void draw_frame();
+    bool is_running() override;
 
-  void cleanup_swap_chain();
+    void set_vsync(bool vsync) override;
 
-  bool is_device_suitable(internal::VkPhysicalDevice device);
+    void set_window_title(const std::string &title) override;
 
-  bool check_device_extension_support(internal::VkPhysicalDevice device);
+    VulkanWindowData &get_window_data() const
+    {
+        return *m_window_data;
+    }
 
-  i32 rate_device(internal::VkPhysicalDevice device);
+    static VKAPI_ATTR internal::VkBool32 VKAPI_CALL
+    debug_callback(internal::VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
+                   internal::VkDebugUtilsMessageTypeFlagsEXT message_type,
+                   const internal::VkDebugUtilsMessengerCallbackDataEXT *callback_data, void *user_data)
+    {
+        // Check if the message includes an error severity bit
+        if (message_severity & internal::VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+        {
+            SPARK_ERROR("[VULKAN] Validation layer: " << callback_data->pMessage);
+        }
+        else if (message_severity & internal::VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+        {
+            SPARK_WARN("[VULKAN] Validation layer: " << callback_data->pMessage);
+        }
+        else if (message_severity & internal::VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
+                 internal::VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
+        {
+            SPARK_INFO("[VULKAN] Validation layer: " << callback_data->pMessage);
+        }
 
-  internal::VulkanQueueFamilyIndices
-  find_queue_families(internal::VkPhysicalDevice device);
+        return VK_FALSE; // Indicate that the message has been handled
+    }
 
-  internal::VulkanSwapChainSupportDetails
-  query_swap_chain_support(internal::VkPhysicalDevice device);
+    static void event_callback(std::shared_ptr<Event> event);
 
-  internal::VkSurfaceFormatKHR choose_swap_surface_format(
-      const std::vector<internal::VkSurfaceFormatKHR> &available_formats);
+    static void framebuffer_resize_callback(internal::GLFWwindow *window, i32 width, i32 hieght);
 
-  internal::VkPresentModeKHR choose_swap_present_mode(
-      const std::vector<internal::VkPresentModeKHR> &available_present_modes);
+    static void close_event_callback(internal::GLFWwindow *window);
 
-  internal::VkExtent2D
-  choose_swap_extent(const internal::VkSurfaceCapabilitiesKHR &capabilities);
+    static void key_event_callback(internal::GLFWwindow *window, i32 key, i32 scancode, i32 action, i32 mods);
 
-  internal::VkShaderModule create_shader_module(const std::vector<char> &code);
+    static void mouse_button_event_callback(internal::GLFWwindow *window, i32 button, i32 action, i32 mods);
 
-private:
-  internal::GLFWwindow *m_window;
+    static void mouse_scroll_event_callback(internal::GLFWwindow *window, f64 xoffset, f64 yoffset);
 
-  std::unique_ptr<VulkanWindowData> m_window_data =
-      std::make_unique<VulkanWindowData>();
+    static void mouse_move_event_callback(internal::GLFWwindow *window, f64 x, f64 y);
+
+  private:
+    VulkanWindow();
+
+    ~VulkanWindow();
+
+    void init_gl();
+
+    void init_vulkan();
+
+    void init_debug();
+
+    void init_logical_device();
+
+    void init_physical_device();
+
+    void init_surface();
+
+    void init_swap_chain();
+
+    void init_image_views();
+
+    void init_render_pass();
+
+    void init_descriptor_set();
+
+    void init_pipeline();
+
+    void init_framebuffers();
+
+    void init_command_pool();
+
+    void init_command_buffers();
+
+    void init_sync_objects();
+
+    void init_descriptor_pool();
+
+    void init_descriptor_sets();
+
+    void reinit_swap_chain();
+
+    bool check_validation_layer_support();
+
+    std::vector<const char *> get_required_extensions();
+
+    internal::VkResult create_debug_utils_messenger_ext(internal::VkInstance instance,
+                                                        const internal::VkDebugUtilsMessengerCreateInfoEXT *create_info,
+                                                        const internal::VkAllocationCallbacks *allocator,
+                                                        internal::VkDebugUtilsMessengerEXT *debug_messenger);
+
+    void destroy_debug_utils_messenger_ext(internal::VkInstance instance,
+                                           internal::VkDebugUtilsMessengerEXT debug_messenger,
+                                           const internal::VkAllocationCallbacks *allocator);
+
+    void populate_debug_messenger(internal::VkDebugUtilsMessengerCreateInfoEXT &create_info);
+
+    void record_command_buffer(internal::VkCommandBuffer command_buffer, u32 image_index);
+
+    void draw_frame();
+
+    void cleanup_swap_chain();
+
+    bool is_device_suitable(internal::VkPhysicalDevice device);
+
+    bool check_device_extension_support(internal::VkPhysicalDevice device);
+
+    i32 rate_device(internal::VkPhysicalDevice device);
+
+    internal::VulkanQueueFamilyIndices find_queue_families(internal::VkPhysicalDevice device);
+
+    internal::VulkanSwapChainSupportDetails query_swap_chain_support(internal::VkPhysicalDevice device);
+
+    internal::VkSurfaceFormatKHR choose_swap_surface_format(
+        const std::vector<internal::VkSurfaceFormatKHR> &available_formats);
+
+    internal::VkPresentModeKHR choose_swap_present_mode(
+        const std::vector<internal::VkPresentModeKHR> &available_present_modes);
+
+    internal::VkExtent2D choose_swap_extent(const internal::VkSurfaceCapabilitiesKHR &capabilities);
+
+    internal::VkShaderModule create_shader_module(const std::vector<char> &code);
+
+  private:
+    internal::GLFWwindow *m_window;
+
+    std::unique_ptr<VulkanWindowData> m_window_data = std::make_unique<VulkanWindowData>();
 
 #ifdef DEBUG
 
-  const bool m_enable_validation_layers = true;
+    const bool m_enable_validation_layers = true;
 
 #else
 
-  const bool m_enable_validation_layers = false;
+    const bool m_enable_validation_layers = false;
 
 #endif
 };
-} // namespace spark
+} // namespace Spark
 
 #endif

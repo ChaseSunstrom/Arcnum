@@ -4,20 +4,24 @@
 #include "../ecs/component/component_types.hpp"
 #include "../spark.hpp"
 
-namespace Spark {
-class AABB {
-public:
-  AABB(math::vec3 min, math::vec3 max) : m_min(min), m_max(max) {}
+namespace Spark
+{
+class AABB
+{
+  public:
+    AABB(math::vec3 min, math::vec3 max) : m_min(min), m_max(max)
+    {
+    }
 
-  AABB(const std::vector<Vertex> &vertices);
+    AABB(const std::vector<Vertex> &vertices);
 
-  bool check_collision(const AABB &other) const;
+    bool check_collision(const AABB &other) const;
 
-private:
-  math::vec3 m_min;
+  private:
+    math::vec3 m_min;
 
-  math::vec3 m_max;
+    math::vec3 m_max;
 };
-} // namespace spark
+} // namespace Spark
 
 #endif

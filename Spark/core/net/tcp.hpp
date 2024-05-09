@@ -7,119 +7,133 @@
 #include "serializeable.hpp"
 #include <boost/asio.hpp>
 
-namespace Spark {
-namespace net {
+namespace Spark
+{
+namespace net
+{
 using boost::asio::ip::tcp;
 namespace asio = boost::asio;
 
-class TCPClient {
-public:
-  TCPClient(const std::string &host = "127.0.0.1",
-            const std::string &port = "8080",
-            asio::io_context &io_context = default_io_context())
-      : m_io_context(io_context), m_socket(io_context) {
-    tcp::resolver resolver(io_context);
-    auto endpoints = resolver.resolve(host, port);
-    boost::asio::connect(m_socket, endpoints);
-  }
+class TCPClient
+{
+  public:
+    TCPClient(const std::string &host = "127.0.0.1", const std::string &port = "8080",
+              asio::io_context &io_context = default_io_context())
+        : m_io_context(io_context), m_socket(io_context)
+    {
+        tcp::resolver resolver(io_context);
+        auto endpoints = resolver.resolve(host, port);
+        boost::asio::connect(m_socket, endpoints);
+    }
 
-  template <typename T> void send(const T &packet) {
-    std::string serialized_packet = serialize(packet);
-    boost::asio::write(m_socket, asio::buffer(serialized_packet));
-  }
+    template <typename T> void send(const T &packet)
+    {
+        std::string serialized_packet = serialize(packet);
+        boost::asio::write(m_socket, asio::buffer(serialized_packet));
+    }
 
-  ~TCPClient() { m_socket.close(); }
+    ~TCPClient()
+    {
+        m_socket.close();
+    }
 
-private:
-  asio::io_context &m_io_context;
+  private:
+    asio::io_context &m_io_context;
 
-  tcp::socket m_socket;
+    tcp::socket m_socket;
 };
 
-class TCPServer {
-public:
-  TCPServer(const std::string &ip = "127.0.0.1",
-            const std::string &port = "8080",
-            asio::io_context &io_context = default_io_context())
-      : m_io_context(io_context),
-        m_acceptor(io_context,
-                   tcp::endpoint(asio::ip::make_address(ip),
-                                 static_cast<uint16_t>(std::stoi(port)))),
-        m_socket(io_context) {
-    m_acceptor.listen();
+class TCPServer
+{
+  public:
+    TCPServer(const std::string &ip = "127.0.0.1", const std::string &port = "8080",
+              asio::io_context &io_context = default_io_context())
+        : m_io_context(io_context),
+          m_acceptor(io_context, tcp::endpoint(asio::ip::make_address(ip), static_cast<uint16_t>(std::stoi(port)))),
+          m_socket(io_context)
+    {
+        m_acceptor.listen();
 
-    accept_connection();
+        accept_connection();
 
-    SPARK_INFO("[TCP SERVER STARTED]: [IP]: " << ip << " [PORT]: " << port);
+        SPARK_INFO("[TCP SERVER STARTED]: [IP]: " << ip << " [PORT]: " << port);
 
-    io_context.run();
-  }
-
-  ~TCPServer() {
-    if (m_socket.is_open()) {
-      m_socket.close();
+        io_context.run();
     }
-  }
 
-  void close() {
-    if (m_socket.is_open()) {
-      m_socket.close();
+    ~TCPServer()
+    {
+        if (m_socket.is_open())
+        {
+            m_socket.close();
+        }
     }
-  }
 
-private:
-  void accept_connection() {
-    m_acceptor.async_accept(m_socket, [this](boost::system::error_code ec) {
-      if (!ec) {
-        start_receive();
-      }
-      accept_connection();
-    });
-  }
+    void close()
+    {
+        if (m_socket.is_open())
+        {
+            m_socket.close();
+        }
+    }
 
-  void start_receive() {
-    m_socket.async_read_some(
-        asio::buffer(m_receive_buffer),
-        [this](boost::system::error_code ec, u64 bytes_recvd) {
-          if (!ec && bytes_recvd > 0) {
-            try {
-              auto [type, version, data] = deserialize(
-                  std::string(m_receive_buffer.begin(),
-                              m_receive_buffer.begin() + bytes_recvd));
-              auto packet =
-                  PacketFactoryRegistry::create_packet(type, version, data);
-              SPARK_TRACE("[TCP SERVER RECEIVED PACKET]: [TYPE]:"
-                          << type << " [VERSION]:" << std::to_string(version));
-              if (packet) {
-                packet->process();
-
-                std::shared_ptr<TCPServerReceiveEvent> event =
-                    std::make_shared<TCPServerReceiveEvent>(std::move(packet));
-                publish_to_topic(TCP_SERVER_RECEIVE_TOPIC, event);
-
-              } else {
-                SPARK_ERROR("[TCP SERVER UNABLE TO PROCESS PACKET]: [TYPE]:"
-                            << type
-                            << " [VERSION]:" << std::to_string(version));
-              }
-            } catch (const std::exception &e) {
-              std::cerr << "Error processing packet: " << e.what() << std::endl;
+  private:
+    void accept_connection()
+    {
+        m_acceptor.async_accept(m_socket, [this](boost::system::error_code ec) {
+            if (!ec)
+            {
+                start_receive();
             }
-
-            start_receive();
-          }
+            accept_connection();
         });
-  }
+    }
 
-  asio::io_context &m_io_context;
+    void start_receive()
+    {
+        m_socket.async_read_some(asio::buffer(m_receive_buffer), [this](boost::system::error_code ec, u64 bytes_recvd) {
+            if (!ec && bytes_recvd > 0)
+            {
+                try
+                {
+                    auto [type, version, data] =
+                        deserialize(std::string(m_receive_buffer.begin(), m_receive_buffer.begin() + bytes_recvd));
+                    auto packet = PacketFactoryRegistry::create_packet(type, version, data);
+                    SPARK_TRACE("[TCP SERVER RECEIVED PACKET]: [TYPE]:" << type
+                                                                        << " [VERSION]:" << std::to_string(version));
+                    if (packet)
+                    {
+                        packet->process();
 
-  tcp::acceptor m_acceptor;
+                        std::shared_ptr<TCPServerReceiveEvent> event =
+                            std::make_shared<TCPServerReceiveEvent>(std::move(packet));
+                        publish_to_topic(TCP_SERVER_RECEIVE_TOPIC, event);
+                    }
+                    else
+                    {
+                        SPARK_ERROR("[TCP SERVER UNABLE TO PROCESS PACKET]: [TYPE]:" << type << " [VERSION]:"
+                                                                                     << std::to_string(version));
+                    }
+                }
+                catch (const std::exception &e)
+                {
+                    std::cerr << "Error processing packet: " << e.what() << std::endl;
+                }
 
-  tcp::socket m_socket;
+                start_receive();
+            }
+        });
+    }
 
-  std::array<uint8_t, 4096> m_receive_buffer;
+    asio::io_context &m_io_context;
+
+    tcp::acceptor m_acceptor;
+
+    tcp::socket m_socket;
+
+    std::array<uint8_t, 4096> m_receive_buffer;
 };
 } // namespace net
-} // namespace spark
+} // namespace Spark
 
 #endif

@@ -6,19 +6,19 @@
 #include "../events/event.hpp"
 #include "app.hpp"
 
-namespace Spark {
-struct AppFunctions {
-  static std::function<void()> s_on_start;
+namespace Spark
+{
+struct AppFunctions
+{
+    static std::function<void()> s_on_start;
 
-  static std::function<void()> s_on_update;
+    static std::function<void()> s_on_update;
 
-  static std::function<bool(std::shared_ptr<Event>)> s_on_event;
+    static std::function<bool(std::shared_ptr<Event>)> s_on_event;
 
-  static void
-  register_functions(std::function<void()> on_start,
-                     std::function<void()> on_update,
-                     std::function<bool(std::shared_ptr<Event>)> on_event);
+    static void register_functions(std::function<void()> on_start, std::function<void()> on_update,
+                                   std::function<bool(std::shared_ptr<Event>)> on_event);
 };
-} // namespace spark
+} // namespace Spark
 
 #endif

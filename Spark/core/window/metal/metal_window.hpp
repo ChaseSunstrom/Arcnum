@@ -3,8 +3,11 @@
 
 #include "../window.hpp"
 
-namespace Spark {
-class MetalWindow {};
-} // namespace spark
+namespace Spark
+{
+class MetalWindow
+{
+};
+} // namespace Spark
 
 #endif

@@ -6,26 +6,29 @@
 #include "tests/test.hpp"
 #include "util/thread_pool.hpp"
 
-namespace Spark {
+namespace Spark
+{
 // Default main function
-void spark_main() {
-  u32 num_threads = std::thread::hardware_concurrency();
+void spark_main()
+{
+    u32 num_threads = std::thread::hardware_concurrency();
 
-  if (num_threads == 0) {
-    num_threads = 2;
-  }
+    if (num_threads == 0)
+    {
+        num_threads = 2;
+    }
 
-  ThreadPool::initialize(num_threads);
+    ThreadPool::initialize(num_threads);
 
 // #define SPARK_TEST
 #ifndef SPARK_TEST
-  Instancer::get();
-  VulkanWindow::get();
-  Application::on_start();
+    Instancer::get();
+    VulkanWindow::get();
+    Application::on_start();
 #else
-  test::core_test_main();
+    test::core_test_main();
 #endif
 
-  ThreadPool::shutdown();
+    ThreadPool::shutdown();
 }
-} // namespace spark
+} // namespace Spark

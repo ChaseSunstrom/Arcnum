@@ -3,27 +3,34 @@
 
 #include "serializeable.hpp"
 
-namespace Spark {
-namespace net {
-class ChatMessage : public Packet {
-public:
-  ChatMessage() : Packet("chat_message", 1) {};
+namespace Spark
+{
+namespace net
+{
+class ChatMessage : public Packet
+{
+  public:
+    ChatMessage() : Packet("chat_message", 1) {};
 
-  ChatMessage(const std::string &msg)
-      : Packet("chat_message", 1), m_message(msg) {}
+    ChatMessage(const std::string &msg) : Packet("chat_message", 1), m_message(msg)
+    {
+    }
 
-  void process() const override { SPARK_INFO("[CHAT]: " << m_message); }
+    void process() const override
+    {
+        SPARK_INFO("[CHAT]: " << m_message);
+    }
 
-public:
-  std::string m_message;
+  public:
+    std::string m_message;
 
-  SERIALIZE_MEMBERS(ChatMessage, m_message)
+    SERIALIZE_MEMBERS(ChatMessage, m_message)
 
-private:
-  friend class ::boost::serialization::access;
+  private:
+    friend class ::boost::serialization::access;
 };
 } // namespace net
-} // namespace spark
+} // namespace Spark
 
 #ifndef CHAT_MESSAGE_PACKET
 #define CHAT_MESSAGE_PACKET

@@ -207,6 +207,7 @@
     <ClCompile Include="Spark\include\IMGUI\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".clang-format" />
     <None Include="Spark\include\IMGUI\imgui_impl_metal.mm" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

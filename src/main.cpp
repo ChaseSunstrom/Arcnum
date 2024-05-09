@@ -4,10 +4,11 @@
 
 #include "game.hpp"
 
-int main() {
-  SPARK_INFO("[COMPILED AT]: " << __DATE__ << " " << __TIME__);
+int main()
+{
+    SPARK_INFO("[COMPILED AT]: " << __DATE__ << " " << __TIME__);
 
-  // Dont change these
-  register_functions();
-  spark::spark_main();
+    // Dont change these
+    register_functions();
+    Spark::spark_main();
 }

@@ -348,5 +348,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Spark\include\IMGUI\imgui_impl_metal.mm" />
+    <None Include=".clang-format" />
   </ItemGroup>
 </Project>

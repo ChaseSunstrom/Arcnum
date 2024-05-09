@@ -3,7 +3,8 @@
 
 #include <cstdint>
 
-namespace Spark {
+namespace Spark
+{
 #if !defined(u8)
 using u8 = std::uint8_t;
 #endif
@@ -43,6 +44,6 @@ using f32 = float;
 #if !defined(f64)
 using f64 = double;
 #endif
-} // namespace spark
+} // namespace Spark
 
 #endif

@@ -3,8 +3,11 @@
 
 #include "../window.hpp"
 
-namespace Spark {
-class DirectXWindow {};
-} // namespace spark
+namespace Spark
+{
+class DirectXWindow
+{
+};
+} // namespace Spark
 
 #endif

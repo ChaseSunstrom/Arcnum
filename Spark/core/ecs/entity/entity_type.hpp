@@ -3,9 +3,10 @@
 
 #include "../../spark.hpp"
 
-namespace Spark {
+namespace Spark
+{
 // Needs a seperate file to prevent circular dependency
 using Entity = u64;
-} // namespace spark
+} // namespace Spark
 
 #endif

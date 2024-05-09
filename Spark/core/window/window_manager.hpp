@@ -8,54 +8,66 @@
 #include "window.hpp"
 #include "window_type.hpp"
 
-namespace Spark {
+namespace Spark
+{
 template <typename W>
 concept is_window_type = std::is_base_of_v<Window, W>;
 
-class WindowManager {
-public:
-  static WindowManager &get() {
-    static WindowManager instance;
-    return instance;
-  }
-
-  template <is_window_type T> void add_window(T &window) {
-    m_windows[typeid(T)] = &window;
-
-    if (m_windows.size() == 1) {
-      set_window<T>();
+class WindowManager
+{
+  public:
+    static WindowManager &get()
+    {
+        static WindowManager instance;
+        return instance;
     }
-  }
 
-  template <is_window_type T> void set_window() {
-    m_current_window = m_windows[typeid(T)];
-  }
+    template <is_window_type T> void add_window(T &window)
+    {
+        m_windows[typeid(T)] = &window;
 
-  Window &get_current_window() const { return *m_current_window; }
+        if (m_windows.size() == 1)
+        {
+            set_window<T>();
+        }
+    }
 
-  WindowType get_current_window_type() const {
-    return m_current_window->get_window_type();
-  }
+    template <is_window_type T> void set_window()
+    {
+        m_current_window = m_windows[typeid(T)];
+    }
 
-  template <is_window_type T> bool is_window_type(WindowType type) const {
-    return type == type_to_enum(T);
-  }
+    Window &get_current_window() const
+    {
+        return *m_current_window;
+    }
 
-private:
-  WindowManager() {
-    auto &vk_window = Engine::get<VulkanWindow>();
-    add_window(vk_window);
-  }
+    WindowType get_current_window_type() const
+    {
+        return m_current_window->get_window_type();
+    }
 
-  ~WindowManager() = default;
+    template <is_window_type T> bool is_window_type(WindowType type) const
+    {
+        return type == type_to_enum(T);
+    }
 
-private:
-  Window *m_current_window;
+  private:
+    WindowManager()
+    {
+        auto &vk_window = Engine::get<VulkanWindow>();
+        add_window(vk_window);
+    }
 
-  // Needs window pointers because you cant store references in an unordered_map
-  // its a pointer to the static windows anyway, it should be fine
-  std::unordered_map<std::type_index, Window *> m_windows;
+    ~WindowManager() = default;
+
+  private:
+    Window *m_current_window;
+
+    // Needs window pointers because you cant store references in an unordered_map
+    // its a pointer to the static windows anyway, it should be fine
+    std::unordered_map<std::type_index, Window *> m_windows;
 };
-} // namespace spark
+} // namespace Spark
 
 #endif

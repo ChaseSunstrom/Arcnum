@@ -3,10 +3,11 @@
 
 #include "spark.hpp"
 
-namespace Spark {
+namespace Spark
+{
 // Start function for the core Engine, must be called to automatically
 // initialize certain Engine features
 void spark_main();
-} // namespace spark
+} // namespace Spark
 
 #endif

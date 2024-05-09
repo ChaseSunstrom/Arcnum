@@ -10,96 +10,107 @@
 
 #include "../../net/serializeable.hpp"
 
-namespace Spark {
-class System {
-public:
-  System() = default;
-  virtual ~System() = default;
+namespace Spark
+{
+class System
+{
+  public:
+    System() = default;
+    virtual ~System() = default;
 
-  virtual void on_init() {}
+    virtual void on_init()
+    {
+    }
 
-  virtual void on_start() {}
+    virtual void on_start()
+    {
+    }
 
-  virtual void on_update(f64 delta_time) {}
+    virtual void on_update(f64 delta_time)
+    {
+    }
 
-  virtual void on_shutdown() {}
-  SERIALIZE_EMPTY()
+    virtual void on_shutdown()
+    {
+    }
+    SERIALIZE_EMPTY()
 };
 
-class SystemManager : public Singleton<SystemManager> {
-public:
-  static SystemManager &get() {
-    static SystemManager instance;
-    return instance;
-  }
-
-  template <typename T, typename... Args>
-  T &register_update_system(Args &&...args) {
-    std::unique_ptr<T> _system =
-        std::make_unique<T>(std::forward<Args>(args)...);
-    T &s = *_system;
-    m_update_systems.push_back(
-        std::static_pointer_cast<System>(std::move(_system)));
-    return s;
-  }
-
-  template <typename T, typename... Args>
-  T &register_start_system(Args &&...args) {
-    std::unique_ptr<T> system =
-        std::make_unique<T>(std::forward<Args>(args)...);
-    T &s = *system;
-    m_start_systems.push_back(std::move(system));
-    return s;
-  }
-
-  template <typename T, typename... Args>
-  T &register_shutdown_system(Args &&...args) {
-    std::unique_ptr<T> system =
-        std::make_unique<T>(std::forward<Args>(args)...);
-    T &s = *system;
-    m_shutdown_systems.push_back(std::move(system));
-    return s;
-  }
-
-  void start_systems() {
-    for (auto &system : m_start_systems) {
-      system->on_start();
+class SystemManager : public Singleton<SystemManager>
+{
+  public:
+    static SystemManager &get()
+    {
+        static SystemManager instance;
+        return instance;
     }
-  }
 
-  void update_systems(f64 delta_time) {
-    for (auto &system : m_update_systems) {
-      ThreadPool::enqueue(TaskPriority::VERY_HIGH, true,
-                          [system = system.get(), delta_time] {
-                            system->on_update(delta_time);
-                          });
+    template <typename T, typename... Args> T &register_update_system(Args &&...args)
+    {
+        std::unique_ptr<T> _system = std::make_unique<T>(std::forward<Args>(args)...);
+        T &s = *_system;
+        m_update_systems.push_back(std::static_pointer_cast<System>(std::move(_system)));
+        return s;
     }
-  }
 
-  void shutdown_systems() {
-    for (auto &system : m_shutdown_systems) {
-      system->on_shutdown();
+    template <typename T, typename... Args> T &register_start_system(Args &&...args)
+    {
+        std::unique_ptr<T> system = std::make_unique<T>(std::forward<Args>(args)...);
+        T &s = *system;
+        m_start_systems.push_back(std::move(system));
+        return s;
     }
-  }
 
-private:
-  SystemManager() = default;
+    template <typename T, typename... Args> T &register_shutdown_system(Args &&...args)
+    {
+        std::unique_ptr<T> system = std::make_unique<T>(std::forward<Args>(args)...);
+        T &s = *system;
+        m_shutdown_systems.push_back(std::move(system));
+        return s;
+    }
 
-  ~SystemManager() { shutdown_systems(); }
+    void start_systems()
+    {
+        for (auto &system : m_start_systems)
+        {
+            system->on_start();
+        }
+    }
 
-private:
-  std::vector<std::unique_ptr<System>> m_start_systems =
-      std::vector<std::unique_ptr<System>>();
+    void update_systems(f64 delta_time)
+    {
+        for (auto &system : m_update_systems)
+        {
+            ThreadPool::enqueue(TaskPriority::VERY_HIGH, true,
+                                [system = system.get(), delta_time] { system->on_update(delta_time); });
+        }
+    }
 
-  std::vector<std::unique_ptr<System>> m_update_systems =
-      std::vector<std::unique_ptr<System>>();
+    void shutdown_systems()
+    {
+        for (auto &system : m_shutdown_systems)
+        {
+            system->on_shutdown();
+        }
+    }
 
-  std::vector<std::unique_ptr<System>> m_shutdown_systems =
-      std::vector<std::unique_ptr<System>>();
+  private:
+    SystemManager() = default;
 
-  SERIALIZE_MEMBERS(SystemManager, m_start_systems, m_update_systems,
-                    m_shutdown_systems)
+    ~SystemManager()
+    {
+        shutdown_systems();
+    }
+
+  private:
+    std::vector<std::unique_ptr<System>> m_start_systems = std::vector<std::unique_ptr<System>>();
+
+    std::vector<std::unique_ptr<System>> m_update_systems = std::vector<std::unique_ptr<System>>();
+
+    std::vector<std::unique_ptr<System>> m_shutdown_systems = std::vector<std::unique_ptr<System>>();
+
+    SERIALIZE_MEMBERS(SystemManager, m_start_systems, m_update_systems, m_shutdown_systems)
 };
-} // namespace spark
+} // namespace Spark
 
 #endif

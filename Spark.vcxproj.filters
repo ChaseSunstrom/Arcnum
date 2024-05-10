@@ -250,7 +250,6 @@
     <ClInclude Include="Spark\core\window\vulkan\vulkan_vertex.hpp" />
     <ClInclude Include="Spark\core\ecs\component\mesh.hpp" />
     <ClInclude Include="Spark\core\ecs\component\vertex.hpp" />
-    <ClInclude Include="Spark\core\window\window_type.hpp" />
     <ClInclude Include="Spark\core\window\vulkan\vulkan_mesh.hpp" />
     <ClInclude Include="Spark\core\util\singleton.hpp" />
     <ClInclude Include="Spark\core\physics\rigid_body.hpp" />
@@ -344,7 +343,6 @@
     </ClCompile>
     <ClCompile Include="Spark\include\IMGUI\imgui_impl_dx12.cpp" />
     <ClCompile Include="Spark\include\IMGUI\imgui_impl_vulkan.cpp" />
-    <ClCompile Include="Spark\core\window\window_type.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Spark\include\IMGUI\imgui_impl_metal.mm" />

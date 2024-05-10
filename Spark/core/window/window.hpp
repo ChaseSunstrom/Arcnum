@@ -5,8 +5,6 @@
 #include "../logging/log.hpp"
 #include "../spark.hpp"
 
-#include "window_type.hpp"
-
 namespace Spark
 {
 struct WindowData
@@ -49,21 +47,12 @@ class Window
 
     virtual WindowData &get_window_data() const = 0;
 
-    WindowType get_window_type() const
-    {
-        return m_type;
-    }
-
   protected:
-    Window(WindowType type) : m_type(type)
-    {
-    }
+    Window() = default;
 
     virtual ~Window() = default;
 
     bool m_running = true;
-
-    WindowType m_type = WindowType::UNKNOWN;
 };
 
 } // namespace Spark

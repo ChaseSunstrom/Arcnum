@@ -77,6 +77,6 @@ void Renderer::render()
     render_debugging_tools();     // Renders any additional debugging tools like
                                   // bounding boxes, normals visualizer, etc.
 
-    Instancer::get().render_instanced(m_cameras, SceneManager::get().get_current_scene());
+    Instancer::get().render_instanced(SceneManager::get().get_current_scene());
 }
 } // namespace Spark

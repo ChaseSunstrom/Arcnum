@@ -11,7 +11,7 @@ using namespace Spark::internal;
 
 namespace Spark
 {
-VulkanWindow::VulkanWindow() : Window(WindowType::VULKAN)
+VulkanWindow::VulkanWindow()
 {
     m_window_data = std::make_unique<VulkanWindowData>("Title", false, 1080, 1080, event_callback);
 

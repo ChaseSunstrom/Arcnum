@@ -101,10 +101,17 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Spark\core\app\api.hpp" />
+    <ClInclude Include="Spark\core\ecs\component\material.hpp" />
+    <ClInclude Include="Spark\core\ecs\component\material_manager.hpp" />
+    <ClInclude Include="Spark\core\ecs\component\mesh_manager.hpp" />
+    <ClInclude Include="Spark\core\ecs\component\texture.hpp" />
+    <ClInclude Include="Spark\core\ecs\component\texture_manager.hpp" />
     <ClInclude Include="src\core_include.hpp" />
     <ClInclude Include="src\game.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Spark\core\app\api.cpp" />
     <ClCompile Include="src\game.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>

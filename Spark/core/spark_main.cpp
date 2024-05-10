@@ -22,8 +22,6 @@ void spark_main()
 
 // #define SPARK_TEST
 #ifndef SPARK_TEST
-    Instancer::get();
-    VulkanWindow::get();
     Application::on_start();
 #else
     test::core_test_main();

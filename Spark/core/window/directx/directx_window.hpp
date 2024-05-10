@@ -5,7 +5,7 @@
 
 namespace Spark
 {
-class DirectXWindow
+class DirectXWindow : Window, Singleton<DirectXWindow>
 {
 };
 } // namespace Spark

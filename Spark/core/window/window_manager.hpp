@@ -2,11 +2,11 @@
 #define SPARK_WINDOW_MANAGER_HPP
 
 #include "../spark.hpp"
+#include "../app/api.hpp"
 #include "directx/directx_window.hpp"
 #include "metal/metal_window.hpp"
 #include "vulkan/vulkan_window.hpp"
 #include "window.hpp"
-#include "window_type.hpp"
 
 namespace Spark
 {
@@ -37,19 +37,27 @@ class WindowManager
         m_current_window = m_windows[typeid(T)];
     }
 
+    void set_window(API api)
+    {
+        switch (api)
+        {
+        case API::OPENGL:
+            break;
+        case API::VULKAN:
+            set_window<VulkanWindow>();
+            break;
+        case API::DIRECTX:
+            set_window<DirectXWindow>();
+            break;
+        case API::METAL:
+            set_window<MetalWindow>();
+            break;
+        }
+    }
+
     Window &get_current_window() const
     {
         return *m_current_window;
-    }
-
-    WindowType get_current_window_type() const
-    {
-        return m_current_window->get_window_type();
-    }
-
-    template <is_window_type T> bool is_window_type(WindowType type) const
-    {
-        return type == type_to_enum(T);
     }
 
   private:

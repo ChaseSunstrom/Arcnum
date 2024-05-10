@@ -4,6 +4,7 @@
 #include "../window/vulkan/vulkan_mesh.hpp"
 #include "../window/vulkan/vulkan_window.hpp"
 #include "../window/window_manager.hpp"
+#include "../app/api.hpp"
 #include "instancer.hpp"
 
 namespace Spark
@@ -122,35 +123,34 @@ void Instancer::update_renderable(Entity e, Scene &scene)
     }
 }
 
-void Instancer::render_instanced(const std::vector<std::unique_ptr<Camera>> &cameras, Scene &scene)
+void Instancer::render_instanced(Scene &scene)
 {
     auto &vk_window = Engine::get<VulkanWindow>();
-
+    
     for (auto &[mesh_name, material_map] : m_renderables)
     {
         for (auto &[material_name, transforms_ptr] : material_map)
         {
-            // Perform the instanced draw call
             auto &mesh = Engine::get<MeshManager>().get_mesh(mesh_name);
 
-            if (get_current_window_type() == WindowType::VULKAN)
+            if (is_current_api(API::VULKAN))
             {
-                auto &_vulkan_mesh = dynamic_cast<VulkanMesh &>(mesh);
+                auto &vulkan_mesh = dynamic_cast<VulkanMesh &>(mesh);
 
-                internal::VkBuffer vertex_buffers[] = {_vulkan_mesh.m_vertex_buffer};
+                internal::VkBuffer vertex_buffers[] = {vulkan_mesh.m_vertex_buffer};
                 internal::VkDeviceSize offsets[] = {0};
 
-                _vulkan_mesh.update_uniform_buffers();
+                vulkan_mesh.update_uniform_buffers();
 
                 vkCmdBindVertexBuffers(
                     vk_window.get_window_data().m_command_buffers[vk_window.get_window_data().m_current_frame], 0, 1,
                     vertex_buffers, offsets);
 
-                if (!_vulkan_mesh.m_indices.empty())
+                if (!vulkan_mesh.m_indices.empty())
                 {
                     vkCmdBindIndexBuffer(
                         vk_window.get_window_data().m_command_buffers[vk_window.get_window_data().m_current_frame],
-                        _vulkan_mesh.m_index_buffer, 0, internal::VK_INDEX_TYPE_UINT32);
+                        vulkan_mesh.m_index_buffer, 0, internal::VK_INDEX_TYPE_UINT32);
 
                     vkCmdBindDescriptorSets(
                         vk_window.get_window_data().m_command_buffers[vk_window.get_window_data().m_current_frame],
@@ -160,7 +160,7 @@ void Instancer::render_instanced(const std::vector<std::unique_ptr<Camera>> &cam
 
                     vkCmdDrawIndexed(
                         vk_window.get_window_data().m_command_buffers[vk_window.get_window_data().m_current_frame],
-                        _vulkan_mesh.m_indices.size(), transforms_ptr->m_data.size(), 0, 0, 0);
+                        vulkan_mesh.m_indices.size(), transforms_ptr->m_data.size(), 0, 0, 0);
                 }
 
                 else
@@ -173,7 +173,7 @@ void Instancer::render_instanced(const std::vector<std::unique_ptr<Camera>> &cam
 
                     vkCmdDraw(
                         vk_window.get_window_data().m_command_buffers[vk_window.get_window_data().m_current_frame],
-                        _vulkan_mesh.m_vertices.size(), transforms_ptr->m_data.size(), 0, 0);
+                        vulkan_mesh.m_vertices.size(), transforms_ptr->m_data.size(), 0, 0);
                 }
             }
         }

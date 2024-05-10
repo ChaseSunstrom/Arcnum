@@ -55,7 +55,7 @@ void Application::on_update()
     auto &_ecs = Engine::get<ECS>();
     auto &_ui = Engine::get<UIManager>();
 
-    if (get_current_window_type() == WindowType::VULKAN)
+    if (is_current_api(API::VULKAN))
     {
         VulkanWindow &opengl_win = dynamic_cast<VulkanWindow &>(_window);
 
@@ -99,6 +99,17 @@ void Application::add_scene(const std::string &name, const SceneConfig &config)
 {
     auto &_scene_manager = Engine::get<SceneManager>();
     _scene_manager.add_scene(name, std::make_unique<Scene>(config));
+}
+
+void Application::set_api(API api)
+{
+    Spark::set_api(api);
+    Engine::get<WindowManager>().set_window(api);
+}
+
+API Application::get_current_api()
+{
+    return Spark::get_current_api();
 }
 
 void Application::set_delta_time(u64 delta_time)

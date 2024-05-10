@@ -123,10 +123,6 @@ struct RendererSettings
     i32 m_text_size = 1;      // 0: Small, 1: Medium, 2: Large, for UI text size customization
 };
 
-// ==============================================================================
-// RENDERER:     | Used for rendering and storing rendering data
-// ==============================================================================
-
 class Renderer : public Singleton<Renderer>
 {
   public:
@@ -166,23 +162,13 @@ class Renderer : public Singleton<Renderer>
 
     void finalize_frame();
 
-    std::vector<std::unique_ptr<Camera>> &get_cameras()
-    {
-        return m_cameras;
-    }
-
   private:
-    Renderer() : Singleton()
-    {
-        m_cameras.emplace_back(std::make_unique<Camera>());
-    }
+    Renderer() = default;
 
     ~Renderer() = default;
 
   private:
     std::unique_ptr<RendererSettings> m_settings = std::make_unique<RendererSettings>();
-
-    std::vector<std::unique_ptr<Camera>> m_cameras;
 };
 } // namespace Spark
 

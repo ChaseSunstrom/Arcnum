@@ -3,6 +3,7 @@
 
 #include "../renderer/frustum.hpp"
 #include "../spark.hpp"
+#include "../util/singleton.hpp"
 
 namespace Spark
 {
@@ -52,6 +53,33 @@ struct Camera
     f32 m_far_plane;
 
     std::unique_ptr<Frustum> m_frustum;
+};
+
+class CameraManager : Singleton<CameraManager>
+{
+  public:
+    static CameraManager &get()
+    {
+        static CameraManager instance;
+        return instance;
+    }
+
+    Camera& get_camera(std::string name)
+    {
+        return *m_cameras[name];
+    }
+
+    void add_camera(std::string name, std::unique_ptr<Camera> camera)
+    {
+        m_cameras[name] = std::move(camera);
+    }
+
+  private:
+    CameraManager() = default;
+
+    ~CameraManager() = default;
+  private:
+    std::unordered_map<std::string, std::unique_ptr<Camera>> m_cameras;
 };
 } // namespace Spark
 

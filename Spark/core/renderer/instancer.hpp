@@ -34,10 +34,10 @@ class Instancer : public Observer, public Singleton<Instancer>
     void add_renderable(Entity e, const Scene &scene, const std::string &mesh_name, const std::string &material_name,
                         const Transform &transform);
 
-    void bind_renderables(const std::vector<std::unique_ptr<Camera>> &cameras, const std::string &mesh_name,
+    void bind_renderables(const std::string &mesh_name,
                           const std::string &material_name);
 
-    void render_instanced(const std::vector<std::unique_ptr<Camera>> &cameras, Scene &scene);
+    void render_instanced(Scene &scene);
 
     void remove_renderable_for_entity(Entity e);
 

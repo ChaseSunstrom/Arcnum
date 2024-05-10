@@ -8,6 +8,7 @@
 #include "../util/singleton.hpp"
 #include "../window/window.hpp"
 
+#include "api.hpp"
 #include "../util/timer.hpp"
 
 namespace Spark
@@ -34,6 +35,10 @@ class Application : public Singleton<Application>
     static void calculate_delta_time();
 
     static void calculate_last_frame_time();
+
+    static void set_api(API api);
+
+    static API get_current_api();
 
     static f64 get_fixed_delta_time();
 

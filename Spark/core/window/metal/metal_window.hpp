@@ -5,7 +5,7 @@
 
 namespace Spark
 {
-class MetalWindow
+class MetalWindow : Window, Singleton<MetalWindow>
 {
 };
 } // namespace Spark

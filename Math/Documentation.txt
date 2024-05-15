@@ -3,8 +3,35 @@ rollDice:
     Returns a random unsigned int between the min and max.
     Example: unsigned int roll = rollDice(1, 6); 
     1 <= roll <= 6
+    Debugging:
+        "Error: min must be less than or equal to max": 
+            The min is greater than the max.
+            Example: rolldice(6, 1);
+            Returns: -1
+        "Error: min and max must be non-negative integers":
+            Occurs when either min or max is negative.
+            Example: rollDice(-1, 2); or rollDice(2, -1);
+
 multiDiceRoll:
     multiDiceRoll rolls multiple dice to return an array of rolled ints.
     This takes 3 arguments (all unsigned int): min, max, number of dice to roll.
     Example: multiDiceRoll(3, 100, 5);
     returns {4, 12, 36, 19, 89}
+
+rollUnfairDice:
+    Exactly the same as rollDice, except it now takes an argument of an array of doubles between 0 and 1.
+    These values determine the probability of getting that number (0.5 is 50%).
+    Debugging:
+        "Error: min must be less than or equal to max":
+            This occurs when the minimum argument is greater than the max.
+            Example: rollUnfairDice(7, 2, /*Any Array*/);
+        "Error: Number of percentages must match the range of values between min and max":
+            This occurs when you have too many (or not enough) values inside the percentages array.
+            Example: If the min=2 and max=6, the range is 6-2+1=4+1=5. 
+            So that means that the percentages array needs 5 percentage values (i.e {0.1, 0.2, 0.2, 0.5}).
+        "Error: The sum of percentages must be 1":
+            This occurs when the percentage values in your array sum to anything other than 1 (calculated using 1e-4).
+            Example: {0.34, 0.22, 0.75}
+        "Error: Percentages must be non-negative":
+            This occurs when any percentage in your array is negative.
+            Example: {0.5, 0.75, -0.25}

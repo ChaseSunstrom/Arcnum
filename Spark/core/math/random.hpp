@@ -14,9 +14,9 @@ std::vector<u32> multi_dice_roll(const u32 min, const u32 max, const u32 num_dic
 
 std::vector<u32> roll_unfair_dice(const u32 min, const u32 max, const std::vector<f64>& percentages);
 
-void flipCoin();
+void flip_coin();
 
-void flipUnfairCoin(const f64 percentage);
+void flip_unfair_coin(const f64 percentage);
 
 } // namespace math
 } // namespace Spark

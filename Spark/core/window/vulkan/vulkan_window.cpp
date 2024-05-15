@@ -5,7 +5,6 @@
 #include "../../renderer/renderer.hpp"
 #include "../../scene/scene_manager.hpp"
 #include "../../util/file.hpp"
-#include <GLFW/glfw3.h>
 
 using namespace Spark::internal;
 
@@ -14,24 +13,6 @@ namespace Spark
 VulkanWindow::VulkanWindow()
 {
     m_window_data = std::make_unique<VulkanWindowData>("Title", false, 1080, 1080, event_callback);
-
-    init_gl();
-    init_vulkan();
-    init_debug();
-    init_surface();
-    init_physical_device();
-    init_logical_device();
-    init_swap_chain();
-    init_image_views();
-    init_render_pass();
-    init_descriptor_set();
-    init_pipeline();
-    init_framebuffers();
-    init_command_pool();
-    init_command_buffers();
-    init_descriptor_pool();
-    init_descriptor_sets();
-    init_sync_objects();
 }
 
 VulkanWindow::~VulkanWindow()
@@ -77,6 +58,29 @@ VulkanWindow::~VulkanWindow()
     glfwDestroyWindow(m_window);
 
     glfwTerminate();
+}
+
+void VulkanWindow::init()
+{
+    init_gl();
+    init_vulkan();
+    init_debug();
+    init_surface();
+    init_physical_device();
+    init_logical_device();
+    init_swap_chain();
+    init_image_views();
+    init_render_pass();
+    init_descriptor_set();
+    init_pipeline();
+    init_framebuffers();
+    init_command_pool();
+    init_command_buffers();
+    init_descriptor_pool();
+    init_descriptor_sets();
+    init_sync_objects();
+
+    m_initialized = true;
 }
 
 bool VulkanWindow::check_validation_layer_support()

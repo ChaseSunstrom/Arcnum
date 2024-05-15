@@ -35,6 +35,11 @@ class WindowManager
     template <is_window_type T> void set_window()
     {
         m_current_window = m_windows[typeid(T)];
+
+        if (!m_current_window->initialized())
+        {
+            m_current_window->init();
+        }
     }
 
     void set_window(API api)

@@ -17,9 +17,7 @@ class MaterialManager
     }
 
     Material &create(
-        const std::string &name, const math::vec4 &color = math::vec4(1), const std::string &texture_name = "",
-        const std::pair<std::optional<std::string>, std::optional<std::string>> &shader_paths = {std::nullopt,
-                                                                                                 std::nullopt},
+        const std::string &name, const math::vec4 &color = math::vec4(1), const std::string &texture_name = "", const std::vector<std::string> &shader_paths = {},
         i32 diffuse = 0, i32 specular = 0, i32 ambient = 1, f32 shininess = 0)
     {
         if (m_materials.contains(name))
@@ -38,7 +36,7 @@ class MaterialManager
             tex = &(Engine::get<TextureManager>().create_default_texture());
         }
 
-        m_materials[name] = std::make_unique<Material>(color, *tex, diffuse, specular, ambient, shininess);
+        m_materials[name] = std::make_unique<Material>(color, *tex, shader_paths, diffuse, specular, ambient, shininess);
 
         return *m_materials[name];
     }

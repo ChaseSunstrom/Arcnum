@@ -25,7 +25,10 @@
 
 namespace Spark
 {
-namespace math = internal::glm;
+namespace math
+{
+using namespace internal::glm;
+}
 
 namespace internal
 {

@@ -97,17 +97,17 @@ void Shader::create_shader(const std::filesystem::path &shader_path)
 
     m_shader->m_shader_type = type;
 
-    switch (get_current_window_type())
+    switch (get_current_api())
     {
-    case WindowType::DIRECTX: {
+    case API::DIRECTX: {
         // Create DirectX shader
         break;
     }
-    case WindowType::VULKAN: {
+    case API::VULKAN: {
         m_shader->create_vulkan_shader(shader_path);
         break;
     }
-    case WindowType::METAL: {
+    case API::METAL: {
         // Create Metal shader
         break;
     }

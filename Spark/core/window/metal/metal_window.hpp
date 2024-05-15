@@ -2,6 +2,7 @@
 #define SPARK_METAL_WINDOW_HPP
 
 #include "../window.hpp"
+#include "../../util/singleton.hpp"
 
 namespace Spark
 {

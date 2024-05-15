@@ -2,6 +2,7 @@
 #define SPARK_DIRECTX_WINDOW_HPP
 
 #include "../window.hpp"
+#include "../../util/singleton.hpp"
 
 namespace Spark
 {

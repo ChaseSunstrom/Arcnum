@@ -1,6 +1,5 @@
 #include "game.hpp"
 #include "core_include.hpp"
-
 #include <core/asset/asset.hpp>
 #include <core/net/chat_message.hpp>
 
@@ -13,7 +12,7 @@ struct alignas(16) ubo
 
 void on_start()
 {
-    Spark::set_api(Spark::API::VULKAN);
+    //Spark::set_api(Spark::API::VULKAN);
     auto &ecs = Spark::Engine::get<Spark::ECS>();
 
     Spark::Application::set_window_title("Arcnum");

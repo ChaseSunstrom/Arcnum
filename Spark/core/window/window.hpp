@@ -33,6 +33,13 @@ struct WindowData
 class Window
 {
   public:
+    bool initialized()
+    {
+        return m_initialized;
+    }
+
+    virtual void init();
+
     virtual void pre_draw() = 0;
 
     virtual void on_update() = 0;
@@ -53,6 +60,8 @@ class Window
     virtual ~Window() = default;
 
     bool m_running = true;
+    
+    bool m_initialized = false;
 };
 
 } // namespace Spark

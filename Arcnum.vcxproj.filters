@@ -3918,6 +3918,7 @@
     <ClInclude Include="Spark\core\ecs\component\mesh_manager.hpp" />
     <ClInclude Include="Spark\core\ecs\component\material_manager.hpp" />
     <ClInclude Include="Spark\core\ecs\component\texture_manager.hpp" />
+    <ClInclude Include="Spark\core\math\constants.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\game.cpp">
@@ -3927,5 +3928,6 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="Spark\core\app\api.cpp" />
+    <ClCompile Include="Spark\core\math\random.cpp" />
   </ItemGroup>
 </Project>

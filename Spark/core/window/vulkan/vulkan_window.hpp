@@ -108,6 +108,8 @@ class VulkanWindow : public Window, public Singleton<VulkanWindow>
         return instance;
     }
 
+    void init() override;
+
     void pre_draw() override;
 
     void on_update() override;

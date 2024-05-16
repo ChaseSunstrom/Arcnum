@@ -1,7 +1,7 @@
 #ifndef SPARK_OCTREE_HPP
 #define SPARK_OCTREE_HPP
 
-#include "../util/math.hpp"
+#include "../util/Math.hpp"
 #include "scene_partition.hpp"
 
 namespace Spark
@@ -9,7 +9,7 @@ namespace Spark
 class Octree : public SpatialPartition
 {
   public:
-    Octree(const math::vec3 &center, const math::vec3 &half_size, Octree *parent = nullptr)
+    Octree(const Math::vec3 &center, const Math::vec3 &half_size, Octree *parent = nullptr)
         : Observer(true), SpatialPartition(), m_center(center), m_half_size(half_size), m_parent(parent)
     {
         if (!parent)
@@ -26,7 +26,7 @@ class Octree : public SpatialPartition
     void add_entity(Entity e) override
     {
         auto &ecs = Engine::get<ECS>();
-        math::vec3 position = extract_position(ecs.get_component<Transform>(e).m_transform);
+        Math::vec3 position = extract_position(ecs.get_component<Transform>(e).m_transform);
 
         if (!point_is_inside(position))
         {
@@ -58,7 +58,7 @@ class Octree : public SpatialPartition
     void remove_entity(Entity e)
     {
         auto &ecs = Engine::get<ECS>();
-        math::vec3 position = extract_position(ecs.get_component<Transform>(e).m_transform);
+        Math::vec3 position = extract_position(ecs.get_component<Transform>(e).m_transform);
 
         if (!point_is_inside(position))
         {
@@ -86,7 +86,7 @@ class Octree : public SpatialPartition
         add_entity(e);
     }
 
-    bool point_is_inside(const math::vec3 &point) const
+    bool point_is_inside(const Math::vec3 &point) const
     {
         return (point.x >= m_center.x - m_half_size.x && point.x <= m_center.x + m_half_size.x) &&
                (point.y >= m_center.y - m_half_size.y && point.y <= m_center.y + m_half_size.y) &&
@@ -96,7 +96,7 @@ class Octree : public SpatialPartition
     bool entity_is_inside(Entity e) const override
     {
         auto &ecs = Engine::get<ECS>();
-        math::vec3 position = extract_position(ecs.get_component<Transform>(e).m_transform);
+        Math::vec3 position = extract_position(ecs.get_component<Transform>(e).m_transform);
         return point_is_inside(position);
     }
 
@@ -105,7 +105,7 @@ class Octree : public SpatialPartition
         return m_children[0] == nullptr;
     }
 
-    bool intersects(const math::vec3 &center, const math::vec3 &half_size, const math::vec3 &position, f32 radius) const
+    bool intersects(const Math::vec3 &center, const Math::vec3 &half_size, const Math::vec3 &position, f32 radius) const
     {
         // Check for intersection between a cube and a sphere
         f32 dmin = 0;
@@ -123,19 +123,19 @@ class Octree : public SpatialPartition
         return dmin <= radius * radius;
     }
 
-    bool intersects(const math::vec3 &center, const math::vec3 &half_size, const math::vec3 &a_min,
-                    const math::vec3 &a_max) const
+    bool intersects(const Math::vec3 &center, const Math::vec3 &half_size, const Math::vec3 &a_min,
+                    const Math::vec3 &a_max) const
     {
         // Get min and max points of the octree node
-        math::vec3 b_min = center - half_size;
-        math::vec3 b_max = center + half_size;
+        Math::vec3 b_min = center - half_size;
+        Math::vec3 b_max = center + half_size;
 
         // Check for overlap in each dimension
         return (a_min.x <= b_max.x && a_max.x >= b_min.x) && (a_min.y <= b_max.y && a_max.y >= b_min.y) &&
                (a_min.z <= b_max.z && a_max.z >= b_min.z);
     }
 
-    std::vector<Entity> query(const math::vec3 &query_position, f32 radius) const override
+    std::vector<Entity> query(const Math::vec3 &query_position, f32 radius) const override
     {
         std::vector<Entity> result;
         if (intersects(m_center, m_half_size, query_position, radius))
@@ -143,10 +143,10 @@ class Octree : public SpatialPartition
             if (is_leaf())
             {
                 std::copy_if(m_entities.begin(), m_entities.end(), std::back_inserter(result), [&](const Entity &e) {
-                    math::vec3 entity_pos =
+                    Math::vec3 entity_pos =
                         extract_position(Engine::get<ECS>().get_component<Transform>(e).m_transform);
-                    math::vec3 diff = entity_pos - query_position;
-                    return math::dot(diff, diff) <= radius * radius;
+                    Math::vec3 diff = entity_pos - query_position;
+                    return Math::dot(diff, diff) <= radius * radius;
                 });
             }
             else
@@ -161,7 +161,7 @@ class Octree : public SpatialPartition
         return result;
     }
 
-    std::vector<Entity> query(const math::vec3 &query_position, f32 radius,
+    std::vector<Entity> query(const Math::vec3 &query_position, f32 radius,
                               std::function<bool(Entity)> filter) const override
     {
         std::vector<Entity> result;
@@ -172,10 +172,10 @@ class Octree : public SpatialPartition
                 std::copy_if(m_entities.begin(), m_entities.end(), std::back_inserter(result), [&](const Entity &e) {
                     if (!filter(e))
                         return false;
-                    math::vec3 entity_pos =
+                    Math::vec3 entity_pos =
                         extract_position(Engine::get<ECS>().get_component<Transform>(e).m_transform);
-                    math::vec3 diff = entity_pos - query_position;
-                    return math::dot(diff, diff) <= radius * radius;
+                    Math::vec3 diff = entity_pos - query_position;
+                    return Math::dot(diff, diff) <= radius * radius;
                 });
             }
             else
@@ -190,7 +190,7 @@ class Octree : public SpatialPartition
         return result;
     }
 
-    std::vector<Entity> query(const math::vec3 &min, const math::vec3 &max) const override
+    std::vector<Entity> query(const Math::vec3 &min, const Math::vec3 &max) const override
     {
         std::vector<Entity> result;
         if (intersects(m_center, m_half_size, min, max))
@@ -198,7 +198,7 @@ class Octree : public SpatialPartition
             if (is_leaf())
             {
                 std::copy_if(m_entities.begin(), m_entities.end(), std::back_inserter(result), [&](const Entity &e) {
-                    math::vec3 entity_pos =
+                    Math::vec3 entity_pos =
                         extract_position(Engine::get<ECS>().get_component<Transform>(e).m_transform);
                     return (entity_pos.x >= min.x && entity_pos.x <= max.x) &&
                            (entity_pos.y >= min.y && entity_pos.y <= max.y) &&
@@ -217,7 +217,7 @@ class Octree : public SpatialPartition
         return result;
     }
 
-    std::vector<Entity> query(const math::vec3 &min, const math::vec3 &max,
+    std::vector<Entity> query(const Math::vec3 &min, const Math::vec3 &max,
                               std::function<bool(Entity)> filter) const override
     {
         std::vector<Entity> result;
@@ -228,7 +228,7 @@ class Octree : public SpatialPartition
                 std::copy_if(m_entities.begin(), m_entities.end(), std::back_inserter(result), [&](const Entity &e) {
                     if (!filter(e))
                         return false;
-                    math::vec3 entity_pos =
+                    Math::vec3 entity_pos =
                         extract_position(Engine::get<ECS>().get_component<Transform>(e).m_transform);
                     return (entity_pos.x >= min.x && entity_pos.x <= max.x) &&
                            (entity_pos.y >= min.y && entity_pos.y <= max.y) &&
@@ -269,7 +269,7 @@ class Octree : public SpatialPartition
         }
     }
 
-    void expand(const math::vec3 &new_center, const math::vec3 &new_half_size)
+    void expand(const Math::vec3 &new_center, const Math::vec3 &new_half_size)
     {
         if (m_parent != nullptr)
             return; // Ensure only the root can expand
@@ -309,10 +309,10 @@ class Octree : public SpatialPartition
 
         auto &ecs = Engine::get<ECS>();
 
-        const math::vec3 child_half_size = m_half_size * 0.5f;
+        const Math::vec3 child_half_size = m_half_size * 0.5f;
         for (int i = 0; i < 8; ++i)
         {
-            math::vec3 child_center = m_center;
+            Math::vec3 child_center = m_center;
             if (i & 4)
                 child_center.x += child_half_size.x;
             else
@@ -357,7 +357,7 @@ class Octree : public SpatialPartition
         }
     }
 
-    i32 get_octant(const math::vec3 &position) const
+    i32 get_octant(const Math::vec3 &position) const
     {
         i32 octant = 0;
         if (position.x >= m_center.x)
@@ -387,8 +387,8 @@ class Octree : public SpatialPartition
         }
     }
 
-    math::vec3 m_center;
-    math::vec3 m_half_size;
+    Math::vec3 m_center;
+    Math::vec3 m_half_size;
     Octree *m_parent;
     std::array<std::unique_ptr<Octree>, 8> m_children;
 };

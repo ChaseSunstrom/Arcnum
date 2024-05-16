@@ -1,5 +1,5 @@
-#ifndef SPARK_MATH_CONSTANTS_HPP
-#define SPARK_MATH_CONSTANTS_HPP
+#ifndef SPARK_Math_CONSTANTS_HPP
+#define SPARK_Math_CONSTANTS_HPP
 
 #include "../spark.hpp"
 

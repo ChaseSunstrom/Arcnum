@@ -10,13 +10,13 @@ struct SceneConfig
 {
     SceneConfig() = default;
 
-    SceneConfig(const math::vec4 &background_color) : m_background_color(background_color)
+    SceneConfig(const Math::vec4 &background_color) : m_background_color(background_color)
     {
     }
 
     ~SceneConfig() = default;
 
-    math::vec4 m_background_color = math::vec4(0);
+    Math::vec4 m_background_color = Math::vec4(0);
 };
 
 class Scene
@@ -35,7 +35,7 @@ class Scene
         return m_config;
     }
 
-    void set_background_color(const math::vec4 &color)
+    void set_background_color(const Math::vec4 &color)
     {
         m_config.m_background_color = color;
     }

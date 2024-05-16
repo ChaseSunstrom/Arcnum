@@ -1,5 +1,5 @@
 // dear imgui, v1.90.5 WIP
-// (internal structures/api)
+// (Internal structures/api)
 
 // You may use this file to debug, understand or extend Dear ImGui features but we don't provide any guarantee of forward compatibility.
 
@@ -33,8 +33,8 @@ Index of this file:
 // [SECTION] ImGuiWindowTempData, ImGuiWindow
 // [SECTION] Tab bar, Tab item support
 // [SECTION] Table support
-// [SECTION] ImGui internal API
-// [SECTION] ImFontAtlas internal API
+// [SECTION] ImGui Internal API
+// [SECTION] ImFontAtlas Internal API
 // [SECTION] Test Engine specific hooks (imgui_test_Engine)
 
 */
@@ -52,7 +52,7 @@ Index of this file:
 
 #include <stdio.h>      // FILE*, sscanf
 #include <stdlib.h>     // NULL, malloc, free, qsort, atoi, atof
-#include <math.h>       // sqrtf, fabsf, fmodf, powf, floorf, ceilf, cosf, sinf
+#include <Math.h>       // sqrtf, fabsf, fmodf, powf, floorf, ceilf, cosf, sinf
 #include <limits.h>     // INT_MIN, INT_MAX
 
 // Enable SSE intrinsics if available
@@ -93,18 +93,18 @@ Index of this file:
 #pragma GCC diagnostic ignored "-Wclass-memaccess"      // [__GNUC__ >= 8] warning: 'memset/memcpy' clearing/writing an object of type 'xxxx' with no trivial copy-assignment; use assignment or value-initialization instead
 #endif
 
-// In 1.89.4, we moved the implementation of "courtesy maths operators" from imgui_internal.h in imgui.h
-// As they are frequently requested, we do not want to encourage to many people using imgui_internal.h
-#if defined(IMGUI_DEFINE_MATH_OPERATORS) && !defined(IMGUI_DEFINE_MATH_OPERATORS_IMPLEMENTED)
-#error Please '#define IMGUI_DEFINE_MATH_OPERATORS' _BEFORE_ including imgui.h!
+// In 1.89.4, we moved the implementation of "courtesy Maths operators" from imgui_Internal.h in imgui.h
+// As they are frequently requested, we do not want to encourage to many people using imgui_Internal.h
+#if defined(IMGUI_DEFINE_Math_OPERATORS) && !defined(IMGUI_DEFINE_Math_OPERATORS_IMPLEMENTED)
+#error Please '#define IMGUI_DEFINE_Math_OPERATORS' _BEFORE_ including imgui.h!
 #endif
 
 // Legacy defines
 #ifdef IMGUI_DISABLE_FORMAT_STRING_FUNCTIONS            // Renamed in 1.74
 #error Use IMGUI_DISABLE_DEFAULT_FORMAT_FUNCTIONS
 #endif
-#ifdef IMGUI_DISABLE_MATH_FUNCTIONS                     // Renamed in 1.74
-#error Use IMGUI_DISABLE_DEFAULT_MATH_FUNCTIONS
+#ifdef IMGUI_DISABLE_Math_FUNCTIONS                     // Renamed in 1.74
+#error Use IMGUI_DISABLE_DEFAULT_Math_FUNCTIONS
 #endif
 
 // Enable stb_truetype by default unless FreeType is enabled.
@@ -430,7 +430,7 @@ IMGUI_API void*             ImFileLoadToMemory(const char* filename, const char*
 // Helpers: Maths
 IM_MSVC_RUNTIME_CHECKS_OFF
 // - Wrapper for standard libs functions. (Note that imgui_demo.cpp does _not_ use them to keep the code easy to copy)
-#ifndef IMGUI_DISABLE_DEFAULT_MATH_FUNCTIONS
+#ifndef IMGUI_DISABLE_DEFAULT_Math_FUNCTIONS
 #define ImFabs(X)           fabsf(X)
 #define ImSqrt(X)           sqrtf(X)
 #define ImFmod(X, Y)        fmodf((X), (Y))
@@ -465,7 +465,7 @@ template<typename T> static inline T ImLerp(T a, T b, float t)                  
 template<typename T> static inline void ImSwap(T& a, T& b)                      { T tmp = a; a = b; b = tmp; }
 template<typename T> static inline T ImAddClampOverflow(T a, T b, T mn, T mx)   { if (b < 0 && (a < mn - b)) return mn; if (b > 0 && (a > mx - b)) return mx; return a + b; }
 template<typename T> static inline T ImSubClampOverflow(T a, T b, T mn, T mx)   { if (b > 0 && (a < mn + b)) return mn; if (b < 0 && (a > mx + b)) return mx; return a - b; }
-// - Misc maths helpers
+// - Misc Maths helpers
 static inline ImVec2 ImMin(const ImVec2& lhs, const ImVec2& rhs)                { return ImVec2(lhs.x < rhs.x ? lhs.x : rhs.x, lhs.y < rhs.y ? lhs.y : rhs.y); }
 static inline ImVec2 ImMax(const ImVec2& lhs, const ImVec2& rhs)                { return ImVec2(lhs.x >= rhs.x ? lhs.x : rhs.x, lhs.y >= rhs.y ? lhs.y : rhs.y); }
 static inline ImVec2 ImClamp(const ImVec2& v, const ImVec2& mn, ImVec2 mx)      { return ImVec2((v.x < mn.x) ? mn.x : (v.x > mx.x) ? mx.x : v.x, (v.y < mn.y) ? mn.y : (v.y > mx.y) ? mx.y : v.y); }
@@ -521,7 +521,7 @@ struct ImVec2ih
 };
 
 // Helper: ImRect (2D axis aligned bounding-box)
-// NB: we can't rely on ImVec2 math operators being available here!
+// NB: we can't rely on ImVec2 Math operators being available here!
 struct IMGUI_API ImRect
 {
     ImVec2      Min;    // Upper-left
@@ -744,7 +744,7 @@ struct ImGuiTextIndex
 // perpendicular to X axis. Follow steps in the article from this starting condition and you will
 // will get this result.
 //
-// Rendering circles with an odd number of segments, while mathematically correct will produce
+// Rendering circles with an odd number of segments, while Mathematically correct will produce
 // asymmetrical results on the raster grid. Therefore we're rounding N to next even number (7->8, 8->8, 9->10 etc.)
 #define IM_ROUNDUP_TO_EVEN(_V)                                  ((((_V) + 1) / 2) * 2)
 #define IM_DRAWLIST_CIRCLE_AUTO_SEGMENT_MIN                     4
@@ -836,7 +836,7 @@ enum ImGuiItemStatusFlags_
     ImGuiItemStatusFlags_HasDeactivated     = 1 << 5,   // Set if the widget/group is able to provide data for the ImGuiItemStatusFlags_Deactivated flag.
     ImGuiItemStatusFlags_Deactivated        = 1 << 6,   // Only valid if ImGuiItemStatusFlags_HasDeactivated is set.
     ImGuiItemStatusFlags_HoveredWindow      = 1 << 7,   // Override the HoveredWindow test to allow cross-window hover testing.
-    ImGuiItemStatusFlags_Visible            = 1 << 8,   // [WIP] Set when item is overlapping the current clipping rectangle (Used internally. Please don't use yet: API/system will change as we refactor Itemadd()).
+    ImGuiItemStatusFlags_Visible            = 1 << 8,   // [WIP] Set when item is overlapping the current clipping rectangle (Used Internally. Please don't use yet: API/system will change as we refactor Itemadd()).
     ImGuiItemStatusFlags_HasClipRect        = 1 << 9,   // g.LastItemData.ClipRect is valid
 
     // Additional status + semantic for ImGuiTestEngine
@@ -861,9 +861,9 @@ enum ImGuiHoveredFlagsPrivate_
 enum ImGuiInputTextFlagsPrivate_
 {
     // [Internal]
-    ImGuiInputTextFlags_Multiline           = 1 << 26,  // For internal use by InputTextMultiline()
-    ImGuiInputTextFlags_NoMarkEdited        = 1 << 27,  // For internal use by functions using InputText() before reformatting data
-    ImGuiInputTextFlags_MergedItem          = 1 << 28,  // For internal use by TempInputText(), will skip calling ItemAdd(). Require bounding-box to strictly match.
+    ImGuiInputTextFlags_Multiline           = 1 << 26,  // For Internal use by InputTextMultiline()
+    ImGuiInputTextFlags_NoMarkEdited        = 1 << 27,  // For Internal use by functions using InputText() before reformatting data
+    ImGuiInputTextFlags_MergedItem          = 1 << 28,  // For Internal use by TempInputText(), will skip calling ItemAdd(). Require bounding-box to strictly match.
 };
 
 // Extend ImGuiButtonFlags_
@@ -1651,7 +1651,7 @@ struct IMGUI_API ImGuiTypingSelectState
 // [SECTION] Columns support
 //-----------------------------------------------------------------------------
 
-// Flags for internal's BeginColumns(). This is an obsolete API. Prefer using BeginTable() nowadays!
+// Flags for Internal's BeginColumns(). This is an obsolete API. Prefer using BeginTable() nowadays!
 enum ImGuiOldColumnFlags_
 {
     ImGuiOldColumnFlags_None                    = 0,
@@ -2578,7 +2578,7 @@ struct IMGUI_API ImGuiWindow
     float                   FontWindowScale;                    // User scale multiplier per-window, via SetWindowFontScale()
     int                     SettingsOffset;                     // Offset into SettingsWindows[] (offsets are always valid as we only grow the array from the back)
 
-    ImDrawList*             DrawList;                           // == &DrawListInst (for backward compatibility reason with code using imgui_internal.h we keep this a pointer)
+    ImDrawList*             DrawList;                           // == &DrawListInst (for backward compatibility reason with code using imgui_Internal.h we keep this a pointer)
     ImDrawList              DrawListInst;
     ImGuiWindow*            ParentWindow;                       // If we are a child _or_ popup _or_ docked window, this is pointing to our parent. Otherwise NULL.
     ImGuiWindow*            ParentWindowInBeginStack;
@@ -2974,7 +2974,7 @@ struct ImGuiTableSettings
 };
 
 //-----------------------------------------------------------------------------
-// [SECTION] ImGui internal API
+// [SECTION] ImGui Internal API
 // No guarantee of forward compatibility here!
 //-----------------------------------------------------------------------------
 
@@ -3112,7 +3112,7 @@ namespace ImGui
 
     // Logging/Capture
     IMGUI_API void          LogBegin(ImGuiLogType type, int auto_open_depth);           // -> BeginCapture() when we design v2 api, for now stay under the radar by using the old name.
-    IMGUI_API void          LogToBuffer(int auto_open_depth = -1);                      // Start logging/capturing to internal buffer
+    IMGUI_API void          LogToBuffer(int auto_open_depth = -1);                      // Start logging/capturing to Internal buffer
     IMGUI_API void          LogRenderedText(const ImVec2* ref_pos, const char* text, const char* text_end = NULL);
     IMGUI_API void          LogSetNextTextDecoration(const char* prefix, const char* suffix);
 
@@ -3371,7 +3371,7 @@ namespace ImGui
 
     // Render helpers
     // AVOID USING OUTSIDE OF IMGUI.CPP! NOT FOR PUBLIC CONSUMPTION. THOSE FUNCTIONS ARE A MESS. THEIR SIGNATURE AND BEHAVIOR WILL CHANGE, THEY NEED TO BE REFACTORED INTO SOMETHING DECENT.
-    // NB: All position are in absolute pixels coordinates (we are never using window coordinates internally)
+    // NB: All position are in absolute pixels coordinates (we are never using window coordinates Internally)
     IMGUI_API void          RenderText(ImVec2 pos, const char* text, const char* text_end = NULL, bool hide_text_after_hash = true);
     IMGUI_API void          RenderTextWrapped(ImVec2 pos, const char* text, const char* text_end, float wrap_width);
     IMGUI_API void          RenderTextClipped(const ImVec2& pos_min, const ImVec2& pos_max, const char* text, const char* text_end, const ImVec2* text_size_if_known, const ImVec2& align = ImVec2(0, 0), const ImRect* clip_rect = NULL);
@@ -3526,7 +3526,7 @@ namespace ImGui
 
 
 //-----------------------------------------------------------------------------
-// [SECTION] ImFontAtlas internal API
+// [SECTION] ImFontAtlas Internal API
 //-----------------------------------------------------------------------------
 
 // This structure is likely to evolve as we add support for incremental atlas updates

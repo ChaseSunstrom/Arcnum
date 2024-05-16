@@ -25,12 +25,12 @@
 
 namespace Spark
 {
-namespace math
+namespace Math
 {
-using namespace internal::glm;
+using namespace Internal::glm;
 }
 
-namespace internal
+namespace Internal
 {
 using namespace irrklang;
 }

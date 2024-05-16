@@ -7,6 +7,9 @@
     <Filter Include="core\app">
       <UniqueIdentifier>{9E28D44A-8AF5-2E56-B30E-1DFE9F3A64E4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="core\asset">
+      <UniqueIdentifier>{7D878250-693F-C49D-D246-9DF9BE1D5F8E}</UniqueIdentifier>
+    </Filter>
     <Filter Include="core\audio">
       <UniqueIdentifier>{EF608350-DB18-C59D-4420-9EF930F75F8E}</UniqueIdentifier>
     </Filter>
@@ -33,6 +36,9 @@
     </Filter>
     <Filter Include="core\logging">
       <UniqueIdentifier>{0427D6BF-F089-6564-990F-9E1A855131E7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\math">
+      <UniqueIdentifier>{07925FA5-73FC-131C-BC3A-C5C128E4F170}</UniqueIdentifier>
     </Filter>
     <Filter Include="core\net">
       <UniqueIdentifier>{845ED44A-702B-2F56-9944-1DFE857064E4}</UniqueIdentifier>
@@ -61,6 +67,15 @@
     <Filter Include="core\window">
       <UniqueIdentifier>{953D6D93-01F3-E588-8AE7-DF5FF69BDC8C}</UniqueIdentifier>
     </Filter>
+    <Filter Include="core\window\directx">
+      <UniqueIdentifier>{977DD392-03DF-B0A0-8C4C-F752F8ACE75F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\window\metal">
+      <UniqueIdentifier>{779ADC94-E3B0-DA2A-2C28-664C987DABB2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\window\vulkan">
+      <UniqueIdentifier>{95A58B46-8189-4C9C-EAE9-46EFD6EC361E}</UniqueIdentifier>
+    </Filter>
     <Filter Include="include">
       <UniqueIdentifier>{89AF369E-F58E-B539-FEA6-40106A051C9B}</UniqueIdentifier>
     </Filter>
@@ -69,11 +84,20 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Spark\core\app\api.hpp">
+      <Filter>core\app</Filter>
+    </ClInclude>
     <ClInclude Include="Spark\core\app\app.hpp">
       <Filter>core\app</Filter>
     </ClInclude>
     <ClInclude Include="Spark\core\app\app_interface.hpp">
       <Filter>core\app</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\app\asset.hpp">
+      <Filter>core\app</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\asset\asset.hpp">
+      <Filter>core\asset</Filter>
     </ClInclude>
     <ClInclude Include="Spark\core\audio\audio.hpp">
       <Filter>core\audio</Filter>
@@ -87,7 +111,28 @@
     <ClInclude Include="Spark\core\ecs\component\component_types.hpp">
       <Filter>core\ecs\component</Filter>
     </ClInclude>
+    <ClInclude Include="Spark\core\ecs\component\material.hpp">
+      <Filter>core\ecs\component</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\ecs\component\material_manager.hpp">
+      <Filter>core\ecs\component</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\ecs\component\mesh.hpp">
+      <Filter>core\ecs\component</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\ecs\component\mesh_manager.hpp">
+      <Filter>core\ecs\component</Filter>
+    </ClInclude>
     <ClInclude Include="Spark\core\ecs\component\shader.hpp">
+      <Filter>core\ecs\component</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\ecs\component\texture.hpp">
+      <Filter>core\ecs\component</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\ecs\component\texture_manager.hpp">
+      <Filter>core\ecs\component</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\ecs\component\vertex.hpp">
       <Filter>core\ecs\component</Filter>
     </ClInclude>
     <ClInclude Include="Spark\core\ecs\ecs.hpp">
@@ -123,6 +168,12 @@
     <ClInclude Include="Spark\core\logging\log.hpp">
       <Filter>core\logging</Filter>
     </ClInclude>
+    <ClInclude Include="Spark\core\math\constants.hpp">
+      <Filter>core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\math\random.hpp">
+      <Filter>core\math</Filter>
+    </ClInclude>
     <ClInclude Include="Spark\core\net\chat_message.hpp">
       <Filter>core\net</Filter>
     </ClInclude>
@@ -144,6 +195,12 @@
     <ClInclude Include="Spark\core\physics\gravity.hpp">
       <Filter>core\physics</Filter>
     </ClInclude>
+    <ClInclude Include="Spark\core\physics\physics.hpp">
+      <Filter>core\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\physics\rigid_body.hpp">
+      <Filter>core\physics</Filter>
+    </ClInclude>
     <ClInclude Include="Spark\core\renderer\frustum.hpp">
       <Filter>core\renderer</Filter>
     </ClInclude>
@@ -159,10 +216,16 @@
     <ClInclude Include="Spark\core\renderer\renderer.hpp">
       <Filter>core\renderer</Filter>
     </ClInclude>
+    <ClInclude Include="Spark\core\scene\octree.hpp">
+      <Filter>core\scene</Filter>
+    </ClInclude>
     <ClInclude Include="Spark\core\scene\scene.hpp">
       <Filter>core\scene</Filter>
     </ClInclude>
     <ClInclude Include="Spark\core\scene\scene_manager.hpp">
+      <Filter>core\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\scene\scene_partition.hpp">
       <Filter>core\scene</Filter>
     </ClInclude>
     <ClInclude Include="Spark\core\spark.hpp">
@@ -195,20 +258,35 @@
     <ClInclude Include="Spark\core\util\macros.hpp">
       <Filter>core\util</Filter>
     </ClInclude>
+    <ClInclude Include="Spark\core\util\math.hpp">
+      <Filter>core\util</Filter>
+    </ClInclude>
     <ClInclude Include="Spark\core\util\memory.hpp">
+      <Filter>core\util</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\util\singleton.hpp">
       <Filter>core\util</Filter>
     </ClInclude>
     <ClInclude Include="Spark\core\util\thread_pool.hpp">
       <Filter>core\util</Filter>
     </ClInclude>
+    <ClInclude Include="Spark\core\util\timer.hpp">
+      <Filter>core\util</Filter>
+    </ClInclude>
     <ClInclude Include="Spark\core\window\directx\directx_window.hpp">
-      <Filter>core\window</Filter>
+      <Filter>core\window\directx</Filter>
     </ClInclude>
     <ClInclude Include="Spark\core\window\metal\metal_window.hpp">
-      <Filter>core\window</Filter>
+      <Filter>core\window\metal</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\window\vulkan\vulkan_mesh.hpp">
+      <Filter>core\window\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\core\window\vulkan\vulkan_vertex.hpp">
+      <Filter>core\window\vulkan</Filter>
     </ClInclude>
     <ClInclude Include="Spark\core\window\vulkan\vulkan_window.hpp">
-      <Filter>core\window</Filter>
+      <Filter>core\window\vulkan</Filter>
     </ClInclude>
     <ClInclude Include="Spark\core\window\window.hpp">
       <Filter>core\window</Filter>
@@ -222,13 +300,22 @@
     <ClInclude Include="Spark\include\IMGUI\imgui.h">
       <Filter>include\IMGUI</Filter>
     </ClInclude>
+    <ClInclude Include="Spark\include\IMGUI\imgui_impl_dx12.h">
+      <Filter>include\IMGUI</Filter>
+    </ClInclude>
     <ClInclude Include="Spark\include\IMGUI\imgui_impl_glfw.h">
+      <Filter>include\IMGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\include\IMGUI\imgui_impl_metal.h">
       <Filter>include\IMGUI</Filter>
     </ClInclude>
     <ClInclude Include="Spark\include\IMGUI\imgui_impl_opengl3.h">
       <Filter>include\IMGUI</Filter>
     </ClInclude>
     <ClInclude Include="Spark\include\IMGUI\imgui_impl_opengl3_loader.h">
+      <Filter>include\IMGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Spark\include\IMGUI\imgui_impl_vulkan.h">
       <Filter>include\IMGUI</Filter>
     </ClInclude>
     <ClInclude Include="Spark\include\IMGUI\imgui_internal.h">
@@ -243,26 +330,11 @@
     <ClInclude Include="Spark\include\IMGUI\imstb_truetype.h">
       <Filter>include\IMGUI</Filter>
     </ClInclude>
-    <ClInclude Include="Spark\include\IMGUI\imgui_impl_dx12.h" />
-    <ClInclude Include="Spark\include\IMGUI\imgui_impl_metal.h" />
-    <ClInclude Include="Spark\include\IMGUI\imgui_impl_vulkan.h" />
-    <ClInclude Include="Spark\core\util\timer.hpp" />
-    <ClInclude Include="Spark\core\window\vulkan\vulkan_vertex.hpp" />
-    <ClInclude Include="Spark\core\ecs\component\mesh.hpp" />
-    <ClInclude Include="Spark\core\ecs\component\vertex.hpp" />
-    <ClInclude Include="Spark\core\window\vulkan\vulkan_mesh.hpp" />
-    <ClInclude Include="Spark\core\util\singleton.hpp" />
-    <ClInclude Include="Spark\core\physics\rigid_body.hpp" />
-    <ClInclude Include="Spark\core\physics\physics.hpp" />
-    <ClInclude Include="Spark\core\scene\scene_partition.hpp" />
-    <ClInclude Include="Spark\core\scene\octree.hpp" />
-    <ClInclude Include="Spark\core\util\math.hpp" />
-    <ClInclude Include="Spark\core\asset\asset.hpp" />
-    <ClInclude Include="Spark\core\app\asset.hpp" />
-    <ClInclude Include="Spark\include\GLFW\glfw3.h" />
-    <ClInclude Include="Spark\include\GLFW\glfw3native.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Spark\core\app\api.cpp">
+      <Filter>core\app</Filter>
+    </ClCompile>
     <ClCompile Include="Spark\core\app\app.cpp">
       <Filter>core\app</Filter>
     </ClCompile>
@@ -286,6 +358,9 @@
     </ClCompile>
     <ClCompile Include="Spark\core\logging\log.cpp">
       <Filter>core\logging</Filter>
+    </ClCompile>
+    <ClCompile Include="Spark\core\math\random.cpp">
+      <Filter>core\math</Filter>
     </ClCompile>
     <ClCompile Include="Spark\core\net\serializeable.cpp">
       <Filter>core\net</Filter>
@@ -317,8 +392,11 @@
     <ClCompile Include="Spark\core\util\file.cpp">
       <Filter>core\util</Filter>
     </ClCompile>
+    <ClCompile Include="Spark\core\window\directx\directx_window.cpp">
+      <Filter>core\window\directx</Filter>
+    </ClCompile>
     <ClCompile Include="Spark\core\window\vulkan\vulkan_window.cpp">
-      <Filter>core\window</Filter>
+      <Filter>core\window\vulkan</Filter>
     </ClCompile>
     <ClCompile Include="Spark\include\IMGUI\imgui.cpp">
       <Filter>include\IMGUI</Filter>
@@ -329,10 +407,16 @@
     <ClCompile Include="Spark\include\IMGUI\imgui_draw.cpp">
       <Filter>include\IMGUI</Filter>
     </ClCompile>
+    <ClCompile Include="Spark\include\IMGUI\imgui_impl_dx12.cpp">
+      <Filter>include\IMGUI</Filter>
+    </ClCompile>
     <ClCompile Include="Spark\include\IMGUI\imgui_impl_glfw.cpp">
       <Filter>include\IMGUI</Filter>
     </ClCompile>
     <ClCompile Include="Spark\include\IMGUI\imgui_impl_opengl3.cpp">
+      <Filter>include\IMGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Spark\include\IMGUI\imgui_impl_vulkan.cpp">
       <Filter>include\IMGUI</Filter>
     </ClCompile>
     <ClCompile Include="Spark\include\IMGUI\imgui_tables.cpp">
@@ -341,11 +425,5 @@
     <ClCompile Include="Spark\include\IMGUI\imgui_widgets.cpp">
       <Filter>include\IMGUI</Filter>
     </ClCompile>
-    <ClCompile Include="Spark\include\IMGUI\imgui_impl_dx12.cpp" />
-    <ClCompile Include="Spark\include\IMGUI\imgui_impl_vulkan.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Spark\include\IMGUI\imgui_impl_metal.mm" />
-    <None Include=".clang-format" />
   </ItemGroup>
 </Project>

@@ -20,11 +20,11 @@ enum class ShaderType
 struct VulkanShaderWrapper
 {
     // Forwards the shader type and vk_shader_module
-    VulkanShaderWrapper(ShaderType type, internal::VkShaderModule module);
+    VulkanShaderWrapper(ShaderType type, Internal::VkShaderModule module);
 
-    internal::VkPipelineShaderStageCreateInfo m_pipeline_shader{};
+    Internal::VkPipelineShaderStageCreateInfo m_pipeline_shader{};
 
-    std::optional<internal::VkPipelineVertexInputStateCreateInfo> m_vertex_input;
+    std::optional<Internal::VkPipelineVertexInputStateCreateInfo> m_vertex_input;
 
   private:
     void create_vertex_input();

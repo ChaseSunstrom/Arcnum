@@ -89,7 +89,7 @@ typedef struct stbrp_rect    stbrp_rect;
 typedef int            stbrp_coord;
 
 #define STBRP__MAXVAL  0x7fffffff
-// Mostly for internal use, but this is the maximum supported coordinate value.
+// Mostly for Internal use, but this is the maximum supported coordinate value.
 
 STBRP_DEF int stbrp_pack_rects (stbrp_context *context, stbrp_rect *rects, int num_rects);
 // Assign packed locations to rectangles. The rectangles are of type
@@ -547,7 +547,7 @@ STBRP_DEF int stbrp_pack_rects(stbrp_context *context, stbrp_rect *rects, int nu
 {
    int i, all_rects_packed = 1;
 
-   // we use the 'was_packed' field internally to allow sorting/unsorting
+   // we use the 'was_packed' field Internally to allow sorting/unsorting
    for (i=0; i < num_rects; ++i) {
       rects[i].was_packed = i;
    }

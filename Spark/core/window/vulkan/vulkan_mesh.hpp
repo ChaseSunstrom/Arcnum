@@ -19,8 +19,8 @@ struct VulkanMesh : public Mesh
         virtual void *get_data_ptr() = 0;
         virtual u64 get_size() const = 0;
 
-        internal::VkBuffer m_buffer;
-        internal::VkDeviceMemory m_buffer_memory;
+        Internal::VkBuffer m_buffer;
+        Internal::VkDeviceMemory m_buffer_memory;
     };
 
     template <typename UBOType> struct UniformBufferObject : public IUniformBuffer
@@ -33,11 +33,11 @@ struct VulkanMesh : public Mesh
         void create_buffer(const UBOType &ubo_data)
         {
             auto &vk_window = Engine::get<VulkanWindow>();
-            internal::VkDeviceSize buffer_size = sizeof(UBOType);
+            Internal::VkDeviceSize buffer_size = sizeof(UBOType);
 
-            create_vulkan_buffer(buffer_size, internal::VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                 internal::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                     internal::VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            create_vulkan_buffer(buffer_size, Internal::VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                 Internal::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                     Internal::VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                  m_buffer, m_buffer_memory);
 
             void *data_ptr;
@@ -123,7 +123,7 @@ struct VulkanMesh : public Mesh
         for (auto &ubo : m_ubo_list)
         {
             void *data_ptr;
-            internal::VkDeviceSize buffer_size = ubo->get_size();
+            Internal::VkDeviceSize buffer_size = ubo->get_size();
             vkMapMemory(vk_window.get_window_data().m_device, ubo->m_buffer_memory, 0, buffer_size, 0, &data_ptr);
             std::memcpy(data_ptr, ubo->get_data_ptr(), buffer_size);
             vkUnmapMemory(vk_window.get_window_data().m_device, ubo->m_buffer_memory);
@@ -140,13 +140,13 @@ struct VulkanMesh : public Mesh
         return sizeof(UBOType);
     }
 
-    internal::VkBuffer m_vertex_buffer;
+    Internal::VkBuffer m_vertex_buffer;
 
-    internal::VkDeviceMemory m_vertex_buffer_memory;
+    Internal::VkDeviceMemory m_vertex_buffer_memory;
 
-    internal::VkBuffer m_index_buffer;
+    Internal::VkBuffer m_index_buffer;
 
-    internal::VkDeviceMemory m_index_buffer_memory;
+    Internal::VkDeviceMemory m_index_buffer_memory;
 
     std::vector<std::unique_ptr<IUniformBuffer>> m_ubo_list;
 
@@ -155,12 +155,12 @@ struct VulkanMesh : public Mesh
     {
         auto &vk_window = Engine::get<VulkanWindow>();
 
-        internal::VkBuffer staging_buffer;
-        internal::VkDeviceMemory staging_buffer_memory;
-        internal::VkDeviceSize buffer_size = sizeof(m_vertices[0]) * m_vertices.size();
-        create_vulkan_buffer(buffer_size, internal::VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                             internal::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                 internal::VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+        Internal::VkBuffer staging_buffer;
+        Internal::VkDeviceMemory staging_buffer_memory;
+        Internal::VkDeviceSize buffer_size = sizeof(m_vertices[0]) * m_vertices.size();
+        create_vulkan_buffer(buffer_size, Internal::VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                             Internal::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                 Internal::VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                              staging_buffer, staging_buffer_memory);
 
         void *data;
@@ -169,34 +169,34 @@ struct VulkanMesh : public Mesh
         vkUnmapMemory(vk_window.get_window_data().m_device, staging_buffer_memory);
 
         create_vulkan_buffer(buffer_size,
-                             internal::VK_BUFFER_USAGE_TRANSFER_DST_BIT | internal::VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                             internal::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_vertex_buffer, m_vertex_buffer_memory);
+                             Internal::VK_BUFFER_USAGE_TRANSFER_DST_BIT | Internal::VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                             Internal::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_vertex_buffer, m_vertex_buffer_memory);
         copy_buffer(staging_buffer, m_vertex_buffer, buffer_size);
 
         vkDestroyBuffer(vk_window.get_window_data().m_device, staging_buffer, nullptr);
         vkFreeMemory(vk_window.get_window_data().m_device, staging_buffer_memory, nullptr);
     }
 
-    void copy_buffer(internal::VkBuffer src_buffer, internal::VkBuffer dst_buffer, internal::VkDeviceSize size)
+    void copy_buffer(Internal::VkBuffer src_buffer, Internal::VkBuffer dst_buffer, Internal::VkDeviceSize size)
     {
         auto &vk_window = Engine::get<VulkanWindow>();
 
-        internal::VkCommandBufferAllocateInfo alloc_info{};
-        alloc_info.sType = internal::VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        alloc_info.level = internal::VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        Internal::VkCommandBufferAllocateInfo alloc_info{};
+        alloc_info.sType = Internal::VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        alloc_info.level = Internal::VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         alloc_info.commandPool = vk_window.get_window_data().m_command_pool;
         alloc_info.commandBufferCount = 1;
 
-        internal::VkCommandBuffer command_buffer;
+        Internal::VkCommandBuffer command_buffer;
         vkAllocateCommandBuffers(vk_window.get_window_data().m_device, &alloc_info, &command_buffer);
 
-        internal::VkCommandBufferBeginInfo begin_info{};
-        begin_info.sType = internal::VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        begin_info.flags = internal::VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+        Internal::VkCommandBufferBeginInfo begin_info{};
+        begin_info.sType = Internal::VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        begin_info.flags = Internal::VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
         vkBeginCommandBuffer(command_buffer, &begin_info);
 
-        internal::VkBufferCopy copy_region{};
+        Internal::VkBufferCopy copy_region{};
         copy_region.srcOffset = 0;
         copy_region.dstOffset = 0;
         copy_region.size = size;
@@ -205,8 +205,8 @@ struct VulkanMesh : public Mesh
 
         vkEndCommandBuffer(command_buffer);
 
-        internal::VkSubmitInfo submit_info{};
-        submit_info.sType = internal::VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        Internal::VkSubmitInfo submit_info{};
+        submit_info.sType = Internal::VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submit_info.commandBufferCount = 1;
         submit_info.pCommandBuffers = &command_buffer;
 
@@ -221,13 +221,13 @@ struct VulkanMesh : public Mesh
     {
         auto &vk_window = Engine::get<VulkanWindow>();
 
-        internal::VkDeviceSize buffer_size = sizeof(m_indices[0]) * m_indices.size();
+        Internal::VkDeviceSize buffer_size = sizeof(m_indices[0]) * m_indices.size();
 
-        internal::VkBuffer staging_buffer;
-        internal::VkDeviceMemory staging_buffer_memory;
-        create_vulkan_buffer(buffer_size, internal::VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                             internal::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                 internal::VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+        Internal::VkBuffer staging_buffer;
+        Internal::VkDeviceMemory staging_buffer_memory;
+        create_vulkan_buffer(buffer_size, Internal::VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                             Internal::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                 Internal::VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                              staging_buffer, staging_buffer_memory);
 
         void *data;
@@ -236,8 +236,8 @@ struct VulkanMesh : public Mesh
         vkUnmapMemory(vk_window.get_window_data().m_device, staging_buffer_memory);
 
         create_vulkan_buffer(buffer_size,
-                             internal::VK_BUFFER_USAGE_TRANSFER_DST_BIT | internal::VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-                             internal::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_index_buffer, m_index_buffer_memory);
+                             Internal::VK_BUFFER_USAGE_TRANSFER_DST_BIT | Internal::VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+                             Internal::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_index_buffer, m_index_buffer_memory);
 
         copy_buffer(staging_buffer, m_index_buffer, buffer_size);
 
@@ -245,35 +245,35 @@ struct VulkanMesh : public Mesh
         vkFreeMemory(vk_window.get_window_data().m_device, staging_buffer_memory, nullptr);
     }
 
-    static void create_vulkan_buffer(internal::VkDeviceSize size, internal::VkBufferUsageFlags usage,
-                                     internal::VkMemoryPropertyFlags properties, internal::VkBuffer &buffer,
-                                     internal::VkDeviceMemory &buffer_memory)
+    static void create_vulkan_buffer(Internal::VkDeviceSize size, Internal::VkBufferUsageFlags usage,
+                                     Internal::VkMemoryPropertyFlags properties, Internal::VkBuffer &buffer,
+                                     Internal::VkDeviceMemory &buffer_memory)
     {
         auto &vk_window = Engine::get<VulkanWindow>();
 
-        internal::VkBufferCreateInfo buffer_info{};
-        buffer_info.sType = internal::VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        Internal::VkBufferCreateInfo buffer_info{};
+        buffer_info.sType = Internal::VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         buffer_info.size = size;
         buffer_info.usage = usage;
-        buffer_info.sharingMode = internal::VK_SHARING_MODE_EXCLUSIVE;
+        buffer_info.sharingMode = Internal::VK_SHARING_MODE_EXCLUSIVE;
 
         if (vkCreateBuffer(vk_window.get_window_data().m_device, &buffer_info, nullptr, &buffer) !=
-            internal::VK_SUCCESS)
+            Internal::VK_SUCCESS)
         {
             SPARK_ERROR("[VULKAN] Failed to create buffer!");
             assert(false);
         }
 
-        internal::VkMemoryRequirements mem_requirements;
+        Internal::VkMemoryRequirements mem_requirements;
         vkGetBufferMemoryRequirements(vk_window.get_window_data().m_device, buffer, &mem_requirements);
 
-        internal::VkMemoryAllocateInfo alloc_info{};
-        alloc_info.sType = internal::VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        Internal::VkMemoryAllocateInfo alloc_info{};
+        alloc_info.sType = Internal::VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         alloc_info.allocationSize = mem_requirements.size;
         alloc_info.memoryTypeIndex = find_memory_type(mem_requirements.memoryTypeBits, properties);
 
         if (vkAllocateMemory(vk_window.get_window_data().m_device, &alloc_info, nullptr, &buffer_memory) !=
-            internal::VK_SUCCESS)
+            Internal::VK_SUCCESS)
         {
             SPARK_ERROR("[VULKAN] Failed to allocate buffer memory!");
             assert(false);
@@ -282,11 +282,11 @@ struct VulkanMesh : public Mesh
         vkBindBufferMemory(vk_window.get_window_data().m_device, buffer, buffer_memory, 0);
     }
 
-    static u32 find_memory_type(u32 type_filter, internal::VkMemoryPropertyFlags properties)
+    static u32 find_memory_type(u32 type_filter, Internal::VkMemoryPropertyFlags properties)
     {
         auto &vk_window = Engine::get<VulkanWindow>();
 
-        internal::VkPhysicalDeviceMemoryProperties mem_properties;
+        Internal::VkPhysicalDeviceMemoryProperties mem_properties;
         vkGetPhysicalDeviceMemoryProperties(vk_window.get_window_data().m_physical_device, &mem_properties);
 
         for (u32 i = 0; i < mem_properties.memoryTypeCount; i++)
@@ -305,16 +305,16 @@ struct VulkanMesh : public Mesh
     template <typename UBO> void create_uniform_buffers(const std::vector<UBO> &ubos)
     {
         auto &vk_window = Engine::get<VulkanWindow>();
-        internal::VkDeviceSize buffer_size = sizeof(UBO);
+        Internal::VkDeviceSize buffer_size = sizeof(UBO);
 
-        std::vector<internal::VkBuffer> buffers(ubos.size());
-        std::vector<internal::VkDeviceMemory> buffer_memories(ubos.size());
+        std::vector<Internal::VkBuffer> buffers(ubos.size());
+        std::vector<Internal::VkDeviceMemory> buffer_memories(ubos.size());
 
         for (size_t i = 0; i < ubos.size(); i++)
         {
-            create_vulkan_buffer(buffer_size, internal::VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                 internal::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                     internal::VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            create_vulkan_buffer(buffer_size, Internal::VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                 Internal::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                     Internal::VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                  buffers[i], buffer_memories[i]);
 
             void *data;
@@ -326,13 +326,13 @@ struct VulkanMesh : public Mesh
 
     template <typename... UBOTypes, u64... Is>
     void update_descriptor_set_impl(
-        internal::VkDevice device, internal::VkDescriptorSet descriptor_set, std::index_sequence<Is...>,
-        std::array<internal::VkDescriptorBufferInfo, sizeof...(UBOTypes)> &buffer_infos,
-        std::array<internal::VkWriteDescriptorSet, sizeof...(UBOTypes)> &write_descriptor_sets, const UBOTypes &...ubos)
+        Internal::VkDevice device, Internal::VkDescriptorSet descriptor_set, std::index_sequence<Is...>,
+        std::array<Internal::VkDescriptorBufferInfo, sizeof...(UBOTypes)> &buffer_infos,
+        std::array<Internal::VkWriteDescriptorSet, sizeof...(UBOTypes)> &write_descriptor_sets, const UBOTypes &...ubos)
     {
         // Lambda to create a VkDescriptorBufferInfo from a UBO
         auto create_buffer_info = [&](const auto &ubo, u64 index) {
-            internal::VkDescriptorBufferInfo buffer_info{};
+            Internal::VkDescriptorBufferInfo buffer_info{};
             buffer_info.buffer = m_ubo_list[index]->m_buffer;
             buffer_info.offset = 0;
             buffer_info.range = sizeof(ubo);
@@ -340,14 +340,14 @@ struct VulkanMesh : public Mesh
         };
 
         // Lambda to create a VkWriteDescriptorSet from a VkDescriptorBufferInfo
-        auto create_write_descriptor_set = [&](const internal::VkDescriptorBufferInfo &bufferInfo, u64 index) {
-            internal::VkWriteDescriptorSet descriptor_write{};
-            descriptor_write.sType = internal::VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        auto create_write_descriptor_set = [&](const Internal::VkDescriptorBufferInfo &bufferInfo, u64 index) {
+            Internal::VkWriteDescriptorSet descriptor_write{};
+            descriptor_write.sType = Internal::VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             descriptor_write.dstSet = descriptor_set;
             descriptor_write.dstBinding = static_cast<u32>(index);
             descriptor_write.dstArrayElement = 0;
             descriptor_write.descriptorCount = 1;
-            descriptor_write.descriptorType = internal::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            descriptor_write.descriptorType = Internal::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
             descriptor_write.pBufferInfo = &bufferInfo;
             return descriptor_write;
         };
@@ -364,14 +364,14 @@ struct VulkanMesh : public Mesh
     template <typename... UBOTypes> void update_descriptor_sets(const UBOTypes &...ubo_data)
     {
         auto &vk_window = Engine::get<VulkanWindow>();
-        internal::VkDevice device = vk_window.get_window_data().m_device;
+        Internal::VkDevice device = vk_window.get_window_data().m_device;
 
         for (u64 i = 0; i < vk_window.get_window_data().m_max_frames_in_flight; i++)
         {
-            internal::VkDescriptorSet descriptor_set = vk_window.get_window_data().m_descriptor_sets[i];
+            Internal::VkDescriptorSet descriptor_set = vk_window.get_window_data().m_descriptor_sets[i];
 
-            std::array<internal::VkDescriptorBufferInfo, sizeof...(UBOTypes)> buffer_infos;
-            std::array<internal::VkWriteDescriptorSet, sizeof...(UBOTypes)> write_descriptor_sets;
+            std::array<Internal::VkDescriptorBufferInfo, sizeof...(UBOTypes)> buffer_infos;
+            std::array<Internal::VkWriteDescriptorSet, sizeof...(UBOTypes)> write_descriptor_sets;
 
             // Use index sequence to iterate over each UBO type and its corresponding
             // index.

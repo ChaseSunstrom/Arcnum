@@ -110,6 +110,7 @@ project "Spark"
         "glfw3",
         "glew32",
         "opengl32.lib",
+        "d3d11",
         "irrKlang",
         "vulkan-1"
     }

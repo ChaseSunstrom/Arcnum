@@ -7,7 +7,7 @@
 #include <atomic>
 #include <cassert>
 #include <chrono>
-#include <cmath>
+#include <cMath>
 #include <condition_variable>
 #include <cstdlib>
 #include <cstring>
@@ -44,7 +44,7 @@
 
 namespace Spark
 {
-namespace internal
+namespace Internal
 {
 #include <GLEW/glew.h>
 #define GLFW_INCLUDE_VULKAN
@@ -57,8 +57,7 @@ namespace internal
 #include <GLM/gtc/type_ptr.hpp>
 #include <GLM/gtx/quaternion.hpp>
 #include <GLM/gtx/transform.hpp>
-#include <VULKAN/vulkan.h>
-} // namespace internal
+} // namespace Internal
 
 } // namespace Spark
 

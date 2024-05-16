@@ -700,7 +700,7 @@ static int stb_textedit_cut(IMSTB_TEXTEDIT_STRING *str, STB_TexteditState *state
 }
 
 // API paste: replace existing selection with passed-in text
-static int stb_textedit_paste_internal(IMSTB_TEXTEDIT_STRING *str, STB_TexteditState *state, IMSTB_TEXTEDIT_CHARTYPE *text, int len)
+static int stb_textedit_paste_Internal(IMSTB_TEXTEDIT_STRING *str, STB_TexteditState *state, IMSTB_TEXTEDIT_CHARTYPE *text, int len)
 {
    // if there's a selection, the paste should delete it
    stb_textedit_clamp(str, state);
@@ -1389,7 +1389,7 @@ static void stb_textedit_initialize_state(STB_TexteditState *state, int is_singl
 
 static int stb_textedit_paste(IMSTB_TEXTEDIT_STRING *str, STB_TexteditState *state, IMSTB_TEXTEDIT_CHARTYPE const *ctext, int len)
 {
-   return stb_textedit_paste_internal(str, state, (IMSTB_TEXTEDIT_CHARTYPE *) ctext, len);
+   return stb_textedit_paste_Internal(str, state, (IMSTB_TEXTEDIT_CHARTYPE *) ctext, len);
 }
 
 #if defined(__GNUC__) || defined(__clang__)

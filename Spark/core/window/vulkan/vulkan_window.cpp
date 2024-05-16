@@ -6,7 +6,7 @@
 #include "../../scene/scene_manager.hpp"
 #include "../../util/file.hpp"
 
-using namespace Spark::internal;
+using namespace Spark::Internal;
 
 namespace Spark
 {
@@ -906,8 +906,8 @@ VkExtent2D VulkanWindow::choose_swap_extent(const VkSurfaceCapabilitiesKHR &capa
 
 void VulkanWindow::init_surface()
 {
-    if (internal::glfwCreateWindowSurface(m_window_data->m_instance, m_window, nullptr, &m_window_data->m_surface) !=
-        internal::VK_SUCCESS)
+    if (Internal::glfwCreateWindowSurface(m_window_data->m_instance, m_window, nullptr, &m_window_data->m_surface) !=
+        Internal::VK_SUCCESS)
     {
         SPARK_ERROR("[VULKAN] Failed to create window surface!");
         assert(false);
@@ -1053,7 +1053,7 @@ void VulkanWindow::record_command_buffer(VkCommandBuffer command_buffer, u32 ima
     render_pass_info.renderArea.offset = {0, 0};
     render_pass_info.renderArea.extent = m_window_data->m_swapchain_extent;
 
-    Spark::math::vec4 scene_color =
+    Spark::Math::vec4 scene_color =
         Engine::get<SceneManager>().get_current_scene().get_scene_config().m_background_color;
 
     VkClearValue clear_color = {{{scene_color.r, scene_color.g, scene_color.b, scene_color.a}}};

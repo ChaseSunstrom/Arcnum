@@ -33,19 +33,19 @@ class SpatialPartition : public virtual Observer
         return false;
     }
 
-    virtual std::vector<Entity> query(const math::vec3 &position, f32 radius) const
+    virtual std::vector<Entity> query(const Math::vec3 &position, f32 radius) const
     {
         return std::vector<Entity>();
     }
-    virtual std::vector<Entity> query(const math::vec3 &position, f32 radius, std::function<bool(Entity)> filter) const
+    virtual std::vector<Entity> query(const Math::vec3 &position, f32 radius, std::function<bool(Entity)> filter) const
     {
         return std::vector<Entity>();
     }
-    virtual std::vector<Entity> query(const math::vec3 &min, const math::vec3 &max) const
+    virtual std::vector<Entity> query(const Math::vec3 &min, const Math::vec3 &max) const
     {
         return std::vector<Entity>();
     }
-    virtual std::vector<Entity> query(const math::vec3 &min, const math::vec3 &max,
+    virtual std::vector<Entity> query(const Math::vec3 &min, const Math::vec3 &max,
                                       std::function<bool(Entity)> filter) const
     {
         return std::vector<Entity>();

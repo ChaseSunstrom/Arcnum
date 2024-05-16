@@ -8,7 +8,7 @@ namespace Spark
 class Audio
 {
   public:
-    Audio(internal::ISound *s) : m_sound(s)
+    Audio(Internal::ISound *s) : m_sound(s)
     {
         m_sound->grab();
     }
@@ -30,14 +30,14 @@ class Audio
         m_sound->grab();
     }
 
-    internal::ISound *get_raw_sound() const
+    Internal::ISound *get_raw_sound() const
     {
         return m_sound;
     }
 
-    void set_position(const math::vec3 &position)
+    void set_position(const Math::vec3 &position)
     {
-        internal::vec3df position_3d(position.x, position.y, position.z);
+        Internal::vec3df position_3d(position.x, position.y, position.z);
         m_sound->setPosition(position_3d);
     }
 
@@ -77,7 +77,7 @@ class Audio
     }
 
   private:
-    internal::ISound *m_sound;
+    Internal::ISound *m_sound;
 };
 
 } // namespace Spark

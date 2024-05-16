@@ -37,8 +37,8 @@ class TestRegistry
     }
 };
 
-#define CONCAT_INTERNAL(x, y) x##y
-#define CONCAT(x, y) CONCAT_INTERNAL(x, y)
+#define CONCAT_Internal(x, y) x##y
+#define CONCAT(x, y) CONCAT_Internal(x, y)
 
 #define EXPECT_EQ(a, b)                                                                                                \
     do                                                                                                                 \

@@ -9,7 +9,7 @@ namespace Spark
 class AABB
 {
   public:
-    AABB(math::vec3 min, math::vec3 max) : m_min(min), m_max(max)
+    AABB(Math::vec3 min, Math::vec3 max) : m_min(min), m_max(max)
     {
     }
 
@@ -18,9 +18,9 @@ class AABB
     bool check_collision(const AABB &other) const;
 
   private:
-    math::vec3 m_min;
+    Math::vec3 m_min;
 
-    math::vec3 m_max;
+    Math::vec3 m_max;
 };
 } // namespace Spark
 

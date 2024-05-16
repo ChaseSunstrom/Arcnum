@@ -22,22 +22,20 @@ std::unique_ptr<Timer> Application::s_timer = std::make_unique<Timer>();
 
 void Application::on_start()
 {
-    Application::add_scene("Main Scene", SceneConfig(math::vec4(0)));
+    Application::add_scene("Main Scene", SceneConfig(Math::vec4(0)));
 
-    auto &_window_man = WindowManager::get();
-    auto &_window = _window_man.get_current_window();
-    auto &_ecs = Engine::get<ECS>();
-    auto &_ui = Engine::get<UIManager>();
+    auto &window = WindowManager::get().get_current_window();
+    auto &ecs = Engine::get<ECS>();
 
     AppFunctions::s_on_start();
 
-    _ecs.start_systems();
+    ecs.start_systems();
 
     Subscription<Event>::create(EVERY_EVENT_TOPIC, AppFunctions::s_on_event);
 
     s_timer->start();
 
-    while (_window.is_running())
+    while (window.is_running())
     {
         on_update();
     }
@@ -49,26 +47,10 @@ void Application::on_update()
 
     AppFunctions::s_on_update();
 
-    auto &_window = Engine::get<WindowManager>().get_current_window();
-    auto &_renderer = Engine::get<Renderer>();
-    auto &_scene_manager = Engine::get<SceneManager>();
-    auto &_ecs = Engine::get<ECS>();
-    auto &_ui = Engine::get<UIManager>();
+    auto &window = Engine::get<WindowManager>().get_current_window();
 
-    if (is_current_api(API::VULKAN))
-    {
-        VulkanWindow &opengl_win = dynamic_cast<VulkanWindow &>(_window);
-
-        _ecs.update_systems(s_delta_time);
-
-        _window.pre_draw();
-
-        _scene_manager.update_current_scene(s_fixed_delta_time);
-
-        _window.on_update();
-
-        _window.post_draw();
-    }
+    if (&window)
+        window.on_update();
 
     Spark::ThreadPool::synchronize_registered_threads();
 }
@@ -83,22 +65,23 @@ void Application::on_event(std::shared_ptr<Event> event)
 
 void Application::on_shutdown()
 {
-    auto &_ecs = Engine::get<ECS>();
+    auto &ecs = Engine::get<ECS>();
 
-    _ecs.shutdown_systems();
+    ecs.shutdown_systems();
 }
 
 void Application::set_window_title(const std::string &title)
 {
-    auto &_window = Engine::get<WindowManager>().get_current_window();
+    auto &window = Engine::get<WindowManager>().get_current_window();
 
-    _window.set_window_title(title);
+    if (&window)
+        window.set_window_title(title);
 }
 
 void Application::add_scene(const std::string &name, const SceneConfig &config)
 {
-    auto &_scene_manager = Engine::get<SceneManager>();
-    _scene_manager.add_scene(name, std::make_unique<Scene>(config));
+    auto &scene_manager = Engine::get<SceneManager>();
+    scene_manager.add_scene(name, std::make_unique<Scene>(config));
 }
 
 void Application::set_api(API api)

@@ -41,7 +41,7 @@ class GravitySystem : public System
                 continue; // Skip if no transform is associated
 
             // Calculate the gravity force as an acceleration vector
-            math::vec3 gravity_force(0, -m_gravity,
+            Math::vec3 gravity_force(0, -m_gravity,
                                      0); // Gravity only affects the y-component
 
             // Update velocity with gravity force applied over the given time delta

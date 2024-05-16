@@ -8,13 +8,13 @@ namespace Spark
 {
 struct RigidBody
 {
-    RigidBody(f64 mass = 1, Transform *transform = nullptr, math::vec3 velocity = math::vec3(0.0f),
+    RigidBody(f64 mass = 1, Transform *transform = nullptr, Math::vec3 velocity = Math::vec3(0.0f),
               std::unique_ptr<AABB> aabb = nullptr)
         : m_mass(mass), m_transform(transform), m_velocity(velocity), m_aabb(std::move(aabb))
     {
     }
 
-    math::vec3 m_velocity;
+    Math::vec3 m_velocity;
     std::unique_ptr<AABB> m_aabb;
     f64 m_mass;
     Transform *m_transform;

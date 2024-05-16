@@ -26,10 +26,10 @@ class AudioManager : public Singleton<AudioManager>
         return *m_sounds[name];
     }
 
-    Audio &create(const std::string &name, const std::filesystem::path &source, const math::vec3 &position,
+    Audio &create(const std::string &name, const std::filesystem::path &source, const Math::vec3 &position,
                   bool loops = false, bool pause_on_create = true)
     {
-        internal::vec3df position_3d(position.x, position.y, position.z);
+        Internal::vec3df position_3d(position.x, position.y, position.z);
 
         std::unique_ptr<Audio> s =
             std::make_unique<Audio>(m_Engine->play3D(source.string().c_str(), position_3d, loops, pause_on_create));
@@ -59,7 +59,7 @@ class AudioManager : public Singleton<AudioManager>
         }
     }
 
-    void play_sound(const std::string &name, const math::vec3 &position, bool loops = false)
+    void play_sound(const std::string &name, const Math::vec3 &position, bool loops = false)
     {
         Audio &s = *m_sounds[name];
 
@@ -115,14 +115,14 @@ class AudioManager : public Singleton<AudioManager>
         m_Engine->update();
     }
 
-    void set_sound_position(const std::string &name, const math::vec3 &position)
+    void set_sound_position(const std::string &name, const Math::vec3 &position)
     {
         m_sounds[name]->set_position(position);
 
         m_Engine->update();
     }
 
-    internal::ISoundEngine *get_Engine() const
+    Internal::ISoundEngine *get_Engine() const
     {
         return m_Engine;
     }
@@ -136,7 +136,7 @@ class AudioManager : public Singleton<AudioManager>
     }
 
   private:
-    internal::ISoundEngine *m_Engine = internal::createIrrKlangDevice();
+    Internal::ISoundEngine *m_Engine = Internal::createIrrKlangDevice();
 
     std::unordered_map<std::string, std::unique_ptr<Audio>> m_sounds;
 };

@@ -16,8 +16,8 @@ struct octree_fixture
 
     // Setup octree with a center and half-size
     octree_fixture()
-        : _ecs(ECS::get()), _octree(math::vec3(0.0f),
-                                    math::vec3(50.0f)) // Large enough for multiple entities
+        : _ecs(ECS::get()), _octree(Math::vec3(0.0f),
+                                    Math::vec3(50.0f)) // Large enough for multiple entities
     {
         // Register required components
         _ecs.register_component<Transform>();
@@ -30,8 +30,8 @@ struct octree_fixture
             Entity ent = _ecs.create_entity();
             Transform t;
             t.m_transform =
-                math::translate(math::mat4(1.0f),
-                                math::vec3(distribution(generator), distribution(generator), distribution(generator)));
+                Math::translate(Math::mat4(1.0f),
+                                Math::vec3(distribution(generator), distribution(generator), distribution(generator)));
             _ecs.add_component(ent, t);
 
             _entities.push_back(ent);
@@ -48,11 +48,11 @@ struct octree_fixture
     }
 };
 
-Entity create_transformed_entity(ECS &instance, const math::vec3 &position)
+Entity create_transformed_entity(ECS &instance, const Math::vec3 &position)
 {
     Entity ent = instance.create_entity();
     Transform t;
-    t.m_transform = math::translate(math::mat4(1.0f), position);
+    t.m_transform = Math::translate(Math::mat4(1.0f), position);
     instance.add_component(ent, t);
     return ent;
 }
@@ -60,13 +60,13 @@ Entity create_transformed_entity(ECS &instance, const math::vec3 &position)
 TEST(test_octree_add_entity)
 {
     ECS &instance = ECS::get();
-    Octree test_octree(math::vec3(0.0f), math::vec3(50.0f), nullptr);
+    Octree test_octree(Math::vec3(0.0f), Math::vec3(50.0f), nullptr);
     std::vector<Entity> entities;
 
     // Create entities within bounds
-    entities.push_back(create_transformed_entity(instance, math::vec3(0.0f, 0.0f, 0.0f)));
-    entities.push_back(create_transformed_entity(instance, math::vec3(25.0f, 25.0f, 25.0f)));
-    entities.push_back(create_transformed_entity(instance, math::vec3(-25.0f, -25.0f, -25.0f)));
+    entities.push_back(create_transformed_entity(instance, Math::vec3(0.0f, 0.0f, 0.0f)));
+    entities.push_back(create_transformed_entity(instance, Math::vec3(25.0f, 25.0f, 25.0f)));
+    entities.push_back(create_transformed_entity(instance, Math::vec3(-25.0f, -25.0f, -25.0f)));
 
     // Add entities to the octree and check if they are inside
     for (auto &ent : entities)
@@ -92,7 +92,7 @@ TEST(test_octree_expansion)
 {
     octree_fixture fixture;
 
-    Entity ent = create_transformed_entity(fixture._ecs, math::vec3(100.0f, 100.0f,
+    Entity ent = create_transformed_entity(fixture._ecs, Math::vec3(100.0f, 100.0f,
                                                                     100.0f)); // Position outside the initial bounds
     fixture._octree.add_entity(ent);
     EXPECT_TRUE(fixture._octree.entity_is_inside(ent)); // Entity should now be inside after expansion
@@ -106,7 +106,7 @@ TEST(test_octree_update_entity)
 
     Entity ent = fixture._entities.front();
     Transform &t = fixture._ecs.get_component<Transform>(ent);
-    t.m_transform = math::translate(math::mat4(1.0f), math::vec3(0.0f)); // Move to the origin
+    t.m_transform = Math::translate(Math::mat4(1.0f), Math::vec3(0.0f)); // Move to the origin
     fixture._ecs.set_component(ent, t);
 
     fixture._octree.update_entity(ent);
@@ -122,7 +122,7 @@ TEST(test_octree_query_with_filter)
         return extract_position(t.m_transform).x > 0.0f; // Filter for positive x
     };
 
-    auto results = fixture._octree.query(math::vec3(0.0f), 50.0f, filter_func);
+    auto results = fixture._octree.query(Math::vec3(0.0f), 50.0f, filter_func);
     for (auto &ent : results)
     {
         const auto &t = fixture._ecs.get_component<Transform>(ent);
@@ -138,7 +138,7 @@ TEST(test_octree_subdivision)
     for (i32 i = 0; i < 20; ++i)
     {
         Entity ent = create_transformed_entity(fixture._ecs,
-                                               math::vec3(0.0f)); // All entities at the origin
+                                               Math::vec3(0.0f)); // All entities at the origin
         fixture._octree.add_entity(ent);
     }
 

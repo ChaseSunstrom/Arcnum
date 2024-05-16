@@ -25,11 +25,6 @@ class WindowManager
     template <is_window_type T> void add_window(T &window)
     {
         m_windows[typeid(T)] = &window;
-
-        if (m_windows.size() == 1)
-        {
-            set_window<T>();
-        }
     }
 
     template <is_window_type T> void set_window()
@@ -70,6 +65,9 @@ class WindowManager
     {
         auto &vk_window = Engine::get<VulkanWindow>();
         add_window(vk_window);
+
+        auto &dx_window = Engine::get<DirectXWindow>();
+        add_window(dx_window);
     }
 
     ~WindowManager() = default;

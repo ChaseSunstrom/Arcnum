@@ -172,9 +172,9 @@ Index of this file:
 //
 //                        [A]         [B]          [C]
 //  TableNextColumn():    true        false        false       -> [userland] when TableNextColumn() / TableSetColumnIndex() returns false, user can skip submitting items but only if the column doesn't contribute to row height.
-//          SkipItems:    false       false        true        -> [internal] when SkipItems is true, most widgets will early out if submitted, resulting is no layout output.
-//           ClipRect:    normal      zero-width   zero-width  -> [internal] when ClipRect is zero, ItemAdd() will return false and most widgets will early out mid-way.
-//  ImDrawList output:    normal      dummy        dummy       -> [internal] when using the dummy channel, ImDrawList submissions (if any) will be wasted (because cliprect is zero-width anyway).
+//          SkipItems:    false       false        true        -> [Internal] when SkipItems is true, most widgets will early out if submitted, resulting is no layout output.
+//           ClipRect:    normal      zero-width   zero-width  -> [Internal] when ClipRect is zero, ItemAdd() will return false and most widgets will early out mid-way.
+//  ImDrawList output:    normal      dummy        dummy       -> [Internal] when using the dummy channel, ImDrawList submissions (if any) will be wasted (because cliprect is zero-width anyway).
 //
 // - We need to distinguish those cases because non-hidden columns that are clipped outside of scrolling bounds should still contribute their height to the row.
 //   However, in the majority of cases, the contribution to row height is the same for all columns, or the tallest cells are known by the programmer.
@@ -191,13 +191,13 @@ Index of this file:
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
-#ifndef IMGUI_DEFINE_MATH_OPERATORS
-#define IMGUI_DEFINE_MATH_OPERATORS
+#ifndef IMGUI_DEFINE_Math_OPERATORS
+#define IMGUI_DEFINE_Math_OPERATORS
 #endif
 
 #include "imgui.h"
 #ifndef IMGUI_DISABLE
-#include "imgui_internal.h"
+#include "imgui_Internal.h"
 
 // System includes
 #include <stdint.h>     // intptr_t
@@ -2971,7 +2971,7 @@ float ImGui::TableGetHeaderAngledMaxLabelWidth()
 // The intent is that advanced users willing to create customized headers would not need to use this helper
 // and can create their own! For example: TableHeader() may be preceeded by Checkbox() or other custom widgets.
 // See 'Demo->Tables->Custom headers' for a demonstration of implementing a custom version of this.
-// This code is constructed to not make much use of internal functions, as it is intended to be a template to copy.
+// This code is constructed to not make much use of Internal functions, as it is intended to be a template to copy.
 // FIXME-TABLE: TableOpenContextMenu() and TableGetHeaderRowHeight() are not public.
 void ImGui::TableHeadersRow()
 {
@@ -3773,7 +3773,7 @@ void ImGui::TableRemove(ImGuiTable* table)
     g.TablesLastTimeActive[table_idx] = -1.0f;
 }
 
-// Free up/compact internal Table buffers for when it gets unused
+// Free up/compact Internal Table buffers for when it gets unused
 void ImGui::TableGcCompactTransientBuffers(ImGuiTable* table)
 {
     //IMGUI_DEBUG_PRINT("TableGcCompactTransientBuffers() id=0x%08X\n", table->ID);

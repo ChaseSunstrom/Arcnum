@@ -5795,16 +5795,16 @@ GLFWAPI GLFWjoystickfun glfwSetJoystickCallback(GLFWjoystickfun callback);
 /*! @brief Adds the specified SDL_GameControllerDB gamepad mappings.
  *
  *  This function parses the specified ASCII encoded string and updates the
- *  internal list with any gamepad mappings it finds.  This string may
+ *  Internal list with any gamepad mappings it finds.  This string may
  *  contain either a single gamepad mapping or many mappings separated by
  *  newlines.  The parser supports the full format of the `gamecontrollerdb.txt`
  *  source file including empty lines and comments.
  *
  *  See @ref gamepad_mapping for a description of the format.
  *
- *  If there is already a gamepad mapping for a given GUID in the internal list,
+ *  If there is already a gamepad mapping for a given GUID in the Internal list,
  *  it will be replaced by the one passed to this function.  If the library is
- *  terminated and re-initialized the internal list will revert to the built-in
+ *  terminated and re-initialized the Internal list will revert to the built-in
  *  default.
  *
  *  @param[in] string The string containing the gamepad mappings.
@@ -5980,7 +5980,7 @@ GLFWAPI const char* glfwGetClipboardString(GLFWwindow* window);
  *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED.
  *
  *  @thread_safety This function may be called from any thread.  Reading and
- *  writing of the internal base time is not atomic, so it needs to be
+ *  writing of the Internal base time is not atomic, so it needs to be
  *  externally synchronized with calls to @ref glfwSetTime.
  *
  *  @sa @ref time
@@ -6010,7 +6010,7 @@ GLFWAPI double glfwGetTime(void);
  *  storing nanoseconds in 64 bits.  The limit may be increased in the future.
  *
  *  @thread_safety This function may be called from any thread.  Reading and
- *  writing of the internal base time is not atomic, so it needs to be
+ *  writing of the Internal base time is not atomic, so it needs to be
  *  externally synchronized with calls to @ref glfwGetTime.
  *
  *  @sa @ref time

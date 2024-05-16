@@ -12,7 +12,7 @@ struct alignas(16) ubo
 
 void on_start()
 {
-    //Spark::set_api(Spark::API::VULKAN);
+    Spark::set_api(Spark::API::DIRECTX);
     auto &ecs = Spark::Engine::get<Spark::ECS>();
 
     Spark::Application::set_window_title("Arcnum");

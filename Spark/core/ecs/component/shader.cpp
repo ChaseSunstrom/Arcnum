@@ -38,30 +38,30 @@ ShaderType ShaderWrapper::get_shader_type_from_extension(const std::string &file
     }
 }
 
-VulkanShaderWrapper::VulkanShaderWrapper(ShaderType type, internal::VkShaderModule module)
+VulkanShaderWrapper::VulkanShaderWrapper(ShaderType type, Internal::VkShaderModule module)
 {
-    m_pipeline_shader.sType = internal::VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    m_pipeline_shader.sType = Internal::VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 
-    internal::VkShaderStageFlagBits vk_shader_type;
+    Internal::VkShaderStageFlagBits vk_shader_type;
     switch (type)
     {
     case ShaderType::VERTEX:
-        vk_shader_type = internal::VK_SHADER_STAGE_VERTEX_BIT;
+        vk_shader_type = Internal::VK_SHADER_STAGE_VERTEX_BIT;
         break;
     case ShaderType::FRAGMENT:
-        vk_shader_type = internal::VK_SHADER_STAGE_FRAGMENT_BIT;
+        vk_shader_type = Internal::VK_SHADER_STAGE_FRAGMENT_BIT;
         break;
     case ShaderType::COMPUTE:
-        vk_shader_type = internal::VK_SHADER_STAGE_COMPUTE_BIT;
+        vk_shader_type = Internal::VK_SHADER_STAGE_COMPUTE_BIT;
         break;
     case ShaderType::GEOMETRY:
-        vk_shader_type = internal::VK_SHADER_STAGE_GEOMETRY_BIT;
+        vk_shader_type = Internal::VK_SHADER_STAGE_GEOMETRY_BIT;
         break;
     case ShaderType::TESS_CONTROL:
-        vk_shader_type = internal::VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+        vk_shader_type = Internal::VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
         break;
     case ShaderType::TESS_EVAL:
-        vk_shader_type = internal::VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+        vk_shader_type = Internal::VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
         break;
     }
 
@@ -75,14 +75,14 @@ void ShaderWrapper::create_vulkan_shader(const std::filesystem::path &shader_cod
     auto &vk_window = Engine::get<VulkanWindow>();
 
     std::string code = read_file(shader_code);
-    internal::VkShaderModuleCreateInfo create_info = {};
-    create_info.sType = internal::VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    Internal::VkShaderModuleCreateInfo create_info = {};
+    create_info.sType = Internal::VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     create_info.codeSize = code.size();
     create_info.pCode = reinterpret_cast<const u32 *>(code.data());
 
-    internal::VkShaderModule shader_module;
+    Internal::VkShaderModule shader_module;
     if (vkCreateShaderModule(vk_window.get_window_data().m_device, &create_info, nullptr, &shader_module) !=
-        internal::VK_SUCCESS)
+        Internal::VK_SUCCESS)
     {
         SPARK_ERROR("[SHADER] Failed to create shader module");
     }

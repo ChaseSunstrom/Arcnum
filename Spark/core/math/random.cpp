@@ -15,12 +15,12 @@ u32 roll_dice(const u32 min, const u32 max)
     }
 
     // Create a random number generator and seed it using random_device
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
+    static std::random_device m_rd;
+    static std::mt19937 m_gen(m_rd());
     std::uniform_int_distribution<u32> dist(min, max);
 
     // Generate a random number within the defined range (min to max)
-    return dist(gen);
+    return dist(m_gen);
 }
 
 std::vector<u32> multi_dice_roll(const u32 min, const u32 max, const u32 num_dice)
@@ -55,23 +55,23 @@ std::vector<u32> roll_unfair_dice(const u32 min, const unsigned int max, const s
         return {};
     }
 
-    std::random_device rd;
-    std::mt19937 gen(rd());
+    std::random_device m_rd;
+    std::mt19937 m_gen(m_rd());
     std::discrete_distribution<u32> dist(percentages.begin(), percentages.end());
 
     std::vector<u32> rolled_dice(percentages.size());
     std::transform(percentages.begin(), percentages.end(), rolled_dice.begin(),
-                   [min, &dist, &gen](const auto &p) { return dist(gen) + min; });
+                   [min, &dist, &m_gen](const auto &p) { return dist(m_gen) + min; });
 
     return rolled_dice;
 }
 
 Coin flip_coin()
 {
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-    static std::bernoulli_distribution dis(0.5);
-    return dis(gen) ? Coin::HEADS : Coin::TAILS;
+    static std::random_device m_rd;
+    static std::mt19937 m_gen(m_rd());
+    static std::bernoulli_distribution m_dis(0.5);
+    return m_dis(m_gen) ? Coin::HEADS : Coin::TAILS;
 }
 
 Coin flip_unfair_coin(const double percentage)
@@ -83,11 +83,11 @@ Coin flip_unfair_coin(const double percentage)
         return Coin::TAILS;
     }
 
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-    static std::uniform_real_distribution<> dis(0.0, 1.0);
-    return dis(gen) < percentage ? Coin::HEADS : Coin::TAILS;
+    static std::random_device m_rd;
+    static std::mt19937 m_gen(m_rd());
+    static std::uniform_real_distribution<> m_dis(0.0, 1.0);
+    return m_dis(m_gen) < percentage ? Coin::HEADS : Coin::TAILS;
 }
 
-} // namespace math
+} // namespace Math
 } // namespace Spark

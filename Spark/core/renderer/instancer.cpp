@@ -137,8 +137,8 @@ void Instancer::render_instanced(Scene &scene)
             {
                 auto &vulkan_mesh = dynamic_cast<VulkanMesh &>(mesh);
 
-                internal::VkBuffer vertex_buffers[] = {vulkan_mesh.m_vertex_buffer};
-                internal::VkDeviceSize offsets[] = {0};
+                Internal::VkBuffer vertex_buffers[] = {vulkan_mesh.m_vertex_buffer};
+                Internal::VkDeviceSize offsets[] = {0};
 
                 vulkan_mesh.update_uniform_buffers();
 
@@ -150,11 +150,11 @@ void Instancer::render_instanced(Scene &scene)
                 {
                     vkCmdBindIndexBuffer(
                         vk_window.get_window_data().m_command_buffers[vk_window.get_window_data().m_current_frame],
-                        vulkan_mesh.m_index_buffer, 0, internal::VK_INDEX_TYPE_UINT32);
+                        vulkan_mesh.m_index_buffer, 0, Internal::VK_INDEX_TYPE_UINT32);
 
                     vkCmdBindDescriptorSets(
                         vk_window.get_window_data().m_command_buffers[vk_window.get_window_data().m_current_frame],
-                        internal::VK_PIPELINE_BIND_POINT_GRAPHICS, vk_window.get_window_data().m_pipeline_layout, 0, 1,
+                        Internal::VK_PIPELINE_BIND_POINT_GRAPHICS, vk_window.get_window_data().m_pipeline_layout, 0, 1,
                         &vk_window.get_window_data().m_descriptor_sets[vk_window.get_window_data().m_current_frame], 0,
                         nullptr);
 
@@ -167,7 +167,7 @@ void Instancer::render_instanced(Scene &scene)
                 {
                     vkCmdBindDescriptorSets(
                         vk_window.get_window_data().m_command_buffers[vk_window.get_window_data().m_current_frame],
-                        internal::VK_PIPELINE_BIND_POINT_GRAPHICS, vk_window.get_window_data().m_pipeline_layout, 0, 1,
+                        Internal::VK_PIPELINE_BIND_POINT_GRAPHICS, vk_window.get_window_data().m_pipeline_layout, 0, 1,
                         &vk_window.get_window_data().m_descriptor_sets[vk_window.get_window_data().m_current_frame], 0,
                         nullptr);
 

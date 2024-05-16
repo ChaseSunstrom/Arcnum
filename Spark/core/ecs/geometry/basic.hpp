@@ -7,23 +7,23 @@ namespace Spark
 {
 struct Triangle
 {
-    static Entity create(const math::vec3 &position = math::vec3(0.0f), const math::vec3 &rotation = math::vec3(0.0f),
-                         const math::vec3 &size = math::vec3(1.0f))
+    static Entity create(const Math::vec3 &position = Math::vec3(0.0f), const Math::vec3 &rotation = Math::vec3(0.0f),
+                         const Math::vec3 &size = Math::vec3(1.0f))
     {
         return create("__default__", position, rotation, size);
     }
 
-    static Entity create(const std::string &material, const math::vec3 &position = math::vec3(0.0f),
-                         const math::vec3 &rotation = math::vec3(0.0f), const math::vec3 &size = math::vec3(1.0f))
+    static Entity create(const std::string &material, const Math::vec3 &position = Math::vec3(0.0f),
+                         const Math::vec3 &rotation = Math::vec3(0.0f), const Math::vec3 &size = Math::vec3(1.0f))
     {
         auto &_ecs = Engine::get<ECS>();
         auto &_mesh_manager = Engine::get<MeshManager>();
         auto &_material_manager = Engine::get<MaterialManager>();
 
         std::vector<Vertex> vertices = {
-            Vertex(math::vec3(-size.x, -size.y, 0.0f)),
-            Vertex(math::vec3(size.x, -size.y, 0.0f)),
-            Vertex(math::vec3(0.0f, size.y, 0.0f)),
+            Vertex(Math::vec3(-size.x, -size.y, 0.0f)),
+            Vertex(Math::vec3(size.x, -size.y, 0.0f)),
+            Vertex(Math::vec3(0.0f, size.y, 0.0f)),
         };
 
         _mesh_manager.create("__triangle__", vertices);
@@ -37,24 +37,24 @@ struct Triangle
 
 struct Square
 {
-    static Entity create(const math::vec3 &position = math::vec3(0.0f), const math::vec3 &rotation = math::vec3(0.0f),
-                         const math::vec3 &size = math::vec3(1.0f))
+    static Entity create(const Math::vec3 &position = Math::vec3(0.0f), const Math::vec3 &rotation = Math::vec3(0.0f),
+                         const Math::vec3 &size = Math::vec3(1.0f))
     {
         return create("__default__", position, rotation, size);
     }
 
-    static Entity create(const std::string &material, const math::vec3 &position = math::vec3(0.0f),
-                         const math::vec3 &rotation = math::vec3(0.0f), const math::vec3 &size = math::vec3(1.0f))
+    static Entity create(const std::string &material, const Math::vec3 &position = Math::vec3(0.0f),
+                         const Math::vec3 &rotation = Math::vec3(0.0f), const Math::vec3 &size = Math::vec3(1.0f))
     {
         auto &_ecs = Engine::get<ECS>();
         auto &_mesh_manager = Engine::get<MeshManager>();
         auto &_material_manager = Engine::get<MaterialManager>();
 
         std::vector<Vertex> vertices = {
-            Vertex(math::vec3(-size.x, -size.y, 0.0f)),
-            Vertex(math::vec3(size.x, -size.y, 0.0f)),
-            Vertex(math::vec3(size.x, size.y, 0.0f)),
-            Vertex(math::vec3(-size.x, size.y, 0.0f)),
+            Vertex(Math::vec3(-size.x, -size.y, 0.0f)),
+            Vertex(Math::vec3(size.x, -size.y, 0.0f)),
+            Vertex(Math::vec3(size.x, size.y, 0.0f)),
+            Vertex(Math::vec3(-size.x, size.y, 0.0f)),
         };
 
         std::vector<u32> indices = {0, 1, 2, 2, 3, 0};
@@ -70,14 +70,14 @@ struct Square
 
 struct Circle
 {
-    static Entity create(const math::vec3 &position = math::vec3(0.0f), const math::vec3 &rotation = math::vec3(0.0f),
-                         const math::vec3 &size = math::vec3(1.0f))
+    static Entity create(const Math::vec3 &position = Math::vec3(0.0f), const Math::vec3 &rotation = Math::vec3(0.0f),
+                         const Math::vec3 &size = Math::vec3(1.0f))
     {
         return create("__default__", position, rotation, size);
     }
 
-    static Entity create(const std::string &material, const math::vec3 &position = math::vec3(0.0f),
-                         const math::vec3 &rotation = math::vec3(0.0f), const math::vec3 &size = math::vec3(1.0f))
+    static Entity create(const std::string &material, const Math::vec3 &position = Math::vec3(0.0f),
+                         const Math::vec3 &rotation = Math::vec3(0.0f), const Math::vec3 &size = Math::vec3(1.0f))
     {
         auto &_ecs = Engine::get<ECS>();
         auto &_mesh_manager = Engine::get<MeshManager>();
@@ -87,8 +87,8 @@ struct Circle
 
         for (f32 i = 0; i < 360; i++)
         {
-            f32 angle = math::radians(i);
-            vertices.push_back(Vertex(math::vec3(size.x * cos(angle), size.y * sin(angle), 0.0f)));
+            f32 angle = Math::radians(i);
+            vertices.push_back(Vertex(Math::vec3(size.x * cos(angle), size.y * sin(angle), 0.0f)));
         }
 
         _mesh_manager.create("__circle__", vertices);
@@ -102,13 +102,13 @@ struct Circle
 
 struct Line
 {
-    static Entity create(const math::vec3 &start = math::vec3(0.0f), const math::vec3 &end = math::vec3(1.0f))
+    static Entity create(const Math::vec3 &start = Math::vec3(0.0f), const Math::vec3 &end = Math::vec3(1.0f))
     {
         return create("__default__", start, end);
     }
 
-    static Entity create(const std::string &material, const math::vec3 &start = math::vec3(0.0f),
-                         const math::vec3 &end = math::vec3(1.0f))
+    static Entity create(const std::string &material, const Math::vec3 &start = Math::vec3(0.0f),
+                         const Math::vec3 &end = Math::vec3(1.0f))
     {
         auto &_ecs = Engine::get<ECS>();
         auto &_mesh_manager = Engine::get<MeshManager>();
@@ -129,55 +129,55 @@ struct Line
 
 struct Cube
 {
-    static Entity create(const math::vec3 &position = math::vec3(0.0f), const math::vec3 &rotation = math::vec3(0.0f),
-                         const math::vec3 &size = math::vec3(1.0f))
+    static Entity create(const Math::vec3 &position = Math::vec3(0.0f), const Math::vec3 &rotation = Math::vec3(0.0f),
+                         const Math::vec3 &size = Math::vec3(1.0f))
     {
         return create("__default__", position, rotation, size);
     }
 
-    static Entity create(const std::string &material, const math::vec3 &position = math::vec3(0.0f),
-                         const math::vec3 &rotation = math::vec3(0.0f), const math::vec3 &size = math::vec3(1.0f))
+    static Entity create(const std::string &material, const Math::vec3 &position = Math::vec3(0.0f),
+                         const Math::vec3 &rotation = Math::vec3(0.0f), const Math::vec3 &size = Math::vec3(1.0f))
     {
         auto &_ecs = Engine::get<ECS>();
         auto &_mesh_manager = Engine::get<MeshManager>();
         auto &_material_manager = Engine::get<MaterialManager>();
 
-        std::vector<Spark::Vertex> vertices = {Spark::Vertex(Spark::math::vec3(-size.x, -size.y, -size.z)),
-                                               Spark::Vertex(Spark::math::vec3(size.x, -size.y, -size.z)),
-                                               Spark::Vertex(Spark::math::vec3(size.x, size.y, -size.z)),
-                                               Spark::Vertex(Spark::math::vec3(size.x, size.y, -size.z)),
-                                               Spark::Vertex(Spark::math::vec3(-size.x, size.y, -size.z)),
-                                               Spark::Vertex(Spark::math::vec3(-size.x, -size.y, -size.z)),
-                                               Spark::Vertex(Spark::math::vec3(-size.x, -size.y, size.z)),
-                                               Spark::Vertex(Spark::math::vec3(size.x, -size.y, size.z)),
-                                               Spark::Vertex(Spark::math::vec3(size.x, size.y, size.z)),
-                                               Spark::Vertex(Spark::math::vec3(size.x, size.y, size.z)),
-                                               Spark::Vertex(Spark::math::vec3(-size.x, size.y, size.z)),
-                                               Spark::Vertex(Spark::math::vec3(-size.x, -size.y, size.z)),
-                                               Spark::Vertex(Spark::math::vec3(-size.x, size.y, size.z)),
-                                               Spark::Vertex(Spark::math::vec3(-size.x, size.y, -size.z)),
-                                               Spark::Vertex(Spark::math::vec3(-size.x, -size.y, -size.z)),
-                                               Spark::Vertex(Spark::math::vec3(-size.x, -size.y, -size.z)),
-                                               Spark::Vertex(Spark::math::vec3(-size.x, -size.y, size.z)),
-                                               Spark::Vertex(Spark::math::vec3(-size.x, size.y, size.z)),
-                                               Spark::Vertex(Spark::math::vec3(size.x, size.y, size.z)),
-                                               Spark::Vertex(Spark::math::vec3(size.x, size.y, -size.z)),
-                                               Spark::Vertex(Spark::math::vec3(size.x, -size.y, -size.z)),
-                                               Spark::Vertex(Spark::math::vec3(size.x, -size.y, -size.z)),
-                                               Spark::Vertex(Spark::math::vec3(size.x, -size.y, size.z)),
-                                               Spark::Vertex(Spark::math::vec3(size.x, size.y, size.z)),
-                                               Spark::Vertex(Spark::math::vec3(-size.x, -size.y, -size.z)),
-                                               Spark::Vertex(Spark::math::vec3(size.x, -size.y, -size.z)),
-                                               Spark::Vertex(Spark::math::vec3(size.x, -size.y, size.z)),
-                                               Spark::Vertex(Spark::math::vec3(size.x, -size.y, size.z)),
-                                               Spark::Vertex(Spark::math::vec3(-size.x, -size.y, size.z)),
-                                               Spark::Vertex(Spark::math::vec3(-size.x, -size.y, -size.z)),
-                                               Spark::Vertex(Spark::math::vec3(-size.x, size.y, -size.z)),
-                                               Spark::Vertex(Spark::math::vec3(size.x, size.y, -size.z)),
-                                               Spark::Vertex(Spark::math::vec3(size.x, size.y, size.z)),
-                                               Spark::Vertex(Spark::math::vec3(size.x, size.y, size.z)),
-                                               Spark::Vertex(Spark::math::vec3(-size.x, size.y, size.z)),
-                                               Spark::Vertex(Spark::math::vec3(-size.x, size.y, -size.z))};
+        std::vector<Spark::Vertex> vertices = {Spark::Vertex(Spark::Math::vec3(-size.x, -size.y, -size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(size.x, -size.y, -size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(size.x, size.y, -size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(size.x, size.y, -size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(-size.x, size.y, -size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(-size.x, -size.y, -size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(-size.x, -size.y, size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(size.x, -size.y, size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(size.x, size.y, size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(size.x, size.y, size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(-size.x, size.y, size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(-size.x, -size.y, size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(-size.x, size.y, size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(-size.x, size.y, -size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(-size.x, -size.y, -size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(-size.x, -size.y, -size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(-size.x, -size.y, size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(-size.x, size.y, size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(size.x, size.y, size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(size.x, size.y, -size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(size.x, -size.y, -size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(size.x, -size.y, -size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(size.x, -size.y, size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(size.x, size.y, size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(-size.x, -size.y, -size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(size.x, -size.y, -size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(size.x, -size.y, size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(size.x, -size.y, size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(-size.x, -size.y, size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(-size.x, -size.y, -size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(-size.x, size.y, -size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(size.x, size.y, -size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(size.x, size.y, size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(size.x, size.y, size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(-size.x, size.y, size.z)),
+                                               Spark::Vertex(Spark::Math::vec3(-size.x, size.y, -size.z))};
 
         _mesh_manager.create("__cube__", vertices);
 
@@ -190,14 +190,14 @@ struct Cube
 
 struct Sphere
 {
-    static Entity create(const math::vec3 &position = math::vec3(0.0f), const math::vec3 &rotation = math::vec3(0.0f),
-                         const math::vec3 &size = math::vec3(1.0f), const i32 slices = 36, const i32 stacks = 18)
+    static Entity create(const Math::vec3 &position = Math::vec3(0.0f), const Math::vec3 &rotation = Math::vec3(0.0f),
+                         const Math::vec3 &size = Math::vec3(1.0f), const i32 slices = 36, const i32 stacks = 18)
     {
         return create("__default__", position, rotation, size, slices, stacks);
     }
 
-    static Entity create(const std::string &material, const math::vec3 &position = math::vec3(0.0f),
-                         const math::vec3 &rotation = math::vec3(0.0f), const math::vec3 &size = math::vec3(1.0f),
+    static Entity create(const std::string &material, const Math::vec3 &position = Math::vec3(0.0f),
+                         const Math::vec3 &rotation = Math::vec3(0.0f), const Math::vec3 &size = Math::vec3(1.0f),
                          const i32 slices = 36, const i32 stacks = 18)
     {
         auto &_ecs = Engine::get<ECS>();
@@ -211,17 +211,17 @@ struct Sphere
         for (i32 i = 0; i <= stacks; ++i)
         {
             // phi ranges from 0 to pi
-            f32 phi = math::pi<f32>() * f32(i) / stacks;
+            f32 phi = Math::pi<f32>() * f32(i) / stacks;
             for (i32 j = 0; j <= slices; ++j)
             {
                 // theta ranges from 0 to 2pi
-                f32 theta = 2 * math::pi<f32>() * f32(j) / slices;
+                f32 theta = 2 * Math::pi<f32>() * f32(j) / slices;
 
                 f32 x = size.x * sin(phi) * cos(theta);
                 f32 y = size.y * sin(phi) * sin(theta);
                 f32 z = size.z * cos(phi);
 
-                vertices.push_back(Vertex(math::vec3(x, y, z)));
+                vertices.push_back(Vertex(Math::vec3(x, y, z)));
             }
         }
 
@@ -254,14 +254,14 @@ struct Sphere
 
 struct Capsule
 {
-    static Entity create(const math::vec3 &position = math::vec3(0.0f), const math::vec3 &rotation = math::vec3(0.0f),
-                         const math::vec3 &size = math::vec3(1.0f))
+    static Entity create(const Math::vec3 &position = Math::vec3(0.0f), const Math::vec3 &rotation = Math::vec3(0.0f),
+                         const Math::vec3 &size = Math::vec3(1.0f))
     {
         return create("__default__", position, rotation, size);
     }
 
-    static Entity create(const std::string &material, const math::vec3 &position = math::vec3(0.0f),
-                         const math::vec3 &rotation = math::vec3(0.0f), const math::vec3 &size = math::vec3(1.0f))
+    static Entity create(const std::string &material, const Math::vec3 &position = Math::vec3(0.0f),
+                         const Math::vec3 &rotation = Math::vec3(0.0f), const Math::vec3 &size = Math::vec3(1.0f))
     {
         auto &_ecs = Engine::get<ECS>();
         auto &_mesh_manager = Engine::get<MeshManager>();
@@ -273,11 +273,11 @@ struct Capsule
         {
             for (f32 j = 0; j < 360; j += 10)
             {
-                f32 x = size.x * cos(math::radians(i)) * sin(math::radians(j));
-                f32 y = size.y * sin(math::radians(i)) * sin(math::radians(j));
-                f32 z = size.z * cos(math::radians(j));
+                f32 x = size.x * cos(Math::radians(i)) * sin(Math::radians(j));
+                f32 y = size.y * sin(Math::radians(i)) * sin(Math::radians(j));
+                f32 z = size.z * cos(Math::radians(j));
 
-                vertices.push_back(Vertex(math::vec3(x, y, z)));
+                vertices.push_back(Vertex(Math::vec3(x, y, z)));
             }
         }
 
@@ -292,14 +292,14 @@ struct Capsule
 
 struct Cone
 {
-    static Entity create(const math::vec3 &position = math::vec3(0.0f), const math::vec3 &rotation = math::vec3(0.0f),
-                         const math::vec3 &size = math::vec3(1.0f))
+    static Entity create(const Math::vec3 &position = Math::vec3(0.0f), const Math::vec3 &rotation = Math::vec3(0.0f),
+                         const Math::vec3 &size = Math::vec3(1.0f))
     {
         return create("__default__", position, rotation, size);
     }
 
-    static Entity create(const std::string &material, const math::vec3 &position = math::vec3(0.0f),
-                         const math::vec3 &rotation = math::vec3(0.0f), const math::vec3 &size = math::vec3(1.0f))
+    static Entity create(const std::string &material, const Math::vec3 &position = Math::vec3(0.0f),
+                         const Math::vec3 &rotation = Math::vec3(0.0f), const Math::vec3 &size = Math::vec3(1.0f))
     {
         auto &_ecs = Engine::get<ECS>();
         auto &_mesh_manager = Engine::get<MeshManager>();
@@ -311,11 +311,11 @@ struct Cone
         {
             for (f32 j = 0; j < 360; j += 10)
             {
-                f32 x = size.x * cos(math::radians(i)) * sin(math::radians(j));
-                f32 y = size.y * sin(math::radians(i)) * sin(math::radians(j));
-                f32 z = size.z * cos(math::radians(j));
+                f32 x = size.x * cos(Math::radians(i)) * sin(Math::radians(j));
+                f32 y = size.y * sin(Math::radians(i)) * sin(Math::radians(j));
+                f32 z = size.z * cos(Math::radians(j));
 
-                vertices.push_back(Vertex(math::vec3(x, y, z)));
+                vertices.push_back(Vertex(Math::vec3(x, y, z)));
             }
         }
 
@@ -330,14 +330,14 @@ struct Cone
 
 struct Cylinder
 {
-    static Entity create(const math::vec3 &position = math::vec3(0.0f), const math::vec3 &rotation = math::vec3(0.0f),
-                         const math::vec3 &size = math::vec3(1.0f))
+    static Entity create(const Math::vec3 &position = Math::vec3(0.0f), const Math::vec3 &rotation = Math::vec3(0.0f),
+                         const Math::vec3 &size = Math::vec3(1.0f))
     {
         return create("__default__", position, rotation, size);
     }
 
-    static Entity create(const std::string &material, const math::vec3 &position = math::vec3(0.0f),
-                         const math::vec3 &rotation = math::vec3(0.0f), const math::vec3 &size = math::vec3(1.0f))
+    static Entity create(const std::string &material, const Math::vec3 &position = Math::vec3(0.0f),
+                         const Math::vec3 &rotation = Math::vec3(0.0f), const Math::vec3 &size = Math::vec3(1.0f))
     {
         auto &_ecs = Engine::get<ECS>();
         auto &_mesh_manager = Engine::get<MeshManager>();
@@ -349,11 +349,11 @@ struct Cylinder
         {
             for (f32 j = 0; j < 360; j += 10)
             {
-                f32 x = size.x * cos(math::radians(i)) * sin(math::radians(j));
-                f32 y = size.y * sin(math::radians(i)) * sin(math::radians(j));
-                f32 z = size.z * cos(math::radians(j));
+                f32 x = size.x * cos(Math::radians(i)) * sin(Math::radians(j));
+                f32 y = size.y * sin(Math::radians(i)) * sin(Math::radians(j));
+                f32 z = size.z * cos(Math::radians(j));
 
-                vertices.push_back(Vertex(math::vec3(x, y, z)));
+                vertices.push_back(Vertex(Math::vec3(x, y, z)));
             }
         }
 

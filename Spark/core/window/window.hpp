@@ -38,7 +38,9 @@ class Window
         return m_initialized;
     }
 
-    virtual void init();
+    virtual void init()
+    {
+    }
 
     virtual void pre_draw() = 0;
 
@@ -66,4 +68,4 @@ class Window
 
 } // namespace Spark
 
-#endif // CORE_WINDOW_H
+#endif // SPARK_WINDOW_HPP

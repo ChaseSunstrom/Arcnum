@@ -425,5 +425,6 @@
     <ClCompile Include="Spark\include\IMGUI\imgui_widgets.cpp">
       <Filter>include\IMGUI</Filter>
     </ClCompile>
+    <ClCompile Include="Spark\core\window\window_manager.cpp" />
   </ItemGroup>
 </Project>

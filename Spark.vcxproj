@@ -203,6 +203,7 @@
     <ClCompile Include="Spark\core\util\file.cpp" />
     <ClCompile Include="Spark\core\window\directx\directx_window.cpp" />
     <ClCompile Include="Spark\core\window\vulkan\vulkan_window.cpp" />
+    <ClCompile Include="Spark\core\window\window_manager.cpp" />
     <ClCompile Include="Spark\include\IMGUI\imgui.cpp" />
     <ClCompile Include="Spark\include\IMGUI\imgui_demo.cpp" />
     <ClCompile Include="Spark\include\IMGUI\imgui_draw.cpp" />

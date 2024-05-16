@@ -1,17 +1,23 @@
 #ifndef SPARK_WINDOW_MANAGER_HPP
 #define SPARK_WINDOW_MANAGER_HPP
 
-#include "../spark.hpp"
 #include "../app/api.hpp"
+#include "../spark.hpp"
 #include "directx/directx_window.hpp"
 #include "metal/metal_window.hpp"
 #include "vulkan/vulkan_window.hpp"
 #include "window.hpp"
+#include "../events/sub.hpp"
 
 namespace Spark
 {
 template <typename W>
 concept is_window_type = std::is_base_of_v<Window, W>;
+
+namespace Internal
+{
+void on_api_changed(std::shared_ptr<Event> event);
+} // namespace Internal
 
 class WindowManager
 {
@@ -68,6 +74,8 @@ class WindowManager
 
         auto &dx_window = Engine::get<DirectXWindow>();
         add_window(dx_window);
+
+        Subscription<Event>::create(API_CHANGED_EVENT, Internal::on_api_changed);
     }
 
     ~WindowManager() = default;

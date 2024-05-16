@@ -9,14 +9,14 @@ namespace Spark
 
 struct Material
 {
-    Material(const math::vec4 &color, Texture &tex, const std::vector<std::string>& shader_paths, i32 diffuse, i32 specular, i32 ambient, f32 shininess)
+    Material(const Math::vec4 &color, Texture &tex, const std::vector<std::string>& shader_paths, i32 diffuse, i32 specular, i32 ambient, f32 shininess)
         : m_color(color), m_diffuse(diffuse), m_specular(specular), m_ambient(ambient), m_shininess(shininess),
           m_texture(tex)
     {}
 
     ~Material() = default;
 
-    math::vec4 m_color;
+    Math::vec4 m_color;
 
     i32 m_diffuse;
 

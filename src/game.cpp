@@ -5,9 +5,9 @@
 
 struct alignas(16) ubo
 {
-    Spark::math::mat4 m_proj;
-    Spark::math::mat4 m_view;
-    Spark::math::mat4 m_model;
+    Spark::Math::mat4 m_proj;
+    Spark::Math::mat4 m_view;
+    Spark::Math::mat4 m_model;
 };
 
 void on_start()
@@ -21,11 +21,11 @@ void on_start()
 
     Spark::AssetManager::create_asset<Spark::Audio>("retro", "assets/sfx/retro.wav");
 
-    cur_scene.set_background_color(Spark::math::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+    cur_scene.set_background_color(Spark::Math::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 
     // Create material and mesh
     Spark::Material &material =
-        Spark::AssetManager::create_asset<Spark::Material>("material", Spark::math::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+        Spark::AssetManager::create_asset<Spark::Material>("material", Spark::Math::vec4(1.0f, 1.0f, 1.0f, 1.0f));
     std::default_random_engine random_engine;
     std::uniform_real_distribution<Spark::f32> distribution(0.0f, 1.0f);
 
@@ -35,10 +35,10 @@ void on_start()
     std::vector<Spark::u32> indices = {0, 1, 3, 1, 2, 3};
 
     ubo _ubo{};
-    _ubo.m_model = Spark::math::mat4(1.0f);
-    _ubo.m_proj = Spark::math::perspective(45.0f, 1.0f, 0.1f, 100.0f);
-    _ubo.m_view = Spark::math::lookAt(Spark::math::vec3(0.0f, 0.0f, 3.0f), Spark::math::vec3(0.0f, 0.0f, 0.0f),
-                                      Spark::math::vec3(0.0f, 1.0f, 0.0f));
+    _ubo.m_model = Spark::Math::mat4(1.0f);
+    _ubo.m_proj = Spark::Math::perspective(45.0f, 1.0f, 0.1f, 100.0f);
+    _ubo.m_view = Spark::Math::lookAt(Spark::Math::vec3(0.0f, 0.0f, 3.0f), Spark::Math::vec3(0.0f, 0.0f, 0.0f),
+                                      Spark::Math::vec3(0.0f, 1.0f, 0.0f));
 
     Spark::AssetManager::create_asset<Spark::Mesh>("quad", vertices, indices, _ubo);
 

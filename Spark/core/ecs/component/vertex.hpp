@@ -7,19 +7,19 @@ namespace Spark
 {
 struct Vertex
 {
-    Vertex(const math::vec3 &position = math::vec3(0), const math::vec3 &normal = math::vec3(0),
-           const math::vec2 &texcoord = math::vec2(0))
+    Vertex(const Math::vec3 &position = Math::vec3(0), const Math::vec3 &normal = Math::vec3(0),
+           const Math::vec2 &texcoord = Math::vec2(0))
         : m_position(position), m_normal(normal), m_texcoords(texcoord)
     {
     }
 
     ~Vertex() = default;
 
-    math::vec3 m_position;
+    Math::vec3 m_position;
 
-    math::vec3 m_normal;
+    Math::vec3 m_normal;
 
-    math::vec2 m_texcoords;
+    Math::vec2 m_texcoords;
 };
 } // namespace Spark
 

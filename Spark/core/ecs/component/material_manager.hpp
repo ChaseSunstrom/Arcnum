@@ -17,7 +17,7 @@ class MaterialManager
     }
 
     Material &create(
-        const std::string &name, const math::vec4 &color = math::vec4(1), const std::string &texture_name = "", const std::vector<std::string> &shader_paths = {},
+        const std::string &name, const Math::vec4 &color = Math::vec4(1), const std::string &texture_name = "", const std::vector<std::string> &shader_paths = {},
         i32 diffuse = 0, i32 specular = 0, i32 ambient = 1, f32 shininess = 0)
     {
         if (m_materials.contains(name))

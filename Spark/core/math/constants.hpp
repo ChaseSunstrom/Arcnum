@@ -5,7 +5,7 @@
 
 namespace Spark
 {
-	namespace math
+	namespace Math
 	{
     constexpr f64 PLANCK_TIME= 5.391e-44;                        /*Seconds*/
     constexpr f64 PLANCK_LENGTH = 1.616228369772e-35; /*meters*/

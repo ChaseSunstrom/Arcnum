@@ -15,29 +15,29 @@ namespace Spark
 
 struct Transform
 {
-    Transform(const math::vec3 &position = math::vec3(0.0f), const math::vec3 &rotation = math::vec3(0.0f),
-              const math::vec3 &scale = math::vec3(1.0f))
+    Transform(const Math::vec3 &position = Math::vec3(0.0f), const Math::vec3 &rotation = Math::vec3(0.0f),
+              const Math::vec3 &scale = Math::vec3(1.0f))
     {
-        math::mat4 mat = math::mat4(1.0f); // Start with identity matrix
+        Math::mat4 mat = Math::mat4(1.0f); // Start with identity matrix
 
         // Apply translation, rotation, and scaling
-        mat = math::translate(mat, position);
-        mat = math::rotate(mat, math::radians(rotation.z), math::vec3(0.0f, 0.0f, 1.0f));
-        mat = math::rotate(mat, math::radians(rotation.y), math::vec3(0.0f, 1.0f, 0.0f));
-        mat = math::rotate(mat, math::radians(rotation.x), math::vec3(1.0f, 0.0f, 0.0f));
-        mat = math::scale(mat, scale);
+        mat = Math::translate(mat, position);
+        mat = Math::rotate(mat, Math::radians(rotation.z), Math::vec3(0.0f, 0.0f, 1.0f));
+        mat = Math::rotate(mat, Math::radians(rotation.y), Math::vec3(0.0f, 1.0f, 0.0f));
+        mat = Math::rotate(mat, Math::radians(rotation.x), Math::vec3(1.0f, 0.0f, 0.0f));
+        mat = Math::scale(mat, scale);
 
         m_transform = mat;
     }
 
-    void update_matrix(const math::vec3 &position, const math::vec3 &rotation, const math::vec3 &scale)
+    void update_matrix(const Math::vec3 &position, const Math::vec3 &rotation, const Math::vec3 &scale)
     {
-        m_transform = math::mat4(1.0f); // Reset to identity matrix
-        m_transform = math::translate(m_transform, position);
-        m_transform = math::rotate(m_transform, math::radians(rotation.z), math::vec3(0.0f, 0.0f, 1.0f));
-        m_transform = math::rotate(m_transform, math::radians(rotation.y), math::vec3(0.0f, 1.0f, 0.0f));
-        m_transform = math::rotate(m_transform, math::radians(rotation.x), math::vec3(1.0f, 0.0f, 0.0f));
-        m_transform = math::scale(m_transform, scale);
+        m_transform = Math::mat4(1.0f); // Reset to identity matrix
+        m_transform = Math::translate(m_transform, position);
+        m_transform = Math::rotate(m_transform, Math::radians(rotation.z), Math::vec3(0.0f, 0.0f, 1.0f));
+        m_transform = Math::rotate(m_transform, Math::radians(rotation.y), Math::vec3(0.0f, 1.0f, 0.0f));
+        m_transform = Math::rotate(m_transform, Math::radians(rotation.x), Math::vec3(1.0f, 0.0f, 0.0f));
+        m_transform = Math::scale(m_transform, scale);
     }
 
     Transform &operator*=(const Transform &rhs)
@@ -53,7 +53,7 @@ struct Transform
         return result;
     }
 
-    math::mat4 m_transform;
+    Math::mat4 m_transform;
 };
 
 struct MeshComponent

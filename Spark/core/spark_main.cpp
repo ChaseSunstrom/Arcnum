@@ -23,6 +23,11 @@ void spark_main()
 
 // #define SPARK_TEST
 #ifndef SPARK_TEST
+    WindowManager::initialize_instance();
+    Instancer::initialize_instance();
+    Renderer::initialize_instance();
+    ECS::initialize_instance();
+
     Application::on_start();
 #else
     test::core_test_main();

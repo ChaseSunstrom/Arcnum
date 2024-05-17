@@ -4,6 +4,7 @@
 #include "ecs/ecs.hpp"
 #include "renderer/instancer.hpp"
 #include "tests/test.hpp"
+#include "window/window_manager.hpp"
 #include "util/thread_pool.hpp"
 
 namespace Spark

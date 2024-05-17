@@ -24,13 +24,8 @@ struct Transforms
 
 class Instancer : public Observer, public Singleton<Instancer>
 {
+    friend class Singleton<Instancer>;
   public:
-    static Instancer &get()
-    {
-        static Instancer instance;
-        return instance;
-    }
-
     void add_renderable(Entity e, const Scene &scene, const std::string &mesh_name, const std::string &material_name,
                         const Transform &transform);
 

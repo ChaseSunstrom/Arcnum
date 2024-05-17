@@ -13,7 +13,7 @@
 
 namespace Spark
 {
-class Application : public Singleton<Application>
+class Application
 {
   public:
     static void on_start();
@@ -35,8 +35,6 @@ class Application : public Singleton<Application>
     static void calculate_delta_time();
 
     static void calculate_last_frame_time();
-
-    static void set_api(API api);
 
     static API get_current_api();
 

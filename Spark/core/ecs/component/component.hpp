@@ -143,13 +143,8 @@ template <typename T> class ComponentArray : public IComponentArray
 
 class ComponentManager : public Singleton<ComponentManager>
 {
+    friend class Singleton<ComponentManager>;
   public:
-    static ComponentManager &get()
-    {
-        static ComponentManager instance;
-        return instance;
-    }
-
     template <typename T> ComponentArray<T> &get_component_array()
     {
         std::string type = std::type_index(typeid(T)).name();

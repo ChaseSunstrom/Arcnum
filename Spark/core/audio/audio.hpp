@@ -10,13 +10,8 @@ namespace Spark
 {
 class AudioManager : public Singleton<AudioManager>
 {
+    friend class Singleton<AudioManager>;
   public:
-    static AudioManager &get()
-    {
-        static AudioManager instance;
-        return instance;
-    }
-
     Audio &create(const std::string &name, const std::filesystem::path &source, bool loops = false,
                   bool pause_on_create = true)
     {

@@ -140,7 +140,7 @@ class EventDispatcher
     {
     }
 
-    inline bool dispatch(std::function<bool(std::shared_ptr<Event>)> fn)
+    bool dispatch(std::function<bool(std::shared_ptr<Event>)> fn)
     {
         return fn(m_event);
     }

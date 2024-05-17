@@ -4,19 +4,15 @@
 #include "../../net/serializeable.hpp"
 #include "../../spark.hpp"
 #include "../component/component.hpp"
-#include "../util/Singleton.hpp"
+#include "../../util/Singleton.hpp"
 #include "entity_type.hpp"
 
 namespace Spark
 {
 class EntityManager : public Singleton<EntityManager>
 {
+    friend class Singleton<EntityManager>;
   public:
-    static EntityManager &get()
-    {
-        static EntityManager instance;
-        return instance;
-    }
 
     Entity create_entity()
     {

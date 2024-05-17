@@ -8,7 +8,7 @@ void set_api(API api)
 {
     g_current_api = api;
 
-    publish_to_topic(API_CHANGED_RECEIVE_TOPIC, std::make_shared<APIChangedEvent>(api));
+    publish_to_topic(API_CHANGED_EVENT_TOPIC, std::make_shared<APIChangedEvent>(api));
 }
 
 API get_current_api()

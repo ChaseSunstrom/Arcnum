@@ -426,5 +426,6 @@
       <Filter>include\IMGUI</Filter>
     </ClCompile>
     <ClCompile Include="Spark\core\window\window_manager.cpp" />
+    <ClCompile Include="Spark\core\util\singleton.cpp" />
   </ItemGroup>
 </Project>

@@ -55,14 +55,10 @@ struct Camera
     std::unique_ptr<Frustum> m_frustum;
 };
 
-class CameraManager : Singleton<CameraManager>
+class CameraManager : public Singleton<CameraManager>
 {
+    friend class Singleton<CameraManager>;
   public:
-    static CameraManager &get()
-    {
-        static CameraManager instance;
-        return instance;
-    }
 
     Camera& get_camera(std::string name)
     {

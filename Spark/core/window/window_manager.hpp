@@ -19,15 +19,10 @@ namespace Internal
 void on_api_changed(std::shared_ptr<Event> event);
 } // namespace Internal
 
-class WindowManager
+class WindowManager : public Singleton<WindowManager>
 {
+    friend class Singleton<WindowManager>;
   public:
-    static WindowManager &get()
-    {
-        static WindowManager instance;
-        return instance;
-    }
-
     template <is_window_type T> void add_window(T &window)
     {
         m_windows[typeid(T)] = &window;
@@ -61,9 +56,9 @@ class WindowManager
         }
     }
 
-    Window &get_current_window() const
+    Window* get_current_window() const
     {
-        return *m_current_window;
+        return m_current_window;
     }
 
   private:
@@ -75,7 +70,7 @@ class WindowManager
         auto &dx_window = Engine::get<DirectXWindow>();
         add_window(dx_window);
 
-        Subscription<Event>::create(API_CHANGED_EVENT, Internal::on_api_changed);
+        Subscription<Event>::create(API_CHANGED_EVENT_TOPIC, Internal::on_api_changed);
     }
 
     ~WindowManager() = default;

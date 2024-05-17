@@ -1,25 +1,90 @@
 #include "directx_window.hpp"
+#include "../../events/sub.hpp"
 
 namespace Spark
 {
 LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    auto window_data = reinterpret_cast<DirectXWindowData *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+
     switch (message)
     {
-    // Handle different window messages here
-    // For example:
-    case WM_DESTROY:
+    case WM_DESTROY: {
+        auto event = std::make_shared<WindowClosedEvent>();
+        window_data->m_event_callback(event);
         PostQuitMessage(0);
         return 0;
-    // Add more cases for other messages you want to handle
+    }
+    case WM_SIZE: {
+        i32 width = LOWORD(lParam);
+        i32 height = HIWORD(lParam);
+        window_data->m_framebuffer_resized = true;
+        break;
+    }
+    case WM_KEYDOWN: {
+        i32 key = static_cast<i32>(wParam);
+        auto event = std::make_shared<KeyPressedEvent>(key);
+        window_data->m_event_callback(event);
+        break;
+    }
+    case WM_KEYUP: {
+        i32 key = static_cast<i32>(wParam);
+        auto event = std::make_shared<KeyReleasedEvent>(key);
+        window_data->m_event_callback(event);
+        break;
+    }
+    case WM_LBUTTONDOWN:
+    case WM_RBUTTONDOWN:
+    case WM_MBUTTONDOWN: {
+        i32 button = 0;
+        if (message == WM_LBUTTONDOWN)
+            button = 0;
+        else if (message == WM_RBUTTONDOWN)
+            button = 1;
+        else if (message == WM_MBUTTONDOWN)
+            button = 2;
+        auto event = std::make_shared<MousePressedEvent>(button);
+        window_data->m_event_callback(event);
+        break;
+    }
+    case WM_LBUTTONUP:
+    case WM_RBUTTONUP:
+    case WM_MBUTTONUP: {
+        i32 button = 0;
+        if (message == WM_LBUTTONUP)
+            button = 0;
+        else if (message == WM_RBUTTONUP)
+            button = 1;
+        else if (message == WM_MBUTTONUP)
+            button = 2;
+        auto event = std::make_shared<MouseReleasedEvent>(button);
+        window_data->m_event_callback(event);
+        break;
+    }
+    case WM_MOUSEWHEEL: {
+        i32 zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+        f64 yoffset = static_cast<f64>(zDelta) / WHEEL_DELTA;
+        auto event = std::make_shared<MouseScrolledEvent>(0.0, yoffset);
+        window_data->m_event_callback(event);
+        break;
+    }
+    case WM_MOUSEMOVE: {
+        i32 xpos = GET_X_LPARAM(lParam);
+        i32 ypos = GET_Y_LPARAM(lParam);
+        auto event = std::make_shared<MouseMovedEvent>(xpos, ypos);
+        window_data->m_event_callback(event);
+        break;
+    }
     default:
         return DefWindowProc(hwnd, message, wParam, lParam);
     }
+
+    return 0;
 }
 
 DirectXWindow::DirectXWindow()
 {
-    m_window_data = std::make_unique<DirectXWindowData>("Title", false, 1080, 1080, nullptr);
+    m_window_data = std::make_unique<DirectXWindowData>("Title", false, 1080, 1080, event_callback);
 }
 
 DirectXWindow::~DirectXWindow()
@@ -41,10 +106,9 @@ void DirectXWindow::pre_draw()
 
 void DirectXWindow::on_update()
 {
-    f32 clear_color[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+    f32 clear_color[4] = {1.0f, 0.0f, 0.0f, 1.0f};
     m_window_data->m_device_context->ClearRenderTargetView(m_window_data->m_render_target_view.Get(), clear_color);
 
-    // Render your scene here
 
     m_window_data->m_swap_chain->Present(m_window_data->m_vsync ? 1 : 0, 0);
 }
@@ -92,17 +156,19 @@ void DirectXWindow::init_window()
     wc.lpszClassName = L"DirectXWindowClass";
     RegisterClassW(&wc);
 
-    const char *titleCStr = m_window_data->m_title.c_str();
-    int len = MultiByteToWideChar(CP_UTF8, 0, titleCStr, -1, nullptr, 0);
-    wchar_t *wideTitle = new wchar_t[len];
-    MultiByteToWideChar(CP_UTF8, 0, titleCStr, -1, wideTitle, len);
+    const char *title_c_str = m_window_data->m_title.c_str();
+    i32 len = MultiByteToWideChar(CP_UTF8, 0, title_c_str, -1, nullptr, 0);
+    wchar_t *wide_title = new wchar_t[len];
+    MultiByteToWideChar(CP_UTF8, 0, title_c_str, -1, wide_title, len);
 
     // Create the window
     m_window_data->m_hwnd =
-        CreateWindowW(wc.lpszClassName, wideTitle, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
+        CreateWindowW(wc.lpszClassName, wide_title, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
                       m_window_data->m_width, m_window_data->m_height, nullptr, nullptr, wc.hInstance, nullptr);
 
-    delete[] wideTitle;
+    SetWindowLongPtr(m_window_data->m_hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(m_window_data.get()));
+
+    delete[] wide_title;
 
     ShowWindow(m_window_data->m_hwnd, SW_SHOW);
 }
@@ -152,5 +218,10 @@ void DirectXWindow::cleanup()
     // Destroy the window
     DestroyWindow(m_window_data->m_hwnd);
     m_window_data->m_hwnd = nullptr;
+}
+
+void DirectXWindow::event_callback(std::shared_ptr<Event> event)
+{
+    publish_to_topic(WINDOW_EVENT_TOPIC, event);
 }
 } // namespace Spark

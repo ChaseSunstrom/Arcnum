@@ -60,6 +60,7 @@ struct EntityDestroyedEvent : public Event
 
 class ECS : public Singleton<ECS>
 {
+    friend class Singleton<ECS>;
   public:
     // ==============================================================================
     // Interface functions for all the managers:
@@ -214,7 +215,7 @@ class ECS : public Singleton<ECS>
             AudioComponent,
             // Lighting
             DirectionalLightComponent, PointLightComponent, SpotLightComponent>();
-
+        
         register_update_system<AudioSystem>(&get_component_array<AudioComponent>().get_array());
     }
 

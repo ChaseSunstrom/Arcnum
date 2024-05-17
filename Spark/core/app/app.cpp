@@ -23,19 +23,19 @@ std::unique_ptr<Timer> Application::s_timer = std::make_unique<Timer>();
 void Application::on_start()
 {
     Application::add_scene("Main Scene", SceneConfig(Math::vec4(0)));
+    Subscription<Event>::create(EVERY_EVENT_TOPIC, AppFunctions::s_on_event);
 
-    auto &window = WindowManager::get().get_current_window();
     auto &ecs = Engine::get<ECS>();
 
     AppFunctions::s_on_start();
 
     ecs.start_systems();
 
-    Subscription<Event>::create(EVERY_EVENT_TOPIC, AppFunctions::s_on_event);
-
     s_timer->start();
 
-    while (window.is_running())
+    auto window = WindowManager::get().get_current_window();
+
+    while (window->is_running())
     {
         on_update();
     }
@@ -47,10 +47,10 @@ void Application::on_update()
 
     AppFunctions::s_on_update();
 
-    auto &window = Engine::get<WindowManager>().get_current_window();
+    auto window = Engine::get<WindowManager>().get_current_window();
 
-    if (&window)
-        window.on_update();
+    if (window)
+        window->on_update();
 
     Spark::ThreadPool::synchronize_registered_threads();
 }
@@ -72,22 +72,16 @@ void Application::on_shutdown()
 
 void Application::set_window_title(const std::string &title)
 {
-    auto &window = Engine::get<WindowManager>().get_current_window();
+    auto window = Engine::get<WindowManager>().get_current_window();
 
-    if (&window)
-        window.set_window_title(title);
+    if (window)
+        window->set_window_title(title);
 }
 
 void Application::add_scene(const std::string &name, const SceneConfig &config)
 {
     auto &scene_manager = Engine::get<SceneManager>();
     scene_manager.add_scene(name, std::make_unique<Scene>(config));
-}
-
-void Application::set_api(API api)
-{
-    Spark::set_api(api);
-    Engine::get<WindowManager>().set_window(api);
 }
 
 API Application::get_current_api()

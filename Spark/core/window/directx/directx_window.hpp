@@ -6,6 +6,7 @@
 
 #include <d3d11.h>
 #include <wrl/client.h>
+#include <windowsx.h>
 
 namespace Spark
 {
@@ -19,6 +20,7 @@ struct DirectXWindowData : public WindowData
     }
 
     HWND m_hwnd = nullptr;
+    bool m_framebuffer_resized = false;
     Microsoft::WRL::ComPtr<ID3D11Device> m_device;
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_device_context;
     Microsoft::WRL::ComPtr<IDXGISwapChain> m_swap_chain;
@@ -40,6 +42,7 @@ class DirectXWindow : public Window
     bool is_running() override;
     void set_vsync(bool vsync) override;
     void set_window_title(const std::string &title) override;
+    static void event_callback(std::shared_ptr<Event> event);
     DirectXWindowData &get_window_data() const override;
 
   private:

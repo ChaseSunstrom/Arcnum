@@ -38,12 +38,8 @@ class System
 
 class SystemManager : public Singleton<SystemManager>
 {
+    friend class Singleton<SystemManager>;
   public:
-    static SystemManager &get()
-    {
-        static SystemManager instance;
-        return instance;
-    }
 
     template <typename T, typename... Args> T &register_update_system(Args &&...args)
     {

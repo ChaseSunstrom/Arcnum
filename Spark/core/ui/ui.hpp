@@ -748,13 +748,8 @@ struct UITheme
 
 class UIManager : public Singleton<UIManager>
 {
+    friend class Singleton<UIManager>;
   public:
-    static UIManager &get()
-    {
-        static UIManager instance;
-        return instance;
-    }
-
     template <typename T, typename... Args>
     void create(const std::string &window_name, const std::string &id, Args &&...args)
     {

@@ -204,9 +204,6 @@
     <ClInclude Include="Spark\core\renderer\frustum.hpp">
       <Filter>core\renderer</Filter>
     </ClInclude>
-    <ClInclude Include="Spark\core\renderer\instancer.hpp">
-      <Filter>core\renderer</Filter>
-    </ClInclude>
     <ClInclude Include="Spark\core\renderer\layer.hpp">
       <Filter>core\renderer</Filter>
     </ClInclude>
@@ -330,6 +327,11 @@
     <ClInclude Include="Spark\include\IMGUI\imstb_truetype.h">
       <Filter>include\IMGUI</Filter>
     </ClInclude>
+    <ClInclude Include="Spark\core\renderer\vulkan\vulkan_renderer.hpp" />
+    <ClInclude Include="Spark\core\window\window_data.hpp" />
+    <ClInclude Include="Spark\core\window\vulkan\vulkan_window_data.hpp" />
+    <ClInclude Include="Spark\core\renderer\directx\directx_renderer.hpp" />
+    <ClInclude Include="Spark\core\window\directx\directx_window_data.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spark\core\app\api.cpp">
@@ -369,9 +371,6 @@
       <Filter>core\physics</Filter>
     </ClCompile>
     <ClCompile Include="Spark\core\renderer\frustum.cpp">
-      <Filter>core\renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Spark\core\renderer\instancer.cpp">
       <Filter>core\renderer</Filter>
     </ClCompile>
     <ClCompile Include="Spark\core\renderer\renderer.cpp">
@@ -426,5 +425,7 @@
       <Filter>include\IMGUI</Filter>
     </ClCompile>
     <ClCompile Include="Spark\core\window\window_manager.cpp" />
+    <ClCompile Include="Spark\core\renderer\vulkan\vulkan_renderer.cpp" />
+    <ClCompile Include="Spark\core\renderer\directx\directx_renderer.cpp" />
   </ItemGroup>
 </Project>

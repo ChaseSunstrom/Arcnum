@@ -1,34 +1,14 @@
 #ifndef SPARK_WINDOW_H
 #define SPARK_WINDOW_H
 
+#include "window_data.hpp"
 #include "../events/event.hpp"
 #include "../logging/log.hpp"
 #include "../spark.hpp"
+#include "../renderer/renderer.hpp"
 
 namespace Spark
 {
-struct WindowData
-{
-    WindowData() = default;
-
-    WindowData(std::string title, bool vsync, i32 height, i32 width,
-               std::function<void(std::shared_ptr<Event>)> event_callback)
-        : m_title(title), m_vsync(vsync), m_height(height), m_width(width), m_event_callback(event_callback)
-    {
-    }
-
-    virtual ~WindowData() = default;
-
-    std::string m_title = "Title";
-
-    bool m_vsync = false;
-
-    i32 m_width = 1080;
-
-    i32 m_height = 1080;
-
-    std::function<void(std::shared_ptr<Event>)> m_event_callback;
-};
 
 class Window
 {
@@ -38,21 +18,22 @@ class Window
         return m_initialized;
     }
 
-    virtual void init()
-    {
-    }
 
     virtual void pre_draw() = 0;
 
     virtual void on_update() = 0;
 
+    virtual void draw() = 0;
+
     virtual void post_draw() = 0;
 
-    virtual bool is_running() = 0;
+    virtual bool is_running() const = 0;
 
     virtual void set_vsync(bool vsync) = 0;
 
     virtual void set_window_title(const std::string &title) = 0;
+    
+    virtual void init() = 0;
 
     virtual WindowData &get_window_data() const = 0;
 
@@ -60,7 +41,7 @@ class Window
     Window() = default;
 
     virtual ~Window() = default;
-
+  protected:
     bool m_running = true;
     
     bool m_initialized = false;

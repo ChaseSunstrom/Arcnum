@@ -199,11 +199,20 @@ void VulkanWindow::on_update()
     draw_frame();
 }
 
+void VulkanWindow::draw()
+{
+    pre_draw();
+
+    draw_frame();
+
+    post_draw();
+}
+
 void VulkanWindow::post_draw()
 {
 }
 
-bool VulkanWindow::is_running()
+bool VulkanWindow::is_running() const
 {
     return !glfwWindowShouldClose(m_window);
 }
@@ -1078,7 +1087,7 @@ void VulkanWindow::record_command_buffer(VkCommandBuffer command_buffer, u32 ima
     scissor.extent = m_window_data->m_swapchain_extent;
     vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 
-    Renderer::get().render();
+    m_renderer->render(*m_window_data);
 
     vkCmdEndRenderPass(command_buffer);
 

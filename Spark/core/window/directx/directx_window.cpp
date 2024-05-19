@@ -106,23 +106,24 @@ void DirectXWindow::init()
 
 void DirectXWindow::pre_draw()
 {
-    // Perform any pre-draw tasks
-}
 
-void DirectXWindow::on_update()
-{
     MSG msg = {};
     while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
     {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
+}
 
-    f32 clear_color[4] = {1.0f, 0.0f, 0.0f, 1.0f};
-    m_window_data->m_device_context->ClearRenderTargetView(m_window_data->m_render_target_view.Get(), clear_color);
+void DirectXWindow::on_update()
+{
+    pre_draw();
 
+    m_renderer->render(*m_window_data);
 
     m_window_data->m_swap_chain->Present(m_window_data->m_vsync ? 1 : 0, 0);
+
+    post_draw();
 }
 
 void DirectXWindow::post_draw()
@@ -130,7 +131,7 @@ void DirectXWindow::post_draw()
     // Perform any post-draw tasks
 }
 
-bool DirectXWindow::is_running()
+bool DirectXWindow::is_running() const
 {
     return m_running;
 }
@@ -157,6 +158,11 @@ void DirectXWindow::set_window_title(const std::string &title)
 DirectXWindowData &DirectXWindow::get_window_data() const
 {
     return *m_window_data;
+}
+
+DirectXRenderer &DirectXWindow::get_renderer() const
+{
+    return *m_renderer;
 }
 
 void DirectXWindow::init_window()

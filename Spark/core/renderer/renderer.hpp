@@ -9,7 +9,7 @@
 #include "../scene/scene.hpp"
 #include "../user/camera.hpp"
 #include "../util/Singleton.hpp"
-#include "instancer.hpp"
+#include "../window/window_data.hpp"
 
 namespace Spark
 {
@@ -87,47 +87,47 @@ struct RendererSettings
     i32 m_text_size = 1;      // 0: Small, 1: Medium, 2: Large, for UI text size customization
 };
 
-class Renderer : public Singleton<Renderer>
+class Renderer : public Observer
 {
-    friend class Singleton<Renderer>;
   public:
-    void render();
-
-    void apply_dynamic_resolution();
-
-    void render_with_anti_aliasing();
-
-    void render_shadows();
-
-    void render_reflections();
-
-    void apply_hdr();
-
-    void apply_bloom();
-
-    void render_volumetric_lighting();
-
-    void apply_motion_blur();
-
-    void apply_depth_of_field();
-
-    void apply_ambient_occlusion();
-
-    void apply_color_grading();
-
-    void toggle_wireframe_mode();
-
-    void render_debugging_tools();
-
-    void finalize_frame();
-
-  private:
     Renderer() = default;
 
     ~Renderer() = default;
 
-  private:
+    virtual void render(WindowData& window_data) = 0;
+
+    virtual void toggle_wireframe_mode() = 0;
+
+    virtual void render_debugging_tools() = 0;
+    
+    void add_renderable(Entity e, const Scene &scene, const std::string &mesh_name, const std::string &material_name,
+                        const Transform &transform);
+    
+    void remove_renderable_for_entity(Entity e);
+
+    void update_renderable(Entity e, Scene &scene);
+
+    void on_notify(std::shared_ptr<Event> event) override;
+
+  protected:
+    struct Transforms
+    {
+        Transforms() = default;
+
+        void add_transform(const Transform &transform);
+
+        void update_render_transforms();
+
+        std::vector<Transform> m_data;
+
+        std::unordered_map<Entity, Transform> m_entity_transforms;
+    };
+
     std::unique_ptr<RendererSettings> m_settings = std::make_unique<RendererSettings>();
+
+    std::unordered_map<std::string, std::unordered_map<std::string, std::unique_ptr<Transforms>>> m_renderables;
+
+    std::unordered_map<Entity, std::pair<std::string, std::string>> m_entity_mesh_materials;
 };
 } // namespace Spark
 

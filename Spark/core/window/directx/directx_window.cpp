@@ -33,6 +33,11 @@ LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPar
         window_data->m_event_callback(event);
         break;
     }
+    case WM_SETCURSOR: {
+        // Set the cursor to the standard arrow cursor
+        SetCursor(LoadCursorW(nullptr, IDC_ARROW));
+        return TRUE;
+    }
     case WM_LBUTTONDOWN:
     case WM_RBUTTONDOWN:
     case WM_MBUTTONDOWN: {
@@ -106,6 +111,13 @@ void DirectXWindow::pre_draw()
 
 void DirectXWindow::on_update()
 {
+    MSG msg = {};
+    while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+    {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+
     f32 clear_color[4] = {1.0f, 0.0f, 0.0f, 1.0f};
     m_window_data->m_device_context->ClearRenderTargetView(m_window_data->m_render_target_view.Get(), clear_color);
 

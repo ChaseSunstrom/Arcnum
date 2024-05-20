@@ -4,7 +4,7 @@
 #include "../../net/serializeable.hpp"
 #include "../../spark.hpp"
 #include "../component/component.hpp"
-#include "../../util/Singleton.hpp"
+#include "../../util/singleton.hpp"
 #include "entity_type.hpp"
 
 namespace Spark

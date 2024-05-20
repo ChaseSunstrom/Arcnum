@@ -62,6 +62,7 @@
       <Optimization>Disabled</Optimization>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
+      <ShowIncludes>true</ShowIncludes>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -85,6 +86,7 @@
       <StringPooling>true</StringPooling>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
+      <ShowIncludes>true</ShowIncludes>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -189,7 +191,7 @@
     <ClCompile Include="Spark\core\app\app.cpp" />
     <ClCompile Include="Spark\core\app\app_interface.cpp" />
     <ClCompile Include="Spark\core\audio\audio.cpp" />
-    <ClCompile Include="Spark\core\ecs\component\component_types.cpp" />
+    <ClCompile Include="a.cpp" />
     <ClCompile Include="Spark\core\ecs\component\shader.cpp" />
     <ClCompile Include="Spark\core\ecs\observer.cpp" />
     <ClCompile Include="Spark\core\events\sub.cpp" />

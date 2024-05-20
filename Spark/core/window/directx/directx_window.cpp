@@ -119,11 +119,16 @@ void DirectXWindow::on_update()
 {
     pre_draw();
 
+    draw();
+    
+    post_draw();
+}
+
+void DirectXWindow::draw()
+{
     m_renderer->render(*m_window_data);
 
     m_window_data->m_swap_chain->Present(m_window_data->m_vsync ? 1 : 0, 0);
-
-    post_draw();
 }
 
 void DirectXWindow::post_draw()

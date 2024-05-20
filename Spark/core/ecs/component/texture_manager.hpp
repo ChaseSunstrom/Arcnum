@@ -15,16 +15,32 @@ class TextureManager
         return instance;
     }
 
-    void destroy_texture(const std::string &name);
+    void destroy_texture(const std::string &name)
+    {
+        m_textures.erase(name);
+    }
 
-    Texture &get_texture(const std::string &name);
+    Texture &get_texture(const std::string &name)
+    {
+        return *m_textures[name];
+    }
 
-    Texture &create(const std::string &name, const std::string &path, TextureType type = TextureType::TWO_D,
-                    bool flip = true);
+    std::unordered_map<std::string, std::unique_ptr<Texture>> &get_textures()
+    {
+        return m_textures;
+    }
 
-    Texture &create_default_texture();
+    Texture &create_default_texture()
+    {
+        static Texture texture;
+        return texture;
+    }
 
-    std::unordered_map<std::string, std::unique_ptr<Texture>> &get_textures();
+    Texture &create(const std::string &name, const std::string &path, TextureType type, bool flip)
+    {
+        // Placeholder for now
+        return create_default_texture();
+    }
 
   private:
     TextureManager() = default;
@@ -34,6 +50,6 @@ class TextureManager
   private:
     std::unordered_map<std::string, std::unique_ptr<Texture>> m_textures;
 };
-}
+} // namespace Spark
 
 #endif

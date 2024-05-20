@@ -346,7 +346,7 @@
     <ClCompile Include="Spark\core\audio\audio.cpp">
       <Filter>core\audio</Filter>
     </ClCompile>
-    <ClCompile Include="Spark\core\ecs\component\component_types.cpp">
+    <ClCompile Include="a.cpp">
       <Filter>core\ecs\component</Filter>
     </ClCompile>
     <ClCompile Include="Spark\core\ecs\component\shader.cpp">

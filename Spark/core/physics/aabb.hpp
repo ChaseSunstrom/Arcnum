@@ -3,6 +3,7 @@
 
 #include "../ecs/component/component_types.hpp"
 #include "../spark.hpp"
+#include "../ecs/component/vertex.hpp"
 
 namespace Spark
 {

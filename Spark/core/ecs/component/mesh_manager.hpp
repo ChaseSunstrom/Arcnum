@@ -4,6 +4,7 @@
 #include "../../spark.hpp"
 
 #include "mesh.hpp"
+#include "../../window/vulkan/vulkan_mesh.hpp"
 
 namespace Spark
 {

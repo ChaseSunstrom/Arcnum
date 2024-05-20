@@ -2,8 +2,8 @@
 #define SPARK_VULKAN_WINDOW_HPP
 
 #include "../../util/singleton.hpp"
-#include "../../renderer/vulkan/vulkan_renderer.hpp"
 #include "../window.hpp"
+#include "../../renderer/vulkan/vulkan_renderer.hpp"
 #include "vulkan_window_data.hpp"
 
 namespace Spark
@@ -30,6 +30,7 @@ struct VulkanSwapChainSupportDetails
 };
 } // namespace Internal
 
+class VulkanRenderer;
 
 
 class VulkanWindow : public Window, public Singleton<VulkanWindow>

@@ -5,7 +5,6 @@
 #include "../events/event.hpp"
 #include "../logging/log.hpp"
 #include "../spark.hpp"
-#include "../renderer/renderer.hpp"
 
 namespace Spark
 {

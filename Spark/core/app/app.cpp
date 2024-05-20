@@ -4,6 +4,7 @@
 #include "../logging/log.hpp"
 #include "../ui/ui.hpp"
 #include "../window/window_manager.hpp"
+#include "../ecs/ecs.hpp"
 #include "app_interface.hpp"
 
 namespace Spark

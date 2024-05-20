@@ -3,9 +3,6 @@
 
 #include "../../spark.hpp"
 #include "../../app/api.hpp"
-#include "mesh_manager.hpp"
-#include "material_manager.hpp"
-#include "texture_manager.hpp"
 #include "shader.hpp"
 
 

@@ -5,8 +5,6 @@
 #include "../../ecs/component/vertex.hpp"
 #include "vulkan_window.hpp"
 
-#
-
 namespace Spark
 {
 struct VulkanMesh : public Mesh

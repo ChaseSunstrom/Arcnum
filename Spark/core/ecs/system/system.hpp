@@ -3,7 +3,7 @@
 
 #include "../../spark.hpp"
 
-#include "../../util/Singleton.hpp"
+#include "../../util/singleton.hpp"
 #include "../../util/memory.hpp"
 #include "../../util/thread_pool.hpp"
 #include "../component/component.hpp"

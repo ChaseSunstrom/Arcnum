@@ -6,7 +6,7 @@
 #include "../../net/serializeable.hpp"
 #include "shader.hpp"
 
-#include "../../util/Singleton.hpp"
+#include "../../util/singleton.hpp"
 
 #include <boost/serialization/access.hpp>
 

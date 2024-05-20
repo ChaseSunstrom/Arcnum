@@ -2,17 +2,39 @@
 #define SPARK_RENDERER_HPP
 
 #include "../spark.hpp"
-#include "../ecs/ecs.hpp"
+#include "../ecs/entity/entity_type.hpp"
+#include "../ecs/component/component_types.hpp"
 #include "../events/event.hpp"
 #include "../logging/log.hpp"
-
-#include "../scene/scene.hpp"
-#include "../user/camera.hpp"
-#include "../util/Singleton.hpp"
 #include "../window/window_data.hpp"
+#include "../scene/scene.hpp"
+#include "../ecs/observer.hpp"
 
 namespace Spark
 {
+struct Transforms
+{
+    Transforms() = default;
+
+    void add_transform(const Transform &transform)
+    {
+        m_data.emplace_back(transform);
+    }
+
+    void update_render_transforms()
+    {
+        m_data.clear();
+        for (auto &[entity, transform] : m_entity_transforms)
+        {
+            m_data.emplace_back(transform);
+        }
+    }
+
+    std::vector<Transform> m_data;
+
+    std::unordered_map<Entity, Transform> m_entity_transforms;
+};
+
 struct RendererSettings
 {
     i32 m_resolution_width = 1920;
@@ -93,8 +115,6 @@ class Renderer : public Observer
 
     ~Renderer() = default;
 
-    virtual void render(WindowData& window_data) = 0;
-
     virtual void toggle_wireframe_mode() = 0;
 
     virtual void render_debugging_tools() = 0;
@@ -109,18 +129,6 @@ class Renderer : public Observer
     void on_notify(std::shared_ptr<Event> event) override;
 
   protected:
-    struct Transforms
-    {
-        Transforms() = default;
-
-        void add_transform(const Transform &transform);
-
-        void update_render_transforms();
-
-        std::vector<Transform> m_data;
-
-        std::unordered_map<Entity, Transform> m_entity_transforms;
-    };
 
     std::unique_ptr<RendererSettings> m_settings = std::make_unique<RendererSettings>();
 

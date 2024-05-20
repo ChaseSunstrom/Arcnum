@@ -14,6 +14,10 @@ class VulkanRenderer : public Renderer
     ~VulkanRenderer() = default;
 
     void render(VulkanWindowData &window_data);
+
+    void toggle_wireframe_mode() override;
+
+    void render_debugging_tools() override;
 };
 } // namespace Spark
 

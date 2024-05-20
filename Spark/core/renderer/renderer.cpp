@@ -1,22 +1,8 @@
 #include "../app/app.hpp"
-#include "../ecs/component/shader.hpp"
+#include "../ecs/ecs.hpp"
 
 namespace Spark
 {
-void Renderer::Transforms::add_transform(const Transform &transform)
-{
-    m_data.emplace_back(transform);
-}
-
-void Renderer::Transforms::update_render_transforms()
-{
-    m_data.clear();
-    for (auto &[entity, transform] : m_entity_transforms)
-    {
-        m_data.emplace_back(transform);
-    }
-}
-
 void Renderer::add_renderable(Entity e, const Scene &scene, const std::string &mesh_name,
                                const std::string &material_name, const Transform &_transform)
 {

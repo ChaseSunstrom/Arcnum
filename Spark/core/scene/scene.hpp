@@ -1,7 +1,6 @@
 #ifndef SPARK_SCENE_HPP
 #define SPARK_SCENE_HPP
 
-#include "../ecs/ecs.hpp"
 #include "../spark.hpp"
 
 namespace Spark

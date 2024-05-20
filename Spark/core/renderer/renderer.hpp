@@ -2,7 +2,6 @@
 #define SPARK_RENDERER_H
 
 #include "../spark.hpp"
-
 #include "../ecs/ecs.hpp"
 #include "../events/event.hpp"
 #include "../logging/log.hpp"

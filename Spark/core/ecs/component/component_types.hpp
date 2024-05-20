@@ -2,7 +2,6 @@
 #define SPARK_COMPONENT_TYPES_HPP
 
 #include "../../spark.hpp"
-#include "../../window/vulkan/vulkan_mesh.hpp"
 #include "../../app/api.hpp"
 #include "mesh_manager.hpp"
 #include "material_manager.hpp"

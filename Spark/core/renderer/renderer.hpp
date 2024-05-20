@@ -1,10 +1,11 @@
-#ifndef SPARK_RENDERER_H
-#define SPARK_RENDERER_H
+#ifndef SPARK_RENDERER_HPP
+#define SPARK_RENDERER_HPP
 
 #include "../spark.hpp"
 #include "../ecs/ecs.hpp"
 #include "../events/event.hpp"
 #include "../logging/log.hpp"
+
 #include "../scene/scene.hpp"
 #include "../user/camera.hpp"
 #include "../util/Singleton.hpp"
@@ -67,8 +68,7 @@ struct RendererSettings
     bool m_dynamic_resolution = false; // Adjust resolution dynamically to maintain framerate
 
     // Additional Feature toggles
-    bool m_soft_particles = true;           // Toggle soft particles to prevent harsh
-                                            // intersections with geometry
+    bool m_soft_particles = true;           // Toggle soft particles to prevent harsh intersections with geometry
     bool m_screen_space_reflections = true; // Toggle screen space reflections, can be performance-intensive
     bool m_depth_of_field = false;          // Toggle depth of field effect
     bool m_ambient_occlusion = true;        // Toggle ambient occlusion for more realistic shadows and depth
@@ -130,4 +130,4 @@ class Renderer : public Observer
 };
 } // namespace Spark
 
-#endif // CORE_RENDERER_H
+#endif // SPARK_RENDERER_HPP

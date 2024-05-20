@@ -1,20 +1,20 @@
 #ifndef SPARK_VULKAN_RENDERER_HPP
 #define SPARK_VULKAN_RENDERER_HPP
 
-#include "../renderer.hpp"
 #include "../../window/vulkan/vulkan_window_data.hpp"
+#include "../renderer.hpp"
 
 namespace Spark
 {
-	class VulkanRenderer : public Renderer
-	{
-      public:
-		  VulkanRenderer() = default;
+class VulkanRenderer : public Renderer
+{
+  public:
+    VulkanRenderer() = default;
 
-		  ~VulkanRenderer() = default;
+    ~VulkanRenderer() = default;
 
-		  void render(VulkanWindowData& window_data);
-	};
-}
+    void render(VulkanWindowData &window_data);
+};
+} // namespace Spark
 
 #endif

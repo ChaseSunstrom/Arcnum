@@ -2,7 +2,6 @@
 
 #include "app/app.hpp"
 #include "ecs/ecs.hpp"
-#include "renderer/instancer.hpp"
 #include "tests/test.hpp"
 #include "window/window_manager.hpp"
 #include "util/thread_pool.hpp"
@@ -24,8 +23,6 @@ void spark_main()
 // #define SPARK_TEST
 #ifndef SPARK_TEST
     WindowManager::initialize_instance();
-    Instancer::initialize_instance();
-    Renderer::initialize_instance();
     ECS::initialize_instance();
 
     Application::on_start();

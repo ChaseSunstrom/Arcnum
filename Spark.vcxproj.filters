@@ -428,4 +428,7 @@
     <ClCompile Include="Spark\core\renderer\vulkan\vulkan_renderer.cpp" />
     <ClCompile Include="Spark\core\renderer\directx\directx_renderer.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="CircularIgnore.json" />
+  </ItemGroup>
 </Project>

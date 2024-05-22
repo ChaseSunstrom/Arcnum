@@ -221,6 +221,9 @@
     <ClCompile Include="Spark\include\IMGUI\imgui_tables.cpp" />
     <ClCompile Include="Spark\include\IMGUI\imgui_widgets.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="CircularIgnore.json" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="Shader.targets" />

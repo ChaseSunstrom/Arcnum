@@ -113,6 +113,9 @@
       <Project>{26081C0E-921C-44BF-5B9E-E71EC77140F0}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="CircularIgnore.json" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="Shader.targets" />

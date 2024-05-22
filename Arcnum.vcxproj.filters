@@ -3912,13 +3912,6 @@
     <ClInclude Include="src\game.hpp">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="Spark\core\app\api.hpp" />
-    <ClInclude Include="Spark\core\ecs\component\material.hpp" />
-    <ClInclude Include="Spark\core\ecs\component\texture.hpp" />
-    <ClInclude Include="Spark\core\ecs\component\mesh_manager.hpp" />
-    <ClInclude Include="Spark\core\ecs\component\material_manager.hpp" />
-    <ClInclude Include="Spark\core\ecs\component\texture_manager.hpp" />
-    <ClInclude Include="Spark\core\math\constants.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\game.cpp">
@@ -3927,7 +3920,8 @@
     <ClCompile Include="src\main.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Spark\core\app\api.cpp" />
-    <ClCompile Include="Spark\core\math\random.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="CircularIgnore.json" />
   </ItemGroup>
 </Project>

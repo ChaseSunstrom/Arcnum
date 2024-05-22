@@ -106,7 +106,6 @@ void DirectXWindow::init()
 
 void DirectXWindow::pre_draw()
 {
-
     MSG msg = {};
     while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
     {
@@ -120,7 +119,7 @@ void DirectXWindow::on_update()
     pre_draw();
 
     draw();
-    
+
     post_draw();
 }
 
@@ -152,12 +151,12 @@ void DirectXWindow::set_window_title(const std::string &title)
 
     const char *title_c_str = title.c_str();
     int len = MultiByteToWideChar(CP_UTF8, 0, title_c_str, -1, nullptr, 0);
-    wchar_t *wideTitle = new wchar_t[len];
-    MultiByteToWideChar(CP_UTF8, 0, title_c_str, -1, wideTitle, len);
+    wchar_t *wide_title = new wchar_t[len];
+    MultiByteToWideChar(CP_UTF8, 0, title_c_str, -1, wide_title, len);
 
-    SetWindowTextW(m_window_data->m_hwnd, wideTitle);
+    SetWindowTextW(m_window_data->m_hwnd, wide_title);
 
-    delete[] wideTitle;
+    delete[] wide_title;
 }
 
 DirectXWindowData &DirectXWindow::get_window_data() const
@@ -219,21 +218,38 @@ void DirectXWindow::init_dx()
     m_window_data->m_device->CreateRenderTargetView(back_buffer, nullptr, &m_window_data->m_render_target_view);
     back_buffer->Release();
 
-    m_window_data->m_device_context->OMSetRenderTargets(1, m_window_data->m_render_target_view.GetAddressOf(), nullptr);
+    // Create the depth stencil buffer and view
+    D3D11_TEXTURE2D_DESC depth_stencil_desc = {};
+    depth_stencil_desc.Width = m_window_data->m_width;
+    depth_stencil_desc.Height = m_window_data->m_height;
+    depth_stencil_desc.MipLevels = 1;
+    depth_stencil_desc.ArraySize = 1;
+    depth_stencil_desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    depth_stencil_desc.SampleDesc.Count = 1;
+    depth_stencil_desc.Usage = D3D11_USAGE_DEFAULT;
+    depth_stencil_desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> depth_stencil_buffer;
+    m_window_data->m_device->CreateTexture2D(&depth_stencil_desc, nullptr, &depth_stencil_buffer);
+    m_window_data->m_device->CreateDepthStencilView(depth_stencil_buffer.Get(), nullptr,
+                                                    &m_window_data->m_depth_stencil_view);
+
+    m_window_data->m_device_context->OMSetRenderTargets(1, m_window_data->m_render_target_view.GetAddressOf(),
+                                                        m_window_data->m_depth_stencil_view.Get());
 
     // Set up the viewport
-    D3D11_VIEWPORT viewport = {};
-    viewport.Width = static_cast<f32>(m_window_data->m_width);
-    viewport.Height = static_cast<f32>(m_window_data->m_height);
-    viewport.MinDepth = 0.0f;
-    viewport.MaxDepth = 1.0f;
-    m_window_data->m_device_context->RSSetViewports(1, &viewport);
+    m_window_data->m_viewport.Width = static_cast<f32>(m_window_data->m_width);
+    m_window_data->m_viewport.Height = static_cast<f32>(m_window_data->m_height);
+    m_window_data->m_viewport.MinDepth = 0.0f;
+    m_window_data->m_viewport.MaxDepth = 1.0f;
+    m_window_data->m_device_context->RSSetViewports(1, &m_window_data->m_viewport);
 }
 
 void DirectXWindow::cleanup()
 {
     // Clean up DirectX resources
     m_window_data->m_render_target_view.Reset();
+    m_window_data->m_depth_stencil_view.Reset();
     m_window_data->m_swap_chain.Reset();
     m_window_data->m_device_context.Reset();
     m_window_data->m_device.Reset();
@@ -247,4 +263,5 @@ void DirectXWindow::event_callback(std::shared_ptr<Event> event)
 {
     publish_to_topic(WINDOW_EVENT_TOPIC, event);
 }
+
 } // namespace Spark

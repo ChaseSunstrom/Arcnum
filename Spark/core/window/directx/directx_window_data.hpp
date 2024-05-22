@@ -4,7 +4,9 @@
 #include "../window_data.hpp"
 #include "../../events/event.hpp"
 
+#include <DirectXMath.h>
 #include <d3d11.h>
+#include <vector>
 #include <wrl/client.h>
 #include <windowsx.h>
 
@@ -26,8 +28,12 @@ struct DirectXWindowData : public WindowData
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_device_context;
     Microsoft::WRL::ComPtr<IDXGISwapChain> m_swap_chain;
     Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_render_target_view;
+    Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depth_stencil_view;
+    Microsoft::WRL::ComPtr<ID3D11InputLayout> m_input_layout;
+    Microsoft::WRL::ComPtr<ID3D11VertexShader> m_vertex_shader;
+    Microsoft::WRL::ComPtr<ID3D11PixelShader> m_pixel_shader;
+    D3D11_VIEWPORT m_viewport;
 };
-
 }
 
 #endif

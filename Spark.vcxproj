@@ -163,6 +163,7 @@
     <ClInclude Include="Spark\core\util\singleton.hpp" />
     <ClInclude Include="Spark\core\util\thread_pool.hpp" />
     <ClInclude Include="Spark\core\util\timer.hpp" />
+    <ClInclude Include="Spark\core\window\directx\directx_mesh.hpp" />
     <ClInclude Include="Spark\core\window\directx\directx_window.hpp" />
     <ClInclude Include="Spark\core\window\directx\directx_window_data.hpp" />
     <ClInclude Include="Spark\core\window\metal\metal_window.hpp" />
@@ -191,7 +192,6 @@
     <ClCompile Include="Spark\core\app\app.cpp" />
     <ClCompile Include="Spark\core\app\app_interface.cpp" />
     <ClCompile Include="Spark\core\audio\audio.cpp" />
-    <ClCompile Include="a.cpp" />
     <ClCompile Include="Spark\core\ecs\component\shader.cpp" />
     <ClCompile Include="Spark\core\ecs\observer.cpp" />
     <ClCompile Include="Spark\core\events\sub.cpp" />

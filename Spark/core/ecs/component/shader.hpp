@@ -17,53 +17,50 @@ enum class ShaderType
     TESS_EVAL
 };
 
-struct VulkanShaderWrapper
-{
-    // Forwards the shader type and vk_shader_module
-    VulkanShaderWrapper(ShaderType type, Internal::VkShaderModule module);
-
-    Internal::VkPipelineShaderStageCreateInfo m_pipeline_shader{};
-
-    std::optional<Internal::VkPipelineVertexInputStateCreateInfo> m_vertex_input;
-
-  private:
-    void create_vertex_input();
-};
-
-struct DirectXShaderWrapper
-{
-};
-
-struct MetalShaderWrapper
-{
-};
-
 struct ShaderWrapper
 {
     ShaderWrapper() = default;
 
     ShaderType get_shader_type_from_extension(const std::string &file_extension);
 
-    void create_vulkan_shader(const std::filesystem::path &shader_path);
+    virtual void create_shader(const std::filesystem::path &shader_path) = 0;
 
-    void create_metal_shader();
+    ShaderType m_shader_type = ShaderType::UNKNOWN;
+};
 
-    void create_directx_shader();
+struct VulkanShaderWrapper : ShaderWrapper
+{
+    VulkanShaderWrapper(ShaderType type, Internal::VkShaderModule module);
 
-    ShaderType m_shader_type;
+    void create_shader(const std::filesystem::path &shader_code) override;
 
-    std::variant<std::unique_ptr<VulkanShaderWrapper>, std::unique_ptr<DirectXShaderWrapper>,
-                 std::unique_ptr<MetalShaderWrapper>>
-        m_shader_variant;
+    Internal::VkPipelineShaderStageCreateInfo m_pipeline_shader{};
+    std::optional<Internal::VkPipelineVertexInputStateCreateInfo> m_vertex_input;
+
+  private:
+    void create_vertex_input();
+};
+
+struct DirectXShaderWrapper : ShaderWrapper
+{
+    DirectXShaderWrapper(ShaderType type, const std::wstring &file_path, ID3D11Device *device);
+
+    void create_shader(const std::filesystem::path &shader_path) override;
+
+    Microsoft::WRL::ComPtr<ID3D11VertexShader> m_vertex_shader;
+    Microsoft::WRL::ComPtr<ID3D11PixelShader> m_pixel_shader;
+    Microsoft::WRL::ComPtr<ID3DBlob> m_shader_blob;
+};
+
+struct MetalShaderWrapper : ShaderWrapper
+{
+    void create_shader(const std::filesystem::path &shader_path) override;
 };
 
 class Shader
 {
   public:
-    Shader(const std::filesystem::path &shader_path)
-    {
-        create_shader(shader_path);
-    }
+    Shader(const std::filesystem::path &shader_path, ID3D11Device *device);
 
     ShaderType get_shader_type() const
     {
@@ -71,10 +68,10 @@ class Shader
     }
 
   private:
-    void create_shader(const std::filesystem::path &shader_path);
+    void create_shader(const std::filesystem::path &shader_path, ID3D11Device *device);
 
   private:
-    std::unique_ptr<ShaderWrapper> m_shader = std::make_unique<ShaderWrapper>();
+    std::unique_ptr<ShaderWrapper> m_shader;
 };
 
 class ShaderManager
@@ -86,19 +83,17 @@ class ShaderManager
         return instance;
     }
 
-    Shader &create(const std::filesystem::path &shader_path);
+    Shader &create(const std::filesystem::path &shader_path, ID3D11Device *device);
 
     Shader &get_shader(const std::string &path);
 
   private:
     ShaderManager() = default;
-
     ~ShaderManager() = default;
 
   private:
-    std::unordered_map<std::string, std::unique_ptr<Shader>> m_shaders =
-        std::unordered_map<std::string, std::unique_ptr<Shader>>();
+    std::unordered_map<std::string, std::unique_ptr<Shader>> m_shaders;
 };
 } // namespace Spark
 
-#endif
+#endif // SPARK_SHADER_HPP

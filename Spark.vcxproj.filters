@@ -332,6 +332,7 @@
     <ClInclude Include="Spark\core\window\vulkan\vulkan_window_data.hpp" />
     <ClInclude Include="Spark\core\renderer\directx\directx_renderer.hpp" />
     <ClInclude Include="Spark\core\window\directx\directx_window_data.hpp" />
+    <ClInclude Include="Spark\core\window\directx\directx_mesh.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Spark\core\app\api.cpp">
@@ -345,9 +346,6 @@
     </ClCompile>
     <ClCompile Include="Spark\core\audio\audio.cpp">
       <Filter>core\audio</Filter>
-    </ClCompile>
-    <ClCompile Include="a.cpp">
-      <Filter>core\ecs\component</Filter>
     </ClCompile>
     <ClCompile Include="Spark\core\ecs\component\shader.cpp">
       <Filter>core\ecs\component</Filter>

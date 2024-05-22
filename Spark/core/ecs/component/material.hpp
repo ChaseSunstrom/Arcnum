@@ -11,7 +11,7 @@ struct Material
 {
     Material(const Math::vec4 &color, Texture &tex, const std::vector<std::string>& shader_paths, i32 diffuse, i32 specular, i32 ambient, f32 shininess)
         : m_color(color), m_diffuse(diffuse), m_specular(specular), m_ambient(ambient), m_shininess(shininess),
-          m_texture(tex)
+          m_texture(tex), m_shader_paths()
     {}
 
     ~Material() = default;

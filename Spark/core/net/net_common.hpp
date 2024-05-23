@@ -1,8 +1,6 @@
 #ifndef SPARK_NET_COMMON_HPP
 #define SPARK_NET_COMMON_HPP
 
-#include <boost/asio.hpp>
-
 #include "serializeable.hpp"
 
 #include "../events/event.hpp"

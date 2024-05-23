@@ -4,12 +4,6 @@
 #include "../window_data.hpp"
 #include "../../events/event.hpp"
 
-#include <DirectXMath.h>
-#include <d3d11.h>
-#include <vector>
-#include <wrl/client.h>
-#include <windowsx.h>
-
 namespace Spark
 {
 

@@ -1,8 +1,6 @@
 #ifndef SPARK_UDP_HPP
 #define SPARK_UDP_HPP
 
-// for getting the public ip of a client
-#include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
 #include <curl.h>
 

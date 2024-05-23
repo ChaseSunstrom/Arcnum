@@ -26,8 +26,8 @@ void DirectXRenderer::render(DirectXWindowData &window_data)
         for (auto &[material_name, transforms_ptr] : material_map)
         {
             auto &mesh = Engine::get<MeshManager>().get_mesh(mesh_name);
-
             auto &directx_mesh = dynamic_cast<DirectXMesh &>(mesh);
+            auto &material = Engine::get<MaterialManager>().get_material(material_name);
 
             // Set vertex buffer
             UINT stride = sizeof(Vertex);
@@ -49,8 +49,20 @@ void DirectXRenderer::render(DirectXWindowData &window_data)
             window_data.m_device_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
             // Set shaders
-            window_data.m_device_context->VSSetShader(window_data.m_vertex_shader.Get(), nullptr, 0);
-            window_data.m_device_context->PSSetShader(window_data.m_pixel_shader.Get(), nullptr, 0);
+            for (const auto &shader : material.m_shaders)
+            {
+                if (shader->get_shader_type() == ShaderType::VERTEX)
+                {
+                    window_data.m_device_context->VSSetShader(
+                        static_cast<DirectXShaderWrapper*>(&shader->get_shader())->m_vertex_shader.Get(),
+                        nullptr, 0);
+                }
+                else if (shader->get_shader_type() == ShaderType::FRAGMENT)
+                {
+                    window_data.m_device_context->PSSetShader(
+                        static_cast<DirectXShaderWrapper *>(&shader->get_shader())->m_pixel_shader.Get(), nullptr, 0);
+                }
+            }
 
             // Bind constant buffers and other resources
             directx_mesh.update_constant_buffers();

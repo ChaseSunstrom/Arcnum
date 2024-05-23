@@ -4,6 +4,7 @@
 #include "../../logging/log.hpp"
 #include "../../spark.hpp"
 
+
 namespace Spark
 {
 enum class ShaderType
@@ -19,13 +20,14 @@ enum class ShaderType
 
 struct ShaderWrapper
 {
-    ShaderWrapper() = default;
+    ShaderWrapper(ShaderType type = ShaderType::UNKNOWN) : m_shader_type(type)
+    {}
 
     ShaderType get_shader_type_from_extension(const std::string &file_extension);
 
     virtual void create_shader(const std::filesystem::path &shader_path) = 0;
 
-    ShaderType m_shader_type = ShaderType::UNKNOWN;
+    ShaderType m_shader_type;
 };
 
 struct VulkanShaderWrapper : ShaderWrapper
@@ -43,12 +45,14 @@ struct VulkanShaderWrapper : ShaderWrapper
 
 struct DirectXShaderWrapper : ShaderWrapper
 {
-    DirectXShaderWrapper(ShaderType type, const std::wstring &file_path, ID3D11Device *device);
+    DirectXShaderWrapper(ShaderType type, ID3D11Device *device) : ShaderWrapper(type), m_device(device)
+    {}
 
     void create_shader(const std::filesystem::path &shader_path) override;
 
     Microsoft::WRL::ComPtr<ID3D11VertexShader> m_vertex_shader;
     Microsoft::WRL::ComPtr<ID3D11PixelShader> m_pixel_shader;
+    ID3D11Device *m_device;
     Microsoft::WRL::ComPtr<ID3DBlob> m_shader_blob;
 };
 
@@ -60,15 +64,20 @@ struct MetalShaderWrapper : ShaderWrapper
 class Shader
 {
   public:
-    Shader(const std::filesystem::path &shader_path, ID3D11Device *device);
+    Shader(const std::filesystem::path &shader_path);
 
     ShaderType get_shader_type() const
     {
         return m_shader->m_shader_type;
     }
 
+    ShaderWrapper &get_shader()
+    {
+        return *m_shader;
+    }
+
   private:
-    void create_shader(const std::filesystem::path &shader_path, ID3D11Device *device);
+    void create_shader(const std::filesystem::path &shader_path);
 
   private:
     std::unique_ptr<ShaderWrapper> m_shader;
@@ -83,7 +92,7 @@ class ShaderManager
         return instance;
     }
 
-    Shader &create(const std::filesystem::path &shader_path, ID3D11Device *device);
+    Shader &create(const std::filesystem::path &shader_path);
 
     Shader &get_shader(const std::string &path);
 

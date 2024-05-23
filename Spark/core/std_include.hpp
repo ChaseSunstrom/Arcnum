@@ -39,8 +39,12 @@
 #include <variant>
 #include <vector>
 #include <xutility>
-
 #include <IRRKLANG/irrKlang.h>
+#include <boost/asio.hpp>
+#include <DirectXMath.h>
+#include <d3d11.h>
+#include <wrl/client.h>
+#include <windowsx.h>
 
 namespace Spark
 {

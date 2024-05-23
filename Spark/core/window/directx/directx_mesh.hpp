@@ -30,7 +30,7 @@ struct DirectXMesh : public Mesh
         void create_buffer(const CBufferType &cb_data)
         {
             auto &dx_window = Engine::get<DirectXWindow>();
-            auto device = dx_window.get_device();
+            auto device = dx_window.get_window_data().m_device;
             u64 buffer_size = sizeof(CBufferType);
 
             D3D11_BUFFER_DESC buffer_desc = {};

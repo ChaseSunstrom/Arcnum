@@ -5,7 +5,6 @@
 #include "../spark.hpp"
 #include "net_common.hpp"
 #include "serializeable.hpp"
-#include <boost/asio.hpp>
 
 namespace Spark
 {

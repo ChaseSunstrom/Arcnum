@@ -40,7 +40,7 @@ namespace Spark
 	}
 
 	template <IsComponent T>
-	void Ecs::AdComponent(Entity& entity, const std::string& name, std::shared_ptr<T> component)
+	void Ecs::AddComponent(Entity& entity, const std::string& name, std::shared_ptr<T> component)
 	{
 		entity.AddComponent(name, component);
 		m_components[typeid(T)].push_back(component);

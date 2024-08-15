@@ -16,6 +16,7 @@ namespace Spark
 			glGetShaderInfoLog(shader, sizeof(info), nullptr, info);
 			LOG_ERROR("Failed to compile vertex shader: " << info);
 			glDeleteShader(shader);
+			assert(false);
 		}
 	}
 
@@ -82,4 +83,6 @@ namespace Spark
 
 		m_id = shader;
 	}
+
+
 }

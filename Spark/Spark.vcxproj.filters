@@ -807,6 +807,8 @@
     <ClInclude Include="core\system\registry.hpp" />
     <ClInclude Include="core\system\serializer.hpp" />
     <ClInclude Include="core\system\file_serializer.hpp" />
+    <ClInclude Include="core\render\model.hpp" />
+    <ClInclude Include="core\system\manager.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\app\application.cpp">

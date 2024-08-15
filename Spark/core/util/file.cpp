@@ -9,6 +9,7 @@ namespace Spark
 		file_stream.open(path);
 		string_stream << file_stream.rdbuf();
 		file_stream.close();
-		return string_stream.str();
+		std::string str = string_stream.str();
+		return str;
 	}
 }

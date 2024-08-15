@@ -6,18 +6,23 @@
 
 namespace Spark
 {
-	struct Material
+	struct MaterialData
 	{
-	public:
-		Material(const glm::vec4& color, f32 diffuse, f32 specular, f32 ambient, f32 shiniess) : m_color(color), m_diffuse(diffuse), m_specular(specular), m_ambient(ambient), m_shiniess(shiniess) {}
-		virtual ~Material() = default;
-	protected:
 		glm::vec4 m_color;
 		f32 m_diffuse;
 		f32 m_specular;
 		f32 m_ambient;
 		f32 m_shiniess;
 		// TODO: TEXTURES
+	};
+
+	struct Material
+	{
+	public:
+		Material(const MaterialData& material_data) : m_material_data(material_data) {}
+		virtual ~Material() = default;
+	protected:
+		MaterialData m_material_data;
 	};
 }
 

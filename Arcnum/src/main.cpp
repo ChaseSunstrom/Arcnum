@@ -6,6 +6,7 @@
 #include <core/ecs/ecs.hpp>
 #include <core/system/serializer.hpp>
 #include <core/system/file_serializer.hpp>
+#include <core/system/manager.hpp>
 
 struct TestSer
 {

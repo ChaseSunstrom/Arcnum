@@ -25,7 +25,7 @@ namespace Spark
 		virtual void OnNotify(const std::shared_ptr<IEvent> event);
 
 		template <HasAddObserver T>
-		void Register(const T& type)
+		void Create(const T& type)
 		{
 			T.AddObserver(this);
 		}

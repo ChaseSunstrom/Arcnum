@@ -3,22 +3,37 @@
 
 #include <core/pch.hpp>
 #include <core/render/mesh.hpp>
-#include <core/system/registry.hpp>
+#include <core/system/manager.hpp>
 
 namespace Spark
 {
-	class GLMesh : public Mesh
+	class GLStaticMesh : public StaticMesh
 	{
 	public:
-		friend class Registry<GLMesh>;
 		void CreateMesh() override;
 	private:
-		GLMesh(const std::vector<Vertex>& vertices, const std::vector<u32>& indices) : Mesh(vertices, indices) {}
+		GLStaticMesh(const std::vector<Vertex>& vertices, const std::vector<u32>& indices) : StaticMesh(vertices, indices) {}
 	private:
-		u32 m_vao;
-		u32 m_vbo;
-		u32 m_ebo;
+        u32 m_vao = 0;
+        u32 m_vbo = 0;
+        u32 m_ebo = 0;
 	};
+
+    class GLDynamicMesh : public DynamicMesh
+    {
+    public:
+        void CreateMesh() override;
+        void Update(const std::vector<Vertex>& vertices, const std::vector<u32>& indices) override;
+        void UpdateMesh(const std::vector<Vertex>& vertices) override;
+        void UpdateIndices(const std::vector<u32>& indices) override;
+    private:
+        GLDynamicMesh(const std::vector<Vertex>& vertices, const std::vector<u32>& indices)
+            : DynamicMesh(vertices, indices) {}
+    private:
+        u32 m_vao = 0;
+        u32 m_vbo = 0;
+        u32 m_ebo = 0;
+    };
 }
 
 

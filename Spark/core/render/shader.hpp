@@ -2,91 +2,82 @@
 #define SPARK_SHADER_HPP
 
 #include <core/pch.hpp>
+#include <core/system/manager.hpp>
 
 namespace Spark
 {
-	// Note: We could have used a main IShader interface, but that would lead to a lot of virtual function calls
-	//		 (Even more than we already will have) which are slow, and we also wont be able to accidently cast from one subtype to another
-	//
-	// Note: We could also have made the constructors public, but we want to make sure that they are stored in the Registry<T>
-	class VertexShader
-	{
-	public:
-		virtual ~VertexShader() = default;
-		const std::filesystem::path& GetPath() const {
-			return m_path;
-		}
-		virtual void Compile() = 0;
-	protected:
-		VertexShader(const std::filesystem::path& path) : m_path(path) {}
-	protected:
-		std::filesystem::path m_path;
-	};
+	// Note: We have made the constructors protected, but we want to make sure that they are stored in the Registry<T>
+    class Shader
+    {
+    public:
+        friend class Manager<Shader>;
+        virtual ~Shader() = default;
+        virtual const std::filesystem::path& GetPath() const = 0;
+        virtual void Compile() = 0;
+    protected:
+        Shader(const std::filesystem::path& path) : m_path(path) {}
+    protected:
+        std::filesystem::path m_path;
+    };
 
-	class FragmentShader
-	{
-	public:
-		virtual ~FragmentShader() = default;
-		const std::filesystem::path& GetPath() const {
-			return m_path;
-		}
-		virtual void Compile() = 0;
-	protected:
-		FragmentShader(const std::filesystem::path& path) : m_path(path) {}
-	protected:
-		std::filesystem::path m_path;
-	};
+    class VertexShader : public Shader
+    {
+    public:
+        VertexShader(const std::filesystem::path& path) : Shader(path) {}
+        const std::filesystem::path& GetPath() const override {
+            return m_path;
+        }
+        void Compile() override = 0;
+    };
 
-	class ComputeShader
-	{
-	public:
-		virtual ~ComputeShader() = default;
-		const std::filesystem::path& GetPath() const {
-			return m_path;
-		}
-		virtual void Compile() = 0;
-	protected:
-		ComputeShader(const std::filesystem::path& path) : m_path(path) {}
-	protected:
-		std::filesystem::path m_path;
-	};
+    class FragmentShader : public Shader
+    {
+    public:
+        FragmentShader(const std::filesystem::path& path) : Shader(path) {}
+        const std::filesystem::path& GetPath() const override {
+            return m_path;
+        }
+        void Compile() override = 0;
+    };
 
-	class GeometryShader
-	{
-	public:
-		virtual ~GeometryShader() = default;
-		const std::filesystem::path& GetPath() const {
-			return m_path;
-		}
-		virtual void Compile() = 0;
-	protected:
-		GeometryShader(const std::filesystem::path& path) : m_path(path) {}
-	protected:
-		std::filesystem::path m_path;
-	};
+    class ComputeShader : public Shader
+    {
+    public:
+        ComputeShader(const std::filesystem::path& path) : Shader(path) {}
+        const std::filesystem::path& GetPath() const override {
+            return m_path;
+        }
+        void Compile() override = 0;
+    };
 
-	class TesselationShader
-	{
-	public:
-		virtual ~TesselationShader() = default;
-		const std::filesystem::path& GetPath() const {
-			return m_path;
-		}
-		virtual void Compile() = 0;
-	protected:
-		TesselationShader(const std::filesystem::path& path) : m_path(path) {}
-	protected:
-		std::filesystem::path m_path;
-	};
+    class GeometryShader : public Shader
+    {
+    public:
+        GeometryShader(const std::filesystem::path& path) : Shader(path) {}
+        const std::filesystem::path& GetPath() const override {
+            return m_path;
+        }
+        void Compile() override = 0;
+    };
 
-	// Basically just a VertexShader and FragmentShader
-	class IRenderShader
-	{
-	public:
-		virtual ~IRenderShader() = default;
-	protected:
-		IRenderShader() = default;
-	};
+    class TesselationShader : public Shader
+    {
+    public:
+        TesselationShader(const std::filesystem::path& path) : Shader(path) {}
+        const std::filesystem::path& GetPath() const override {
+            return m_path;
+        }
+        void Compile() override = 0;
+    };
+
+    // Basically just a combination of a VertexShader and a FragmentShader
+    class IRenderShader
+    {
+    public:
+        virtual ~IRenderShader() = default;
+    protected:
+        IRenderShader() = default;
+    };
 }
 
 

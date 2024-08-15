@@ -18,17 +18,6 @@ namespace Spark
 		Registry(const Registry&) = delete;
 		Registry& operator=(const Registry&) = delete;
 
-		template <typename... Args>
-		T& Register(const std::string& name, Args&&... args)
-		{
-			// We might not be able to use the make_unique constructor
-			// because it may be private, such as the case with GLMesh
-			T* ptr = new T(std::forward<Args>(args)...);
-			T& ref = *ptr;
-			m_registry[name] = std::unique_ptr<T>(ptr);
-			return ref;
-		}
-
 		T& Register(const std::string& name, std::unique_ptr<T> object)
 		{
 			T& ref = *object;
@@ -36,12 +25,22 @@ namespace Spark
 			return ref;
 		}
 
-		T* Get(const std::string& name)
+		T& Get(const std::string& name) const
 		{
 			auto it = m_registry.find(name);
 			if (it != m_registry.end())
-				return it->second.get();
-			return nullptr;
+				return *it->second;
+			LOG_ERROR("Could not find object with name: " << name);
+			assert(false);
+		}
+
+		T GetCopy(const std::string& name) const
+		{
+			auto it = m_registry.find(name);
+			if (it != m_registry.end())
+				return *it->second;
+			LOG_ERROR("Could not find object with name: " << name);
+			assert(false);
 		}
 
 		void Remove(const std::string& name)

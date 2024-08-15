@@ -113,9 +113,11 @@
     <ClInclude Include="core\render\gl\gl_shader.hpp" />
     <ClInclude Include="core\render\material.hpp" />
     <ClInclude Include="core\render\mesh.hpp" />
+    <ClInclude Include="core\render\model.hpp" />
     <ClInclude Include="core\render\shader.hpp" />
     <ClInclude Include="core\render\vertex.hpp" />
     <ClInclude Include="core\system\file_serializer.hpp" />
+    <ClInclude Include="core\system\manager.hpp" />
     <ClInclude Include="core\system\serializer.hpp" />
     <ClInclude Include="core\util\defines.hpp" />
     <ClInclude Include="core\util\file.hpp" />

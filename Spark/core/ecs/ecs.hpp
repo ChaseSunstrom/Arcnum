@@ -30,14 +30,20 @@ namespace Spark
 		std::unordered_map<std::type_index, Query<IComponent>> m_components;
 	};
 
-	// Yes this could take in a shared_ptr directly but I feel like std::make_shared is
-	// less clean than new for this specific use case
+	[[deprecated("Use the overload that takes in a std::shared_ptr instead")]]
 	template <IsComponent T>
 	void Ecs::AddComponent(Entity& entity, const std::string& name, T* component)
 	{
 		auto shared_component = std::shared_ptr<T>(component);
 		entity.AddComponent(name, shared_component);
 		m_components[typeid(T)].push_back(shared_component);
+	}
+
+	template <IsComponent T>
+	void Ecs::AdComponent(Entity& entity, const std::string& name, std::shared_ptr<T> component)
+	{
+		entity.AddComponent(name, component);
+		m_components[typeid(T)].push_back(component);
 	}
 
 	// This isnt const because we do want to return an empty Query if the component doesnt exist

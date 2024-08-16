@@ -44,6 +44,9 @@ namespace Spark
 		template <IsComponent T>
 		bool HasComponent(const std::string& name) const;
 
+		template <IsComponent... Ts>
+		bool HasComponents() const;
+
 		template <IsComponent T>
 		Query<T> GetComponents();
 	private:
@@ -55,6 +58,12 @@ namespace Spark
 		template <IsComponent T>
 		void AddComponent(const std::string& name, std::shared_ptr<T> component);
 
+		template <IsComponent... Ts>
+		void AddComponents(const std::string& name, Ts*... components);
+
+		template <IsComponent... Ts>
+		void AddComponents(const std::string& name, std::shared_ptr<Ts>... components);
+
 		template <IsComponent T>
 		void RemoveComponent(const std::string& name);
 
@@ -62,7 +71,7 @@ namespace Spark
 		void RemoveComponents();
 	private:
 		i64	m_id;
-		std::unordered_map<ComponentKey, std::shared_ptr<IComponent>> m_components;
+		std::unordered_map<ComponentKey, std::shared_ptr<Component>> m_components;
 	};
 
 	template <IsComponent T>
@@ -85,6 +94,12 @@ namespace Spark
 	{
 		ComponentKey key = { typeid(T), name };
 		return m_components.find(key) != m_components.end();
+	}
+
+	template <IsComponent... Ts>
+	bool Entity::HasComponents() const
+	{
+		return (HasComponent<Ts>() && ...);
 	}
 
 	template <IsComponent T>
@@ -111,6 +126,18 @@ namespace Spark
 	{
 		ComponentKey key = { typeid(T), name };
 		m_components[key] = component;
+	}
+
+	template <IsComponent... Ts>
+	void Entity::AddComponents(const std::string& name, Ts*... components)
+	{
+		(AddComponent(name, components), ...);
+	}
+
+	template <IsComponent... Ts>
+	void Entity::AddComponents(const std::string& name, std::shared_ptr<Ts>... components)
+	{
+		(AddComponent(name, components), ...);
 	}
 
 	template <IsComponent T>

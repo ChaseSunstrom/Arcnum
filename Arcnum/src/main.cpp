@@ -7,50 +7,20 @@
 #include <core/system/serializer.hpp>
 #include <core/system/file_serializer.hpp>
 #include <core/system/manager.hpp>
-
-struct TestSer
-{
-	i32 x;
-	i32 y;
-	std::vector<i32> xs;
-
-	static void Serialize(Spark::ISerializer* s, const TestSer& x)
-	{
-		s->WriteRaw(x.x);
-		s->WriteRaw(x.y);
-		s->WriteVector(x.xs);
-	}
-
-	static void Deserialize(Spark::IDeserializer* s, TestSer& x)
-	{
-		s->ReadRaw(x.x);
-		s->ReadRaw(x.y);
-		s->ReadVector(x.xs);
-	}
-};
+#include <core/ecs/components/transform_component.hpp>
 
 i32 main()
 {
+	Spark::Ecs ecs;
+	
+	for (i32 i = 0; i < 10000000; i++)
 	{
-		TestSer x{ 1, 2, {} };
-
-		for (i32 i = 0; i < 10; i++)
-		{
-			x.xs.push_back(i);
-		}
-
-		Spark::FileSerializer fs("output.bin");
-		fs.WriteObj(x);
+		Spark::Entity& e = ecs.MakeEntity();
+		ecs.AddComponent(e, "transform", new Spark::TransformComponent());
+		ecs.AddComponent(e, "transform2", new Spark::TransformComponent());
+		ecs.AddComponent(e, "transform3", new Spark::TransformComponent());
 	}
 
-	{
-		TestSer x;
-		Spark::FileDeserializer fd("output.bin");
-		fd.ReadObj(x);
-
-		for (auto& i : x.xs)
-		{
-			std::cout << i << std::endl;
-		}
-	}
+	std::cout << "Entity Count: " << ecs.GetEntityCount() << std::endl;
+	std::cout << "Transform Components: " << ecs.GetComponentCount<Spark::TransformComponent>() << std::endl;
 }

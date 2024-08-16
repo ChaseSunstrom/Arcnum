@@ -58,19 +58,18 @@ namespace Spark
 		m_id = CompileGLShaderInternal(m_path, GL_FRAGMENT_SHADER);
 	}
 
-	GLRenderShader::GLRenderShader(const std::filesystem::path& vertex_path, const std::filesystem::path& fragment_path)
+	void GLRenderShader::Compile()
 	{
-		GLVertexShader vertex_shader(vertex_path);
-		GLFragmentShader fragment_shader(fragment_path);
+
+		GLVertexShader vertex_shader(m_vertex_path);
+		GLFragmentShader fragment_shader(m_fragment_path);
 
 		vertex_shader.Compile();
 		fragment_shader.Compile();
 
-		Compile(vertex_shader.GetId(), fragment_shader.GetId());
-	}
+		u32 vertex_id = vertex_shader.GetId();
+		u32 fragment_id = fragment_shader.GetId();
 
-	void GLRenderShader::Compile(u32 vertex_id, u32 fragment_id)
-	{
 		i32 shader = glCreateProgram();
 		glAttachShader(shader, vertex_id);
 		glAttachShader(shader, fragment_id);
@@ -83,6 +82,4 @@ namespace Spark
 
 		m_id = shader;
 	}
-
-
 }

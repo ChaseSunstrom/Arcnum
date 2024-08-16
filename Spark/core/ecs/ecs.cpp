@@ -18,6 +18,11 @@ namespace Spark
 		return *m_entities[id];
 	}
 
+	i64 Ecs::GetEntityCount() const
+	{
+		return m_entities.size();
+	}
+
 	void Ecs::RemoveEntity(i64 id)
 	{
 		m_entities.erase(m_entities.begin() + id);

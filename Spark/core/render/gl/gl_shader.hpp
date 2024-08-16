@@ -9,6 +9,7 @@ namespace Spark
 	class GLVertexShader : public VertexShader
 	{
 	public:
+		friend class Manager<GLVertexShader>;
 		GLVertexShader(const std::filesystem::path& path) : VertexShader(path) {
 			Compile();
 		}
@@ -24,6 +25,7 @@ namespace Spark
 	class GLFragmentShader : public FragmentShader
 	{
 	public:
+		friend class Manager<GLFragmentShader>;
 		GLFragmentShader(const std::filesystem::path& path) : FragmentShader(path) {
 			Compile();
 		}
@@ -36,13 +38,16 @@ namespace Spark
 		u32 m_id;
 	};
 
-	class GLRenderShader : public IRenderShader
+	class GLRenderShader : public RenderShader
 	{
 	public:
-		GLRenderShader(const std::filesystem::path& vertex_path, const std::filesystem::path& fragment_path);
+		friend class Manager<GLRenderShader>;
+		GLRenderShader(const std::filesystem::path& vertex_path, const std::filesystem::path& fragment_path)
+			: RenderShader(vertex_path, fragment_path) {
+			Compile();
+		}
 		~GLRenderShader();
-	private:
-		void Compile(u32 vertex_id, u32 fragment_id);
+		void Compile() override;
 	private:
 		u32 m_id;
 	};

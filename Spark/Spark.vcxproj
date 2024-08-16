@@ -97,8 +97,11 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="core\api.hpp" />
     <ClInclude Include="core\app\application.hpp" />
     <ClInclude Include="core\ecs\component.hpp" />
+    <ClInclude Include="core\ecs\components\model_component.hpp" />
+    <ClInclude Include="core\ecs\components\transform_component.hpp" />
     <ClInclude Include="core\ecs\ecs.hpp" />
     <ClInclude Include="core\ecs\entity.hpp" />
     <ClInclude Include="core\ecs\query.hpp" />
@@ -114,8 +117,10 @@
     <ClInclude Include="core\render\material.hpp" />
     <ClInclude Include="core\render\mesh.hpp" />
     <ClInclude Include="core\render\model.hpp" />
+    <ClInclude Include="core\resource\resource.hpp" />
     <ClInclude Include="core\render\shader.hpp" />
     <ClInclude Include="core\render\vertex.hpp" />
+    <ClInclude Include="core\scene\transform.hpp" />
     <ClInclude Include="core\system\file_serializer.hpp" />
     <ClInclude Include="core\system\manager.hpp" />
     <ClInclude Include="core\system\serializer.hpp" />
@@ -371,6 +376,7 @@
     <ClCompile Include="core\pch.cpp" />
     <ClCompile Include="core\render\gl\gl_mesh.cpp" />
     <ClCompile Include="core\render\gl\gl_shader.cpp" />
+    <ClCompile Include="core\scene\transform.cpp" />
     <ClCompile Include="core\system\file_serializer.cpp" />
     <ClCompile Include="core\util\file.cpp" />
     <ClCompile Include="core\util\log.cpp" />

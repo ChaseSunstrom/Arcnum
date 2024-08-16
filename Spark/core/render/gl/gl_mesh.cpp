@@ -3,18 +3,18 @@
 
 namespace Spark
 {
-    static void GLCreateMesh(std::vector<Vertex>& vertices, std::vector<u32>& indices, u32& vao, u32& vbo, u32& ebo)
+    static void GLCreateMesh(std::vector<Vertex>& vertices, std::vector<u32>& indices, u32& vao, u32& vbo, u32& ebo, u32 draw_type)
     {
         glGenVertexArrays(1, &vao);
         glBindVertexArray(vao);
 
         glGenBuffers(1, &vbo);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), draw_type);
 
         glGenBuffers(1, &ebo);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(u32), indices.data(), GL_DYNAMIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(u32), indices.data(), draw_type);
 
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
         glEnableVertexAttribArray(0);
@@ -49,12 +49,12 @@ namespace Spark
 
 	void GLStaticMesh::CreateMesh()
 	{
-        GLCreateMesh(m_vertices, m_indices, m_vao, m_vbo, m_ebo);
+        GLCreateMesh(m_vertices, m_indices, m_vao, m_vbo, m_ebo, GL_STATIC_DRAW);
 	}
 
     void GLDynamicMesh::CreateMesh()
     {
-        GLCreateMesh(m_vertices, m_indices, m_vao, m_vbo, m_ebo);
+        GLCreateMesh(m_vertices, m_indices, m_vao, m_vbo, m_ebo, GL_DYNAMIC_DRAW);
     }
 
     void GLDynamicMesh::UpdateMesh(const std::vector<Vertex>& new_vertices)

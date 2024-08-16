@@ -12,17 +12,18 @@ namespace Spark
 		f32 m_diffuse;
 		f32 m_specular;
 		f32 m_ambient;
-		f32 m_shiniess;
+		f32 m_shininess;
 		// TODO: TEXTURES
 	};
 
 	struct Material
 	{
 	public:
-		Material(const MaterialData& material_data) : m_material_data(material_data) {}
+		Material(const MaterialData& material_data, const std::string& shader_name) : m_material_data(material_data), m_shader_name(shader_name) {}
 		virtual ~Material() = default;
 	protected:
 		MaterialData m_material_data;
+		std::string m_shader_name;
 	};
 }
 

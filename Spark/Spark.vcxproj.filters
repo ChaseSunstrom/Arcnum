@@ -809,6 +809,11 @@
     <ClInclude Include="core\system\file_serializer.hpp" />
     <ClInclude Include="core\render\model.hpp" />
     <ClInclude Include="core\system\manager.hpp" />
+    <ClInclude Include="core\api.hpp" />
+    <ClInclude Include="core\resource\resource.hpp" />
+    <ClInclude Include="core\ecs\components\model_component.hpp" />
+    <ClInclude Include="core\ecs\components\transform_component.hpp" />
+    <ClInclude Include="core\scene\transform.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\app\application.cpp">
@@ -832,5 +837,6 @@
     <ClCompile Include="core\render\gl\gl_shader.cpp" />
     <ClCompile Include="core\util\file.cpp" />
     <ClCompile Include="core\system\file_serializer.cpp" />
+    <ClCompile Include="core\scene\transform.cpp" />
   </ItemGroup>
 </Project>

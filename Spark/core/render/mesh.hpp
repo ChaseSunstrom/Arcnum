@@ -59,11 +59,11 @@ namespace Spark
 		template <typename... Args>
 		StaticMesh& Create(const std::string& name, Args&&... args)
 		{
-			T* object = new T(std::forward<Args>(args)...);
-			return Register(name, std::unique_ptr<T>(object));
+			StaticMesh* object = new StaticMesh(std::forward<Args>(args)...);
+			return Register(name, std::unique_ptr<StaticMesh>(object));
 		}
 
-		StaticMesh& Register(const std::string& name, std::unique_ptr<T> object)
+		StaticMesh& Register(const std::string& name, std::unique_ptr<StaticMesh> object)
 		{
 			return m_registry->Register(name, std::move(object));
 		}

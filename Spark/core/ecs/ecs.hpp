@@ -45,7 +45,7 @@ namespace Spark
 	{
 		return m_components[typeid(T)].size();
 	}
-
+  
 	template <IsComponent T>
 	void Ecs::AddComponent(Entity& entity, const std::string& name, T* component)
 	{
@@ -74,7 +74,6 @@ namespace Spark
 			return component->GetEntityId() == entity.GetId();
 		}), m_components[typeid(T)].end());
 	}
-
 	// This isnt const because we do want to return an empty Query if the component doesnt exist
 	// (will get automatically inserted by the [] operator for std::unordered_map)
 	template <IsComponent T>

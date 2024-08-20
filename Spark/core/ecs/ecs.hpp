@@ -17,9 +17,9 @@ namespace Spark
 		Ecs& operator=(const Ecs&) = delete;
 
 		Entity& MakeEntity();
-		Entity&	GetEntity(i64 id) const;
+		Entity&	GetEntity(const i64 id) const;
 		i64 GetEntityCount() const;
-		void RemoveEntity(i64 id);
+		void RemoveEntity(const i64 id);
 
 		template <IsComponent T>
 		void AddComponent(Entity& entity, const std::string& name, T* component);

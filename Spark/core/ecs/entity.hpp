@@ -25,7 +25,6 @@ struct std::hash<Spark::ComponentKey>
 
 namespace Spark
 {
-
 	class Entity
 	{
 	public:

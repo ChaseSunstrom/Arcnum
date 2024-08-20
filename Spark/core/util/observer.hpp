@@ -29,7 +29,7 @@ namespace Spark
 		{
 			T.AddObserver(this);
 		}
-	}
+	};
 }
 
 #endif

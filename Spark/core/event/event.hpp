@@ -10,11 +10,11 @@ namespace Spark
     struct IEvent
     {
         IEvent() = default;
-        IEvent(EventType type) : m_type(type) {}
+        IEvent(i64 type) : m_type(type) {}
         virtual ~IEvent() = default;
 
         bool m_handled = false;
-        EventType m_type = EventType::NONE;
+        i64 m_type = EVENT_TYPE_NONE;
     };
 }
 

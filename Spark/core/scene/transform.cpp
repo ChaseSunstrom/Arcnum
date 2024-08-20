@@ -19,6 +19,11 @@ namespace Spark
 		m_transform = transform;
 	}
 
+	bool Transform::operator==(const Transform& other) const
+	{
+		return m_transform == other.m_transform;
+	}
+
 	void Transform::Move(const glm::vec3& position)
 	{
 		m_transform = glm::translate(m_transform, position);

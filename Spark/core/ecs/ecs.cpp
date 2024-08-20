@@ -13,7 +13,7 @@ namespace Spark
 		return *m_entities.back();
 	}
 
-	Entity& Ecs::GetEntity(i64 id) const
+	Entity& Ecs::GetEntity(const i64 id) const
 	{
 		return *m_entities[id];
 	}
@@ -23,7 +23,7 @@ namespace Spark
 		return m_entities.size();
 	}
 
-	void Ecs::RemoveEntity(i64 id)
+	void Ecs::RemoveEntity(const i64 id)
 	{
 		m_entities.erase(m_entities.begin() + id);
 	}

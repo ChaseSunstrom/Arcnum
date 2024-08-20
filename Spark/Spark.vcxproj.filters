@@ -814,6 +814,8 @@
     <ClInclude Include="core\ecs\components\model_component.hpp" />
     <ClInclude Include="core\ecs\components\transform_component.hpp" />
     <ClInclude Include="core\scene\transform.hpp" />
+    <ClInclude Include="core\scene\scene.hpp" />
+    <ClInclude Include="core\render\renderer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\app\application.cpp">
@@ -838,5 +840,6 @@
     <ClCompile Include="core\util\file.cpp" />
     <ClCompile Include="core\system\file_serializer.cpp" />
     <ClCompile Include="core\scene\transform.cpp" />
+    <ClCompile Include="core\render\render.cpp" />
   </ItemGroup>
 </Project>

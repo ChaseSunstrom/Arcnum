@@ -9,6 +9,8 @@ namespace Spark
 {
 	struct TransformComponent : public Component
 	{
+		TransformComponent(const Transform& transform) : transform(transform) {}
+
 		Transform transform;
 	};
 }

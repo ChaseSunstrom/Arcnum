@@ -12,6 +12,9 @@ namespace Spark
 		Transform(const glm::vec3& position = glm::vec3(1), const glm::vec3& rotation = glm::vec3(1), f32 scale = 1);
 		Transform(const glm::mat4& transform);
 		bool operator==(const Transform& other) const;
+		const glm::mat4& GetTransform() const {
+			return m_transform;
+		}
 		void Move(const glm::vec3& position);
 		void Rotate(const glm::vec3& rotation);
 		void Scale(f32 scale);

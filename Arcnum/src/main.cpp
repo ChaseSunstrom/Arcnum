@@ -25,7 +25,7 @@ void create_entities(Spark::Application& app) {
 
 	for (auto i = 0; i < 10; i++) {	
 		auto e = ecs.MakeEntity();
-		ecs.AddComponent(e, "transform", new Spark::TransformComponent());
+		ecs.AddComponent(e, "transform", new Spark::TransformComponent(glm::vec3(i, i, i)));
 	}
 }
 

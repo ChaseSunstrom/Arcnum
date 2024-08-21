@@ -22,7 +22,7 @@ namespace Spark
 		IObserver() = default;
 		virtual ~IObserver() = default;
 
-		virtual void OnNotify(const std::shared_ptr<IEvent> event);
+		virtual void OnNotify(const std::shared_ptr<Event> event);
 
 		template <HasAddObserver T>
 		void Create(const T& type)

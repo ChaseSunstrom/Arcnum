@@ -34,14 +34,14 @@ namespace Spark
 		Query<T>& GetComponents();
 
 		template <IsComponent T>
-		i64 GetComponentCount() const;
+		i64 GetComponentCount();
 	private:
 		std::vector<std::unique_ptr<Entity>> m_entities;
 		std::unordered_map<std::type_index, Query<Component>> m_components;
 	};
 
 	template <IsComponent T>
-	i64 Ecs::GetComponentCount() const
+	i64 Ecs::GetComponentCount()
 	{
 		return m_components[typeid(T)].size();
 	}

@@ -5,46 +5,46 @@
 
 namespace Spark
 {
-	struct KeyPressedEvent : public IEvent
+	struct KeyPressedEvent : public Event
 	{
-		KeyPressedEvent(i32 key, i32 repeat) : IEvent(EVENT_TYPE_KEY_PRESSED), key(key) {};
+		KeyPressedEvent(i32 key, i32 repeat) : Event(EVENT_TYPE_KEY_PRESSED), key(key) {};
 		i32 key;
 	};
 
-	struct KeyReleasedEvent : public IEvent
+	struct KeyReleasedEvent : public Event
 	{
-		KeyReleasedEvent(i32 key) : IEvent(EVENT_TYPE_KEY_RELEASED), key(key) {};
+		KeyReleasedEvent(i32 key) : Event(EVENT_TYPE_KEY_RELEASED), key(key) {};
 		i32 key;
 	};
 
-	struct KeyHeldEvent : public IEvent
+	struct KeyHeldEvent : public Event
 	{
-		KeyHeldEvent(i32 key) : IEvent(EVENT_TYPE_KEY_HELD), key(key) {};
+		KeyHeldEvent(i32 key) : Event(EVENT_TYPE_KEY_HELD), key(key) {};
 		i32 key;
 	};
 
-	struct MouseMovedEvent : public IEvent
+	struct MouseMovedEvent : public Event
 	{
-		MouseMovedEvent(f64 xpos, f64 ypos) : IEvent(EVENT_TYPE_MOUSE_MOVED), xpos(xpos), ypos(ypos) {};
+		MouseMovedEvent(f64 xpos, f64 ypos) : Event(EVENT_TYPE_MOUSE_MOVED), xpos(xpos), ypos(ypos) {};
 		f64 xpos;
 		f64 ypos;
 	};
 
-	struct MouseButtonPressedEvent : public IEvent
+	struct MouseButtonPressedEvent : public Event
 	{
-		MouseButtonPressedEvent(i32 button) : IEvent(EVENT_TYPE_MOUSE_BUTTON_PRESSED), button(button) {};
+		MouseButtonPressedEvent(i32 button) : Event(EVENT_TYPE_MOUSE_BUTTON_PRESSED), button(button) {};
 		i32 button;
 	};
 
-	struct MouseButtonReleasedEvent : public IEvent
+	struct MouseButtonReleasedEvent : public Event
 	{
-		MouseButtonReleasedEvent(i32 button) : IEvent(EVENT_TYPE_MOUSE_BUTTON_RELEASED), button(button) {};
+		MouseButtonReleasedEvent(i32 button) : Event(EVENT_TYPE_MOUSE_BUTTON_RELEASED), button(button) {};
 		i32 button;
 	};
 
-	struct MouseScrolledEvent : public IEvent
+	struct MouseScrolledEvent : public Event
 	{
-		MouseScrolledEvent(f64 x, f64 y) : IEvent(EVENT_TYPE_MOUSE_SCROLLED), x(x), y(y) {};
+		MouseScrolledEvent(f64 x, f64 y) : Event(EVENT_TYPE_MOUSE_SCROLLED), x(x), y(y) {};
 		f64 x;
 		f64 y;
 	};

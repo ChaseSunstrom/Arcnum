@@ -5,7 +5,10 @@
 #include <core/ecs/ecs.hpp>
 #include <core/window/window.hpp>
 #include <core/ecs/query.hpp>
+#include <core/api.hpp>
+#include <core/render/renderer.hpp>
 #include <core/ecs/component.hpp>
+#include <core/event/event_handler.hpp>
 
 namespace Spark
 {
@@ -13,21 +16,42 @@ namespace Spark
     {
     public:
         using ApplicationFunction = std::function<void(Application&)>;
+        using ApplicationEventFunction = std::function<void(Application&, const std::shared_ptr<Event>)>;
 
         template <IsComponent T>
-        using ApplicationUpdateFunction = std::function<void(Application&, Query<T>&)>;
+        using ApplicationQueryFunction = std::function<void(Application&, Query<T>&)>;
 
-        Application(std::unique_ptr<IWindow> window) : m_ecs(std::make_unique<Ecs>()), m_window(std::move(window)) {}
+        template <IsComponent T>
+        using ApplicationQueryEventFunction = std::function<void(Application&, Query<T>&, const std::shared_ptr<Event>)>;
+
+        Application(GraphicsAPI gapi) : m_event_handler(std::make_unique<EventHandler>()), 
+                                                                        m_ecs(std::make_unique<Ecs>()),
+                                                                        m_gapi(gapi) {}
         ~Application();
 
         Application& AddStartupFunction(ApplicationFunction fn);
         Application& AddShutdownFunction(ApplicationFunction fn);
+        Application& AddEventFunction(i64 event_type, ApplicationEventFunction fn);
+        Application& AddUpdateFunction(ApplicationFunction fn);
 
         template <IsComponent T>
-        Application& AddUpdateFunction(ApplicationUpdateFunction<T> fn);
+        Application& AddQueryFunction(ApplicationQueryFunction<T> fn);
+
+        template <IsComponent T>
+        Application& AddQueryEventFunction(i64 event_type, ApplicationQueryEventFunction<T> fn);
+
+        template <IsWindow T>
+        Application& CreateWindow(const std::string& title, i32 width, i32 height);
+
+        template <IsRenderer T>
+        Application& CreateRenderer();
 
         void Start();
-        Ecs& GetEcs();
+
+        Ecs& GetEcs() const;
+        Window& GetWindow() const;
+        Renderer& GetRenderer() const;
+        EventHandler& GetEventHandler() const;
     private:
         void RunStartupFunctions();
         void RunUpdateFunctions();
@@ -35,7 +59,9 @@ namespace Spark
         void Update();
     private:
         std::vector<ApplicationFunction> m_startup_functions;
+        std::vector<ApplicationFunction> m_update_functions;
         std::vector<ApplicationFunction> m_shutdown_functions;
+        std::vector<ApplicationEventFunction> m_event_functions;
 
         struct IUpdateFunctionWrapper
         {
@@ -43,13 +69,19 @@ namespace Spark
             virtual void Execute(Application& app) = 0;
         };
 
+        struct IQueryEventFunctionWrapper
+        {
+            virtual ~IQueryEventFunctionWrapper() = default;
+            virtual void Execute(Application& app, const std::shared_ptr<Event> event) = 0;
+        };
+
         template <IsComponent T>
         struct UpdateFunctionWrapper : IUpdateFunctionWrapper
         {
-            ApplicationUpdateFunction<T> fn;
+            ApplicationQueryFunction<T> fn;
             Ecs& ecs;
 
-            UpdateFunctionWrapper(Ecs& ecs, ApplicationUpdateFunction<T> fn) : ecs(ecs), fn(fn) {}
+            UpdateFunctionWrapper(Ecs& ecs, ApplicationQueryFunction<T> fn) : ecs(ecs), fn(fn) {}
 
             void Execute(Application& app) override
             {
@@ -57,17 +89,64 @@ namespace Spark
             }
         };
 
-        std::vector<std::unique_ptr<IUpdateFunctionWrapper>> m_update_functions;
+        template <IsComponent T>
+        struct QueryEventFunctionWrapper : IQueryEventFunctionWrapper
+		{
+			ApplicationQueryEventFunction<T> fn;
+			Ecs& ecs;
+            i64 event_type;
+
+			QueryEventFunctionWrapper(Ecs& ecs, ApplicationQueryEventFunction<T> fn, i64 event_type) : ecs(ecs), fn(fn), event_type(event_type) {}
+
+			void Execute(Application& app, const std::shared_ptr<Event> event) override
+			{
+				fn(app, ecs.GetComponents<T>(), event);
+			}
+		};
+
+        std::vector<std::unique_ptr<IUpdateFunctionWrapper>> m_query_functions;
+        std::vector<std::unique_ptr<IQueryEventFunctionWrapper>> m_query_event_functions;
         std::unique_ptr<Ecs> m_ecs;
-        std::unique_ptr<IWindow> m_window;
+        std::unique_ptr<EventHandler> m_event_handler;
+        std::unique_ptr<Window> m_window;
+        std::unique_ptr<Renderer> m_renderer;
+        GraphicsAPI m_gapi;
     };
 
-    template <IsComponent T>
-    Application& Application::AddUpdateFunction(ApplicationUpdateFunction<T> fn)
+    template <IsWindow T>
+    Application& Application::CreateWindow(const std::string& title, i32 width, i32 height)
     {
-        m_update_functions.push_back(std::make_unique<UpdateFunctionWrapper<T>>(*m_ecs, fn));
+        m_window = std::make_unique<T>(title, width, height, *m_event_handler);
         return *this;
     }
+
+    template <IsRenderer T>
+    Application& Application::CreateRenderer()
+	{
+		m_renderer = std::make_unique<T>(m_gapi);
+		return *this;
+	}
+
+    template <IsComponent T>
+    Application& Application::AddQueryFunction(ApplicationQueryFunction<T> fn)
+    {
+        m_query_functions.push_back(std::make_unique<UpdateFunctionWrapper<T>>(*m_ecs, fn));
+        return *this;
+    }
+
+    template <IsComponent T>
+    Application& Application::AddQueryEventFunction(i64 event_type, ApplicationQueryEventFunction<T> fn)
+	{
+        auto query_event_wrapper = std::make_unique<QueryEventFunctionWrapper<T>>(*m_ecs, fn, event_type);
+        auto& query_event_wrapper_ref = *query_event_wrapper;
+        m_query_event_functions.push_back(std::move(query_event_wrapper));
+
+        m_event_handler->SubscribeToEvent(event_type, [this, fn, &query_event_wrapper_ref](const std::shared_ptr<Event> event) {
+            query_event_wrapper_ref.Execute(*this, event);
+        });
+
+        return *this;
+	}
 }
 
 #endif

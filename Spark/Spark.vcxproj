@@ -107,12 +107,13 @@
     <ClInclude Include="core\ecs\query.hpp" />
     <ClInclude Include="core\ecs\system.hpp" />
     <ClInclude Include="core\event\event.hpp" />
+    <ClInclude Include="core\event\event_handler.hpp" />
     <ClInclude Include="core\event\event_type.hpp" />
     <ClInclude Include="core\event\input_events.hpp" />
     <ClInclude Include="core\event\window_events.hpp" />
     <ClInclude Include="core\pch.hpp" />
-    <ClInclude Include="core\render\gl\gl_material.hpp" />
     <ClInclude Include="core\render\gl\gl_mesh.hpp" />
+    <ClInclude Include="core\render\gl\gl_renderer.hpp" />
     <ClInclude Include="core\render\gl\gl_shader.hpp" />
     <ClInclude Include="core\render\material.hpp" />
     <ClInclude Include="core\render\mesh.hpp" />
@@ -377,8 +378,9 @@
     <ClCompile Include="core\ecs\ecs.cpp" />
     <ClCompile Include="core\pch.cpp" />
     <ClCompile Include="core\render\gl\gl_mesh.cpp" />
+    <ClCompile Include="core\render\gl\gl_renderer.cpp" />
     <ClCompile Include="core\render\gl\gl_shader.cpp" />
-    <ClCompile Include="core\render\render.cpp" />
+    <ClCompile Include="core\render\renderer.cpp" />
     <ClCompile Include="core\scene\transform.cpp" />
     <ClCompile Include="core\system\file_serializer.cpp" />
     <ClCompile Include="core\util\file.cpp" />

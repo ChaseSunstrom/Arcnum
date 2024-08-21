@@ -5,16 +5,16 @@
 
 namespace Spark
 {
-	struct WindowResizedEvent : public IEvent
+	struct WindowResizedEvent : public Event
 	{
-		WindowResizedEvent(i32 width, i32 height) : IEvent(EVENT_TYPE_WINDOW_RESIZE), width(width), height(height) {};
+		WindowResizedEvent(i32 width, i32 height) : Event(EVENT_TYPE_WINDOW_RESIZE), width(width), height(height) {};
 		i32 width;
 		i32 height;
 	};
 
-	struct WindowClosedEvent : public IEvent
+	struct WindowClosedEvent : public Event
 	{
-		WindowClosedEvent() : IEvent(EVENT_TYPE_WINDOW_CLOSE) {};
+		WindowClosedEvent() : Event(EVENT_TYPE_WINDOW_CLOSE) {};
 	};
 }
 

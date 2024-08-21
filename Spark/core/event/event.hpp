@@ -7,12 +7,13 @@
 
 namespace Spark
 {
-    struct IEvent
+    class Event
     {
-        IEvent() = default;
-        IEvent(i64 type) : m_type(type) {}
-        virtual ~IEvent() = default;
-
+    public:
+        Event() = default;
+        Event(i64 type) : m_type(type) {}
+        virtual ~Event() = default;
+    public:
         bool m_handled = false;
         i64 m_type = EVENT_TYPE_NONE;
     };

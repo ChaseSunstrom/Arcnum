@@ -3,23 +3,27 @@
 
 #include <core/pch.hpp>
 #include <core/event/event.hpp>
+#include <core/event/event_handler.hpp>
 
 namespace Spark
 {
 	struct WindowData
 	{
-		std::string title = "Title";
-		bool vsync = false;
-		i32 width = 1080;
-		i32 height = 1080;
-		std::function<void(std::shared_ptr<IEvent>)> event_callback;
+		WindowData(const std::string& title, bool vsync, i32 width, i32 height, EventHandler& event_handler) : title(title), vsync(vsync), width(width), height(height), event_handler(event_handler) {}
+
+		std::string title;
+		bool vsync;
+		i32 width;
+		i32 height;
+		EventHandler& event_handler;
 	};
 
-	class IWindow
+	class Window
 	{
 	public:
-		virtual ~IWindow() = default;
-		virtual void CreateWindow(i32 width, i32 height, const std::string& title, std::function<void(std::shared_ptr<IEvent>)> cb) = 0;
+		Window(const std::string& title, i32 width, i32 height, EventHandler& event_handler, bool vsync = false) : m_window_data(std::make_unique<WindowData>(title, vsync, width, height, event_handler)) {}
+		virtual ~Window() = default;
+		virtual void CreateWindow(i32 width, i32 height, const std::string& title) = 0;
 		virtual void DestroyWindow() = 0;
 		virtual void Update() = 0;
 		virtual bool Running() = 0;
@@ -28,7 +32,12 @@ namespace Spark
 		virtual void SetVSync(bool enabled) = 0;
 		virtual bool IsVSync() const = 0;
 		virtual WindowData&	GetWindowData() const = 0;
+	protected:
+		std::unique_ptr<WindowData> m_window_data;
 	};
+
+	template <typename T>
+	concept IsWindow = std::derived_from<T, Window>;
 }
 
 #endif

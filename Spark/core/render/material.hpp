@@ -3,6 +3,7 @@
 
 #include <core/pch.hpp>
 #include <glm/vec4.hpp>
+#include "shader.hpp"
 
 namespace Spark
 {

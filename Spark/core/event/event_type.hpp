@@ -6,6 +6,7 @@
 namespace Spark
 {
 
+#define EVENT_TYPE_ALL -1
 #define EVENT_TYPE_NONE 0
 
 #define EVENT_TYPE_WINDOW_CLOSE 1

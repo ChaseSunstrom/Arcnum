@@ -1,13 +1,14 @@
 #include "gl_window.hpp"
 #include <core/event/input_events.hpp>
 #include <core/event/window_events.hpp>
+#include <core/util/log.hpp>
 
 namespace Spark
 {
-	GLWindow::GLWindow(i32 width, i32 height, const std::string& title, std::function<void(std::shared_ptr<IEvent>)> event_callback) : m_window_data(std::make_unique<WindowData>())
+	GLWindow::GLWindow(const std::string& title, i32 width, i32 height, EventHandler& event_handler, bool vsync) : Window(title, width, height, event_handler, vsync)
 	{
-		CreateWindow(width, height, title, event_callback);
-		SetVSync(false);
+		CreateWindow(width, height, title);
+		SetVSync(vsync);
 	}
 
 	GLWindow::~GLWindow()
@@ -15,12 +16,11 @@ namespace Spark
 		DestroyWindow();
 	}
 
-	void GLWindow::CreateWindow(i32 width, i32 height, const std::string& title, std::function<void(std::shared_ptr<IEvent>)> event_callback)
+	void GLWindow::CreateWindow(i32 width, i32 height, const std::string& title)
 	{
 		m_window_data->width = width;
 		m_window_data->height = height;
 		m_window_data->title = title;
-		m_window_data->event_callback = event_callback;
 
 		glfwInit();
 
@@ -34,7 +34,8 @@ namespace Spark
 		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 		{
 			// Failed to initialize GLAD
-			return;
+			LOG_ERROR("Failed to initialize glad!");
+			assert(false);
 		}
 
 		glfwSetWindowUserPointer(m_window, m_window_data.get());
@@ -46,8 +47,7 @@ namespace Spark
 				data.width = width;
 				data.height = height;
 
-				WindowResizedEvent event(width, height);
-				data.event_callback(std::make_shared<WindowResizedEvent>(event));
+				data.event_handler.PublishEvent(EVENT_TYPE_WINDOW_RESIZE, std::make_shared<WindowResizedEvent>(width, height));
 			});
 
 		glfwSetWindowCloseCallback(m_window,
@@ -55,8 +55,7 @@ namespace Spark
 			{
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-				WindowClosedEvent event;
-				data.event_callback(std::make_shared<WindowClosedEvent>(event));
+				data.event_handler.PublishEvent(EVENT_TYPE_WINDOW_CLOSE, std::make_shared<WindowClosedEvent>());
 			});
 
 		glfwSetKeyCallback(m_window,
@@ -68,20 +67,17 @@ namespace Spark
 				{
 				case GLFW_PRESS:
 				{
-					KeyPressedEvent event(key, 0);
-					data.event_callback(std::make_shared<KeyPressedEvent>(event));
+					data.event_handler.PublishEvent(EVENT_TYPE_KEY_PRESSED, std::make_shared<KeyPressedEvent>(key, 0));
 					break;
 				}
 				case GLFW_RELEASE:
 				{
-					KeyReleasedEvent event(key);
-					data.event_callback(std::make_shared<KeyReleasedEvent>(event));
+					data.event_handler.PublishEvent(EVENT_TYPE_KEY_RELEASED, std::make_shared<KeyReleasedEvent>(key));
 					break;
 				}
 				case GLFW_REPEAT:
 				{
-					KeyPressedEvent event(key, 1);
-					data.event_callback(std::make_shared<KeyPressedEvent>(event));
+					data.event_handler.PublishEvent(EVENT_TYPE_KEY_HELD, std::make_shared<KeyPressedEvent>(key, 1));
 					break;
 				}
 				}
@@ -96,14 +92,12 @@ namespace Spark
 				{
 				case GLFW_PRESS:
 				{
-					MouseButtonPressedEvent event(button);
-					data.event_callback(std::make_shared<MouseButtonPressedEvent>(event));
+					data.event_handler.PublishEvent(EVENT_TYPE_MOUSE_BUTTON_PRESSED, std::make_shared<MouseButtonPressedEvent>(button));
 					break;
 				}
 				case GLFW_RELEASE:
 				{
-					MouseButtonReleasedEvent event(button);
-					data.event_callback(std::make_shared<MouseButtonReleasedEvent>(event));
+					data.event_handler.PublishEvent(EVENT_TYPE_MOUSE_BUTTON_RELEASED,std::make_shared<MouseButtonReleasedEvent>(button));
 					break;
 				}
 				}
@@ -114,8 +108,7 @@ namespace Spark
 			{
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-				MouseMovedEvent event(x, y);
-				data.event_callback(std::make_shared<MouseMovedEvent>(event));
+				data.event_handler.PublishEvent(EVENT_TYPE_MOUSE_MOVED, std::make_shared<MouseMovedEvent>(x, y));
 			});
 
 		glfwSetScrollCallback(m_window,
@@ -123,8 +116,7 @@ namespace Spark
 			{
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-				MouseScrolledEvent event(x, y);
-				data.event_callback(std::make_shared<MouseScrolledEvent>(event));
+				data.event_handler.PublishEvent(EVENT_TYPE_MOUSE_SCROLLED, std::make_shared<MouseScrolledEvent>(x, y));
 			});
 	}
 

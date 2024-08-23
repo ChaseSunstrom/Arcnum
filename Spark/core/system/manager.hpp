@@ -30,6 +30,11 @@ namespace Spark
 			return m_registry->Get(name);
 		}
 
+		T& GetByHandle(Handle handle) const
+		{
+			return m_registry->GetByHandle(handle);
+		}
+
 		T GetCopy(const std::string& name) const
 		{
 			return m_registry->GetCopy(name);

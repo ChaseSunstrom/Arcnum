@@ -63,7 +63,7 @@ namespace Spark
 			return Register(name, std::unique_ptr<StaticMesh>(object));
 		}
 
-		StaticMesh& Register(const std::string& name, std::unique_ptr<StaticMesh> object)
+		Handle Register(const std::string& name, std::unique_ptr<StaticMesh> object)
 		{
 			return m_registry->Register(name, std::move(object));
 		}
@@ -71,6 +71,11 @@ namespace Spark
 		StaticMesh& Get(const std::string& name) const
 		{
 			return m_registry->Get(name);
+		}
+
+		StaticMesh& GetByHandle(Handle handle) const
+		{
+			return m_registry->GetByHandle(handle);
 		}
 
 		void Remove(const std::string& name)

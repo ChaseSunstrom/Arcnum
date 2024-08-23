@@ -817,6 +817,9 @@
     <ClInclude Include="core\render\renderer.hpp" />
     <ClInclude Include="core\render\gl\gl_renderer.hpp" />
     <ClInclude Include="core\event\event_handler.hpp" />
+    <ClInclude Include="core\render\game_object.hpp" />
+    <ClInclude Include="core\event\ecs_events.hpp" />
+    <ClInclude Include="core\scene\octree.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\app\application.cpp">
@@ -841,7 +844,6 @@
     <ClCompile Include="core\util\file.cpp" />
     <ClCompile Include="core\system\file_serializer.cpp" />
     <ClCompile Include="core\scene\transform.cpp" />
-    <ClCompile Include="core\render\renderer.cpp" />
     <ClCompile Include="core\render\gl\gl_renderer.cpp" />
   </ItemGroup>
 </Project>

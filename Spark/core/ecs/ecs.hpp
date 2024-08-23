@@ -2,6 +2,8 @@
 #define SPARK_ECS_HPP
 
 #include <core/pch.hpp>
+#include <core/event/event_handler.hpp>
+#include <core/event/ecs_events.hpp>
 #include "entity.hpp"
 #include "component.hpp"
 
@@ -10,12 +12,13 @@ namespace Spark
 	class Ecs
 	{
 	public:
-		Ecs() = default;
+		Ecs(EventHandler& event_handler) : m_event_handler(event_handler) {}
 		~Ecs() = default;
 
 		Ecs(const Ecs&) = delete;
 		Ecs& operator=(const Ecs&) = delete;
 
+		template <IsComponent... Ts>
 		Entity& MakeEntity();
 		Entity&	GetEntity(const i64 id) const;
 		i64 GetEntityCount() const;
@@ -38,12 +41,28 @@ namespace Spark
 	private:
 		std::vector<std::unique_ptr<Entity>> m_entities;
 		std::unordered_map<std::type_index, Query<Component>> m_components;
+		EventHandler& m_event_handler;
 	};
 
 	template <IsComponent T>
 	i64 Ecs::GetComponentCount()
 	{
 		return m_components[typeid(T)].size();
+	}
+
+	template <IsComponent... Ts>
+	Entity& Ecs::MakeEntity()
+	{
+		// Using new here because Entities constructor is private and we dont want to 
+		// friend std::unique_ptr<Entity> to prevent the user from accidently creating illegal
+		// entities
+		auto entity = new Entity(m_entities.size());
+		m_entities.push_back(std::unique_ptr<Entity>(entity));
+		(m_components[typeid(Ts)], ...);
+
+		m_event_handler.PublishEvent(EVENT_TYPE_ENTITY_CREATED, std::make_shared<EntityCreatedEvent>(*entity));
+
+		return *m_entities.back();
 	}
 
 	template <IsComponent T>

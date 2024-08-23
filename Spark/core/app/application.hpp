@@ -25,7 +25,7 @@ namespace Spark
         using ApplicationQueryEventFunction = std::function<void(Application&, Query<T>&, const std::shared_ptr<Event>)>;
 
         Application(GraphicsAPI gapi) : m_event_handler(std::make_unique<EventHandler>()), 
-                                                                        m_ecs(std::make_unique<Ecs>()),
+                                                                        m_ecs(std::make_unique<Ecs>(*m_event_handler)),
                                                                         m_gapi(gapi) {}
         ~Application();
 
@@ -104,10 +104,10 @@ namespace Spark
 			}
 		};
 
+        std::unique_ptr<EventHandler> m_event_handler;
         std::vector<std::unique_ptr<IUpdateFunctionWrapper>> m_query_functions;
         std::vector<std::unique_ptr<IQueryEventFunctionWrapper>> m_query_event_functions;
         std::unique_ptr<Ecs> m_ecs;
-        std::unique_ptr<EventHandler> m_event_handler;
         std::unique_ptr<Window> m_window;
         std::unique_ptr<Renderer> m_renderer;
         GraphicsAPI m_gapi;

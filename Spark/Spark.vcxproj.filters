@@ -845,5 +845,6 @@
     <ClCompile Include="core\system\file_serializer.cpp" />
     <ClCompile Include="core\scene\transform.cpp" />
     <ClCompile Include="core\render\gl\gl_renderer.cpp" />
+    <ClCompile Include="core\scene\octree.cpp" />
   </ItemGroup>
 </Project>

@@ -22,5 +22,4 @@ namespace Spark
 	concept IsRenderer = std::derived_from<T, Renderer>;
 }
 
-
 #endif

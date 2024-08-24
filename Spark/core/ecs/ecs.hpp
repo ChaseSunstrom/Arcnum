@@ -47,7 +47,7 @@ namespace Spark
 	template <IsComponent T>
 	i64 Ecs::GetComponentCount()
 	{
-		return m_components[typeid(T)].size();
+		return m_components[decltype(T)].size();
 	}
 
 	template <IsComponent... Ts>
@@ -58,7 +58,7 @@ namespace Spark
 		// entities
 		auto entity = new Entity(m_entities.size());
 		m_entities.push_back(std::unique_ptr<Entity>(entity));
-		(m_components[typeid(Ts)], ...);
+		(m_components[decltype(Ts)], ...);
 
 		m_event_handler.PublishEvent(EVENT_TYPE_ENTITY_CREATED, std::make_shared<EntityCreatedEvent>(*entity));
 
@@ -71,7 +71,9 @@ namespace Spark
 		component->SetEntityId(entity.GetId());
 		auto shared_component = std::shared_ptr<T>(component);
 		entity.AddComponent(name, shared_component);
-		m_components[typeid(T)].push_back(shared_component);
+		m_components[decltype(T)].push_back(shared_component);
+
+		m_event_handler.PublishEvent(EVENT_TYPE_COMPONENT_ADDED, std::make_shared<ComponentAddedEvent>(entity.GetId(), typeid(T), shared_component));
 	}
 
 	template <IsComponent T>
@@ -79,19 +81,21 @@ namespace Spark
 	{
 		component->SetEntityId(entity.GetId());
 		entity.AddComponent(name, component);
-		m_components[typeid(T)].push_back(component);
+		m_components[decltype(T)].push_back(component);
+
+		m_event_handler.PublishEvent(EVENT_TYPE_COMPONENT_ADDED, std::make_shared<ComponentAddedEvent>(entity.GetId(), typeid(T), component));
 	}
 
 	template <IsComponent T>
 	void Ecs::RemoveComponents(Entity& entity)
 	{
 		entity.RemoveComponents<T>();
-		m_components[typeid(T)].erase(std::remove_if(m_components[typeid(T)].begin(), 
-			                                         m_components[typeid(T)].end(), 
+		m_components[decltype(T)].erase(std::remove_if(m_components[decltype(T)].begin(),
+			                                         m_components[decltype(T)].end(),
 			                                         [this, &entity](const std::shared_ptr<Component>& component)
 		{
 			return component->GetEntityId() == entity.GetId();
-		}), m_components[typeid(T)].end());
+		}), m_components[decltype(T)].end());
 	}
 
 	// This isnt const because we do want to return an empty Query if the component doesnt exist
@@ -99,7 +103,7 @@ namespace Spark
 	template <IsComponent T>
 	Query<T>& Ecs::GetComponents()
 	{
-		return *reinterpret_cast<Query<T>*>(&m_components[typeid(T)]);
+		return *reinterpret_cast<Query<T>*>(&m_components[decltype(T)]);
 	}
 }
 

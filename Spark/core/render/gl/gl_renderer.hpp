@@ -11,7 +11,7 @@ namespace Spark
 	{
 	public:
 		GLRenderer(GraphicsAPI gapi) : Renderer(gapi) {}
-		void Render();
+		void Render() override;
 	private:
 
 	};

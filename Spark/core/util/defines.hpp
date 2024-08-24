@@ -7,6 +7,12 @@
 
 #endif
 
+#if !defined(RELEASE) || defined(DEBUG)
+	
+	#define __DEBUG__
+
+#endif
+
 #define __INFO__
 #define __WARN__
 #define __ERROR__

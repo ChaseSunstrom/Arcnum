@@ -8,40 +8,70 @@
 
 namespace Spark
 {
-	class EntityCreatedEvent : public Event
+	struct EntityCreatedEvent : public Event
 	{
-	public:
 		EntityCreatedEvent(const Entity& entity) : Event(EVENT_TYPE_ENTITY_CREATED), entity(entity) {}
-	public:
 		const Entity& entity;
 	};
 
-	class EntityDestroyedEvent : public Event
+	struct EntityDestroyedEvent : public Event
 	{
-	public:
 		EntityDestroyedEvent(const Entity& entity) : Event(EVENT_TYPE_ENTITY_DESTROYED), entity(entity) {}
-	public:
 		const Entity& entity;
 	};
 
-	class ComponentAddedEvent : public Event
+	struct ComponentAddedEvent : public Event
 	{
-	public:
-		ComponentAddedEvent(const Entity& entity, const Component& component) : Event(EVENT_TYPE_COMPONENT_ADDED), entity(entity), component(component) {}
-	public:
+		template<typename T>
+		ComponentAddedEvent(const Entity& entity, const T& component)
+			: Event(EVENT_TYPE_COMPONENT_ADDED)
+			, entity(entity)
+			, component_type(decltype(T))
+			, component_ptr(static_cast<const Component*>(&component))
+		{}
+
 		const Entity& entity;
-		const Component& component;
+		const std::type_index component_type;
+		const Component* component_ptr;
+
+		template<typename T>
+		const T& get_component() const {
+#ifdef __DEBUG__
+			if (decltype(T) != component_type) {
+				LOG_ERROR("Component type mismatch!");
+				assert(false);
+			}
+#endif
+			return *static_cast<const T*>(component_ptr);
+		}
 	};
 
 	class ComponentRemovedEvent : public Event
 	{
 	public:
-		ComponentRemovedEvent(const Entity& entity, const Component& component) : Event(EVENT_TYPE_COMPONENT_REMOVED), entity(entity), component(component) {}
-	public:
+		template<typename T>
+		ComponentRemovedEvent(const Entity& entity, const T& component)
+			: Event(EVENT_TYPE_COMPONENT_REMOVED)
+			, entity(entity)
+			, component_type(decltype(T))
+			, component_ptr(static_cast<const Component*>(&component))
+		{}
+
+		template<typename T>
+		const T& get_component() const {
+#ifdef __DEBUG__
+			if (decltype(T) != component_type) {
+				LOG_ERROR("Component type mismatch!");
+				assert(false);
+			}
+#endif
+			return *static_cast<const T*>(component_ptr);
+		}
+
 		const Entity& entity;
-		const Component& component;
+		const std::type_index component_type;
+		const Component* component_ptr;
 	};
 }
-
 
 #endif

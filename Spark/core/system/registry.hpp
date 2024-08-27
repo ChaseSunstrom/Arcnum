@@ -7,7 +7,7 @@ namespace Spark
 {
 	struct Handle
 	{
-		u32 index;
+		size_t index;
 		u32 generation;
 		bool operator==(const Handle& other) const {
 			return index == other.index && generation == other.generation;

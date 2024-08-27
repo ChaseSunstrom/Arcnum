@@ -36,60 +36,100 @@ namespace Spark
 		m_renderer->Render();
 	}
 
-	Application& Application::AddStartupFunction(ApplicationFunction fn)
+	Application& Application::AddStartupFunction(const ApplicationFunction& fn, FunctionSettings threaded)
 	{
-		m_startup_functions.push_back(fn);
+		m_startup_functions.push_back({fn, threaded});
 		return *this;
 	}
 
-	Application& Application::AddEventFunction(i64 event_type, ApplicationEventFunction fn)
+	Application& Application::AddEventFunction(i64 event_type, const ApplicationEventFunction& fn)
 	{
 		m_event_functions.push_back(fn);
 		m_event_handler->SubscribeToEvent(event_type, [this, fn](const std::shared_ptr<Event> event) {
-			fn(*this, event);
+				std::unique_lock<std::mutex> lock(m_mutex);
+				fn(*this, event);
 			});
 		return *this;
 	}
 
-	Application& Application::AddUpdateFunction(ApplicationFunction fn)
+	Application& Application::AddUpdateFunction(const ApplicationFunction& fn, FunctionSettings threaded)
 	{
-		m_update_functions.push_back(fn);
+		m_update_functions.push_back({fn, threaded });
 		return *this;
 	}
 
-	Application& Application::AddShutdownFunction(ApplicationFunction fn)
+	Application& Application::AddShutdownFunction(const ApplicationFunction& fn, FunctionSettings threaded)
 	{
-		m_shutdown_functions.push_back(fn);
+		m_shutdown_functions.push_back({ fn, threaded});
 		return *this;
 	}
 
 	void Application::RunStartupFunctions()
 	{
-		for (auto& fn : m_startup_functions)
+		for (const auto& [fn, settings] : m_startup_functions)
 		{
-			fn(*this);
+			if (settings.threaded)
+			{
+				m_thread_pool->Enqueue(TaskPriority::HIGH, settings.wait, [this, &fn]() {
+						std::unique_lock<std::mutex> lock(m_mutex);
+						fn(*this);
+					});
+			}
+			else
+			{
+				fn(*this);
+			}
 		}
+
+		m_thread_pool->SyncRegisteredThreads(); // Wait for all threaded startup functions to complete
 	}
 
 	void Application::RunUpdateFunctions()
 	{
-		for (const auto& fn : m_update_functions)
+		for (const auto& [fn, settings] : m_update_functions)
 		{
-			fn(*this);
+			if (settings.threaded)
+			{
+				m_thread_pool->Enqueue(TaskPriority::NORMAL, settings.wait, [this, &fn]() {
+						std::unique_lock<std::mutex> lock(m_mutex);
+						fn(*this);
+					});
+			}
+			else
+			{
+				fn(*this);
+			}
 		}
 
 		for (const auto& fn : m_query_functions)
 		{
-			fn->Execute(*this);
+			m_thread_pool->Enqueue(TaskPriority::NORMAL, false, [this, &fn]() {
+					std::unique_lock<std::mutex> lock(m_mutex);
+					fn->Execute(*this);
+				});
 		}
+
+		m_thread_pool->SyncRegisteredThreads(); // Wait for all threaded update functions to complete
 	}
 
 	void Application::RunShutdownFunctions()
 	{
-		for (auto& fn : m_shutdown_functions)
+		for (const auto& [fn, settings] : m_shutdown_functions)
 		{
-			fn(*this);
+			if (settings.threaded)
+			{
+				m_thread_pool->Enqueue(TaskPriority::NORMAL, settings.wait, [this, &fn]() {
+						std::unique_lock<std::mutex> lock(m_mutex);
+						fn(*this);
+					});
+			}
+			else
+			{
+				fn(*this);
+			}
 		}
+
+		m_thread_pool->SyncRegisteredThreads();
 	}
 
 	Ecs& Application::GetEcs() const

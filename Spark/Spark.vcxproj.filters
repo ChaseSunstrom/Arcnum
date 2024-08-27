@@ -820,6 +820,9 @@
     <ClInclude Include="core\render\game_object.hpp" />
     <ClInclude Include="core\event\ecs_events.hpp" />
     <ClInclude Include="core\scene\octree.hpp" />
+    <ClInclude Include="core\util\thread_pool.hpp">
+      <Filter>core\util</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\app\application.cpp">

@@ -22,55 +22,62 @@ namespace Spark
 
 	struct ComponentAddedEvent : public Event
 	{
-		template<typename T>
-		ComponentAddedEvent(const Entity& entity, const T& component)
+		ComponentAddedEvent(const Entity& entity, const std::type_index& type, const std::shared_ptr<Component> component)
 			: Event(EVENT_TYPE_COMPONENT_ADDED)
 			, entity(entity)
-			, component_type(decltype(T))
-			, component_ptr(static_cast<const Component*>(&component))
+#ifdef __DEBUG__
+			, component_type(type)
+#endif
+			, component_ptr(component)
 		{}
 
-		const Entity& entity;
-		const std::type_index component_type;
-		const Component* component_ptr;
-
-		template<typename T>
-		const T& get_component() const {
+		template<IsComponent T>
+		const T& GetComponent() const {
 #ifdef __DEBUG__
-			if (decltype(T) != component_type) {
+			if (typeid(T) != component_type) {
 				LOG_ERROR("Component type mismatch!");
 				assert(false);
 			}
 #endif
-			return *static_cast<const T*>(component_ptr);
+			return *std::static_pointer_cast<T>(component_ptr);
 		}
+
+		const Entity& entity;
+#ifdef __DEBUG__
+		const std::type_index component_type;
+#endif
+		const std::shared_ptr<Component> component_ptr;
+
 	};
 
-	class ComponentRemovedEvent : public Event
+
+	struct ComponentRemovedEvent : public Event
 	{
-	public:
-		template<typename T>
-		ComponentRemovedEvent(const Entity& entity, const T& component)
+		ComponentRemovedEvent(const Entity& entity, const std::type_index& type, const std::shared_ptr<Component> component)
 			: Event(EVENT_TYPE_COMPONENT_REMOVED)
 			, entity(entity)
-			, component_type(decltype(T))
-			, component_ptr(static_cast<const Component*>(&component))
+#ifdef __DEBUG__
+			, component_type(type)
+#endif
+			, component_ptr(component)
 		{}
 
-		template<typename T>
-		const T& get_component() const {
+		template<IsComponent T>
+		const T& GetComponent() const {
 #ifdef __DEBUG__
-			if (decltype(T) != component_type) {
+			if (typeid(T) != component_type) {
 				LOG_ERROR("Component type mismatch!");
 				assert(false);
 			}
 #endif
-			return *static_cast<const T*>(component_ptr);
+			return *std::static_pointer_cast<T>(component_ptr);
 		}
 
 		const Entity& entity;
+#ifdef __DEBUG__
 		const std::type_index component_type;
-		const Component* component_ptr;
+#endif
+		const std::shared_ptr<Component> component_ptr;
 	};
 }
 

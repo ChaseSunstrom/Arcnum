@@ -51,6 +51,8 @@ namespace Spark
 	private:
 		Entity(i64 id) : m_id(id) {}
 
+		void SetId(i64 id) { m_id = id; }
+
 		template <IsComponent T>
 		void AddComponent(const std::string& name, T* component);
 
@@ -68,9 +70,12 @@ namespace Spark
 
 		template <IsComponent T>
 		void RemoveComponents();
+
+		void RemoveAllComponents() { m_components.clear(); }
 	private:
 		i64	m_id;
 		std::unordered_map<ComponentKey, std::shared_ptr<Component>> m_components;
+		static inline std::stack<i64> s_old_ids = std::stack<i64>();
 	};
 
 	template <IsComponent T>

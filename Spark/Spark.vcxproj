@@ -137,6 +137,7 @@
     <ClInclude Include="core\util\log.hpp" />
     <ClInclude Include="core\util\observer.hpp" />
     <ClInclude Include="core\system\registry.hpp" />
+    <ClInclude Include="core\util\thread_pool.hpp" />
     <ClInclude Include="core\util\types.hpp" />
     <ClInclude Include="core\window\gl\gl_window.hpp" />
     <ClInclude Include="core\window\window.hpp" />

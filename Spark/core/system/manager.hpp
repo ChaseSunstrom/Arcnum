@@ -14,7 +14,7 @@ namespace Spark
 		~Manager() = default;
 
 		template <typename... Args>
-		T& Create(const std::string& name, Args&&... args)
+		Handle Create(const std::string& name, Args&&... args)
 		{
 			T* object = new T(std::forward<Args>(args)...);
 			return Register(name, std::unique_ptr<T>(object));
@@ -30,9 +30,9 @@ namespace Spark
 			return m_registry->Get(name);
 		}
 
-		T& GetByHandle(Handle handle) const
+		T& Get(const Handle handle) const
 		{
-			return m_registry->GetByHandle(handle);
+			return m_registry->Get(handle);
 		}
 
 		T GetCopy(const std::string& name) const
@@ -40,9 +40,19 @@ namespace Spark
 			return m_registry->GetCopy(name);
 		}
 
+		T GetCopy(const Handle handle) const
+		{
+			return m_registry->GetCopy(handle);
+		}
+
 		void Remove(const std::string& name)
 		{
 			m_registry->Remove(name);
+		}
+
+		void Remove(const Handle handle)
+		{
+			m_registry->Remove(handle);
 		}
 
 		std::vector<std::string> GetKeys() const

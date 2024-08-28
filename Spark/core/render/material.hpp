@@ -2,7 +2,7 @@
 #define SPARK_MATERIAL_HPP
 
 #include <core/pch.hpp>
-#include <glm/vec4.hpp>
+#include <include/glm/vec4.hpp>
 #include "shader.hpp"
 
 namespace Spark

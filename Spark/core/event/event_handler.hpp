@@ -23,24 +23,7 @@ namespace Spark
             m_event_handlers.erase(event_type);
         }
 
-        void PublishEvent(i64 event_type, const std::shared_ptr<Event> event, bool parallel = false) {
-            if (parallel) {
-                m_thread_pool.Enqueue(TaskPriority::NORMAL, false, [this, event_type, event] {
-                    HandleEvent(event_type, event);
-                    });
-            }
-            else {
-                HandleEvent(event_type, event);
-            }
-        }
-
-        void ClearEventHandlers() {
-            std::lock_guard<std::mutex> lock(m_mutex);
-            m_event_handlers.clear();
-        }
-
-    private:
-        void HandleEvent(i64 event_type, const std::shared_ptr<Event> event) {
+        void PublishEvent(i64 event_type, const std::shared_ptr<Event> event, bool parallel = true) {
             std::vector<std::function<void(const std::shared_ptr<Event>)>> handlers_to_call;
 
             {
@@ -55,11 +38,23 @@ namespace Spark
                 }
             }
 
-            for (const auto& fn : handlers_to_call) {
-                m_thread_pool.Enqueue(TaskPriority::NORMAL, false, [fn, event] {
-                        fn(event);
-                    });
+            if (parallel) {
+                for (const auto& handler : handlers_to_call) {
+                    m_thread_pool.Enqueue(TaskPriority::VERY_HIGH, false, [handler, event]() {
+                        handler(event);
+                        });
+                }
             }
+            else {
+                for (const auto& handler : handlers_to_call) {
+                    handler(event);
+                }
+            }
+        }
+
+        void ClearEventHandlers() {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            m_event_handlers.clear();
         }
 
     private:

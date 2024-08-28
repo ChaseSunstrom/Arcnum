@@ -58,6 +58,23 @@ namespace Spark
             }
         }
 
+		void Remove(const Handle handle)
+		{
+			if (handle.index < m_handle_values.size() &&
+				handle.generation == m_generations[handle.index] &&
+				m_handle_values[handle.index].has_value()) {
+				m_free_indices.push_back(handle.index);
+				m_handle_values[handle.index] = std::nullopt;
+				m_generations[handle.index]++; // Invalidate existing handles
+				for (auto& [key, value] : m_registry) {
+					if (value.first == handle) {
+						m_registry.erase(key);
+						break;
+					}
+				}
+			}
+		}
+
         T& Get(const std::string& name) const
         {
             auto it = m_registry.find(name);
@@ -68,7 +85,7 @@ namespace Spark
             assert(false);
         }
 
-        T& GetByHandle(const Handle& handle) const
+        T& Get(const Handle handle) const
         {
             if (handle.index < m_handle_values.size() &&
                 handle.generation == m_generations[handle.index] &&
@@ -95,6 +112,17 @@ namespace Spark
 			assert(false);
 		}
 
+		T GetCopy(const Handle handle) const
+		{
+			if (handle.index < m_handle_values.size() &&
+				handle.generation == m_generations[handle.index] &&
+				m_handle_values[handle.index].has_value()) {
+				return m_handle_values[handle.index].value().get();
+			}
+			LOG_ERROR("Invalid handle: index " << handle.index << ", generation " << handle.generation);
+			assert(false);
+		}
+
 		std::vector<std::string> GetKeys() const
 		{
 			std::vector<std::string> keys;
@@ -111,6 +139,13 @@ namespace Spark
 		bool Contains(const std::string& name) const
 		{
 			return m_registry.find(name) != m_registry.end();
+		}
+
+		bool Contains(const Handle handle) const
+		{
+			return handle.index < m_handle_values.size() &&
+				handle.generation == m_generations[handle.index] &&
+				m_handle_values[handle.index].has_value();
 		}
 
 		void Clear()

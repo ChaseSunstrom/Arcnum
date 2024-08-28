@@ -7,6 +7,7 @@
 #include <core/render/material.hpp>
 #include <core/render/model.hpp>
 #include <core/render/shader.hpp>
+#include <core/scene/scene.hpp>
 
 namespace Spark
 {
@@ -26,6 +27,7 @@ namespace Spark
 		Manager<Material> material_manager;
 		Manager<StaticModel> static_model_manager;
 		Manager<DynamicModel> dynamic_model_manager;
+		Manager<Scene> scene_manager;
 		Manager<Shader> shader_manager;
 	};
 }

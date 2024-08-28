@@ -41,14 +41,13 @@ namespace Spark
         bool IntersectsRange(const glm::vec3& center, f32 half_width, const glm::vec3& min, const glm::vec3& max);
         bool IsPointInRange(const glm::vec3& point, const glm::vec3& min, const glm::vec3& max);
     private:
-        static const i32 MAX_POINTS = 4;
-        static const i32 MAX_DEPTH = 8;
-        static const f32 MAX_SIZE;  // Maximum size limit
+        static inline const i32 MAX_POINTS = 4;
+        static inline const i32 MAX_DEPTH = 8;
+        static inline const f32 MAX_SIZE = 0.0;  // Maximum size limit
         std::unique_ptr<Node> m_root;
         std::unordered_map<i64, Node*> m_entity_to_node;
     };
 
-    const f32 Octree::MAX_SIZE = 1000000.0f;
 }
 
 #endif // SPARK_OCTREE_HPP

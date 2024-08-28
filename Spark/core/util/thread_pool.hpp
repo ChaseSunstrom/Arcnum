@@ -28,7 +28,7 @@ namespace Spark
     {
     public:
         ThreadPool(u32 num_threads = std::thread::hardware_concurrency())
-            : m_stop(false), m_active_tasks(0)
+            : m_stop(false), m_active_tasks(0), m_sync_tasks(0)
         {
             Initialize(num_threads);
         }
@@ -56,7 +56,7 @@ namespace Spark
                 if (m_stop)
                 {
                     LOG_ERROR("[THREAD POOL]: Enqueue() called after shutdown");
-                    throw std::runtime_error("enqueue on stopped ThreadPool");
+                    assert(false);
                 }
 
                 u32 queue_index = SelectQueue();
@@ -69,17 +69,18 @@ namespace Spark
                     }
                     if (synchronize)
                     {
-                        auto it = std::find_if(m_threads_control.begin(), m_threads_control.end(),
-                            [](const std::shared_ptr<ThreadControlBlock>& tcb) {
-                                return tcb->thread_id == std::this_thread::get_id();
-                            });
-                        if (it != m_threads_control.end())
-                        {
-                            (*it)->has_reached_sync_point.store(true, std::memory_order_release);
-                        }
+                        // Only decrement sync_tasks if it was a synchronized task
+                        m_sync_tasks.fetch_sub(1, std::memory_order_release);
+                        m_sync_condition.notify_all();
                     }
+                    m_active_tasks.fetch_sub(1, std::memory_order_release);
                     });
-                m_active_tasks.fetch_add(1, std::memory_order_relaxed);
+                m_active_tasks.fetch_add(1, std::memory_order_acquire);
+                if (synchronize)
+                {
+                    // Only increment sync_tasks if it's a synchronized task
+                    m_sync_tasks.fetch_add(1, std::memory_order_acquire);
+                }
             }
 
             m_condition.notify_one();
@@ -88,6 +89,7 @@ namespace Spark
 
         void SyncThisThread(bool register_for_sync)
         {
+            std::lock_guard<std::mutex> lock(m_sync_mutex);
             auto it = std::find_if(m_threads_control.begin(), m_threads_control.end(),
                 [](const std::shared_ptr<ThreadControlBlock>& tcb) {
                     return tcb->thread_id == std::this_thread::get_id();
@@ -96,78 +98,59 @@ namespace Spark
             if (it != m_threads_control.end())
             {
                 (*it)->is_registered_for_sync.store(register_for_sync, std::memory_order_release);
+                (*it)->has_reached_sync_point.store(!register_for_sync, std::memory_order_release);
             }
             else
             {
                 LOG_ERROR("[THREAD POOL]: Current thread is not part of the thread pool");
                 assert(false);
             }
+            m_sync_condition.notify_all();
         }
 
-        void SyncRegisteredThreads()
+        bool SyncRegisteredTasks(std::chrono::milliseconds timeout = std::chrono::milliseconds(500))
         {
             std::unique_lock<std::mutex> lock(m_sync_mutex);
-            m_sync_condition.wait(lock, [this] {
-                return std::all_of(m_threads_control.begin(), m_threads_control.end(),
-                    [](const std::shared_ptr<ThreadControlBlock>& tcb) {
-                        return !tcb->is_registered_for_sync.load(std::memory_order_acquire) ||
-                            tcb->has_reached_sync_point.load(std::memory_order_acquire);
-                    });
+            auto start = std::chrono::steady_clock::now();
+            bool synced = m_sync_condition.wait_for(lock, timeout, [this, &start] {
+                auto now = std::chrono::steady_clock::now();
+                auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
+
+                // Only wait for sync_tasks to become 0, ignore non-synchronized tasks
+                bool all_synced = (m_sync_tasks.load(std::memory_order_acquire) == 0);
+
+                return all_synced;
                 });
 
-            for (auto& tcb : m_threads_control)
-            {
-                tcb->has_reached_sync_point.store(false, std::memory_order_release);
+            if (synced) {
+                for (auto& tcb : m_threads_control)
+                {
+                    tcb->is_registered_for_sync.store(false, std::memory_order_release);
+                    tcb->has_reached_sync_point.store(false, std::memory_order_release);
+                }
             }
+            else {
+                LOG_ERROR("[THREAD POOL]: Sync timed out after " << timeout.count() << "ms");
+            }
+
+            return synced;
         }
 
-        void Resize(u32 num_threads)
-        {
-            std::unique_lock<std::mutex> lock(m_queue_mutex);
+        void ExecuteAndWait(const std::vector<std::function<void()>>& tasks) {
+            std::atomic<size_t> completed_tasks(0);
+            size_t total_tasks = tasks.size();
 
-            if (num_threads > m_workers.size())
-            {
-                // Add more threads
-                u32 old_size = m_workers.size();
-                m_tasks_queues.resize(num_threads);
-                m_threads_control.resize(num_threads);
-
-                for (u32 i = old_size; i < num_threads; ++i)
-                {
-                    m_threads_control[i] = std::make_shared<ThreadControlBlock>();
-                    m_workers.emplace_back(&ThreadPool::WorkerThread, this, m_threads_control[i], i);
-                }
+            for (const auto& task : tasks) {
+                Enqueue(TaskPriority::NORMAL, false, [&completed_tasks, task]() {
+                    task();
+                    completed_tasks.fetch_add(1, std::memory_order_release);
+                    });
             }
-            else if (num_threads < m_workers.size())
-            {
-                // Remove threads
-                u32 num_to_remove = m_workers.size() - num_threads;
-                for (u32 i = 0; i < num_to_remove; ++i)
-                {
-                    m_tasks_queues.back().emplace_back(TaskPriority::CRITICAL, [this] { m_stop_worker = true; });
-                }
 
-                lock.unlock();
-                m_condition.notify_all();
-
-                for (u32 i = 0; i < num_to_remove; ++i)
-                {
-                    m_workers.back().join();
-                    m_workers.pop_back();
-                    m_tasks_queues.pop_back();
-                    m_threads_control.pop_back();
-                }
+            // Wait for all tasks to complete
+            while (completed_tasks.load(std::memory_order_acquire) < total_tasks) {
+                std::this_thread::yield();
             }
-        }
-
-        void CancelAllTasks()
-        {
-            std::unique_lock<std::mutex> lock(m_queue_mutex);
-            for (auto& queue : m_tasks_queues)
-            {
-                queue.clear();
-            }
-            m_active_tasks.store(0, std::memory_order_relaxed);
         }
 
         void WaitForAllTasks()
@@ -214,17 +197,11 @@ namespace Spark
                 {
                     std::unique_lock<std::mutex> lock(m_queue_mutex);
                     m_condition.wait(lock, [this, index] {
-                        return m_stop || m_stop_worker || !m_tasks_queues[index].empty() || can_steal_task();
+                        return m_stop || !m_tasks_queues[index].empty() || CanStealTask();
                         });
 
                     if (m_stop && AllQueuesEmpty())
                     {
-                        return;
-                    }
-
-                    if (m_stop_worker)
-                    {
-                        m_stop_worker = false;
                         return;
                     }
 
@@ -237,21 +214,22 @@ namespace Spark
                     {
                         task = StealTask();
                     }
-
-                    if (task)
-                    {
-                        m_active_tasks.fetch_sub(1, std::memory_order_relaxed);
-                    }
                 }
 
                 if (task)
                 {
                     task();
                 }
+
+                if (tcb->is_registered_for_sync.load(std::memory_order_acquire))
+                {
+                    tcb->has_reached_sync_point.store(true, std::memory_order_release);
+                    m_sync_condition.notify_all();
+                }
             }
         }
 
-        bool can_steal_task() const
+        bool CanStealTask() const
         {
             return std::any_of(m_tasks_queues.begin(), m_tasks_queues.end(),
                 [](const auto& queue) { return !queue.empty(); });
@@ -294,8 +272,8 @@ namespace Spark
         std::mutex m_sync_mutex;
         std::condition_variable m_sync_condition;
         std::atomic<u64> m_active_tasks;
+        std::atomic<u64> m_sync_tasks;
         std::atomic<bool> m_stop;
-        std::atomic<bool> m_stop_worker{ false };
     };
 } // namespace Spark
 

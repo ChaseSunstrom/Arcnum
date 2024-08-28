@@ -12,6 +12,7 @@
 #include <core/render/gl/gl_renderer.hpp>
 #include <core/util/thread_pool.hpp>
 
+
 void test_event_fn(Spark::Application& app, const std::shared_ptr<Spark::Event> event) {
 	LOG_INFO("EVENT HAPPENED");
 }
@@ -55,7 +56,7 @@ void create_entities(Spark::Application& app) {
 	}
 }
 
-static f64 fps = 0.9;
+static f64 fps = 0.;
 static std::chrono::time_point<std::chrono::steady_clock> last = std::chrono::steady_clock::now();
 
 void set_window_title_fps(Spark::Application& app) {
@@ -63,18 +64,19 @@ void set_window_title_fps(Spark::Application& app) {
 	auto start = std::chrono::steady_clock::now();
 	std::chrono::duration<f64> duration = start - last;
 
-	fps = 1.0 / duration.count();
-
-	std::string fps_avg = std::to_string(static_cast<i32>(std::round(fps)));
-	LOG_WARN(fps_avg);
+	std::string fps_avg = std::to_string(duration.count());
+	window.SetTitle("Frame Time: " + fps_avg);
 	last = start;
 }
 
-void print() {
-	static std::atomic<i32> i(0);
-	i32 local_i = i.fetch_add(1, std::memory_order_relaxed);
-	std::cout << local_i << "\n";
-	std::this_thread::sleep_for(std::chrono::milliseconds(100));  // Reduced sleep time
+void print(Spark::Application& app) {
+	auto& tp = app.GetThreadPool();
+	tp.Enqueue(Spark::TaskPriority::LOW, false, [&tp]() {
+		//tp.SyncThisThread(true);
+			static std::atomic<i32> i(0);
+			i32 local_i = i.fetch_add(1, std::memory_order_relaxed);
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		});
 }
 
 i32 main()
@@ -86,9 +88,12 @@ i32 main()
 		.AddStartupFunction(create_entities)
 		.AddStartupFunction(start_fn)
 		.AddStartupFunction(remove_start_fn)
-		.AddUpdateFunction(start_fn, { false, false })
-		.AddUpdateFunction(remove_start_fn, { false, false })
 		.AddUpdateFunction(set_window_title_fps, { false, false })
+		//.AddUpdateFunction(print)
+		/*
+		.AddUpdateFunction(start_fn)
+		.AddUpdateFunction(remove_start_fn)
+		*/
 		.AddEventFunction(EVENT_TYPE_KEY_HELD, test_event_fn)
 		.AddEventFunction(EVENT_TYPE_COMPONENT_ADDED, test_event)
 		.AddEventFunction(EVENT_TYPE_COMPONENT_REMOVED, remove_component_fn)

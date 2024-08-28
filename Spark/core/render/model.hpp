@@ -32,8 +32,15 @@ namespace Spark
 		friend class Manager<DynamicModel>;
 		~DynamicModel() = default;
 		DynamicModel(const DynamicModel& other) {
-			m_mesh = std::make_unique<DynamicMesh>(other.m_mesh->GetVertices(), other.m_mesh->GetIndices());
+			DynamicMesh* mesh = new DynamicMesh(other.m_mesh->GetVertices(), other.m_mesh->GetIndices());
+			m_mesh = std::unique_ptr<DynamicMesh>(mesh);
 			m_materials = other.m_materials;
+		}
+		DynamicModel& operator=(const DynamicModel& other) {
+			DynamicMesh* mesh = new DynamicMesh(other.m_mesh->GetVertices(), other.m_mesh->GetIndices());
+			m_mesh = std::unique_ptr<DynamicMesh>(mesh);
+			m_materials = other.m_materials;
+			return *this;
 		}
 	private:
 		DynamicModel(std::unique_ptr<DynamicMesh> mesh, const std::vector<std::reference_wrapper<Material>>& materials) : m_mesh(std::move(mesh)), m_materials(materials) {}

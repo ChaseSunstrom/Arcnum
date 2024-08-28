@@ -10,6 +10,7 @@ namespace Spark
 	class StaticMesh
 	{
 	public:
+		friend class Manager<StaticMesh>;
 		virtual ~StaticMesh() = default;
 		StaticMesh(const StaticMesh&) = delete;
 		StaticMesh& operator=(const StaticMesh&) = delete;
@@ -27,14 +28,19 @@ namespace Spark
 		std::vector<u32> m_indices;
 	};
 
+	class DynamicModel;
+
 	class DynamicMesh
 	{
 	public:
+		// These two things need to be able to create these (mainly for when copying)
+		friend class Manager<DynamicMesh>;
+		friend class DynamicModel;
 		virtual ~DynamicMesh() = default;
-		virtual void Update(const std::vector<Vertex>& vertices, const std::vector<u32>& indices) = 0;
-		virtual void CreateMesh() = 0;
-		virtual void UpdateMesh(const std::vector<Vertex>& vertices) = 0;
-		virtual void UpdateIndices(const std::vector<u32>& indices) = 0;
+		virtual void Update(const std::vector<Vertex>& vertices, const std::vector<u32>& indices);
+		virtual void CreateMesh();
+		virtual void UpdateMesh(const std::vector<Vertex>& vertices);
+		virtual void UpdateIndices(const std::vector<u32>& indices);
 		const std::vector<Vertex>& GetVertices() const {
 			return m_vertices;
 		}
@@ -57,7 +63,7 @@ namespace Spark
 		~Manager() = default;
 
 		template <typename... Args>
-		StaticMesh& Create(const std::string& name, Args&&... args)
+		Handle Create(const std::string& name, Args&&... args)
 		{
 			StaticMesh* object = new StaticMesh(std::forward<Args>(args)...);
 			return Register(name, std::unique_ptr<StaticMesh>(object));
@@ -73,14 +79,19 @@ namespace Spark
 			return m_registry->Get(name);
 		}
 
-		StaticMesh& GetByHandle(Handle handle) const
+		StaticMesh& Get(const Handle handle) const
 		{
-			return m_registry->GetByHandle(handle);
+			return m_registry->Get(handle);
 		}
 
 		void Remove(const std::string& name)
 		{
 			m_registry->Remove(name);
+		}
+
+		void Remove(const Handle handle)
+		{
+			m_registry->Remove(handle);
 		}
 
 		std::vector<std::string> GetKeys() const

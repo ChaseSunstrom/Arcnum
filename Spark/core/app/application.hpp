@@ -27,11 +27,6 @@ namespace Spark
 		template <IsComponent T>
 		using ApplicationQueryEventFunction = std::function<void(Application&, Query<T>&, const std::shared_ptr<Event>)>;
 
-		struct FunctionSettings
-		{
-			bool threaded = false;
-			bool wait = false;
-		};
 
 		Application(GraphicsAPI gapi, std::unique_ptr<ThreadPool> tp = std::make_unique<ThreadPool>(std::thread::hardware_concurrency())) :
 			m_thread_pool(std::move(tp)),
@@ -41,16 +36,16 @@ namespace Spark
 
 		~Application();
 
-		Application& AddStartupFunction(const ApplicationFunction& fn, const FunctionSettings settings = { });
-		Application& AddUpdateFunction(const ApplicationFunction& fn, const FunctionSettings settings = { });
-		Application& AddShutdownFunction(const ApplicationFunction& fn, const FunctionSettings settings = { });
-		Application& AddEventFunction(i64 event_type, const ApplicationEventFunction& fn);
+		Application& AddStartupFunction(const ApplicationFunction& fn, const FunctionSettings settings = {});
+		Application& AddUpdateFunction(const ApplicationFunction& fn, const FunctionSettings settings = {});
+		Application& AddShutdownFunction(const ApplicationFunction& fn, const FunctionSettings settings = {});
+		Application& AddEventFunction(i64 event_type, const ApplicationEventFunction& fn, const FunctionSettings settings = {});
 
 		template <IsComponent T>
-		Application& AddQueryFunction(const ApplicationQueryFunction<T>& fn, const FunctionSettings settings);
+		Application& AddQueryFunction(const ApplicationQueryFunction<T>& fn, const FunctionSettings settings = {});
 
 		template <IsComponent T>
-		Application& AddQueryEventFunction(i64 event_type, const ApplicationQueryEventFunction<T>& fn);
+		Application& AddQueryEventFunction(i64 event_type, const ApplicationQueryEventFunction<T>& fn, const FunctionSettings settings = {});
 
 		template <IsWindow T>
 		Application& CreateWindow(const std::string& title, i32 width, i32 height);
@@ -156,7 +151,7 @@ namespace Spark
 	}
 
 	template <IsComponent T>
-	Application& Application::AddQueryEventFunction(i64 event_type, const ApplicationQueryEventFunction<T>& fn)
+	Application& Application::AddQueryEventFunction(i64 event_type, const ApplicationQueryEventFunction<T>& fn, const FunctionSettings settings)
 	{
 		auto query_event_wrapper = std::make_unique<QueryEventFunctionWrapper<T>>(*m_ecs, fn, event_type);
 		auto& query_event_wrapper_ref = *query_event_wrapper;
@@ -165,7 +160,7 @@ namespace Spark
 		m_event_handler->SubscribeToEvent(event_type, [this, fn, &query_event_wrapper_ref](const std::shared_ptr<Event> event) {
 			std::unique_lock<std::mutex> lock(m_mutex);
 			query_event_wrapper_ref.Execute(*this, event);
-			});
+			}, settings);
 
 		return *this;
 	}

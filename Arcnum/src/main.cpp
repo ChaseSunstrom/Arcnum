@@ -90,13 +90,11 @@ i32 main()
 		.AddStartupFunction(remove_start_fn)
 		.AddUpdateFunction(set_window_title_fps, { false, false })
 		//.AddUpdateFunction(print)
-		/*
 		.AddUpdateFunction(start_fn)
 		.AddUpdateFunction(remove_start_fn)
-		*/
 		.AddEventFunction(EVENT_TYPE_KEY_HELD, test_event_fn)
-		.AddEventFunction(EVENT_TYPE_COMPONENT_ADDED, test_event)
-		.AddEventFunction(EVENT_TYPE_COMPONENT_REMOVED, remove_component_fn)
+		.AddEventFunction(EVENT_TYPE_COMPONENT_ADDED, test_event, {false, false})
+		.AddEventFunction(EVENT_TYPE_COMPONENT_REMOVED, remove_component_fn, {false, false})
 		.AddQueryEventFunction<Spark::TransformComponent>(EVENT_TYPE_MOUSE_BUTTON_PRESSED, test_query_event)
 		.Start();
 }

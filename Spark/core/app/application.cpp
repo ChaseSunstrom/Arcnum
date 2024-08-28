@@ -42,12 +42,14 @@ namespace Spark
 		return *this;
 	}
 
-	Application& Application::AddEventFunction(i64 event_type, const ApplicationEventFunction& fn)
+	Application& Application::AddEventFunction(i64 event_type, const ApplicationEventFunction& fn, const FunctionSettings settings)
 	{
 		m_event_functions.push_back(fn);
-		m_event_handler->SubscribeToEvent(event_type, [this, fn](const std::shared_ptr<Event> event) {
+		m_event_handler->SubscribeToEvent(event_type, [this, fn, settings](const std::shared_ptr<Event> event) {
+			if (settings.threaded)
+				std::unique_lock<std::mutex> lock(m_mutex);
 			fn(*this, event);
-			});
+			}, settings);
 		return *this;
 	}
 

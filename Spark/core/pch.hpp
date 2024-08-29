@@ -29,6 +29,7 @@
 #include <optional>
 #include <random>
 #include <shared_mutex>
+#include <variant>
 #include <thread>
 #include <sstream>
 #include <any>

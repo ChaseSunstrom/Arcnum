@@ -829,6 +829,8 @@
     <ClInclude Include="core\animation\animation.hpp" />
     <ClInclude Include="core\lighting\lighting.hpp" />
     <ClInclude Include="core\ui\ui.hpp" />
+    <ClInclude Include="core\render\gl\gl_material.hpp" />
+    <ClInclude Include="core\render\uniform.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\app\application.cpp">

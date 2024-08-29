@@ -118,6 +118,7 @@
     <ClInclude Include="core\pch.hpp" />
     <ClInclude Include="core\physics\physics.hpp" />
     <ClInclude Include="core\render\game_object.hpp" />
+    <ClInclude Include="core\render\gl\gl_material.hpp" />
     <ClInclude Include="core\render\gl\gl_mesh.hpp" />
     <ClInclude Include="core\render\gl\gl_renderer.hpp" />
     <ClInclude Include="core\render\gl\gl_shader.hpp" />
@@ -125,6 +126,7 @@
     <ClInclude Include="core\render\mesh.hpp" />
     <ClInclude Include="core\render\model.hpp" />
     <ClInclude Include="core\render\renderer.hpp" />
+    <ClInclude Include="core\render\uniform.hpp" />
     <ClInclude Include="core\resource\resource.hpp" />
     <ClInclude Include="core\render\shader.hpp" />
     <ClInclude Include="core\render\vertex.hpp" />

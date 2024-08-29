@@ -823,6 +823,12 @@
     <ClInclude Include="core\util\thread_pool.hpp">
       <Filter>core\util</Filter>
     </ClInclude>
+    <ClInclude Include="core\physics\physics.hpp">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\animation\animation.hpp" />
+    <ClInclude Include="core\lighting\lighting.hpp" />
+    <ClInclude Include="core\ui\ui.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\app\application.cpp">
@@ -849,5 +855,6 @@
     <ClCompile Include="core\scene\transform.cpp" />
     <ClCompile Include="core\render\gl\gl_renderer.cpp" />
     <ClCompile Include="core\scene\octree.cpp" />
+    <ClCompile Include="core\util\thread_pool.cpp" />
   </ItemGroup>
 </Project>

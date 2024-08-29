@@ -28,6 +28,7 @@
 #include <mutex>
 #include <optional>
 #include <random>
+#include <shared_mutex>
 #include <thread>
 #include <sstream>
 #include <any>

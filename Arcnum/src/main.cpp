@@ -75,7 +75,8 @@ void print(Spark::Application& app) {
 		//tp.SyncThisThread(true);
 			static std::atomic<i32> i(0);
 			i32 local_i = i.fetch_add(1, std::memory_order_relaxed);
-			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			//std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			LOG_WARN(local_i);
 		});
 }
 
@@ -83,16 +84,16 @@ i32 main()
 {
 	Spark::Application app(Spark::GraphicsAPI::OpenGL);
 	
-	app.CreateWindow<Spark::GLWindow>("Title", 1000, 1000)
+	app .CreateWindow<Spark::GLWindow>("Title", 1000, 1000)
 		.CreateRenderer<Spark::GLRenderer>()
 		.AddStartupFunction(create_entities)
 		.AddStartupFunction(start_fn)
 		.AddStartupFunction(remove_start_fn)
 		.AddUpdateFunction(set_window_title_fps, { false, false })
-		//.AddUpdateFunction(print)
-		.AddUpdateFunction(start_fn)
-		.AddUpdateFunction(remove_start_fn)
-		.AddEventFunction(EVENT_TYPE_KEY_HELD, test_event_fn)
+		.AddUpdateFunction(print, {true, false})
+		.AddUpdateFunction(start_fn, {true, false})
+		.AddUpdateFunction(remove_start_fn, {true, false})
+		.AddEventFunction(EVENT_TYPE_KEY_HELD, test_event_fn, {true, true})
 		.AddEventFunction(EVENT_TYPE_COMPONENT_ADDED, test_event, {false, false})
 		.AddEventFunction(EVENT_TYPE_COMPONENT_REMOVED, remove_component_fn, {false, false})
 		.AddQueryEventFunction<Spark::TransformComponent>(EVENT_TYPE_MOUSE_BUTTON_PRESSED, test_query_event)

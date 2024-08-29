@@ -46,8 +46,9 @@ namespace Spark
 	{
 		m_event_functions.push_back(fn);
 		m_event_handler->SubscribeToEvent(event_type, [this, fn, settings](const std::shared_ptr<Event> event) {
+			std::unique_lock<std::mutex> lock;
 			if (settings.threaded)
-				std::unique_lock<std::mutex> lock(m_mutex);
+				lock = std::unique_lock<std::mutex>(m_mutex);
 			fn(*this, event);
 			}, settings);
 		return *this;
@@ -68,13 +69,14 @@ namespace Spark
 	void Application::RunStartupFunctions()
 	{
 		{
-			std::unique_lock<std::mutex> lock(m_mutex);
 			for (const auto& [fn, settings] : m_startup_functions)
 			{
 				if (settings.threaded)
 				{
-					m_thread_pool->Enqueue(TaskPriority::HIGH, settings.wait, [this, &fn]() {
-						std::unique_lock<std::mutex> lock(m_mutex);
+					m_thread_pool->Enqueue(TaskPriority::HIGH, settings.wait, [this, &fn, settings]() {
+						std::unique_lock<std::mutex> lock;
+						if (settings.threaded)
+							lock = std::unique_lock<std::mutex>(m_mutex);
 						fn(*this);
 						});
 				}
@@ -91,13 +93,14 @@ namespace Spark
 	void Application::RunUpdateFunctions()
 	{
 		{
-			std::unique_lock<std::mutex> lock(m_mutex);
 			for (const auto& [fn, settings] : m_update_functions)
 			{
 				if (settings.threaded)
 				{
-					m_thread_pool->Enqueue(TaskPriority::NORMAL, settings.wait, [this, &fn]() {
-							std::unique_lock<std::mutex> lock(m_mutex);
+					m_thread_pool->Enqueue(TaskPriority::NORMAL, settings.wait, [this, &fn, settings]() {
+						std::unique_lock<std::mutex> lock;
+						if (settings.threaded)
+							lock = std::unique_lock<std::mutex>(m_mutex);
 							fn(*this);
 						});
 				}
@@ -107,13 +110,15 @@ namespace Spark
 				}
 			}
 
-			for (const auto& [settings, fn] : m_query_functions)
+			for (const auto& [fn, settings] : m_query_functions)
 			{
 				if (settings.threaded)
 				{
 
-					m_thread_pool->Enqueue(TaskPriority::NORMAL, settings.wait, [this, &fn]() {
-						std::unique_lock<std::mutex> lock(m_mutex);
+					m_thread_pool->Enqueue(TaskPriority::NORMAL, settings.wait, [this, &fn, settings]() {
+						std::unique_lock<std::mutex> lock;
+						if (settings.threaded)
+							lock = std::unique_lock<std::mutex>(m_mutex);
 						fn->Execute(*this);
 						});
 				}
@@ -130,13 +135,14 @@ namespace Spark
 	void Application::RunShutdownFunctions()
 	{
 		{
-			std::unique_lock<std::mutex> lock(m_mutex);
 			for (const auto& [fn, settings] : m_shutdown_functions)
 			{
 				if (settings.threaded)
 				{
-					m_thread_pool->Enqueue(TaskPriority::NORMAL, settings.wait, [this, &fn]() {
-						std::unique_lock<std::mutex> lock(m_mutex);
+					m_thread_pool->Enqueue(TaskPriority::NORMAL, settings.wait, [this, &fn, settings]() {
+						std::unique_lock<std::mutex> lock;
+						if (settings.threaded)
+							lock = std::unique_lock<std::mutex>(m_mutex);
 						fn(*this);
 						});
 				}

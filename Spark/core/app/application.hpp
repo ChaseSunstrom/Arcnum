@@ -15,6 +15,9 @@
 
 namespace Spark
 {
+	// Scope for the Application mutex
+	
+
 	class Application
 	{
 	public:
@@ -123,7 +126,7 @@ namespace Spark
 		std::unique_ptr<Window> m_window;
 		std::unique_ptr<Renderer> m_renderer;
 		std::unique_ptr<Manager<Resource>> m_resource_manager;
-		std::vector<std::pair<FunctionSettings, std::unique_ptr<IUpdateFunctionWrapper>>> m_query_functions;
+		std::vector<std::pair<std::unique_ptr<IUpdateFunctionWrapper>, FunctionSettings>> m_query_functions;
 		std::vector<std::unique_ptr<IQueryEventFunctionWrapper>> m_query_event_functions;
 		GraphicsAPI m_gapi;
 		std::mutex m_mutex;
@@ -146,7 +149,7 @@ namespace Spark
 	template <IsComponent T>
 	Application& Application::AddQueryFunction(const ApplicationQueryFunction<T>& fn, const FunctionSettings settings)
 	{
-		m_query_functions.push_back({ settings, std::make_unique<UpdateFunctionWrapper<T>>(*m_ecs, fn) });
+		m_query_functions.push_back({ std::make_unique<UpdateFunctionWrapper<T>>(*m_ecs, fn), settings });
 		return *this;
 	}
 
@@ -157,8 +160,10 @@ namespace Spark
 		auto& query_event_wrapper_ref = *query_event_wrapper;
 		m_query_event_functions.push_back(std::move(query_event_wrapper));
 
-		m_event_handler->SubscribeToEvent(event_type, [this, fn, &query_event_wrapper_ref](const std::shared_ptr<Event> event) {
-			std::unique_lock<std::mutex> lock(m_mutex);
+		m_event_handler->SubscribeToEvent(event_type, [this, fn, &query_event_wrapper_ref, settings](const std::shared_ptr<Event> event) {
+			std::unique_lock<std::mutex> lock;
+			if (settings.threaded)
+				lock = std::unique_lock<std::mutex>(m_mutex);
 			query_event_wrapper_ref.Execute(*this, event);
 			}, settings);
 

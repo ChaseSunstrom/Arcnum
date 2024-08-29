@@ -98,6 +98,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="core\animation\animation.hpp" />
     <ClInclude Include="core\api.hpp" />
     <ClInclude Include="core\app\application.hpp" />
     <ClInclude Include="core\ecs\component.hpp" />
@@ -113,7 +114,9 @@
     <ClInclude Include="core\event\event_type.hpp" />
     <ClInclude Include="core\event\input_events.hpp" />
     <ClInclude Include="core\event\window_events.hpp" />
+    <ClInclude Include="core\lighting\lighting.hpp" />
     <ClInclude Include="core\pch.hpp" />
+    <ClInclude Include="core\physics\physics.hpp" />
     <ClInclude Include="core\render\game_object.hpp" />
     <ClInclude Include="core\render\gl\gl_mesh.hpp" />
     <ClInclude Include="core\render\gl\gl_renderer.hpp" />
@@ -131,6 +134,7 @@
     <ClInclude Include="core\system\file_serializer.hpp" />
     <ClInclude Include="core\system\manager.hpp" />
     <ClInclude Include="core\system\serializer.hpp" />
+    <ClInclude Include="core\ui\ui.hpp" />
     <ClInclude Include="core\util\defines.hpp" />
     <ClInclude Include="core\util\file.hpp" />
     <ClInclude Include="core\util\gl.hpp" />
@@ -390,6 +394,7 @@
     <ClCompile Include="core\system\file_serializer.cpp" />
     <ClCompile Include="core\util\file.cpp" />
     <ClCompile Include="core\util\log.cpp" />
+    <ClCompile Include="core\util\thread_pool.cpp" />
     <ClCompile Include="core\window\gl\gl_window.cpp" />
     <ClCompile Include="include\glm\detail\glm.cpp" />
     <ClCompile Include="lib\windows\glad\glad.c" />

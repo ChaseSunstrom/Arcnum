@@ -1,0 +1,5 @@
+#ifndef SPARK_ANIMATION_HPP
+#define SPARK_ANIMATION_HPP
+
+
+#endif

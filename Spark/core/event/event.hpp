@@ -7,14 +7,15 @@
 
 namespace Spark
 {
-    struct Event
-    {
-    public:
-        Event(i64 type = EVENT_TYPE_NONE) : type(type) {}
-        virtual ~Event() = default;
-    public:
-        i64 type;
-    };
-}
+struct Event
+{
+  public:
+	Event(i64 type = EVENT_TYPE_NONE) : type(type) {}
+	virtual ~Event() = default;
+
+  public:
+	i64 type;
+};
+} // namespace Spark
 
 #endif

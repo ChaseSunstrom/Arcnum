@@ -1,34 +1,35 @@
 #ifndef SPARK_MATERIAL_HPP
 #define SPARK_MATERIAL_HPP
 
+#include "shader.hpp"
 #include <core/pch.hpp>
 #include <include/glm/vec4.hpp>
-#include "shader.hpp"
 
 namespace Spark
 {
-	struct MaterialData
-	{
-		glm::vec4 m_color;
-		f32 m_diffuse;
-		f32 m_specular;
-		f32 m_ambient;
-		f32 m_shininess;
-		// TODO: TEXTURES
-	};
+struct MaterialData
+{
+	glm::vec4 m_color;
+	f32		  m_diffuse;
+	f32		  m_specular;
+	f32		  m_ambient;
+	f32		  m_shininess;
+	// TODO: TEXTURES
+};
 
-	struct Material
-	{
-	public:
-		Material(const MaterialData& material_data, const std::string& shader_name) : m_material_data(material_data), m_shader_name(shader_name) {}
-		virtual ~Material() = default;
-		virtual void Use() = 0;
-	protected:
-		MaterialData m_material_data;
-		std::string m_shader_name;
-		// UBO for the material data inside the shader.
-		std::string m_ubo_name;
-	};
-}
+struct Material
+{
+  public:
+	Material(const MaterialData &material_data, const std::string &shader_name) : m_material_data(material_data), m_shader_name(shader_name) {}
+	virtual ~Material() = default;
+	virtual void Use()	= 0;
+
+  protected:
+	MaterialData m_material_data;
+	std::string	 m_shader_name;
+	// UBO for the material data inside the shader.
+	std::string m_ubo_name;
+};
+} // namespace Spark
 
 #endif

@@ -13,12 +13,11 @@
 #include <core/util/thread_pool.hpp>
 
 
-void test_event_fn(Spark::Application& app, const std::shared_ptr<Spark::Event> event) {
-	LOG_INFO("EVENT HAPPENED");
-}
+void test_event_fn(Spark::Application &app, const std::shared_ptr<Spark::Event> event) { LOG_INFO("EVENT HAPPENED"); }
 
-void start_fn(Spark::Application& app) {
-	auto& ecs = app.GetEcs();
+void start_fn(Spark::Application &app)
+{
+	auto &ecs = app.GetEcs();
 
 	for (i32 i = 0; i < 50; i++)
 	{
@@ -26,8 +25,9 @@ void start_fn(Spark::Application& app) {
 	}
 }
 
-void remove_start_fn(Spark::Application& app) {
-	auto& ecs = app.GetEcs();
+void remove_start_fn(Spark::Application &app)
+{
+	auto &ecs = app.GetEcs();
 
 	for (i32 i = 0; i < 50; i++)
 	{
@@ -35,33 +35,39 @@ void remove_start_fn(Spark::Application& app) {
 	}
 }
 
-void remove_component_fn(Spark::Application& app, const std::shared_ptr<Spark::Event> event) {
+void remove_component_fn(Spark::Application &app, const std::shared_ptr<Spark::Event> event)
+{
 	LOG_TRACE("Component Removed: " << std::static_pointer_cast<Spark::ComponentRemovedEvent>(event)->GetComponent<Spark::TransformComponent>().GetEntityId());
 }
 
-void test_event(Spark::Application& app, const std::shared_ptr<Spark::Event> event) {
+void test_event(Spark::Application &app, const std::shared_ptr<Spark::Event> event)
+{
 	LOG_TRACE("Component Added: " << std::static_pointer_cast<Spark::ComponentAddedEvent>(event)->GetComponent<Spark::TransformComponent>().GetEntityId());
 };
 
-void test_query_event(Spark::Application& app, Spark::Query<Spark::TransformComponent>& query, const std::shared_ptr<Spark::Event> event) {
+void test_query_event(Spark::Application &app, Spark::Query<Spark::TransformComponent> &query, const std::shared_ptr<Spark::Event> event)
+{
 	LOG_ERROR(std::static_pointer_cast<Spark::MouseButtonPressedEvent>(event)->button);
 };
 
-void create_entities(Spark::Application& app) {
-	auto & ecs = app.GetEcs();
+void create_entities(Spark::Application &app)
+{
+	auto &ecs = app.GetEcs();
 
-	for (auto i = 0; i < 10; i++) {	
+	for (auto i = 0; i < 10; i++)
+	{
 		auto e = ecs.MakeEntity();
 		ecs.AddComponent(e, "transform", new Spark::TransformComponent(glm::vec3(i, i, i)));
 	}
 }
 
-static f64 fps = 0.;
+static f64												  fps  = 0.;
 static std::chrono::time_point<std::chrono::steady_clock> last = std::chrono::steady_clock::now();
 
-void set_window_title_fps(Spark::Application& app) {
-	auto& window = app.GetWindow();
-	auto start = std::chrono::steady_clock::now();
+void set_window_title_fps(Spark::Application &app)
+{
+	auto					  &window	= app.GetWindow();
+	auto					   start	= std::chrono::steady_clock::now();
 	std::chrono::duration<f64> duration = start - last;
 
 	std::string fps_avg = std::to_string(1.0 / duration.count());
@@ -69,9 +75,10 @@ void set_window_title_fps(Spark::Application& app) {
 	last = start;
 }
 
-void print(Spark::Application& app) {
+void print(Spark::Application &app)
+{
 	static std::atomic<i32> i(0);
-	i32 local_i = i.fetch_add(1, std::memory_order_relaxed);
+	i32						local_i = i.fetch_add(1, std::memory_order_relaxed);
 	std::this_thread::sleep_for(std::chrono::milliseconds(10000));
 	LOG_WARN(local_i);
 }
@@ -79,13 +86,13 @@ void print(Spark::Application& app) {
 i32 main()
 {
 	Spark::Application app(Spark::GraphicsAPI::OpenGL);
-	
-	app .CreateWindow<Spark::GLWindow>("Title", 1000, 1000)
+
+	app.CreateWindow<Spark::GLWindow>("Title", 1000, 1000)
 		.CreateRenderer<Spark::GLRenderer>()
 		.AddStartupFunction(create_entities)
 		.AddStartupFunction(start_fn)
 		.AddStartupFunction(remove_start_fn)
-		.AddUpdateFunction(set_window_title_fps, { false, false })
+		.AddUpdateFunction(set_window_title_fps, {false, false})
 		.AddUpdateFunction(print, {true, false})
 		.AddUpdateFunction(start_fn, {true, false})
 		.AddUpdateFunction(remove_start_fn, {true, false})

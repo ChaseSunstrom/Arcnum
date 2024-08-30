@@ -2,52 +2,43 @@
 #define SPARK_PCH_HPP
 
 // Standard library includes
-#include <iostream>
-#include <string>
-#include <vector>
+#include <algorithm>
+#include <any>
+#include <array>
+#include <atomic>
+#include <cassert>
+#include <chrono>
+#include <cmath>
+#include <condition_variable>
 #include <cstddef>
 #include <cstdlib>
-#include <xhash>
-#include <stdexcept>
-#include <map>
-#include <unordered_set>
-#include <unordered_map>
-#include <memory>
-#include <typeindex>
-#include <stack>
-#include <filesystem>
-#include <functional>
-#include <algorithm>
-#include <fstream>
-#include <atomic>
-#include <condition_variable>
 #include <deque>
+#include <filesystem>
+#include <fstream>
 #include <functional>
 #include <future>
+#include <iomanip>
+#include <iostream>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
 #include <random>
 #include <shared_mutex>
-#include <variant>
-#include <thread>
 #include <sstream>
-#include <any>
-#include <cassert>
-#include <iomanip>
-#include <chrono>
-#include <optional>
-#include <array>
+#include <stack>
+#include <stdexcept>
+#include <string>
 #include <thread>
-#include <mutex>
-#include <condition_variable>
-#include <thread>
-#include <atomic>
-#include <cmath>
-#include <random>
+#include <typeindex>
+#include <unordered_map>
+#include <unordered_set>
+#include <variant>
+#include <vector>
+#include <xhash>
 
 // Project utility includes
-#include "util/types.hpp"
 #include "util/log.hpp"
+#include "util/types.hpp"
 
 #endif

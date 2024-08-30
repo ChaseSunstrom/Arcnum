@@ -3,13 +3,13 @@
 
 #ifndef NDEBUG
 
-	#define __TRACE__
+#define __TRACE__
 
 #endif
 
 #if !defined(RELEASE) || defined(DEBUG)
-	
-	#define __DEBUG__
+
+#define __DEBUG__
 
 #endif
 

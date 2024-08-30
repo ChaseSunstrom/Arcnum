@@ -6,13 +6,12 @@
 
 namespace Spark
 {
-	struct GameObject
-	{
-		// References to already existing data
-		const std::string& m_model_name;
-		const Transform& m_transform;
-	};
-}
-
+struct GameObject
+{
+	// References to already existing data
+	const std::string &m_model_name;
+	const Transform	  &m_transform;
+};
+} // namespace Spark
 
 #endif

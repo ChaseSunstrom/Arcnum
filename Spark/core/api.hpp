@@ -5,12 +5,12 @@
 
 namespace Spark
 {
-	enum class GraphicsAPI
-	{
-		OpenGL,
-		Vulkan,
-		DirectX
-	};
+enum class GraphicsAPI
+{
+	OpenGL,
+	Vulkan,
+	DirectX
+};
 }
 
 #endif

@@ -6,13 +6,11 @@
 
 namespace Spark
 {
-	class GLMaterial : public Material
-	{
-	public:
-	private:
-
-	};
-}
-
+class GLMaterial : public Material
+{
+  public:
+  private:
+};
+} // namespace Spark
 
 #endif

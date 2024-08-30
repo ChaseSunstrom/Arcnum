@@ -5,7 +5,7 @@
 
 namespace Spark
 {
-	std::string ReadFile(const std::filesystem::path& path);
+std::string ReadFile(const std::filesystem::path &path);
 }
 
 #endif

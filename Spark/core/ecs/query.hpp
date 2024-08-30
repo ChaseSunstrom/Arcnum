@@ -6,13 +6,12 @@
 namespace Spark
 {
 
-	class Component;
+class Component;
 
-	template <typename T>
-	concept IsComponent = std::derived_from<T, Component>;
+template <typename T>
+concept IsComponent = std::derived_from<T, Component>;
 
-	template <IsComponent T>
-	using Query = std::vector<std::shared_ptr<T>>;
-}
+template <IsComponent T> using Query = std::vector<std::shared_ptr<T>>;
+} // namespace Spark
 
 #endif

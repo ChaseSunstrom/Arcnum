@@ -30,6 +30,6 @@ namespace Spark
 #define EVENT_TYPE_COMPONENT_ADDED 16
 #define EVENT_TYPE_COMPONENT_REMOVED 17
 
-}
+} // namespace Spark
 
 #endif // SPARK_EVENT_TYPE_HPP

@@ -5,6 +5,7 @@
 #include <core/render/renderer.hpp>
 #include <core/window/gl/gl_window.hpp>
 #include <core/window/window.hpp>
+#include <core/ecs/components/transform_component.hpp>
 
 class FPSCalculator {
   private:
@@ -55,7 +56,32 @@ FPSCalculator fpsCalculator;
 
 void updateFPS(Spark::Application& app) { fpsCalculator.update(app); }
 
+void startup_fn(Spark::Application& app) {
+	auto& sm = app.GetManager<Spark::Scene>();
+	auto& eh = app.GetEventHandler();
+
+	auto& s = sm.Create("Scene1");
+
+	eh.SubscribeToEvent(EVENT_TYPE_COMPONENT_ADDED, [&s](const std::shared_ptr<Spark::Event> event) {
+		s.OnEvent(event);
+		});
+}
+
+void startup_fn2(Spark::Application& app) {
+	auto& ecs = app.GetEcs();
+
+	for (i32 i = 0; i < 50; i++)
+	{
+		ecs.MakeEntity(std::make_pair("transform", new Spark::TransformComponent(glm::vec3(i))));
+	}
+}
+
 i32 main() {
 	Spark::Application app(Spark::GraphicsAPI::OpenGL);
-	app.CreateWindow<Spark::GLWindow>("FPS Counter", 1000, 1000).CreateRenderer<Spark::GLRenderer>().AddUpdateFunction(updateFPS, {true, false}).Start();
+	app.CreateWindow<Spark::GLWindow>("FPS Counter", 1000, 1000)
+		.CreateRenderer<Spark::GLRenderer>()
+		.AddStartupFunction(startup_fn)
+		.AddStartupFunction(startup_fn2)
+		.AddUpdateFunction(updateFPS, {true, false})
+		.Start();
 }

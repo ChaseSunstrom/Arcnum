@@ -26,26 +26,27 @@ class Application {
 		: m_thread_pool(std::move(tp))
 		, m_event_handler(std::make_unique<EventHandler>(*m_thread_pool))
 		, m_ecs(std::make_unique<Ecs>(*m_event_handler))
+		, m_resource_manager(std::make_unique<Manager<Resource>>())
 		, m_gapi(gapi) {}
 
 	~Application();
 
-	void Start();
-	const bool Running() const;
-	Application& AddStartupFunction(const ApplicationFunction& fn, const FunctionSettings settings = {});
-	Application& AddUpdateFunction(const ApplicationFunction& fn, const FunctionSettings settings = {});
-	Application& AddShutdownFunction(const ApplicationFunction& fn, const FunctionSettings settings = {});
-	Application& AddEventFunction(i64 event_type, const ApplicationEventFunction& fn, const FunctionSettings settings = {});
+	void                                  Start();
+	const bool                            Running() const;
+	Application&                          AddStartupFunction(const ApplicationFunction& fn, const FunctionSettings settings = {});
+	Application&                          AddUpdateFunction(const ApplicationFunction& fn, const FunctionSettings settings = {});
+	Application&                          AddShutdownFunction(const ApplicationFunction& fn, const FunctionSettings settings = {});
+	Application&                          AddEventFunction(i64 event_type, const ApplicationEventFunction& fn, const FunctionSettings settings = {});
 	template <IsComponent T> Application& AddQueryFunction(const ApplicationQueryFunction<T>& fn, const FunctionSettings settings = {});
 	template <IsComponent T> Application& AddQueryEventFunction(i64 event_type, const ApplicationQueryEventFunction<T>& fn, const FunctionSettings settings = {});
-	template <IsWindow T> Application& CreateWindow(const std::string& title, i32 width, i32 height);
-	template <IsRenderer T> Application& CreateRenderer();
-	template <typename T> Manager<T>& GetManager() const;
-	Ecs& GetEcs() const;
-	Window& GetWindow() const;
-	Renderer& GetRenderer() const;
-	EventHandler& GetEventHandler() const;
-	ThreadPool& GetThreadPool() const;
+	template <IsWindow T> Application&    CreateWindow(const std::string& title, i32 width, i32 height);
+	template <IsRenderer T> Application&  CreateRenderer();
+	template <typename T> Manager<T>&     GetManager() const;
+	Ecs&                                  GetEcs() const;
+	Window&                               GetWindow() const;
+	Renderer&                             GetRenderer() const;
+	EventHandler&                         GetEventHandler() const;
+	ThreadPool&                           GetThreadPool() const;
 
   private:
 	void RunStartupFunctions();
@@ -66,7 +67,7 @@ class Application {
 
 	template <IsComponent T> struct UpdateFunctionWrapper : IUpdateFunctionWrapper {
 		ApplicationQueryFunction<T> fn;
-		Ecs& ecs;
+		Ecs&                        ecs;
 
 		UpdateFunctionWrapper(Ecs& ecs, ApplicationQueryFunction<T> fn)
 			: ecs(ecs)
@@ -77,8 +78,8 @@ class Application {
 
 	template <IsComponent T> struct QueryEventFunctionWrapper : IQueryEventFunctionWrapper {
 		ApplicationQueryEventFunction<T> fn;
-		Ecs& ecs;
-		i64 event_type;
+		Ecs&                             ecs;
+		i64                              event_type;
 
 		QueryEventFunctionWrapper(Ecs& ecs, const ApplicationQueryEventFunction<T>& fn, i64 event_type)
 			: ecs(ecs)
@@ -88,20 +89,20 @@ class Application {
 		void Execute(Application& app, const std::shared_ptr<Event> event) override { fn(app, ecs.GetComponents<T>(), event); }
 	};
 
-	std::unique_ptr<ThreadPool> m_thread_pool;
-	std::unique_ptr<EventHandler> m_event_handler;
-	std::unique_ptr<Ecs> m_ecs;
-	std::unique_ptr<Window> m_window;
-	std::unique_ptr<Renderer> m_renderer;
-	std::unique_ptr<Manager<Resource>> m_resource_manager;
-	ApplicationFunctionList m_startup_functions;
-	ApplicationFunctionList m_update_functions;
-	ApplicationFunctionList m_shutdown_functions;
-	std::vector<ApplicationEventFunction> m_event_functions;
+	std::unique_ptr<ThreadPool>                                                       m_thread_pool;
+	std::unique_ptr<EventHandler>                                                     m_event_handler;
+	std::unique_ptr<Ecs>                                                              m_ecs;
+	std::unique_ptr<Window>                                                           m_window;
+	std::unique_ptr<Renderer>                                                         m_renderer;
+	std::unique_ptr<Manager<Resource>>                                                m_resource_manager;
+	ApplicationFunctionList                                                           m_startup_functions;
+	ApplicationFunctionList                                                           m_update_functions;
+	ApplicationFunctionList                                                           m_shutdown_functions;
+	std::vector<ApplicationEventFunction>                                             m_event_functions;
 	std::vector<std::pair<std::unique_ptr<IUpdateFunctionWrapper>, FunctionSettings>> m_query_functions;
-	std::vector<std::unique_ptr<IQueryEventFunctionWrapper>> m_query_event_functions;
-	GraphicsAPI m_gapi;
-	std::mutex m_mutex;
+	std::vector<std::unique_ptr<IQueryEventFunctionWrapper>>                          m_query_event_functions;
+	GraphicsAPI                                                                       m_gapi;
+	std::mutex                                                                        m_mutex;
 };
 
 template <IsWindow T> Application& Application::CreateWindow(const std::string& title, i32 width, i32 height) {
@@ -120,7 +121,7 @@ template <IsComponent T> Application& Application::AddQueryFunction(const Applic
 }
 
 template <IsComponent T> Application& Application::AddQueryEventFunction(i64 event_type, const ApplicationQueryEventFunction<T>& fn, const FunctionSettings settings) {
-	auto query_event_wrapper      = std::make_unique<QueryEventFunctionWrapper<T>>(*m_ecs, fn, event_type);
+	auto  query_event_wrapper     = std::make_unique<QueryEventFunctionWrapper<T>>(*m_ecs, fn, event_type);
 	auto& query_event_wrapper_ref = *query_event_wrapper;
 	m_query_event_functions.push_back(std::move(query_event_wrapper));
 
@@ -137,7 +138,8 @@ template <IsComponent T> Application& Application::AddQueryEventFunction(i64 eve
 	return *this;
 }
 
-template <typename T> Manager<T>& Application::GetManager() const { return *static_cast<Manager<T>*>(m_resource_manager.get()); }
+template <typename T>
+Manager<T>& Application::GetManager() const { return m_resource_manager->GetManager<T>(); }
 } // namespace Spark
 
 #endif

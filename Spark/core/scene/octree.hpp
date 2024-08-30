@@ -2,6 +2,7 @@
 #define SPARK_OCTREE_HPP
 
 #include <core/pch.hpp>
+#include <core/event/event.hpp>
 #include <include/glm/vec3.hpp>
 
 namespace Spark {
@@ -13,14 +14,18 @@ struct PointData {
 class Octree {
   public:
 	Octree(glm::vec3 center, f32 width);
+	// On components added, removed, or deleted
+	void OnEvent(const std::shared_ptr<Event> event);
 	void Insert(const PointData& point_data);
 	bool Remove(i64 entity_id);
-	bool Update(i64 entity_id, const glm::vec3& new_position);
+	bool Update(const PointData& point_data);
 	std::vector<PointData> QueryRange(const glm::vec3& min, const glm::vec3& max);
 	void Grow(const glm::vec3& new_point);
 	void Shrink();
 	void Rebuild();
 
+	// Gets the list of all entities in the same octree node as the point
+	std::vector<i64> GetEntitiesFromPoint(const glm::vec3& point);
   private:
 	struct Node {
 		Node(glm::vec3 c, f32 hw)
@@ -42,7 +47,7 @@ class Octree {
   private:
 	static inline const i32 MAX_POINTS = 4;
 	static inline const i32 MAX_DEPTH  = 8;
-	static inline const f32 MAX_SIZE   = 0.0; // Maximum size limit
+	static inline const f32 MAX_SIZE   = 100000000000.0; // Maximum size limit
 	std::unique_ptr<Node> m_root;
 	std::unordered_map<i64, Node*> m_entity_to_node;
 };

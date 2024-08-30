@@ -1,9 +1,9 @@
 #include "physics.hpp"
 
-namespace Spark
-{
-PhysicsSystem::PhysicsSystem(f32 time_step, const glm::vec3& gravity, i32 iterations)
-	: m_gravity(gravity)
+namespace Spark {
+PhysicsSystem::PhysicsSystem(EventHandler& event_handler, f32 time_step, const glm::vec3& gravity, i32 iterations)
+	: ISystem(event_handler)
+	, m_gravity(gravity)
 	, m_time_step(time_step)
 	, m_iterations(iterations) {}
 
@@ -35,38 +35,38 @@ void PhysicsSystem::Shutdown() {
 }
 
 void PhysicsSystem::IntegrateForces(RigidBodyComponent& rb, f32 dt) {
-	if (rb.GetInvMass() == 0.0f)
+	if (rb.rb->GetInvMass() == 0.0f)
 		return; // Static objects don't move
 
 	// Apply gravity
-	rb.GetVelocity() += m_gravity * dt;
+	rb.rb->GetVelocity() += m_gravity * dt;
 
 	// Apply forces
-	rb.GetVelocity() += rb.GetForce() * rb.GetInvMass() * dt;
+	rb.rb->GetVelocity() += rb.rb->GetForce() * rb.rb->GetInvMass() * dt;
 
 	// Apply torque
-	rb.GetAngularVelocity() += rb.GetInvInertiaTensor() * rb.GetTorque() * dt;
+	rb.rb->GetAngularVelocity() += rb.rb->GetInvInertiaTensor() * rb.rb->GetTorque() * dt;
 
 	// Clear forces and torques
-	rb.GetForce()  = glm::vec3(0.0f);
-	rb.GetTorque() = glm::vec3(0.0f);
+	rb.rb->GetForce()  = glm::vec3(0.0f);
+	rb.rb->GetTorque() = glm::vec3(0.0f);
 }
 
 void PhysicsSystem::IntegrateVelocities(RigidBodyComponent& rb, f32 dt) {
-	if (rb.GetInvMass() == 0.0f)
+	if (rb.rb->GetInvMass() == 0.0f)
 		return; // Static objects don't move
 
 	// Update position
-	rb.GetPosition() += rb.GetVelocity() * dt;
+	rb.rb->GetPosition() += rb.rb->GetVelocity() * dt;
 
 	// Update orientation
-	glm::quat spin(0, rb.GetAngularVelocity() * 0.5f * dt);
-	rb.GetOrientation() = glm::normalize(spin * rb.GetOrientation());
+	glm::quat spin(0, rb.rb->GetAngularVelocity() * 0.5f * dt);
+	rb.rb->GetOrientation() = glm::normalize(spin * rb.rb->GetOrientation());
 
 	// Update the shape's orientation if it's an OBB
-	if (rb.GetShape()->GetType() == ShapeType::OBB) {
-		OBBShape* obb_shape = static_cast<OBBShape*>(rb.GetShape().get());
-		obb_shape->SetOrientation(rb.GetOrientation());
+	if (rb.rb->GetShape()->GetType() == ShapeType::OBB) {
+		OBBShape* obb_shape = static_cast<OBBShape*>(rb.rb->GetShape());
+		obb_shape->SetOrientation(rb.rb->GetOrientation());
 	}
 }
 
@@ -79,4 +79,4 @@ void PhysicsSystem::ResolveCollisions() {
 	// Implement collision resolution
 	// This is a placeholder for where you'd implement your collision resolution algorithm
 }
-}
+} // namespace Spark

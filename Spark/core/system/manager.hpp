@@ -5,18 +5,24 @@
 #include <core/pch.hpp>
 
 namespace Spark {
-template <typename T> class Manager {
+struct IManager {
+	virtual ~IManager() = default;
+};
+
+template <typename T>
+class Manager : public IManager {
   public:
 	Manager()
 		: m_registry(std::make_unique<Registry<T>>()) {}
 	~Manager() = default;
 
-	template <typename... Args> Handle Create(const std::string& name, Args&&... args) {
+	template <typename... Args>
+	T& Create(const std::string& name, Args&&... args) {
 		T* object = new T(std::forward<Args>(args)...);
 		return Register(name, std::unique_ptr<T>(object));
 	}
 
-	T& Register(const std::string& name, std::unique_ptr<T> object) { return m_registry->Register(name, std::move(object)); }
+	Handle Register(const std::string& name, std::unique_ptr<T> object) { return m_registry->Register(name, std::move(object)); }
 
 	T& Get(const std::string& name) const { return m_registry->Get(name); }
 
@@ -29,6 +35,8 @@ template <typename T> class Manager {
 	void Remove(const std::string& name) { m_registry->Remove(name); }
 
 	void Remove(const Handle handle) { m_registry->Remove(handle); }
+
+	size_t GetSize() const { return m_registry->GetSize(); }
 
 	std::vector<std::string> GetKeys() const { return m_registry->GetKeys(); }
 

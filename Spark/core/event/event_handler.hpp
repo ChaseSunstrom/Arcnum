@@ -17,7 +17,7 @@ class EventHandler {
 		: m_thread_pool(thread_pool) {}
 	~EventHandler() = default;
 
-	void SubscribeToEvent(i64 event_type, std::function<void(const std::shared_ptr<Event>)> handler, const FunctionSettings settings) {
+	void SubscribeToEvent(i64 event_type, std::function<void(const std::shared_ptr<Event>)> handler, const FunctionSettings settings = {}) {
 		std::lock_guard<std::mutex> lock(m_mutex);
 		m_event_handlers[event_type].push_back({handler, settings});
 	}

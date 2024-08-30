@@ -167,7 +167,6 @@
     <ClInclude Include="core\event\window_events.hpp" />
     <ClInclude Include="core\lighting\lighting.hpp" />
     <ClInclude Include="core\pch.hpp" />
-    <ClInclude Include="core\physics\aabb.hpp" />
     <ClInclude Include="core\physics\collision_shape.hpp" />
     <ClInclude Include="core\physics\physics.hpp" />
     <ClInclude Include="core\physics\rigid_body.hpp" />
@@ -441,13 +440,13 @@
     <ClCompile Include="core\app\application.cpp" />
     <ClCompile Include="core\ecs\ecs.cpp" />
     <ClCompile Include="core\pch.cpp" />
-    <ClCompile Include="core\physics\aabb.cpp" />
     <ClCompile Include="core\physics\physics.cpp" />
     <ClCompile Include="core\physics\rigid_body.cpp" />
     <ClCompile Include="core\render\gl\gl_mesh.cpp" />
     <ClCompile Include="core\render\gl\gl_renderer.cpp" />
     <ClCompile Include="core\render\gl\gl_shader.cpp" />
     <ClCompile Include="core\scene\octree.cpp" />
+    <ClCompile Include="core\scene\scene.cpp" />
     <ClCompile Include="core\scene\transform.cpp" />
     <ClCompile Include="core\system\file_serializer.cpp" />
     <ClCompile Include="core\util\file.cpp" />

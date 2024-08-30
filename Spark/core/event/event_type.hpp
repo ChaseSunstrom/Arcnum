@@ -28,6 +28,7 @@ namespace Spark {
 #define EVENT_TYPE_ENTITY_DESTROYED      15
 #define EVENT_TYPE_COMPONENT_ADDED       16
 #define EVENT_TYPE_COMPONENT_REMOVED     17
+#define EVENT_TYPE_COMPONENT_UPDATED     18
 
 } // namespace Spark
 

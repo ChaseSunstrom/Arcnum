@@ -1,4 +1,6 @@
 #include "octree.hpp"
+#include <core/ecs/components/transform_component.hpp>
+#include <core/event/ecs_events.hpp>
 #include <include/glm/glm.hpp>
 #include <include/glm/gtx/component_wise.hpp>
 #include <include/glm/vector_relational.hpp>
@@ -8,6 +10,26 @@ Octree::Octree(glm::vec3 center, f32 width)
 	: m_root(std::make_unique<Node>(center, width / 2)) {
 	if (width > MAX_SIZE) {
 		LOG_FATAL("Initial octree size exceeds maximum allowed size");
+	}
+}
+
+void Octree::OnEvent(const std::shared_ptr<Event> event) {
+	switch (event->type) {
+		case EVENT_TYPE_COMPONENT_ADDED: {
+			auto component_added_event = std::static_pointer_cast<ComponentAddedEvent>(event);
+			Insert({component_added_event->GetComponent<TransformComponent>().transform.GetPosition(), component_added_event->entity.GetId()});
+			break;
+		}
+		case EVENT_TYPE_COMPONENT_UPDATED: {
+			auto component_updated_event = std::static_pointer_cast<ComponentUpdatedEvent>(event);
+			Update({component_updated_event->GetComponent<TransformComponent>().transform.GetPosition(), component_updated_event->entity.GetId()});
+			break;
+		}
+		case EVENT_TYPE_COMPONENT_REMOVED: {
+			auto component_removed_event = std::static_pointer_cast<ComponentRemovedEvent>(event);
+			Remove(component_removed_event->entity.GetId());
+			break;
+		}
 	}
 }
 
@@ -36,9 +58,9 @@ bool Octree::Remove(i64 entity_id) {
 	return true;
 }
 
-bool Octree::Update(i64 entity_id, const glm::vec3& new_position) {
-	if (Remove(entity_id)) {
-		Insert({new_position, entity_id});
+bool Octree::Update(const PointData& point_data) {
+	if (Remove(point_data.entity_id)) {
+		Insert({point_data.position, point_data.entity_id});
 		return true;
 	}
 	return false;
@@ -154,6 +176,25 @@ void Octree::CollectAllPoints(const Node* node, std::vector<PointData>& all_poin
 	for (const auto& child : node->children) {
 		CollectAllPoints(child.get(), all_points);
 	}
+}
+
+std::vector<i64> Octree::GetEntitiesFromPoint(const glm::vec3& point) {
+	std::vector<i64> result;
+	Node* node = m_root.get();
+	while (node) {
+		if (!IsPointInBounds(point, node->center, node->half_width))
+			break;
+
+		for (const auto& point_data : node->points) {
+			result.push_back(point_data.entity_id);
+		}
+
+		for (const auto& child : node->children) {
+			node = child.get();
+		}
+	}
+
+	return result;
 }
 
 bool Octree::IsPointInBounds(const glm::vec3& point, const glm::vec3& center, f32 half_width) const { return glm::all(glm::lessThanEqual(glm::abs(point - center), glm::vec3(half_width))); }

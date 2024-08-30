@@ -948,7 +948,6 @@
     <ClInclude Include="include\glm\vector_relational.hpp">
       <Filter>include\glm</Filter>
     </ClInclude>
-    <ClInclude Include="core\physics\aabb.hpp" />
     <ClInclude Include="core\physics\rigid_body.hpp" />
     <ClInclude Include="core\physics\collision_shape.hpp" />
     <ClInclude Include="core\ecs\components\rigid_body_component.hpp" />
@@ -999,8 +998,8 @@
     <ClCompile Include="lib\windows\glad\glad.c">
       <Filter>lib\windows\glad</Filter>
     </ClCompile>
-    <ClCompile Include="core\physics\aabb.cpp" />
     <ClCompile Include="core\physics\rigid_body.cpp" />
     <ClCompile Include="core\physics\physics.cpp" />
+    <ClCompile Include="core\scene\scene.cpp" />
   </ItemGroup>
 </Project>

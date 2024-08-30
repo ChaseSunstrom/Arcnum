@@ -20,7 +20,7 @@ template <typename T> class Registry {
 	Registry(const Registry&)            = delete;
 	Registry& operator=(const Registry&) = delete;
 
-	Handle Register(const std::string& name, std::unique_ptr<T> object) {
+	T& Register(const std::string& name, std::unique_ptr<T> object) {
 		Handle handle;
 		if (!m_free_indices.empty()) {
 			handle.index = m_free_indices.back();
@@ -36,7 +36,7 @@ template <typename T> class Registry {
 		T& ref                        = *object;
 		m_handle_values[handle.index] = std::ref(ref);
 		m_registry[name]              = std::make_pair(handle, std::move(object));
-		return handle;
+		return ref;
 	}
 
 	void Remove(const std::string& name) {
@@ -70,6 +70,10 @@ template <typename T> class Registry {
 			return *it->second.second;
 
 		LOG_FATAL("Could not find object with name: " << name);
+	}
+
+	size_t GetSize() const {
+		return m_registry.size();
 	}
 
 	T& Get(const Handle handle) const {

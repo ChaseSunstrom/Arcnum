@@ -22,4 +22,8 @@ void RigidBody::ApplyForce(const glm::vec3& force) {
 void RigidBody::ApplyTorque(const glm::vec3& torque) {
 	m_torque += torque;
 }
+
+void RigidBody::Update(f32 delta_time) {
+
+}
 } // namespace Spark

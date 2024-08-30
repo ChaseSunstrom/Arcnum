@@ -52,18 +52,18 @@ class DynamicMesh {
 };
 
 // Removed GetCopy function
-template <> class Manager<StaticMesh> {
+template <> class Manager<StaticMesh> : public IManager {
   public:
 	Manager()
 		: m_registry(std::make_unique<Registry<StaticMesh>>()) {}
 	~Manager() = default;
 
-	template <typename... Args> Handle Create(const std::string& name, Args&&... args) {
+	template <typename... Args> StaticMesh& Create(const std::string& name, Args&&... args) {
 		StaticMesh* object = new StaticMesh(std::forward<Args>(args)...);
 		return Register(name, std::unique_ptr<StaticMesh>(object));
 	}
 
-	Handle Register(const std::string& name, std::unique_ptr<StaticMesh> object) { return m_registry->Register(name, std::move(object)); }
+	StaticMesh& Register(const std::string& name, std::unique_ptr<StaticMesh> object) { return m_registry->Register(name, std::move(object)); }
 
 	StaticMesh& Get(const std::string& name) const { return m_registry->Get(name); }
 
@@ -72,6 +72,8 @@ template <> class Manager<StaticMesh> {
 	void Remove(const std::string& name) { m_registry->Remove(name); }
 
 	void Remove(const Handle handle) { m_registry->Remove(handle); }
+
+	size_t GetSize() const { return m_registry->GetSize(); }
 
 	std::vector<std::string> GetKeys() const { return m_registry->GetKeys(); }
 

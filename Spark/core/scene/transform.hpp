@@ -15,8 +15,13 @@ class Transform {
 	void Rotate(const glm::vec3& rotation);
 	void Scale(f32 scale);
 
+	glm::vec3 GetPosition() const;
+	glm::vec3 GetRotation() const;
+	f32 GetScale() const;
+
   private:
 	glm::mat4 m_transform;
+	f32 m_scale;
 };
 } // namespace Spark
 

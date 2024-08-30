@@ -47,6 +47,33 @@ struct ComponentAddedEvent : public Event {
 	const std::shared_ptr<Component> component_ptr;
 };
 
+struct ComponentUpdatedEvent : public Event {
+	ComponentUpdatedEvent(const Entity& entity, const std::type_index& type, const std::shared_ptr<Component> component)
+		: Event(EVENT_TYPE_COMPONENT_UPDATED)
+		, entity(entity)
+#ifdef __DEBUG__
+		, component_type(type)
+#endif
+		, component_ptr(component) {
+	}
+
+	template <IsComponent T>
+	const T& GetComponent() const {
+#ifdef __DEBUG__
+		if (typeid(T) != component_type) {
+			LOG_FATAL("Component type mismatch!");
+		}
+#endif
+		return *std::static_pointer_cast<T>(component_ptr);
+	}
+
+	const Entity& entity;
+#ifdef __DEBUG__
+	const std::type_index component_type;
+#endif
+	const std::shared_ptr<Component> component_ptr;
+};
+
 struct ComponentRemovedEvent : public Event {
 	ComponentRemovedEvent(const Entity& entity, const std::type_index& type, const std::shared_ptr<Component> component)
 		: Event(EVENT_TYPE_COMPONENT_REMOVED)

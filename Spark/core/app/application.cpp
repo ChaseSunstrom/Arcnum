@@ -1,7 +1,10 @@
 #include "application.hpp"
 
 namespace Spark {
-Application::~Application() { RunShutdownFunctions(); }
+Application::~Application() { 
+	RunShutdownFunctions(); 
+	m_ecs->Shutdown();
+}
 
 void Application::Start() {
 	if (!m_window) {
@@ -13,6 +16,7 @@ void Application::Start() {
 	}
 
 	RunStartupFunctions();
+	m_ecs->Start();
 
 	while (Running()) {
 		Update();
@@ -21,6 +25,7 @@ void Application::Start() {
 
 void Application::Update() {
 	RunUpdateFunctions();
+	m_ecs->Update();
 	m_window->Update();
 	m_renderer->Render();
 }

@@ -7,10 +7,9 @@
 #	include <core/pch.hpp>
 
 namespace Spark {
-
 class PhysicsSystem : public ISystem {
   public:
-	PhysicsSystem(f32 time_step, const glm::vec3& gravity = glm::vec3(0.0f, -9.81f, 0.0f), i32 iterations = 4);
+	PhysicsSystem(EventHandler& event_handler, f32 time_step, const glm::vec3& gravity = glm::vec3(0.0f, -9.81f, 0.0f), i32 iterations = 4);
 	~PhysicsSystem() override = default;
 
 	void Start() override;
@@ -33,5 +32,6 @@ class PhysicsSystem : public ISystem {
 	f32 m_time_step;
 	i32 m_iterations;
 };
+} // namespace Spark
 
 #endif

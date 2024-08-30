@@ -1,20 +1,21 @@
 #ifndef SPARK_DEFINES_HPP
 #define SPARK_DEFINES_HPP
 
-#ifndef NDEBUG
-
-#define __TRACE__
-
+#if (!defined(RELEASE) && !defined(__DIST__)) || defined(DEBUG)
+#	define __DEBUG__
 #endif
 
-#if !defined(RELEASE) || defined(DEBUG)
+#ifndef __DIST__
+#	ifndef NDEBUG
+#		define __TRACE__
+#	endif
 
-#define __DEBUG__
-
+#	define __INFO__
+#	define __WARN__
+#	define __ERROR__
+#	define __FATAL__
 #endif
 
-#define __INFO__
-#define __WARN__
-#define __ERROR__
+#define assert_false assert(false)
 
 #endif

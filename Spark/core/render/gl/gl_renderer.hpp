@@ -5,12 +5,11 @@
 #include <core/pch.hpp>
 #include <core/render/renderer.hpp>
 
-namespace Spark
-{
-class GLRenderer : public Renderer
-{
+namespace Spark {
+class GLRenderer : public Renderer {
   public:
-	GLRenderer(GraphicsAPI gapi) : Renderer(gapi) {}
+	GLRenderer(GraphicsAPI gapi)
+		: Renderer(gapi) {}
 	void Render() override;
 
   private:

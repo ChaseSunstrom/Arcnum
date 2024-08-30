@@ -4,17 +4,59 @@
     <Filter Include="core">
       <UniqueIdentifier>{4E40957C-3A77-960D-E363-7C10CF79120F}</UniqueIdentifier>
     </Filter>
+    <Filter Include="core\ai">
+      <UniqueIdentifier>{67DAB8D3-D3B9-376F-DCD1-C24548309ED0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\animation">
+      <UniqueIdentifier>{DD52C7C7-C920-BBCD-B2B4-2BF49E219732}</UniqueIdentifier>
+    </Filter>
     <Filter Include="core\app">
       <UniqueIdentifier>{9E28D44A-8AF5-2E56-B30E-1DFE9F3A64E4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="core\audio">
+      <UniqueIdentifier>{EF608350-DB18-C59D-4420-9EF930F75F8E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\ecs">
+      <UniqueIdentifier>{F837D44A-E404-2F56-0D1E-1DFEF94964E4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\ecs\components">
+      <UniqueIdentifier>{2D56A5F1-99B7-82FF-2225-C9B18E85B9BE}</UniqueIdentifier>
+    </Filter>
     <Filter Include="core\event">
       <UniqueIdentifier>{3F54CC50-2B0C-0E9E-9413-E7F980EAA88E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\lighting">
+      <UniqueIdentifier>{B3A7D5EC-1F68-5123-E8A2-9AA0542296FF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\physics">
+      <UniqueIdentifier>{E049B7E4-CCAC-4689-7532-7F3F6174120C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\render">
+      <UniqueIdentifier>{1D0F7B87-89C4-F37C-12B9-ED537E6DEA80}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\render\gl">
+      <UniqueIdentifier>{9F6BE5A1-8B39-D9A7-74CD-49CE603AB50C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\resource">
+      <UniqueIdentifier>{45F6F45E-B1B6-7095-7AF1-B912E670B571}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\scene">
+      <UniqueIdentifier>{0B40BF51-F7F7-009F-60FF-D9FA4CD69B8F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\system">
+      <UniqueIdentifier>{C2233D8B-2ED9-B580-B7CD-AF572382AC84}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\ui">
+      <UniqueIdentifier>{FBDCB8D3-67BC-376F-70D4-C245DC329ED0}</UniqueIdentifier>
     </Filter>
     <Filter Include="core\util">
       <UniqueIdentifier>{7B4464A5-E7AE-181C-30ED-C9C19C96F670}</UniqueIdentifier>
     </Filter>
     <Filter Include="core\window">
       <UniqueIdentifier>{953D6D93-01F3-E588-8AE7-DF5FF69BDC8C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\window\gl">
+      <UniqueIdentifier>{17A7129A-0375-06A0-EC08-77C6D875E204}</UniqueIdentifier>
     </Filter>
     <Filter Include="include">
       <UniqueIdentifier>{89AF369E-F58E-B539-FEA6-40106A051C9B}</UniqueIdentifier>
@@ -48,10 +90,49 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="core\ai\ai.hpp">
+      <Filter>core\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="core\animation\animation.hpp">
+      <Filter>core\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="core\api.hpp">
+      <Filter>core</Filter>
+    </ClInclude>
     <ClInclude Include="core\app\application.hpp">
       <Filter>core\app</Filter>
     </ClInclude>
+    <ClInclude Include="core\audio\audio.hpp">
+      <Filter>core\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="core\ecs\component.hpp">
+      <Filter>core\ecs</Filter>
+    </ClInclude>
+    <ClInclude Include="core\ecs\components\model_component.hpp">
+      <Filter>core\ecs\components</Filter>
+    </ClInclude>
+    <ClInclude Include="core\ecs\components\transform_component.hpp">
+      <Filter>core\ecs\components</Filter>
+    </ClInclude>
+    <ClInclude Include="core\ecs\ecs.hpp">
+      <Filter>core\ecs</Filter>
+    </ClInclude>
+    <ClInclude Include="core\ecs\entity.hpp">
+      <Filter>core\ecs</Filter>
+    </ClInclude>
+    <ClInclude Include="core\ecs\query.hpp">
+      <Filter>core\ecs</Filter>
+    </ClInclude>
+    <ClInclude Include="core\ecs\system.hpp">
+      <Filter>core\ecs</Filter>
+    </ClInclude>
+    <ClInclude Include="core\event\ecs_events.hpp">
+      <Filter>core\event</Filter>
+    </ClInclude>
     <ClInclude Include="core\event\event.hpp">
+      <Filter>core\event</Filter>
+    </ClInclude>
+    <ClInclude Include="core\event\event_handler.hpp">
       <Filter>core\event</Filter>
     </ClInclude>
     <ClInclude Include="core\event\event_type.hpp">
@@ -63,10 +144,82 @@
     <ClInclude Include="core\event\window_events.hpp">
       <Filter>core\event</Filter>
     </ClInclude>
+    <ClInclude Include="core\lighting\lighting.hpp">
+      <Filter>core\lighting</Filter>
+    </ClInclude>
     <ClInclude Include="core\pch.hpp">
       <Filter>core</Filter>
     </ClInclude>
+    <ClInclude Include="core\physics\physics.hpp">
+      <Filter>core\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="core\render\gl\gl_material.hpp">
+      <Filter>core\render\gl</Filter>
+    </ClInclude>
+    <ClInclude Include="core\render\gl\gl_mesh.hpp">
+      <Filter>core\render\gl</Filter>
+    </ClInclude>
+    <ClInclude Include="core\render\gl\gl_renderer.hpp">
+      <Filter>core\render\gl</Filter>
+    </ClInclude>
+    <ClInclude Include="core\render\gl\gl_shader.hpp">
+      <Filter>core\render\gl</Filter>
+    </ClInclude>
+    <ClInclude Include="core\render\material.hpp">
+      <Filter>core\render</Filter>
+    </ClInclude>
+    <ClInclude Include="core\render\mesh.hpp">
+      <Filter>core\render</Filter>
+    </ClInclude>
+    <ClInclude Include="core\render\model.hpp">
+      <Filter>core\render</Filter>
+    </ClInclude>
+    <ClInclude Include="core\render\renderer.hpp">
+      <Filter>core\render</Filter>
+    </ClInclude>
+    <ClInclude Include="core\render\shader.hpp">
+      <Filter>core\render</Filter>
+    </ClInclude>
+    <ClInclude Include="core\render\uniform.hpp">
+      <Filter>core\render</Filter>
+    </ClInclude>
+    <ClInclude Include="core\render\vertex.hpp">
+      <Filter>core\render</Filter>
+    </ClInclude>
+    <ClInclude Include="core\resource\resource.hpp">
+      <Filter>core\resource</Filter>
+    </ClInclude>
+    <ClInclude Include="core\scene\octree.hpp">
+      <Filter>core\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="core\scene\scene.hpp">
+      <Filter>core\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="core\scene\transform.hpp">
+      <Filter>core\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="core\system\file_serializer.hpp">
+      <Filter>core\system</Filter>
+    </ClInclude>
+    <ClInclude Include="core\system\manager.hpp">
+      <Filter>core\system</Filter>
+    </ClInclude>
+    <ClInclude Include="core\system\registry.hpp">
+      <Filter>core\system</Filter>
+    </ClInclude>
+    <ClInclude Include="core\system\serializer.hpp">
+      <Filter>core\system</Filter>
+    </ClInclude>
+    <ClInclude Include="core\ui\ui.hpp">
+      <Filter>core\ui</Filter>
+    </ClInclude>
     <ClInclude Include="core\util\defines.hpp">
+      <Filter>core\util</Filter>
+    </ClInclude>
+    <ClInclude Include="core\util\file.hpp">
+      <Filter>core\util</Filter>
+    </ClInclude>
+    <ClInclude Include="core\util\gl.hpp">
       <Filter>core\util</Filter>
     </ClInclude>
     <ClInclude Include="core\util\log.hpp">
@@ -75,8 +228,14 @@
     <ClInclude Include="core\util\observer.hpp">
       <Filter>core\util</Filter>
     </ClInclude>
+    <ClInclude Include="core\util\thread_pool.hpp">
+      <Filter>core\util</Filter>
+    </ClInclude>
     <ClInclude Include="core\util\types.hpp">
       <Filter>core\util</Filter>
+    </ClInclude>
+    <ClInclude Include="core\window\gl\gl_window.hpp">
+      <Filter>core\window\gl</Filter>
     </ClInclude>
     <ClInclude Include="core\window\window.hpp">
       <Filter>core\window</Filter>
@@ -789,58 +948,50 @@
     <ClInclude Include="include\glm\vector_relational.hpp">
       <Filter>include\glm</Filter>
     </ClInclude>
-    <ClInclude Include="core\util\gl.hpp" />
-    <ClInclude Include="core\window\gl\gl_window.hpp" />
-    <ClInclude Include="core\ecs\ecs.hpp" />
-    <ClInclude Include="core\ecs\entity.hpp" />
-    <ClInclude Include="core\ecs\component.hpp" />
-    <ClInclude Include="core\ecs\system.hpp" />
-    <ClInclude Include="core\ecs\query.hpp" />
-    <ClInclude Include="core\render\mesh.hpp" />
-    <ClInclude Include="core\render\material.hpp" />
-    <ClInclude Include="core\render\vertex.hpp" />
-    <ClInclude Include="core\render\gl\gl_mesh.hpp" />
-    <ClInclude Include="core\render\shader.hpp" />
-    <ClInclude Include="core\render\gl\gl_shader.hpp" />
-    <ClInclude Include="core\util\file.hpp" />
-    <ClInclude Include="core\system\registry.hpp" />
-    <ClInclude Include="core\system\serializer.hpp" />
-    <ClInclude Include="core\system\file_serializer.hpp" />
-    <ClInclude Include="core\render\model.hpp" />
-    <ClInclude Include="core\system\manager.hpp" />
-    <ClInclude Include="core\api.hpp" />
-    <ClInclude Include="core\resource\resource.hpp" />
-    <ClInclude Include="core\ecs\components\model_component.hpp" />
-    <ClInclude Include="core\ecs\components\transform_component.hpp" />
-    <ClInclude Include="core\scene\transform.hpp" />
-    <ClInclude Include="core\scene\scene.hpp" />
-    <ClInclude Include="core\render\renderer.hpp" />
-    <ClInclude Include="core\render\gl\gl_renderer.hpp" />
-    <ClInclude Include="core\event\event_handler.hpp" />
-    <ClInclude Include="core\render\game_object.hpp" />
-    <ClInclude Include="core\event\ecs_events.hpp" />
-    <ClInclude Include="core\scene\octree.hpp" />
-    <ClInclude Include="core\util\thread_pool.hpp">
-      <Filter>core\util</Filter>
-    </ClInclude>
-    <ClInclude Include="core\physics\physics.hpp">
-      <Filter>core</Filter>
-    </ClInclude>
-    <ClInclude Include="core\animation\animation.hpp" />
-    <ClInclude Include="core\lighting\lighting.hpp" />
-    <ClInclude Include="core\ui\ui.hpp" />
-    <ClInclude Include="core\render\gl\gl_material.hpp" />
-    <ClInclude Include="core\render\uniform.hpp" />
+    <ClInclude Include="core\physics\aabb.hpp" />
+    <ClInclude Include="core\physics\rigid_body.hpp" />
+    <ClInclude Include="core\physics\collision_shape.hpp" />
+    <ClInclude Include="core\ecs\components\rigid_body_component.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\app\application.cpp">
       <Filter>core\app</Filter>
     </ClCompile>
+    <ClCompile Include="core\ecs\ecs.cpp">
+      <Filter>core\ecs</Filter>
+    </ClCompile>
     <ClCompile Include="core\pch.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="core\render\gl\gl_mesh.cpp">
+      <Filter>core\render\gl</Filter>
+    </ClCompile>
+    <ClCompile Include="core\render\gl\gl_renderer.cpp">
+      <Filter>core\render\gl</Filter>
+    </ClCompile>
+    <ClCompile Include="core\render\gl\gl_shader.cpp">
+      <Filter>core\render\gl</Filter>
+    </ClCompile>
+    <ClCompile Include="core\scene\octree.cpp">
+      <Filter>core\scene</Filter>
+    </ClCompile>
+    <ClCompile Include="core\scene\transform.cpp">
+      <Filter>core\scene</Filter>
+    </ClCompile>
+    <ClCompile Include="core\system\file_serializer.cpp">
+      <Filter>core\system</Filter>
+    </ClCompile>
+    <ClCompile Include="core\util\file.cpp">
+      <Filter>core\util</Filter>
+    </ClCompile>
     <ClCompile Include="core\util\log.cpp">
       <Filter>core\util</Filter>
+    </ClCompile>
+    <ClCompile Include="core\util\thread_pool.cpp">
+      <Filter>core\util</Filter>
+    </ClCompile>
+    <ClCompile Include="core\window\gl\gl_window.cpp">
+      <Filter>core\window\gl</Filter>
     </ClCompile>
     <ClCompile Include="include\glm\detail\glm.cpp">
       <Filter>include\glm\detail</Filter>
@@ -848,15 +999,8 @@
     <ClCompile Include="lib\windows\glad\glad.c">
       <Filter>lib\windows\glad</Filter>
     </ClCompile>
-    <ClCompile Include="core\window\gl\gl_window.cpp" />
-    <ClCompile Include="core\ecs\ecs.cpp" />
-    <ClCompile Include="core\render\gl\gl_mesh.cpp" />
-    <ClCompile Include="core\render\gl\gl_shader.cpp" />
-    <ClCompile Include="core\util\file.cpp" />
-    <ClCompile Include="core\system\file_serializer.cpp" />
-    <ClCompile Include="core\scene\transform.cpp" />
-    <ClCompile Include="core\render\gl\gl_renderer.cpp" />
-    <ClCompile Include="core\scene\octree.cpp" />
-    <ClCompile Include="core\util\thread_pool.cpp" />
+    <ClCompile Include="core\physics\aabb.cpp" />
+    <ClCompile Include="core\physics\rigid_body.cpp" />
+    <ClCompile Include="core\physics\physics.cpp" />
   </ItemGroup>
 </Project>

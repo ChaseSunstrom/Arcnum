@@ -4,10 +4,8 @@
 #include "octree.hpp"
 #include <core/pch.hpp>
 
-namespace Spark
-{
-class Scene
-{
+namespace Spark {
+class Scene {
   public:
   private:
 	// TODO: Implement storing of current conditionally rendered renderables

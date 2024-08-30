@@ -4,10 +4,8 @@
 #include <core/ecs/component.hpp>
 #include <core/pch.hpp>
 
-namespace Spark
-{
-struct ModelComponent : public Component
-{
+namespace Spark {
+struct ModelComponent : public Component {
 	std::string model_name;
 };
 } // namespace Spark

@@ -6,13 +6,12 @@
 #include <core/pch.hpp>
 #include <core/scene/transform.hpp>
 
-namespace Spark
-{
-class Renderer
-{
+namespace Spark {
+class Renderer {
   public:
-	Renderer(GraphicsAPI gapi) : m_gapi(gapi) {}
-	~Renderer()			  = default;
+	Renderer(GraphicsAPI gapi)
+		: m_gapi(gapi) {}
+	~Renderer()           = default;
 	virtual void Render() = 0;
 
   protected:

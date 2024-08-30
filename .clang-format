@@ -1,41 +1,73 @@
 ---
 Language: Cpp
-# Use LLVM as base and override specific options
 BasedOnStyle: LLVM
 # Indentation
 IndentWidth: 4
 TabWidth: 4
-UseTab: Always
-# Column limit (Doom often used wider lines)
-ColumnLimit: 200
+UseTab: AlignWithSpaces
+ContinuationIndentWidth: 4
+# Column limit
+ColumnLimit: 0
 # Braces
-BreakBeforeBraces: Allman
+BreakBeforeBraces: Attach
 # Alignment
-AlignConsecutiveAssignments: true
-AlignConsecutiveDeclarations: true
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments:
+  Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: true
+AlignConsecutiveMacros:
+  Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: true
+AlignEscapedNewlines: Right
 AlignOperands: true
-AlignTrailingComments: true
+AlignTrailingComments:
+  Kind: Always
+  OverEmptyLines: 2
+AlignArrayOfStructures: Right
 # Spacing
 SpaceBeforeParens: ControlStatements
 SpaceInEmptyParentheses: false
 SpacesInParentheses: false
 SpacesInSquareBrackets: false
 SpaceAfterCStyleCast: true
+SpaceAfterTemplateKeyword: true
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCpp11BracedList: false
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeRangeBasedForLoopColon: true
 # Pointer alignment
-PointerAlignment: Right
+PointerAlignment: Left
 # Function declarations
 BinPackArguments: false
 BinPackParameters: false
 AllowAllParametersOfDeclarationOnNextLine: false
 # Control structures
-AllowShortIfStatementsOnASingleLine: false
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: All
+AllowShortIfStatementsOnASingleLine: Never
 AllowShortLoopsOnASingleLine: false
 # Comments
-ReflowComments: false
+ReflowComments: true
 # Preprocessor
-IndentPPDirectives: None
+IndentPPDirectives: AfterHash
 # Include sorting
-SortIncludes: false
+SortIncludes: true
 # Other
-KeepEmptyLinesAtTheStartOfBlocks: true
-MaxEmptyLinesToKeep: 2
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1
+# Additional options for better alignment and readability
+AllowAllArgumentsOnNextLine: false
+BreakConstructorInitializers: BeforeComma
+BreakInheritanceList: BeforeComma
+CompactNamespaces: false
+FixNamespaceComments: true
+IndentCaseLabels: true
+IndentGotoLabels: true
+
+# Disable alignment for non-class member functions
+DerivePointerAlignment: false
+AlignConsecutiveDeclarations: false

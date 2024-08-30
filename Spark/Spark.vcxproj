@@ -9,6 +9,10 @@
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Distribution|x64">
+      <Configuration>Distribution</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{26081C0E-921C-44BF-5B9E-E71EC77140F0}</ProjectGuid>
@@ -30,6 +34,13 @@
     <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -37,6 +48,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -52,6 +66,12 @@
     <TargetName>Spark</TargetName>
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">
+    <OutDir>..\bin\Distribution-windows-x86_64\Spark\</OutDir>
+    <IntDir>..\obj\Distribution-windows-x86_64\Spark\</IntDir>
+    <TargetName>Spark</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -60,10 +80,11 @@
       <AdditionalIncludeDirectories>.;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
+      <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -85,6 +106,33 @@
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ExternalWarningLevel>Level3</ExternalWarningLevel>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>opengl32.lib;lib\windows\glfw\glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>NDEBUG;__DIST__;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/GL /Ot %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
     </ClCompile>
@@ -98,17 +146,20 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="core\ai\ai.hpp" />
     <ClInclude Include="core\animation\animation.hpp" />
     <ClInclude Include="core\api.hpp" />
     <ClInclude Include="core\app\application.hpp" />
+    <ClInclude Include="core\audio\audio.hpp" />
     <ClInclude Include="core\ecs\component.hpp" />
     <ClInclude Include="core\ecs\components\model_component.hpp" />
+    <ClInclude Include="core\ecs\components\rigid_body_component.hpp" />
     <ClInclude Include="core\ecs\components\transform_component.hpp" />
     <ClInclude Include="core\ecs\ecs.hpp" />
-    <ClInclude Include="core\event\ecs_events.hpp" />
     <ClInclude Include="core\ecs\entity.hpp" />
     <ClInclude Include="core\ecs\query.hpp" />
     <ClInclude Include="core\ecs\system.hpp" />
+    <ClInclude Include="core\event\ecs_events.hpp" />
     <ClInclude Include="core\event\event.hpp" />
     <ClInclude Include="core\event\event_handler.hpp" />
     <ClInclude Include="core\event\event_type.hpp" />
@@ -116,8 +167,10 @@
     <ClInclude Include="core\event\window_events.hpp" />
     <ClInclude Include="core\lighting\lighting.hpp" />
     <ClInclude Include="core\pch.hpp" />
+    <ClInclude Include="core\physics\aabb.hpp" />
+    <ClInclude Include="core\physics\collision_shape.hpp" />
     <ClInclude Include="core\physics\physics.hpp" />
-    <ClInclude Include="core\render\game_object.hpp" />
+    <ClInclude Include="core\physics\rigid_body.hpp" />
     <ClInclude Include="core\render\gl\gl_material.hpp" />
     <ClInclude Include="core\render\gl\gl_mesh.hpp" />
     <ClInclude Include="core\render\gl\gl_renderer.hpp" />
@@ -126,15 +179,16 @@
     <ClInclude Include="core\render\mesh.hpp" />
     <ClInclude Include="core\render\model.hpp" />
     <ClInclude Include="core\render\renderer.hpp" />
-    <ClInclude Include="core\render\uniform.hpp" />
-    <ClInclude Include="core\resource\resource.hpp" />
     <ClInclude Include="core\render\shader.hpp" />
+    <ClInclude Include="core\render\uniform.hpp" />
     <ClInclude Include="core\render\vertex.hpp" />
+    <ClInclude Include="core\resource\resource.hpp" />
     <ClInclude Include="core\scene\octree.hpp" />
     <ClInclude Include="core\scene\scene.hpp" />
     <ClInclude Include="core\scene\transform.hpp" />
     <ClInclude Include="core\system\file_serializer.hpp" />
     <ClInclude Include="core\system\manager.hpp" />
+    <ClInclude Include="core\system\registry.hpp" />
     <ClInclude Include="core\system\serializer.hpp" />
     <ClInclude Include="core\ui\ui.hpp" />
     <ClInclude Include="core\util\defines.hpp" />
@@ -142,7 +196,6 @@
     <ClInclude Include="core\util\gl.hpp" />
     <ClInclude Include="core\util\log.hpp" />
     <ClInclude Include="core\util\observer.hpp" />
-    <ClInclude Include="core\system\registry.hpp" />
     <ClInclude Include="core\util\thread_pool.hpp" />
     <ClInclude Include="core\util\types.hpp" />
     <ClInclude Include="core\window\gl\gl_window.hpp" />
@@ -388,6 +441,9 @@
     <ClCompile Include="core\app\application.cpp" />
     <ClCompile Include="core\ecs\ecs.cpp" />
     <ClCompile Include="core\pch.cpp" />
+    <ClCompile Include="core\physics\aabb.cpp" />
+    <ClCompile Include="core\physics\physics.cpp" />
+    <ClCompile Include="core\physics\rigid_body.cpp" />
     <ClCompile Include="core\render\gl\gl_mesh.cpp" />
     <ClCompile Include="core\render\gl\gl_renderer.cpp" />
     <ClCompile Include="core\render\gl\gl_shader.cpp" />

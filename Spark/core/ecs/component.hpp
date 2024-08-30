@@ -4,13 +4,11 @@
 #include "entity.hpp"
 #include <core/pch.hpp>
 
-namespace Spark
-{
+namespace Spark {
 // Base class for all components
 // also stores the id of the entity it's attached to (stored in the Ecs, which
 // is why its a friend class)
-class Component
-{
+class Component {
   public:
 	friend class Ecs;
 	virtual ~Component() = default;

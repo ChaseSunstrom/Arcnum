@@ -5,11 +5,10 @@
 #include <core/pch.hpp>
 #include <core/scene/transform.hpp>
 
-namespace Spark
-{
-struct TransformComponent : public Component
-{
-	TransformComponent(const Transform &transform) : transform(transform) {}
+namespace Spark {
+struct TransformComponent : public Component {
+	TransformComponent(const Transform& transform)
+		: transform(transform) {}
 
 	Transform transform;
 };

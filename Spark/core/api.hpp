@@ -3,14 +3,8 @@
 
 #include <core/pch.hpp>
 
-namespace Spark
-{
-enum class GraphicsAPI
-{
-	OpenGL,
-	Vulkan,
-	DirectX
-};
+namespace Spark {
+enum class GraphicsAPI { OpenGL, Vulkan, DirectX };
 }
 
 #endif

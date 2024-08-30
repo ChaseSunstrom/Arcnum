@@ -4,23 +4,21 @@
 #include "../event/event.hpp"
 #include <core/pch.hpp>
 
-namespace Spark
-{
+namespace Spark {
 // Checks if a class has an AddObserver method
 template <typename T>
 concept HasAddObserver = requires(T t) {
 	{ t.AddObserver() } -> std::same_as<void>;
 };
 
-class IObserver
-{
+class IObserver {
   public:
-	IObserver()			 = default;
+	IObserver()          = default;
 	virtual ~IObserver() = default;
 
 	virtual void OnNotify(const std::shared_ptr<Event> event);
 
-	template <HasAddObserver T> void Create(const T &type) { T.AddObserver(this); }
+	template <HasAddObserver T> void Create(const T& type) { T.AddObserver(this); }
 };
 } // namespace Spark
 

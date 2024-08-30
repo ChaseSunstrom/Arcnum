@@ -3,54 +3,45 @@
 
 #include <core/pch.hpp>
 
-namespace Spark
-{
-struct Handle
-{
+namespace Spark {
+struct Handle {
 	size_t index;
-	u32	   generation;
-	bool   operator==(const Handle &other) const { return index == other.index && generation == other.generation; }
+	u32 generation;
+	bool operator==(const Handle& other) const { return index == other.index && generation == other.generation; }
 };
 
 // Basically just a wrapper around a std::unordered_map<std::string,
 // std::unique_ptr<T>> so we can name the elements put into this (very useful
 // for keeping track of meshes, materials, shaders, etc.)
-template <typename T> class Registry
-{
+template <typename T> class Registry {
   public:
-	Registry()							  = default;
-	~Registry()							  = default;
-	Registry(const Registry &)			  = delete;
-	Registry &operator=(const Registry &) = delete;
+	Registry()                           = default;
+	~Registry()                          = default;
+	Registry(const Registry&)            = delete;
+	Registry& operator=(const Registry&) = delete;
 
-	Handle Register(const std::string &name, std::unique_ptr<T> object)
-	{
+	Handle Register(const std::string& name, std::unique_ptr<T> object) {
 		Handle handle;
-		if (!m_free_indices.empty())
-		{
+		if (!m_free_indices.empty()) {
 			handle.index = m_free_indices.back();
 			m_free_indices.pop_back();
 			handle.generation = m_generations[handle.index]++;
-		}
-		else
-		{
-			handle.index	  = m_handle_values.size();
+		} else {
+			handle.index      = m_handle_values.size();
 			handle.generation = 0;
 			m_handle_values.emplace_back(std::nullopt);
 			m_generations.push_back(0);
 		}
 
-		T &ref						  = *object;
+		T& ref                        = *object;
 		m_handle_values[handle.index] = std::ref(ref);
-		m_registry[name]			  = std::make_pair(handle, std::move(object));
+		m_registry[name]              = std::make_pair(handle, std::move(object));
 		return handle;
 	}
 
-	void Remove(const std::string &name)
-	{
+	void Remove(const std::string& name) {
 		auto it = m_registry.find(name);
-		if (it != m_registry.end())
-		{
+		if (it != m_registry.end()) {
 			Handle handle = it->second.first;
 			m_free_indices.push_back(handle.index);
 			m_handle_values[handle.index] = std::nullopt;
@@ -59,17 +50,13 @@ template <typename T> class Registry
 		}
 	}
 
-	void Remove(const Handle handle)
-	{
-		if (handle.index < m_handle_values.size() && handle.generation == m_generations[handle.index] && m_handle_values[handle.index].has_value())
-		{
+	void Remove(const Handle handle) {
+		if (handle.index < m_handle_values.size() && handle.generation == m_generations[handle.index] && m_handle_values[handle.index].has_value()) {
 			m_free_indices.push_back(handle.index);
 			m_handle_values[handle.index] = std::nullopt;
 			m_generations[handle.index]++; // Invalidate existing handles
-			for (auto &[key, value] : m_registry)
-			{
-				if (value.first == handle)
-				{
+			for (auto& [key, value] : m_registry) {
+				if (value.first == handle) {
 					m_registry.erase(key);
 					break;
 				}
@@ -77,58 +64,47 @@ template <typename T> class Registry
 		}
 	}
 
-	T &Get(const std::string &name) const
-	{
+	T& Get(const std::string& name) const {
 		auto it = m_registry.find(name);
 		if (it != m_registry.end())
 			return *it->second.second;
 
-		LOG_ERROR("Could not find object with name: " << name);
-		assert(false);
+		LOG_FATAL("Could not find object with name: " << name);
 	}
 
-	T &Get(const Handle handle) const
-	{
-		if (handle.index < m_handle_values.size() && handle.generation == m_generations[handle.index] && m_handle_values[handle.index].has_value())
-		{
+	T& Get(const Handle handle) const {
+		if (handle.index < m_handle_values.size() && handle.generation == m_generations[handle.index] && m_handle_values[handle.index].has_value()) {
 			return m_handle_values[handle.index].value().get();
 		}
-		LOG_ERROR("Invalid handle: index " << handle.index << ", generation " << handle.generation);
-		assert(false);
+		LOG_FATAL("Invalid handle: index " << handle.index << ", generation " << handle.generation);
 	}
 
-	bool IsHandleValid(const Handle &handle) const { return handle.index < m_handle_values.size() && handle.generation == m_generations[handle.index] && m_handle_values[handle.index].has_value(); }
+	bool IsHandleValid(const Handle& handle) const { return handle.index < m_handle_values.size() && handle.generation == m_generations[handle.index] && m_handle_values[handle.index].has_value(); }
 
-	T GetCopy(const std::string &name) const
-	{
+	T GetCopy(const std::string& name) const {
 		auto it = m_registry.find(name);
 		if (it != m_registry.end())
 			return *it->second;
-		LOG_ERROR("Could not find object with name: " << name);
-		assert(false);
+		LOG_FATAL("Could not find object with name: " << name);
 	}
 
-	T GetCopy(const Handle handle) const
-	{
-		if (handle.index < m_handle_values.size() && handle.generation == m_generations[handle.index] && m_handle_values[handle.index].has_value())
-		{
+	T GetCopy(const Handle handle) const {
+		if (handle.index < m_handle_values.size() && handle.generation == m_generations[handle.index] && m_handle_values[handle.index].has_value()) {
 			return m_handle_values[handle.index].value().get();
 		}
-		LOG_ERROR("Invalid handle: index " << handle.index << ", generation " << handle.generation);
-		assert(false);
+		LOG_FATAL("Invalid handle: index " << handle.index << ", generation " << handle.generation);
 	}
 
-	std::vector<std::string> GetKeys() const
-	{
+	std::vector<std::string> GetKeys() const {
 		std::vector<std::string> keys;
-		for (auto &[key, value] : m_registry)
+		for (auto& [key, value] : m_registry)
 			keys.push_back(key);
 		return keys;
 	}
 
-	std::vector<std::reference_wrapper<T>> &GetValues() const { return m_handle_values; }
+	std::vector<std::reference_wrapper<T>>& GetValues() const { return m_handle_values; }
 
-	bool Contains(const std::string &name) const { return m_registry.find(name) != m_registry.end(); }
+	bool Contains(const std::string& name) const { return m_registry.find(name) != m_registry.end(); }
 
 	bool Contains(const Handle handle) const { return handle.index < m_handle_values.size() && handle.generation == m_generations[handle.index] && m_handle_values[handle.index].has_value(); }
 
@@ -138,9 +114,9 @@ template <typename T> class Registry
 
   private:
 	std::unordered_map<std::string, std::pair<Handle, std::unique_ptr<T>>> m_registry;
-	std::vector<std::optional<std::reference_wrapper<T>>>				   m_handle_values;
-	std::vector<u32>													   m_generations;
-	std::vector<u32>													   m_free_indices;
+	std::vector<std::optional<std::reference_wrapper<T>>> m_handle_values;
+	std::vector<u32> m_generations;
+	std::vector<u32> m_free_indices;
 };
 } // namespace Spark
 

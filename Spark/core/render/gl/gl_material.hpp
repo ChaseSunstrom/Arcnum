@@ -4,10 +4,8 @@
 #include <core/pch.hpp>
 #include <core/render/material.hpp>
 
-namespace Spark
-{
-class GLMaterial : public Material
-{
+namespace Spark {
+class GLMaterial : public Material {
   public:
   private:
 };

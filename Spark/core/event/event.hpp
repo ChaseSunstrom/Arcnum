@@ -5,12 +5,11 @@
 
 #include "event_type.hpp"
 
-namespace Spark
-{
-struct Event
-{
+namespace Spark {
+struct Event {
   public:
-	Event(i64 type = EVENT_TYPE_NONE) : type(type) {}
+	Event(i64 type = EVENT_TYPE_NONE)
+		: type(type) {}
 	virtual ~Event() = default;
 
   public:

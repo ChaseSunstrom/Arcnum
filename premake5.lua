@@ -1,19 +1,29 @@
 workspace "Arcnum"
     architecture "x64"
-    configurations { "Debug", "Release" }
+    configurations { "Debug", "Release", "Distribution" }
     startproject "Arcnum"
 
-    filter "configurations:Debug"
-        defines "DEBUG"
-        runtime "Debug"
-        symbols "on"
-
-    filter "configurations:Release"
-        defines "NDEBUG"
-        runtime "Release"
-        optimize "on"
+    -- Enable multithreaded builds
+    flags { "MultiProcessorCompile" }
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+
+filter "configurations:Debug"
+    defines "DEBUG"
+    runtime "Debug"
+    symbols "on"
+
+filter "configurations:Release"
+    defines "NDEBUG"
+    runtime "Release"
+    optimize "on"
+
+filter "configurations:Distribution"
+    defines {"NDEBUG", "__DIST__"}
+    runtime "Release"
+    optimize "Speed"  -- Highest speed optimizations
+    flags { "LinkTimeOptimization" }  -- Enable link-time optimization
+    buildoptions { "/GL", "/Ot" }  -- Favor speed over size (MSVC)
 
 project "Arcnum"
     location "Arcnum"
@@ -23,17 +33,17 @@ project "Arcnum"
     
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("obj/" .. outputdir .. "/%{prj.name}")
-
+    
     files {
         "Arcnum/src/**.hpp",
         "Arcnum/src/**.cpp"
     }
-
+    
     includedirs {
         "Spark",
         "Spark/include/**"
     }
-
+    
     links {
         "Spark"
     }
@@ -43,17 +53,16 @@ project "Spark"
     kind "StaticLib"
     language "C++"
     cppdialect "C++20"
-
+    
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("obj/" .. outputdir .. "/%{prj.name}")
-
+    
     pchheader "Spark/pch.hpp"
     pchsource "Spark/pch.cpp"
-
+    
     files {
         "Spark/**.hpp",
         "Spark/**.cpp",
-        -- Need these to compile them during the build proccess
         "Spark/lib/%{cfg.system}/glad/glad.c",
         {
             "Spark/lib/%{cfg.system}/glad/glad.c",
@@ -61,16 +70,19 @@ project "Spark"
         },
         "Spark/include/glad/**.h"
     }
-
+    
     includedirs {
         "Spark",
         "Spark/include"
     }
-
+    
+    filter "files:Spark/lib/%{cfg.system}/glad/glad.c"
+        flags { "NoPCH" }
+    
     cfg = {}
     cfg.system = iif(os.target() == "macosx", "macos", os.target())
     cfg.architecture = iif(os.is64bit(), "x64", "x86")
-
+    
     filter "system:windows"
         systemversion "latest"
         links {

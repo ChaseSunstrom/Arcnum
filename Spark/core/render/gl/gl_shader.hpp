@@ -2,6 +2,7 @@
 #define SPARK_GL_SHADER_HPP
 
 #include <core/pch.hpp>
+#include <core/util/file.hpp>
 #include <core/render/shader.hpp>
 #include <core/util/gl.hpp>
 

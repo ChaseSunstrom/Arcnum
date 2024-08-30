@@ -44,12 +44,6 @@ namespace Spark
 	{
 		glDeleteShader(m_id);
 	}
-
-	GLRenderShader::~GLRenderShader()
-	{
-		glDeleteShader(m_id);
-	}
-
 	void GLVertexShader::Compile()
 	{
 		m_id = GLShaderCommon::CompileGLShaderInternal(m_path, GL_VERTEX_SHADER);

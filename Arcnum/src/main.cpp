@@ -64,20 +64,16 @@ void set_window_title_fps(Spark::Application& app) {
 	auto start = std::chrono::steady_clock::now();
 	std::chrono::duration<f64> duration = start - last;
 
-	std::string fps_avg = std::to_string(duration.count());
-	window.SetTitle("Frame Time: " + fps_avg);
+	std::string fps_avg = std::to_string(1.0 / duration.count());
+	LOG_INFO("Frame Time: " + fps_avg);
 	last = start;
 }
 
 void print(Spark::Application& app) {
-	auto& tp = app.GetThreadPool();
-	tp.Enqueue(Spark::TaskPriority::LOW, false, [&tp]() {
-		//tp.SyncThisThread(true);
-			static std::atomic<i32> i(0);
-			i32 local_i = i.fetch_add(1, std::memory_order_relaxed);
-			//std::this_thread::sleep_for(std::chrono::milliseconds(100));
-			LOG_WARN(local_i);
-		});
+	static std::atomic<i32> i(0);
+	i32 local_i = i.fetch_add(1, std::memory_order_relaxed);
+	std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+	LOG_WARN(local_i);
 }
 
 i32 main()

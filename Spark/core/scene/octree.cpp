@@ -17,6 +17,7 @@ void Octree::OnEvent(const std::shared_ptr<Event> event) {
 	switch (event->type) {
 		case EVENT_TYPE_COMPONENT_ADDED: {
 			auto component_added_event = std::static_pointer_cast<ComponentAddedEvent>(event);
+			LOG_TRACE("Component added event: " << component_added_event->GetComponent<TransformComponent>().GetEntityId());
 			Insert({component_added_event->GetComponent<TransformComponent>().transform.GetPosition(), component_added_event->entity.GetId()});
 			break;
 		}

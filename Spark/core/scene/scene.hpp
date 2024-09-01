@@ -44,6 +44,10 @@ class Manager<Scene> : public IManager {
 		return *m_current_scene;
 	}
 
+	void OnEvent(const std::shared_ptr<Event> event) {
+		m_current_scene->OnEvent(event);
+	}
+
 	Scene& Register(const std::string& name, std::unique_ptr<Scene> object) { return m_registry->Register(name, std::move(object)); }
 
 	Scene& Get(const std::string& name) const { return m_registry->Get(name); }

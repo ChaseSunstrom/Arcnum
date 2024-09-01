@@ -1,8 +1,8 @@
 #include "application.hpp"
 
 namespace Spark {
-Application::~Application() { 
-	RunShutdownFunctions(); 
+Application::~Application() {
+	RunShutdownFunctions();
 	m_ecs->Shutdown();
 }
 
@@ -14,6 +14,11 @@ void Application::Start() {
 	if (!m_renderer) {
 		LOG_FATAL("Renderer has not been created!");
 	}
+
+	m_event_handler->SubscribeToEvent(EVENT_TYPE_ALL, [this](const std::shared_ptr<Event> event) {
+		std::unique_lock<std::mutex> lock(m_resource_manager->m_mutex);
+		m_resource_manager->OnEvent(event);
+	}, {true, false});
 
 	RunStartupFunctions();
 	m_ecs->Start();

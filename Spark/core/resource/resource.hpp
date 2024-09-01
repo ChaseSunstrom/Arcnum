@@ -10,7 +10,10 @@
 #include <core/system/manager.hpp>
 
 namespace Spark {
-// Dummy class for all resources, which includes, meshes, materials, models,
+
+class Application;
+
+	// Dummy class for all resources, which includes, meshes, materials, models,
 // shaders, etc.
 class Resource {
   public:
@@ -21,6 +24,7 @@ class Resource {
 template <>
 class Manager<Resource> {
   public:
+	friend class Application;
 	Manager() {
 		m_managers[typeid(StaticMesh)]   = std::make_unique<Manager<StaticMesh>>();
 		m_managers[typeid(DynamicMesh)]  = std::make_unique<Manager<DynamicMesh>>();
@@ -37,6 +41,10 @@ class Manager<Resource> {
 	T& Create(const std::string& name, Args&&... args) {
 		auto& manager = GetManager<T>();
 		return manager.Create(name, std::forward<Args>(args)...);
+	}
+
+	void OnEvent(const std::shared_ptr<Event> event) {
+		GetManager<Scene>().OnEvent(event);
 	}
 
 	template <typename T>
@@ -104,6 +112,7 @@ class Manager<Resource> {
 
   private:
 	std::unordered_map<std::type_index, std::unique_ptr<IManager>> m_managers;
+	std::mutex m_mutex;
 };
 } // namespace Spark
 

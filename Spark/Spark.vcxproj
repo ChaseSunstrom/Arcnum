@@ -159,12 +159,8 @@
     <ClInclude Include="core\ecs\entity.hpp" />
     <ClInclude Include="core\ecs\query.hpp" />
     <ClInclude Include="core\ecs\system.hpp" />
-    <ClInclude Include="core\event\ecs_events.hpp" />
     <ClInclude Include="core\event\event.hpp" />
     <ClInclude Include="core\event\event_handler.hpp" />
-    <ClInclude Include="core\event\event_type.hpp" />
-    <ClInclude Include="core\event\input_events.hpp" />
-    <ClInclude Include="core\event\window_events.hpp" />
     <ClInclude Include="core\lighting\lighting.hpp" />
     <ClInclude Include="core\pch.hpp" />
     <ClInclude Include="core\physics\collision_shape.hpp" />

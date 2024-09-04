@@ -1,11 +1,14 @@
+#include "core/ecs/components/model_component.hpp"
+
 #include <array>
 #include <chrono>
 #include <core/app/application.hpp>
+#include <core/ecs/components/model_component.hpp>
+#include <core/ecs/components/transform_component.hpp>
 #include <core/render/gl/gl_renderer.hpp>
 #include <core/render/renderer.hpp>
 #include <core/window/gl/gl_window.hpp>
 #include <core/window/window.hpp>
-#include <core/ecs/components/transform_component.hpp>
 
 class FPSCalculator {
   private:
@@ -58,15 +61,27 @@ void updateFPS(Spark::Application& app) { fpsCalculator.update(app); }
 
 void startup_fn(Spark::Application& app) {
 	auto& sm = app.GetManager<Spark::Scene>();
-	auto& s = sm.Create("Scene1");
+	auto& s  = sm.Create("Scene1");
 }
 
 void startup_fn2(Spark::Application& app) {
 	auto& ecs = app.GetEcs();
 
-	for (i32 i = 0; i < 5000; i++)
-	{
-		ecs.MakeEntity(std::make_pair("transform", new Spark::TransformComponent(glm::vec3(i))));
+	for (i32 i = 0; i < 5000; i++) {
+		auto& e = ecs.MakeEntity(std::make_pair("transform", new Spark::TransformComponent(glm::vec3(0))));
+		ecs.AddComponent(e, "model", new Spark::ModelComponent("model"));
+	}
+}
+
+void test_event(Spark::Application& app, const std::shared_ptr<Spark::ComponentAddedEvent<Spark::TransformComponent>> event) {
+	LOG_TRACE("Component Added: " << event->entity.GetId());
+}
+
+void test_event2(Spark::Application& app, const std::shared_ptr<Spark::BaseEvent> event) {
+	if (auto mouse_pressed = std::dynamic_pointer_cast<Spark::MouseButtonPressedEvent>(event)) {
+		LOG_INFO("Mouse Pressed: " << mouse_pressed->button);
+	} else if (auto mouse_released = std::dynamic_pointer_cast<Spark::MouseButtonReleasedEvent>(event)) {
+		LOG_INFO("Mouse Released: " << mouse_released->button);
 	}
 }
 
@@ -77,5 +92,7 @@ i32 main() {
 		.AddStartupFunction(startup_fn)
 		.AddStartupFunction(startup_fn2)
 		.AddUpdateFunction(updateFPS, {true, false})
+		.AddSingleEventFunction<Spark::ComponentAddedEvent<Spark::TransformComponent>>(test_event)
+		.AddEventFunction<Spark::MouseButtonPressedEvent, Spark::MouseButtonReleasedEvent>(test_event2)
 		.Start();
 }

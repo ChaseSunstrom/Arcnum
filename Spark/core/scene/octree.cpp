@@ -1,6 +1,6 @@
 #include "octree.hpp"
 #include <core/ecs/components/transform_component.hpp>
-#include <core/event/ecs_events.hpp>
+#include <core/event/event.hpp>
 #include <include/glm/glm.hpp>
 #include <include/glm/gtx/component_wise.hpp>
 #include <include/glm/vector_relational.hpp>
@@ -13,22 +13,18 @@ Octree::Octree(glm::vec3 center, f32 width)
 	}
 }
 
-void Octree::OnEvent(const std::shared_ptr<Event> event) {
+void Octree::OnEvent(const std::shared_ptr<ComponentEvent<TransformComponent>> event) {
 	switch (event->type) {
-		case EVENT_TYPE_COMPONENT_ADDED: {
-			auto component_added_event = std::static_pointer_cast<ComponentAddedEvent>(event);
-			LOG_TRACE("Component added event: " << component_added_event->GetComponent<TransformComponent>().GetEntityId());
-			Insert({component_added_event->GetComponent<TransformComponent>().transform.GetPosition(), component_added_event->entity.GetId()});
+		case ComponentEventType::ADDED: {
+			Insert({event->component->transform.GetPosition(), event->entity.GetId()});
 			break;
 		}
-		case EVENT_TYPE_COMPONENT_UPDATED: {
-			auto component_updated_event = std::static_pointer_cast<ComponentUpdatedEvent>(event);
-			Update({component_updated_event->GetComponent<TransformComponent>().transform.GetPosition(), component_updated_event->entity.GetId()});
+		case ComponentEventType::REMOVED: {
+			Update({event->component->transform.GetPosition(), event->entity.GetId()});
 			break;
 		}
-		case EVENT_TYPE_COMPONENT_REMOVED: {
-			auto component_removed_event = std::static_pointer_cast<ComponentRemovedEvent>(event);
-			Remove(component_removed_event->entity.GetId());
+		case ComponentEventType::UPDATED: {
+			Remove(event->entity.GetId());
 			break;
 		}
 	}

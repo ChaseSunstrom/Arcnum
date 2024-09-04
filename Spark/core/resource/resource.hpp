@@ -43,10 +43,6 @@ class Manager<Resource> {
 		return manager.Create(name, std::forward<Args>(args)...);
 	}
 
-	void OnEvent(const std::shared_ptr<Event> event) {
-		GetManager<Scene>().OnEvent(event);
-	}
-
 	template <typename T>
 	T& Register(const std::string& name, std::unique_ptr<T> object) {
 		auto& manager = GetManager<T>();

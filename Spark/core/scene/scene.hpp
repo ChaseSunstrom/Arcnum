@@ -11,7 +11,7 @@ class Scene {
 	friend class Manager<Scene>;
 	~Scene() = default;
 
-	void OnEvent(const std::shared_ptr<Event> event);
+	void OnEvent(const std::shared_ptr<ComponentEvent<TransformComponent>> event);
 	void Insert(const PointData& point_data);
 	void Update(const PointData& point_data);
 	void Remove(i64 entity_id);
@@ -44,7 +44,7 @@ class Manager<Scene> : public IManager {
 		return *m_current_scene;
 	}
 
-	void OnEvent(const std::shared_ptr<Event> event) {
+	void OnEvent(const std::shared_ptr<ComponentEvent<TransformComponent>> event) {
 		m_current_scene->OnEvent(event);
 	}
 

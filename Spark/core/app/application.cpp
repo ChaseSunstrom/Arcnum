@@ -1,6 +1,15 @@
 #include "application.hpp"
+#include "core/ecs/components/transform_component.hpp"
 
 namespace Spark {
+
+Application::Application(GraphicsAPI gapi, std::unique_ptr<ThreadPool> tp)
+	: m_thread_pool(std::move(tp))
+	, m_event_handler(std::make_unique<EventHandler>(*m_thread_pool))
+	, m_ecs(std::make_unique<Ecs>(*m_event_handler))
+	, m_resource_manager(std::make_unique<Manager<Resource>>())
+	, m_gapi(gapi) {}
+
 Application::~Application() {
 	RunShutdownFunctions();
 	m_ecs->Shutdown();
@@ -15,10 +24,12 @@ void Application::Start() {
 		LOG_FATAL("Renderer has not been created!");
 	}
 
-	m_event_handler->SubscribeToEvent(EVENT_TYPE_ALL, [this](const std::shared_ptr<Event> event) {
-		std::unique_lock<std::mutex> lock(m_resource_manager->m_mutex);
-		m_resource_manager->OnEvent(event);
-	}, {true, false});
+	m_event_handler->SubscribeToEvent<ComponentEvent<TransformComponent>>(
+		[this](const std::shared_ptr<ComponentEvent<TransformComponent>>& event) {
+			std::unique_lock lock(m_resource_manager->m_mutex);
+			m_resource_manager->GetManager<Scene>().OnEvent(event);
+		},
+		{true, false});
 
 	RunStartupFunctions();
 	m_ecs->Start();
@@ -35,32 +46,30 @@ void Application::Update() {
 	m_renderer->Render();
 }
 
-Application& Application::AddStartupFunction(const ApplicationFunction& fn, const FunctionSettings threaded) {
-	m_startup_functions.push_back({fn, threaded});
+Application& Application::AddStartupFunction(const ApplicationFunction& fn, const FunctionSettings settings) {
+	m_startup_functions.push_back({fn, settings});
 	return *this;
 }
 
-Application& Application::AddEventFunction(i64 event_type, const ApplicationEventFunction& fn, const FunctionSettings settings) {
-	m_event_functions.push_back(fn);
-	m_event_handler->SubscribeToEvent(
-		event_type,
-		[this, fn, settings](const std::shared_ptr<Event> event) {
+Application& Application::AddUpdateFunction(const ApplicationFunction& fn, const FunctionSettings settings) {
+	m_update_functions.push_back({fn, settings});
+	return *this;
+}
+
+Application& Application::AddShutdownFunction(const ApplicationFunction& fn, const FunctionSettings settings) {
+	m_shutdown_functions.push_back({fn, settings});
+	return *this;
+}
+
+Application& Application::AddAllEventsFunction(const ApplicationEventFunction& fn, const FunctionSettings settings) {
+	m_event_handler->SubscribeToAllEvents(
+		[this, fn, settings](const std::shared_ptr<BaseEvent>& event) {
 			std::unique_lock<std::mutex> lock;
 			if (settings.threaded)
-				lock = std::unique_lock<std::mutex>(m_mutex);
+				lock = std::unique_lock(m_mutex);
 			fn(*this, event);
 		},
 		settings);
-	return *this;
-}
-
-Application& Application::AddUpdateFunction(const ApplicationFunction& fn, const FunctionSettings threaded) {
-	m_update_functions.push_back({fn, threaded});
-	return *this;
-}
-
-Application& Application::AddShutdownFunction(const ApplicationFunction& fn, const FunctionSettings threaded) {
-	m_shutdown_functions.push_back({fn, threaded});
 	return *this;
 }
 
@@ -70,7 +79,7 @@ void Application::RunStartupFunctions() {
 			m_thread_pool->Enqueue(TaskPriority::HIGH, settings.wait, [this, &fn, settings]() {
 				std::unique_lock<std::mutex> lock;
 				if (settings.threaded)
-					lock = std::unique_lock<std::mutex>(m_mutex);
+					lock = std::unique_lock(m_mutex);
 				fn(*this);
 			});
 		} else {
@@ -78,8 +87,7 @@ void Application::RunStartupFunctions() {
 		}
 	}
 
-	m_thread_pool->SyncRegisteredTasks(); // Wait for all threaded startup
-	                                      // functions to complete
+	m_thread_pool->SyncRegisteredTasks();
 }
 
 void Application::RunUpdateFunctions() {
@@ -88,7 +96,7 @@ void Application::RunUpdateFunctions() {
 			m_thread_pool->Enqueue(TaskPriority::NORMAL, settings.wait, [this, &fn, settings]() {
 				std::unique_lock<std::mutex> lock;
 				if (settings.threaded)
-					lock = std::unique_lock<std::mutex>(m_mutex);
+					lock = std::unique_lock(m_mutex);
 				fn(*this);
 			});
 		} else {
@@ -101,7 +109,7 @@ void Application::RunUpdateFunctions() {
 			m_thread_pool->Enqueue(TaskPriority::NORMAL, settings.wait, [this, &fn, settings]() {
 				std::unique_lock<std::mutex> lock;
 				if (settings.threaded)
-					lock = std::unique_lock<std::mutex>(m_mutex);
+					lock = std::unique_lock(m_mutex);
 				fn->Execute(*this);
 			});
 		} else {
@@ -109,8 +117,7 @@ void Application::RunUpdateFunctions() {
 		}
 	}
 
-	m_thread_pool->SyncRegisteredTasks(); // Wait for all threaded update
-	                                      // functions to complete
+	m_thread_pool->SyncRegisteredTasks();
 }
 
 void Application::RunShutdownFunctions() {
@@ -119,7 +126,7 @@ void Application::RunShutdownFunctions() {
 			m_thread_pool->Enqueue(TaskPriority::NORMAL, settings.wait, [this, &fn, settings]() {
 				std::unique_lock<std::mutex> lock;
 				if (settings.threaded)
-					lock = std::unique_lock<std::mutex>(m_mutex);
+					lock = std::unique_lock(m_mutex);
 				fn(*this);
 			});
 		} else {
@@ -139,9 +146,9 @@ Renderer& Application::GetRenderer() const { return *m_renderer; }
 EventHandler& Application::GetEventHandler() const { return *m_event_handler; }
 
 const bool Application::Running() const {
-	// Only call right now
 	return m_window->Running();
 }
 
 ThreadPool& Application::GetThreadPool() const { return *m_thread_pool; }
+
 } // namespace Spark

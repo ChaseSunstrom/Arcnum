@@ -1,7 +1,7 @@
 #include "scene.hpp"
 
 namespace Spark {
-void Scene::OnEvent(const std::shared_ptr<Event> event) {
+void Scene::OnEvent(const std::shared_ptr<ComponentEvent<TransformComponent>> event) {
 	// The octree should not be registered to receive events, which is why we're sending them here
 	m_octree->OnEvent(event);
 }

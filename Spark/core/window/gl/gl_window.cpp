@@ -1,6 +1,5 @@
 #include "gl_window.hpp"
-#include <core/event/input_events.hpp>
-#include <core/event/window_events.hpp>
+#include <core/event/event.hpp>
 #include <core/util/log.hpp>
 
 namespace Spark {
@@ -38,13 +37,13 @@ void GLWindow::CreateWindow(i32 width, i32 height, const std::string& title) {
 		data.width       = width;
 		data.height      = height;
 
-		data.event_handler.PublishEvent(EVENT_TYPE_WINDOW_RESIZE, std::make_shared<WindowResizedEvent>(width, height));
+		data.event_handler.PublishEvent<WindowResizedEvent>(std::make_shared<WindowResizedEvent>(width, height));
 	});
 
 	glfwSetWindowCloseCallback(m_window, [](GLFWwindow* window) {
 		WindowData& data = *(WindowData*) glfwGetWindowUserPointer(window);
 
-		data.event_handler.PublishEvent(EVENT_TYPE_WINDOW_CLOSE, std::make_shared<WindowClosedEvent>());
+		data.event_handler.PublishEvent<WindowClosedEvent>( std::make_shared<WindowClosedEvent>());
 	});
 
 	glfwSetKeyCallback(m_window, [](GLFWwindow* window, i32 key, i32 scancode, i32 action, i32 mods) {
@@ -52,15 +51,15 @@ void GLWindow::CreateWindow(i32 width, i32 height, const std::string& title) {
 
 		switch (action) {
 			case GLFW_PRESS: {
-				data.event_handler.PublishEvent(EVENT_TYPE_KEY_PRESSED, std::make_shared<KeyPressedEvent>(key, 0));
+				data.event_handler.PublishEvent<KeyPressedEvent>(std::make_shared<KeyPressedEvent>(key, 0));
 				break;
 			}
 			case GLFW_RELEASE: {
-				data.event_handler.PublishEvent(EVENT_TYPE_KEY_RELEASED, std::make_shared<KeyReleasedEvent>(key));
+				data.event_handler.PublishEvent<KeyReleasedEvent>( std::make_shared<KeyReleasedEvent>(key));
 				break;
 			}
 			case GLFW_REPEAT: {
-				data.event_handler.PublishEvent(EVENT_TYPE_KEY_HELD, std::make_shared<KeyPressedEvent>(key, 1));
+				data.event_handler.PublishEvent<KeyHeldEvent>( std::make_shared<KeyHeldEvent>(key));
 				break;
 			}
 		}
@@ -71,11 +70,11 @@ void GLWindow::CreateWindow(i32 width, i32 height, const std::string& title) {
 
 		switch (action) {
 			case GLFW_PRESS: {
-				data.event_handler.PublishEvent(EVENT_TYPE_MOUSE_BUTTON_PRESSED, std::make_shared<MouseButtonPressedEvent>(button));
+				data.event_handler.PublishEvent<MouseButtonPressedEvent>( std::make_shared<MouseButtonPressedEvent>(button));
 				break;
 			}
 			case GLFW_RELEASE: {
-				data.event_handler.PublishEvent(EVENT_TYPE_MOUSE_BUTTON_RELEASED, std::make_shared<MouseButtonReleasedEvent>(button));
+				data.event_handler.PublishEvent<MouseButtonReleasedEvent>( std::make_shared<MouseButtonReleasedEvent>(button));
 				break;
 			}
 		}
@@ -84,13 +83,13 @@ void GLWindow::CreateWindow(i32 width, i32 height, const std::string& title) {
 	glfwSetCursorPosCallback(m_window, [](GLFWwindow* window, f64 x, f64 y) {
 		WindowData& data = *(WindowData*) glfwGetWindowUserPointer(window);
 
-		data.event_handler.PublishEvent(EVENT_TYPE_MOUSE_MOVED, std::make_shared<MouseMovedEvent>(x, y));
+		data.event_handler.PublishEvent<MouseMovedEvent>(std::make_shared<MouseMovedEvent>(x, y));
 	});
 
 	glfwSetScrollCallback(m_window, [](GLFWwindow* window, f64 x, f64 y) {
 		WindowData& data = *(WindowData*) glfwGetWindowUserPointer(window);
 
-		data.event_handler.PublishEvent(EVENT_TYPE_MOUSE_SCROLLED, std::make_shared<MouseScrolledEvent>(x, y));
+		data.event_handler.PublishEvent<MouseScrolledEvent>( std::make_shared<MouseScrolledEvent>(x, y));
 	});
 }
 

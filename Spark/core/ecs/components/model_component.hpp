@@ -6,6 +6,7 @@
 
 namespace Spark {
 struct ModelComponent : public Component {
+	ModelComponent(const std::string& model_name) : model_name(model_name) {}
 	std::string model_name;
 };
 } // namespace Spark

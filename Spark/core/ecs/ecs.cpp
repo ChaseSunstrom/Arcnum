@@ -68,7 +68,7 @@ void Ecs::RemoveAllEntityComponents(const i64 id) {
 
 		// Publish events for each removed component
 		for (const auto& component : removed_components) {
-			m_event_handler.PublishEvent(EVENT_TYPE_COMPONENT_REMOVED, std::make_shared<ComponentRemovedEvent>(entity, type, component));
+			m_event_handler.PublishEvent<ComponentRemovedEvent<Component>>(std::make_shared<ComponentRemovedEvent<Component>>(entity, ComponentEventType::REMOVED, component));
 		}
 	}
 }

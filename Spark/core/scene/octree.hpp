@@ -4,6 +4,7 @@
 #include <core/pch.hpp>
 #include <core/event/event.hpp>
 #include <include/glm/vec3.hpp>
+#include <core/ecs/components/transform_component.hpp>
 
 namespace Spark {
 struct PointData {
@@ -15,7 +16,7 @@ class Octree {
   public:
 	Octree(glm::vec3 center, f32 width);
 	// On components added, removed, or deleted
-	void OnEvent(const std::shared_ptr<Event> event);
+	void OnEvent(const std::shared_ptr<ComponentEvent<TransformComponent>> event);
 	void Insert(const PointData& point_data);
 	bool Remove(i64 entity_id);
 	bool Update(const PointData& point_data);

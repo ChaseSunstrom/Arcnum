@@ -4,7 +4,7 @@
 #include "component.hpp"
 #include "entity.hpp"
 #include "system.hpp"
-#include <core/event/ecs_events.hpp>
+#include <core/event/event.hpp>
 #include <core/event/event_handler.hpp>
 #include <core/pch.hpp>
 
@@ -75,7 +75,7 @@ Entity& Ecs::MakeEntity(const std::pair<const char*, Ts*>&... components) {
 	}
 	m_entities.push_back(std::unique_ptr<Entity>(entity));
 
-	m_event_handler.PublishEvent(EVENT_TYPE_ENTITY_CREATED, std::make_shared<EntityCreatedEvent>(*entity));
+	m_event_handler.PublishEvent<EntityCreatedEvent>(std::make_shared<EntityCreatedEvent>(*entity));
 
 	// Unpack and add components
 	(AddComponent(*entity, components.first, components.second), ...);
@@ -89,7 +89,7 @@ void Ecs::AddComponent(Entity& entity, const std::string& name, T* component) {
 	auto shared_component = std::shared_ptr<T>(component);
 	entity.AddComponent(name, shared_component);
 	m_components[typeid(T)].push_back(shared_component);
-	m_event_handler.PublishEvent(EVENT_TYPE_COMPONENT_ADDED, std::make_shared<ComponentAddedEvent>(entity, typeid(T), shared_component));
+	m_event_handler.PublishEvent<ComponentAddedEvent<T>>(std::make_shared<ComponentAddedEvent<T>>(entity, ComponentEventType::ADDED, shared_component));
 }
 
 template <IsComponent T>
@@ -97,7 +97,7 @@ void Ecs::AddComponent(Entity& entity, const std::string& name, std::shared_ptr<
 	component->SetEntityId(entity.GetId());
 	entity.AddComponent(name, component);
 	m_components[typeid(T)].push_back(component);
-	m_event_handler.PublishEvent(EVENT_TYPE_COMPONENT_ADDED, std::make_shared<ComponentAddedEvent>(entity, typeid(T), component));
+	m_event_handler.PublishEvent<ComponentAddedEvent<T>>(std::make_shared<ComponentAddedEvent<T>>(entity, ComponentEventType::ADDED, component));
 }
 
 template <IsSystem T>

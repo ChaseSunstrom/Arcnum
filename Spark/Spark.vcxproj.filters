@@ -126,22 +126,10 @@
     <ClInclude Include="core\ecs\system.hpp">
       <Filter>core\ecs</Filter>
     </ClInclude>
-    <ClInclude Include="core\event\ecs_events.hpp">
-      <Filter>core\event</Filter>
-    </ClInclude>
     <ClInclude Include="core\event\event.hpp">
       <Filter>core\event</Filter>
     </ClInclude>
     <ClInclude Include="core\event\event_handler.hpp">
-      <Filter>core\event</Filter>
-    </ClInclude>
-    <ClInclude Include="core\event\event_type.hpp">
-      <Filter>core\event</Filter>
-    </ClInclude>
-    <ClInclude Include="core\event\input_events.hpp">
-      <Filter>core\event</Filter>
-    </ClInclude>
-    <ClInclude Include="core\event\window_events.hpp">
       <Filter>core\event</Filter>
     </ClInclude>
     <ClInclude Include="core\lighting\lighting.hpp">
@@ -223,9 +211,6 @@
       <Filter>core\util</Filter>
     </ClInclude>
     <ClInclude Include="core\util\log.hpp">
-      <Filter>core\util</Filter>
-    </ClInclude>
-    <ClInclude Include="core\util\observer.hpp">
       <Filter>core\util</Filter>
     </ClInclude>
     <ClInclude Include="core\util\thread_pool.hpp">
@@ -951,6 +936,9 @@
     <ClInclude Include="core\physics\rigid_body.hpp" />
     <ClInclude Include="core\physics\collision_shape.hpp" />
     <ClInclude Include="core\ecs\components\rigid_body_component.hpp" />
+    <ClInclude Include="core\util\general.hpp" />
+    <ClInclude Include="core\spark.hpp" />
+    <ClInclude Include="core\util\fps.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\app\application.cpp">

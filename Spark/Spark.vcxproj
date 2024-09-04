@@ -181,6 +181,7 @@
     <ClInclude Include="core\scene\octree.hpp" />
     <ClInclude Include="core\scene\scene.hpp" />
     <ClInclude Include="core\scene\transform.hpp" />
+    <ClInclude Include="core\spark.hpp" />
     <ClInclude Include="core\system\file_serializer.hpp" />
     <ClInclude Include="core\system\manager.hpp" />
     <ClInclude Include="core\system\registry.hpp" />
@@ -188,9 +189,10 @@
     <ClInclude Include="core\ui\ui.hpp" />
     <ClInclude Include="core\util\defines.hpp" />
     <ClInclude Include="core\util\file.hpp" />
+    <ClInclude Include="core\util\fps.hpp" />
+    <ClInclude Include="core\util\general.hpp" />
     <ClInclude Include="core\util\gl.hpp" />
     <ClInclude Include="core\util\log.hpp" />
-    <ClInclude Include="core\util\observer.hpp" />
     <ClInclude Include="core\util\thread_pool.hpp" />
     <ClInclude Include="core\util\types.hpp" />
     <ClInclude Include="core\window\gl\gl_window.hpp" />

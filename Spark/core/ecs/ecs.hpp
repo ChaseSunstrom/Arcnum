@@ -9,7 +9,6 @@
 #include <core/pch.hpp>
 
 namespace Spark {
-
 class Ecs {
   public:
 	Ecs(EventHandler& event_handler)
@@ -20,20 +19,17 @@ class Ecs {
 	Ecs& operator=(const Ecs&) = delete;
 
 	void Start();
-	void Update();
+	void Update(f32 delta_time);
 	void Shutdown();
 
 	template <IsComponent... Ts>
-	Entity& MakeEntity(const std::pair<const char*, Ts*>&... components);
-	Entity& GetEntity(const i64 id) const;
+	Entity& MakeEntity(const std::pair<const char*, Ts>&... components);
+	Entity& GetEntity(const u32 id) const;
 	i64 GetEntityCount() const;
-	void DestroyEntity(const i64 id);
+	void DestroyEntity(const u32 id);
 
 	template <IsComponent T>
-	void AddComponent(Entity& entity, const std::string& name, T* component);
-
-	template <IsComponent T>
-	void AddComponent(Entity& entity, const std::string& name, std::shared_ptr<T> component);
+	void AddComponent(Entity& entity, const std::string& name, const T& component);
 
 	template <IsSystem T>
 	void AddSystem(std::unique_ptr<T> system);
@@ -42,62 +38,77 @@ class Ecs {
 	void RemoveComponents(Entity& entity);
 
 	void RemoveAllEntityComponents(Entity& entity);
-	void RemoveAllEntityComponents(const i64 id);
+	void RemoveAllEntityComponents(const u32 id);
 
 	template <IsComponent T>
-	Query<T>& GetComponents();
+	std::vector<T>& GetComponents();
 
 	template <IsComponent T>
 	i64 GetComponentCount();
 
+	template <IsComponent T>
+	T& GetComponent(Entity& entity, const std::string& name);
+
+	template <IsComponent T>
+	T& GetComponent(const u32 id, const std::string& name);
+
   private:
-	std::vector<std::unique_ptr<Entity>> m_entities;
-	std::vector<std::unique_ptr<ISystem>> m_systems;
-	std::unordered_map<std::type_index, Query<Component>> m_components;
+	template <IsComponent T>
+	ComponentArray<T>& GetComponentArray();
+
+  private:
+	std::vector<Entity> m_entities;
+	std::vector<std::unique_ptr<System>> m_systems;
+	std::unordered_map<std::type_index, std::unique_ptr<IComponentArray>> m_components;
 	EventHandler& m_event_handler;
 };
 
 template <IsComponent T>
-i64 Ecs::GetComponentCount() { return m_components[typeid(T)].size(); }
+T& Ecs::GetComponent(Entity& entity, const std::string& name) {
+	auto& component_array = GetComponentArray<T>();
+	return component_array.GetData(entity.GetId());
+}
+
+template <IsComponent T>
+T& Ecs::GetComponent(const u32 id, const std::string& name) {
+	auto& component_array = GetComponentArray<T>();
+	return component_array.GetData(id);
+}
+
+template <IsComponent T>
+ComponentArray<T>& Ecs::GetComponentArray() {
+	auto& ptr = m_components[typeid(T)];
+	if (!ptr) {
+		ptr = std::make_unique<ComponentArray<T>>();
+	}
+	return *static_cast<ComponentArray<T>*>(ptr.get());
+}
+
+template <IsComponent T>
+i64 Ecs::GetComponentCount() {
+	return GetComponentArray<T>().GetAllComponents().size();
+}
 
 template <IsComponent... Ts>
-Entity& Ecs::MakeEntity(const std::pair<const char*, Ts*>&... components) {
-	// Using new here because Entities constructor is private and we dont want to
-	// friend std::unique_ptr<Entity> to prevent the user from accidently creating
-	// illegal entities
+Entity& Ecs::MakeEntity(const std::pair<const char*, Ts>&... components) {
+	u32 id = m_entities.empty() ? 0 : (m_entities.back().GetId() + 1);
+	Entity entity(id);
+	m_entities.push_back(entity);
 
-	Entity* entity;
-	if (!Entity::s_old_ids.empty()) {
-		entity = new Entity(Entity::s_old_ids.top());
-		Entity::s_old_ids.pop();
-	} else {
-		entity = new Entity(m_entities.size());
-	}
-	m_entities.push_back(std::unique_ptr<Entity>(entity));
+	m_event_handler.PublishEvent<EntityCreatedEvent>(std::make_shared<EntityCreatedEvent>(entity));
 
-	m_event_handler.PublishEvent<EntityCreatedEvent>(std::make_shared<EntityCreatedEvent>(*entity));
+	(AddComponent(entity, components.first, components.second), ...);
 
-	// Unpack and add components
-	(AddComponent(*entity, components.first, components.second), ...);
-
-	return *m_entities.back();
+	return entity;
 }
 
 template <IsComponent T>
-void Ecs::AddComponent(Entity& entity, const std::string& name, T* component) {
-	component->SetEntityId(entity.GetId());
-	auto shared_component = std::shared_ptr<T>(component);
-	entity.AddComponent(name, shared_component);
-	m_components[typeid(T)].push_back(shared_component);
-	m_event_handler.PublishEvent<ComponentAddedEvent<T>>(std::make_shared<ComponentAddedEvent<T>>(entity, ComponentEventType::ADDED, shared_component));
-}
-
-template <IsComponent T>
-void Ecs::AddComponent(Entity& entity, const std::string& name, std::shared_ptr<T> component) {
-	component->SetEntityId(entity.GetId());
-	entity.AddComponent(name, component);
-	m_components[typeid(T)].push_back(component);
-	m_event_handler.PublishEvent<ComponentAddedEvent<T>>(std::make_shared<ComponentAddedEvent<T>>(entity, ComponentEventType::ADDED, component));
+void Ecs::AddComponent(Entity& entity, const std::string& name, const T& component) {
+	auto& component_array = GetComponentArray<T>();
+	component_array.InsertData(entity.GetId(), component);
+	entity.AddComponent<T>(name);
+	m_event_handler.PublishEvent<ComponentAddedEvent<T>>(
+		std::make_shared<ComponentAddedEvent<T>>(entity, ComponentEventType::ADDED, component));
 }
 
 template <IsSystem T>
@@ -107,18 +118,15 @@ void Ecs::AddSystem(std::unique_ptr<T> system) {
 
 template <IsComponent T>
 void Ecs::RemoveComponents(Entity& entity) {
+	auto& component_array = GetComponentArray<T>();
+	component_array.RemoveEntity(entity.GetId());
 	entity.RemoveComponents<T>();
-	m_components[typeid(T)].erase(std::remove_if(m_components[typeid(T)].begin(),
-	                                             m_components[typeid(T)].end(),
-	                                             [this, &entity](const std::shared_ptr<Component>& component) { return component->GetEntityId() == entity.GetId(); }),
-	                              m_components[typeid(T)].end());
 }
 
-// This isnt const because we do want to return an empty Query if the component
-// doesnt exist (will get automatically inserted by the [] operator for
-// std::unordered_map)
 template <IsComponent T>
-Query<T>& Ecs::GetComponents() { return *reinterpret_cast<Query<T>*>(&m_components[typeid(T)]); }
+Query<T>& Ecs::GetComponents() {
+	return GetComponentArray<T>().GetAllComponents();
+}
 } // namespace Spark
 
 #endif

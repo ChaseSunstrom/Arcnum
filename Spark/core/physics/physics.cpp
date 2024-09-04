@@ -2,7 +2,7 @@
 
 namespace Spark {
 PhysicsSystem::PhysicsSystem(EventHandler& event_handler, f32 time_step, const glm::vec3& gravity, i32 iterations)
-	: ISystem(event_handler)
+	: System(event_handler)
 	, m_gravity(gravity)
 	, m_time_step(time_step)
 	, m_iterations(iterations) {}
@@ -10,13 +10,13 @@ PhysicsSystem::PhysicsSystem(EventHandler& event_handler, f32 time_step, const g
 void PhysicsSystem::Start() {
 }
 
-void PhysicsSystem::Update() {
+void PhysicsSystem::Update(f32 delta_time) {
 	f32 dt = m_time_step / static_cast<f32>(m_iterations);
 
 	for (i32 i = 0; i < m_iterations; ++i) {
 		// Apply forces (including gravity)
 		for (auto& rb : m_rigid_bodies) {
-			IntegrateForces(*rb, dt);
+			IntegrateForces(rb, dt);
 		}
 
 		DetectCollisions();
@@ -24,7 +24,7 @@ void PhysicsSystem::Update() {
 
 		// Update positions
 		for (auto& rb : m_rigid_bodies) {
-			IntegrateVelocities(*rb, dt);
+			IntegrateVelocities(rb, dt);
 		}
 	}
 }

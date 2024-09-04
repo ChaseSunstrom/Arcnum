@@ -3,6 +3,7 @@
 
 #include "shader.hpp"
 #include <core/pch.hpp>
+#include <core/util/gl.hpp>
 #include <include/glm/glm.hpp>
 
 namespace Spark {

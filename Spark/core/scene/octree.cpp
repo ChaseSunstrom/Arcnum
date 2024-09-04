@@ -16,11 +16,11 @@ Octree::Octree(glm::vec3 center, f32 width)
 void Octree::OnEvent(const std::shared_ptr<ComponentEvent<TransformComponent>> event) {
 	switch (event->type) {
 		case ComponentEventType::ADDED: {
-			Insert({event->component->transform.GetPosition(), event->entity.GetId()});
+			Insert({event->component.transform.GetPosition(), event->entity.GetId()});
 			break;
 		}
 		case ComponentEventType::REMOVED: {
-			Update({event->component->transform.GetPosition(), event->entity.GetId()});
+			Update({event->component.transform.GetPosition(), event->entity.GetId()});
 			break;
 		}
 		case ComponentEventType::UPDATED: {
@@ -41,7 +41,7 @@ void Octree::Insert(const PointData& point_data) {
 	m_entity_to_node[point_data.entity_id] = node;
 }
 
-bool Octree::Remove(i64 entity_id) {
+bool Octree::Remove(u32 entity_id) {
 	auto it = m_entity_to_node.find(entity_id);
 	if (it == m_entity_to_node.end())
 		return false;
@@ -175,8 +175,8 @@ void Octree::CollectAllPoints(const Node* node, std::vector<PointData>& all_poin
 	}
 }
 
-std::vector<i64> Octree::GetEntitiesFromPoint(const glm::vec3& point) {
-	std::vector<i64> result;
+std::vector<u32> Octree::GetEntitiesFromPoint(const glm::vec3& point) {
+	std::vector<u32> result;
 	Node* node = m_root.get();
 	while (node) {
 		if (!IsPointInBounds(point, node->center, node->half_width))

@@ -1,13 +1,15 @@
 #include "application.hpp"
-#include "core/ecs/components/transform_component.hpp"
+#include <core/ecs/components/transform_component.hpp>
+#include <core/util/fps.hpp>
 
 namespace Spark {
 
-Application::Application(GraphicsAPI gapi, std::unique_ptr<ThreadPool> tp)
+Application::Application(GraphicsAPI gapi, f32 delta_time, std::unique_ptr<ThreadPool> tp)
 	: m_thread_pool(std::move(tp))
 	, m_event_handler(std::make_unique<EventHandler>(*m_thread_pool))
 	, m_ecs(std::make_unique<Ecs>(*m_event_handler))
 	, m_resource_manager(std::make_unique<Manager<Resource>>())
+	, m_delta_time(delta_time)
 	, m_gapi(gapi) {}
 
 Application::~Application() {
@@ -24,9 +26,10 @@ void Application::Start() {
 		LOG_FATAL("Renderer has not been created!");
 	}
 
+
 	m_event_handler->SubscribeToEvent<ComponentEvent<TransformComponent>>(
-		[this](const std::shared_ptr<ComponentEvent<TransformComponent>>& event) {
-			std::unique_lock lock(m_resource_manager->m_mutex);
+		[this](const EventPtr<ComponentEvent<TransformComponent>>& event) {
+			std::lock_guard lock(m_resource_manager->m_mutex);
 			m_resource_manager->GetManager<Scene>().OnEvent(event);
 		},
 		{true, false});
@@ -41,7 +44,7 @@ void Application::Start() {
 
 void Application::Update() {
 	RunUpdateFunctions();
-	m_ecs->Update();
+	m_ecs->Update(m_delta_time);
 	m_window->Update();
 	m_renderer->Render();
 }
@@ -63,7 +66,7 @@ Application& Application::AddShutdownFunction(const ApplicationFunction& fn, con
 
 Application& Application::AddAllEventsFunction(const ApplicationEventFunction& fn, const FunctionSettings settings) {
 	m_event_handler->SubscribeToAllEvents(
-		[this, fn, settings](const std::shared_ptr<BaseEvent>& event) {
+		[this, fn, settings](const EventPtr<BaseEvent>& event) {
 			std::unique_lock<std::mutex> lock;
 			if (settings.threaded)
 				lock = std::unique_lock(m_mutex);
@@ -150,5 +153,9 @@ const bool Application::Running() const {
 }
 
 ThreadPool& Application::GetThreadPool() const { return *m_thread_pool; }
+
+void Application::SetDeltaTime(f32 delta_time) {
+	m_delta_time = delta_time;
+}
 
 } // namespace Spark

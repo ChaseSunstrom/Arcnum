@@ -1,7 +1,7 @@
 #ifndef SPARK_DEFINES_HPP
 #define SPARK_DEFINES_HPP
 
-#if (!defined(RELEASE) && !defined(__DIST__)) || defined(DEBUG)
+#if (!defined(RELEASE) && !defined(__DIST__) && !defined(NDEBUG)) || defined(DEBUG)
 #	define __DEBUG__
 #endif
 

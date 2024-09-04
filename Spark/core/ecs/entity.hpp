@@ -5,115 +5,84 @@
 #include <core/pch.hpp>
 
 namespace Spark {
+
 struct ComponentKey {
 	std::type_index type;
 	std::string name;
 	bool operator==(const ComponentKey& other) const = default;
 };
+
 } // namespace Spark
 
-template <> struct std::hash<Spark::ComponentKey> {
-	usize operator()(const Spark::ComponentKey& key) const { return (std::hash<std::string>()(key.name) ^ (std::hash<std::type_index>()(key.type) << 1) >> 1); }
+namespace std {
+template <>
+struct hash<Spark::ComponentKey> {
+	size_t operator()(const Spark::ComponentKey& key) const {
+		return (std::hash<std::string>()(key.name) ^
+		        (std::hash<std::type_index>()(key.type) << 1)) >>
+		       1;
+	}
 };
+} // namespace std
 
 namespace Spark {
+
 class Entity {
   public:
 	friend class Ecs;
 
-	operator i64() { return m_id; }
+	operator u32() { return m_id; }
+	u32 GetId() const { return m_id; }
 
-	i64 GetId() const { return m_id; }
+	template <IsComponent T>
+	bool HasComponent(const std::string& name) const {
+		ComponentKey key = {typeid(T), name};
+		return m_components.find(key) != m_components.end();
+	}
 
-	template <IsComponent T> T& GetComponent(const std::string& name) const;
-
-	template <IsComponent T> bool HasComponent(const std::string& name) const;
-
-	template <IsComponent... Ts> bool HasComponents() const;
-
-	template <IsComponent T> Query<T> GetComponents();
-
+	template <IsComponent... Ts>
+	bool HasComponents() const {
+		return (HasComponent<Ts>() && ...);
+	}
   private:
-	Entity(i64 id)
+	Entity(u32 id)
 		: m_id(id) {}
+	void SetId(u32 id) { m_id = id; }
 
-	void SetId(i64 id) { m_id = id; }
+	template <IsComponent T>
+	void AddComponent(const std::string& name) {
+		ComponentKey key = {typeid(T), name};
+		m_components.insert(key);
+	}
 
-	template <IsComponent T> void AddComponent(const std::string& name, T* component);
+	template <IsComponent T>
+	void RemoveComponent(const std::string& name) {
+		ComponentKey key = {typeid(T), name};
+		m_components.erase(key);
+	}
 
-	template <IsComponent T> void AddComponent(const std::string& name, std::shared_ptr<T> component);
+	template <IsComponent T>
+	void RemoveComponents() {
+		std::vector<ComponentKey> keys_to_remove;
+		for (const auto& key : m_components) {
+			if (key.type == typeid(T)) {
+				keys_to_remove.push_back(key);
+			}
+		}
+		for (const auto& key : keys_to_remove) {
+			m_components.erase(key);
+		}
+	}
 
-	template <IsComponent... Ts> void AddComponents(const std::string& name, Ts*... components);
-
-	template <IsComponent... Ts> void AddComponents(const std::string& name, std::shared_ptr<Ts>... components);
-
-	template <IsComponent T> void RemoveComponent(const std::string& name);
-
-	template <IsComponent T> void RemoveComponents();
-
-	void RemoveAllComponents() { m_components.clear(); }
+	void RemoveAllComponents() {
+		m_components.clear();
+	}
 
   private:
-	i64 m_id;
-	std::unordered_map<ComponentKey, std::shared_ptr<Component>> m_components;
-	static inline std::stack<i64> s_old_ids = std::stack<i64>();
+	u32 m_id;
+	std::unordered_set<ComponentKey> m_components;
 };
 
-template <IsComponent T> T& Entity::GetComponent(const std::string& name) const {
-	ComponentKey key = {typeid(T), name};
-	auto it          = m_components.find(key);
-	if (it != m_components.end()) {
-		return *static_cast<T*>(it->second.get());
-	} else {
-		assert(false && "Component not found");
-	}
-}
-
-template <IsComponent T> bool Entity::HasComponent(const std::string& name) const {
-	ComponentKey key = {typeid(T), name};
-	return m_components.find(key) != m_components.end();
-}
-
-template <IsComponent... Ts> bool Entity::HasComponents() const { return (HasComponent<Ts>() && ...); }
-
-template <IsComponent T> Query<T> Entity::GetComponents() {
-	Query<T> components;
-	for (auto& [key, component] : m_components) {
-		if (key.type == typeid(T))
-			components.push_back(component);
-	}
-	return components;
-}
-
-template <IsComponent T> void Entity::AddComponent(const std::string& name, T* component) {
-	ComponentKey key  = {typeid(T), name};
-	m_components[key] = std::shared_ptr<T>(component);
-}
-
-template <IsComponent T> void Entity::AddComponent(const std::string& name, std::shared_ptr<T> component) {
-	ComponentKey key  = {typeid(T), name};
-	m_components[key] = component;
-}
-
-template <IsComponent... Ts> void Entity::AddComponents(const std::string& name, Ts*... components) { (AddComponent(name, components), ...); }
-
-template <IsComponent... Ts> void Entity::AddComponents(const std::string& name, std::shared_ptr<Ts>... components) { (AddComponent(name, components), ...); }
-
-template <IsComponent T> void Entity::RemoveComponent(const std::string& name) {
-	ComponentKey key = {typeid(T), name};
-	m_components.erase(key);
-}
-
-template <IsComponent T> void Entity::RemoveComponents() {
-	std::vector<ComponentKey> keys;
-	for (auto& [key, component] : m_components) {
-		if (key.type == typeid(T))
-			keys.push_back(key);
-	}
-
-	for (auto& key : keys)
-		m_components.erase(key);
-}
 } // namespace Spark
 
 #endif

@@ -5,20 +5,21 @@
 #include <core/pch.hpp>
 
 namespace Spark {
-class ISystem {
+class System {
   public:
-	ISystem(EventHandler& event_handler)
+	System(EventHandler& event_handler)
 		: m_event_handler(event_handler) {}
-	virtual ~ISystem()      = default;
-	virtual void Start()    = 0;
-	virtual void Update()   = 0;
-	virtual void Shutdown() = 0;
+	virtual ~System()                  = default;
+	virtual void Start()                = 0;
+	virtual void Update(f32 delta_time) = 0;
+	virtual void Shutdown()             = 0;
+
   protected:
 	EventHandler& m_event_handler;
 };
 
 template <typename T>
-concept IsSystem = std::derived_from<T, ISystem>;
+concept IsSystem = std::derived_from<T, System>;
 } // namespace Spark
 
 #endif

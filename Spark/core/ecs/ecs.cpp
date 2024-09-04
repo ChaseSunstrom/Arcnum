@@ -8,9 +8,9 @@ void Ecs::Start() {
 	}
 }
 
-void Ecs::Update() {
+void Ecs::Update(f32 delta_time) {
 	for (const auto& sys : m_systems) {
-		sys->Update();
+		sys->Update(delta_time);
 	}
 }
 
@@ -20,12 +20,21 @@ void Ecs::Shutdown() {
 	}
 }
 
-Entity& Ecs::GetEntity(const i64 id) const { return *m_entities[id]; }
+Entity& Ecs::GetEntity(const u32 id) const {
+	auto it = std::find_if(m_entities.begin(), m_entities.end(), [id](const Entity& e) { return e.GetId() == id; });
+	if (it != m_entities.end()) {
+		return const_cast<Entity&>(*it);
+	}
+	throw std::runtime_error("Entity not found");
+}
 
-i64 Ecs::GetEntityCount() const { return m_entities.size(); }
+i64 Ecs::GetEntityCount() const {
+	return m_entities.size();
+}
 
-void Ecs::DestroyEntity(const i64 id) {
-	if (id < 0 || id >= m_entities.size()) {
+void Ecs::DestroyEntity(const u32 id) {
+	auto it = std::find_if(m_entities.begin(), m_entities.end(), [id](const Entity& e) { return e.GetId() == id; });
+	if (it == m_entities.end()) {
 		// Invalid ID, possibly already removed
 		return;
 	}
@@ -33,43 +42,25 @@ void Ecs::DestroyEntity(const i64 id) {
 	RemoveAllEntityComponents(id);
 
 	// Use swap-and-pop instead of erase to avoid shifting elements
-	if (id != m_entities.size() - 1) {
-		std::swap(m_entities[id], m_entities.back());
-		m_entities[id]->SetId(id); // Update the swapped entity's ID
+	if (it != m_entities.end() - 1) {
+		std::swap(*it, m_entities.back());
 	}
 	m_entities.pop_back();
-
-	Entity::s_old_ids.push(id);
 }
 
-void Ecs::RemoveAllEntityComponents(Entity& entity) { RemoveAllEntityComponents(entity.GetId()); }
+void Ecs::RemoveAllEntityComponents(Entity& entity) {
+	RemoveAllEntityComponents(entity.GetId());
+}
 
-void Ecs::RemoveAllEntityComponents(const i64 id) {
-	// First, remove components from the entity
+void Ecs::RemoveAllEntityComponents(const u32 id) {
+	// Remove components from the entity
 	Entity& entity = GetEntity(id);
 	entity.RemoveAllComponents();
 
-	// Then, remove components from the ECS storage
-	for (auto& [type, components] : m_components) {
-		// Store components to be removed
-		std::vector<std::shared_ptr<Component>> removed_components;
-
-		// Identify components to be removed
-		auto it = std::remove_if(components.begin(), components.end(), [id, &removed_components](const std::shared_ptr<Component>& component) {
-			if (component->GetEntityId() == id) {
-				removed_components.push_back(component);
-				return true;
-			}
-			return false;
-		});
-
-		// Erase the removed elements
-		components.erase(it, components.end());
-
-		// Publish events for each removed component
-		for (const auto& component : removed_components) {
-			m_event_handler.PublishEvent<ComponentRemovedEvent<Component>>(std::make_shared<ComponentRemovedEvent<Component>>(entity, ComponentEventType::REMOVED, component));
-		}
+	// Remove components from the ECS storage
+	for (auto& [type, component_array] : m_components) {
+		component_array->RemoveEntity(id);
 	}
 }
+
 } // namespace Spark

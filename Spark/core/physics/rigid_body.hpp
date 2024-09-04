@@ -2,8 +2,8 @@
 #define SPARK_RIGID_BODY_HPP
 #include "collision_shape.hpp"
 #include <core/pch.hpp>
-#include <glm/glm.hpp>
-#include <glm/gtx/quaternion.hpp>
+#include <include/glm/glm.hpp>
+#include <include/glm/gtx/quaternion.hpp>
 
 namespace Spark {
 

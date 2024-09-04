@@ -17,6 +17,51 @@ public:
 	virtual ~Event() = default;
 };
 
+template <typename T>
+concept IsEvent = std::derived_from<T, Event<T>>;
+
+template <typename EventType>
+using EventPtr  = std::shared_ptr<EventType>;
+
+template <typename... EventTypes>
+class MultiEvent : public BaseEvent {
+  public:
+	using VariantType = std::variant<std::shared_ptr<EventTypes>...>;
+
+	MultiEvent(const EventPtr<BaseEvent>& base_event) {
+		((TrySetEvent<EventTypes>(base_event)) || ...);
+	}
+
+	template <typename T>
+	bool Is() const {
+		return std::holds_alternative<std::shared_ptr<T>>(event);
+	}
+
+	template <typename T>
+	const std::shared_ptr<T>& Get() const {
+		return std::get<std::shared_ptr<T>>(event);
+	}
+
+	static auto GetEventTypes() {
+		return std::tuple<EventTypes...>{};
+	}
+
+  private:
+	template <typename T>
+	bool TrySetEvent(const EventPtr<BaseEvent>& base_event) {
+		if (auto derived = std::dynamic_pointer_cast<T>(base_event)) {
+			event = derived;
+			return true;
+		}
+		return false;
+	}
+
+	VariantType event;
+};
+
+template<typename... EventTypes>
+using MultiEventPtr = std::shared_ptr<MultiEvent<EventTypes...>>;
+
 // ECS Events
 struct EntityCreatedEvent : public Event<EntityCreatedEvent> {
     EntityCreatedEvent(const Entity& entity) : entity(entity) {}
@@ -44,10 +89,10 @@ public:
 template<typename T>
 class ComponentEvent : public Event<ComponentEvent<T>>, public BaseComponentEvent {
 public:
-	ComponentEvent(const Entity& entity, ComponentEventType type, const std::shared_ptr<T>& component)
+	ComponentEvent(const Entity& entity, ComponentEventType type, const T& component)
 		: BaseComponentEvent(entity, type), component(component) {}
 
-	const std::shared_ptr<T> component;
+	const T& component;
 };
 
 template<typename T>

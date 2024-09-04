@@ -7,13 +7,13 @@
 #	include <core/pch.hpp>
 
 namespace Spark {
-class PhysicsSystem : public ISystem {
+class PhysicsSystem : public System {
   public:
 	PhysicsSystem(EventHandler& event_handler, f32 time_step, const glm::vec3& gravity = glm::vec3(0.0f, -9.81f, 0.0f), i32 iterations = 4);
 	~PhysicsSystem() override = default;
 
 	void Start() override;
-	void Update() override;
+	void Update(f32 delta_time) override;
 	void Shutdown() override;
 
 	void SetGravity(const glm::vec3& gravity) { m_gravity = gravity; }

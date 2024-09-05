@@ -66,7 +66,7 @@ Application& Application::AddShutdownFunction(const ApplicationFunction& fn, con
 
 Application& Application::AddAllEventsFunction(const ApplicationEventFunction& fn, const FunctionSettings settings) {
 	m_event_handler->SubscribeToAllEvents(
-		[this, fn, settings](const EventPtr<BaseEvent>& event) {
+		[this, fn, settings](const EventPtr<IEvent>& event) {
 			std::unique_lock<std::mutex> lock;
 			if (settings.threaded)
 				lock = std::unique_lock(m_mutex);

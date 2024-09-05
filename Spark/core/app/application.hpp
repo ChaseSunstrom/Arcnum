@@ -17,7 +17,7 @@ namespace Spark {
 class Application {
   public:
 	using ApplicationFunction      = std::function<void(Application&)>;
-	using ApplicationEventFunction = std::function<void(Application&, const EventPtr<BaseEvent>&)>;
+	using ApplicationEventFunction = std::function<void(Application&, const EventPtr<IEvent>&)>;
 	using ApplicationFunctionList  = std::vector<std::pair<ApplicationFunction, FunctionSettings>>;
 	template <IsComponent T>
 	using ApplicationQueryFunction = std::function<void(Application&, Query<T>&)>;
@@ -88,7 +88,7 @@ class Application {
 
 	struct IQueryEventFunctionWrapper {
 		virtual ~IQueryEventFunctionWrapper()                                    = default;
-		virtual void Execute(Application& app, const EventPtr<BaseEvent>& event) = 0;
+		virtual void Execute(Application& app, const EventPtr<IEvent>& event) = 0;
 	};
 
 	template <IsComponent T>
@@ -112,7 +112,7 @@ class Application {
 			: ecs(ecs)
 			, fn(fn) {}
 
-		void Execute(Application& app, const EventPtr<BaseEvent>& event) override {
+		void Execute(Application& app, const EventPtr<IEvent>& event) override {
 			if constexpr (sizeof...(EventTypes) == 1) {
 				if (auto typed_event = std::dynamic_pointer_cast<typename std::tuple_element<0, std::tuple<EventTypes...>>::type>(event)) {
 					fn(app, ecs.GetComponents<T>(), typed_event);

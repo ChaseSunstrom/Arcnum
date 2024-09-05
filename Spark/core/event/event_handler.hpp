@@ -20,7 +20,7 @@ public:
 	template <IsEvent T>
 	void SubscribeToEvent(std::function<void(const EventPtr<T>&)> handler, const FunctionSettings settings = {}) {
 		std::lock_guard<std::mutex> lock(m_mutex);
-		m_single_event_handlers[typeid(T)].push_back({[handler](const EventPtr<BaseEvent>& base_event) {
+		m_single_event_handlers[typeid(T)].push_back({[handler](const EventPtr<IEvent>& base_event) {
 														  if (auto derived_event = std::dynamic_pointer_cast<T>(base_event)) {
 															  handler(derived_event);
 														  }
@@ -31,7 +31,7 @@ public:
 	template <IsEvent... EventTypes>
 	void SubscribeToMultipleEvents(std::function<void(const MultiEventPtr<EventTypes...>&)> handler, const FunctionSettings settings = {}) {
 		std::lock_guard<std::mutex> lock(m_mutex);
-		auto wrapper = [handler](const EventPtr<BaseEvent>& base_event) {
+		auto wrapper = [handler](const EventPtr<IEvent>& base_event) {
 			if ((std::dynamic_pointer_cast<EventTypes>(base_event) || ...)) {
 				auto multi_event = CreateMultiEvent<EventTypes...>(base_event);
 				if (multi_event) {
@@ -43,14 +43,14 @@ public:
 		(RegisterMultiEventHandler<EventTypes>(wrapper, settings), ...);
 	}
 
-	void SubscribeToAllEvents(std::function<void(const EventPtr<BaseEvent>&)> handler, const FunctionSettings settings = {}) {
+	void SubscribeToAllEvents(std::function<void(const EventPtr<IEvent>&)> handler, const FunctionSettings settings = {}) {
 		std::lock_guard<std::mutex> lock(m_mutex);
 		m_all_event_handlers.push_back({handler, settings});
 	}
 
 	template <IsEvent T>
 	void PublishEvent(const EventPtr<T>& event) {
-		std::vector<std::pair<std::function<void(const EventPtr<BaseEvent>&)>, FunctionSettings>> handlers_to_call;
+		std::vector<std::pair<std::function<void(const EventPtr<IEvent>&)>, FunctionSettings>> handlers_to_call;
 
 		{
 			std::lock_guard<std::mutex> lock(m_mutex);
@@ -81,18 +81,18 @@ public:
 
 private:
 	template <IsEvent T>
-	void RegisterMultiEventHandler(const std::function<void(const EventPtr<BaseEvent>&)>& handler, const FunctionSettings& settings) {
+	void RegisterMultiEventHandler(const std::function<void(const EventPtr<IEvent>&)>& handler, const FunctionSettings& settings) {
 		m_multi_event_handlers[typeid(T)].push_back({handler, settings});
 	}
 
 	template <IsEvent... EventTypes>
-	static MultiEventPtr<EventTypes...> CreateMultiEvent(const EventPtr<BaseEvent>& base_event) {
+	static MultiEventPtr<EventTypes...> CreateMultiEvent(const EventPtr<IEvent>& base_event) {
 		return std::make_shared<MultiEvent<EventTypes...>>(base_event);
 	}
 
-	std::unordered_map<std::type_index, std::vector<std::pair<std::function<void(const EventPtr<BaseEvent>&)>, FunctionSettings>>> m_single_event_handlers;
-	std::unordered_map<std::type_index, std::vector<std::pair<std::function<void(const EventPtr<BaseEvent>&)>, FunctionSettings>>> m_multi_event_handlers;
-	std::vector<std::pair<std::function<void(const EventPtr<BaseEvent>&)>, FunctionSettings>> m_all_event_handlers;
+	std::unordered_map<std::type_index, std::vector<std::pair<std::function<void(const EventPtr<IEvent>&)>, FunctionSettings>>> m_single_event_handlers;
+	std::unordered_map<std::type_index, std::vector<std::pair<std::function<void(const EventPtr<IEvent>&)>, FunctionSettings>>> m_multi_event_handlers;
+	std::vector<std::pair<std::function<void(const EventPtr<IEvent>&)>, FunctionSettings>> m_all_event_handlers;
 	ThreadPool& m_thread_pool;
 	std::mutex m_mutex;
 };

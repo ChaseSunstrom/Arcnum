@@ -20,16 +20,13 @@ void test_event(Spark::Application& app, const Spark::EventPtr<Spark::ComponentA
 	LOG_TRACE("Component Added: " << event->entity.GetId());
 }
 
-void test_event2(Spark::Application& app, const Spark::MultiEventPtr<Spark::MouseButtonPressedEvent, Spark::MouseButtonReleasedEvent, Spark::MouseMovedEvent>& event) {
+void test_event2(Spark::Application& app, const Spark::MultiEventPtr<Spark::MouseButtonPressedEvent, Spark::MouseButtonReleasedEvent>& event) {
 	if (event->Is<Spark::MouseButtonPressedEvent>()) {
 		auto pressed_event = event->Get<Spark::MouseButtonPressedEvent>();
 		LOG_INFO("Mouse Pressed: " << pressed_event->button);
 	} else if (event->Is<Spark::MouseButtonReleasedEvent>()) {
 		auto released_event = event->Get<Spark::MouseButtonReleasedEvent>();
 		LOG_INFO("Mouse Released: " << released_event->button);
-	} else if (event->Is<Spark::MouseMovedEvent>()) {
-		auto moved_event = event->Get<Spark::MouseMovedEvent>();
-		LOG_INFO("Mouse Moved: " << moved_event->xpos << ", " << moved_event->ypos);
 	}
 }
 
@@ -42,6 +39,6 @@ i32 main() {
 		//.AddStartupFunction(startup_fn)
 		//.AddStartupFunction(startup_fn2)
 		//.AddEventFunction<Spark::ComponentAddedEvent<Spark::TransformComponent>>(test_event)
-		.AddEventFunction<Spark::MouseButtonPressedEvent, Spark::MouseButtonReleasedEvent, Spark::MouseMovedEvent>(test_event2, {true, false})
+		.AddEventFunction<Spark::MouseButtonPressedEvent, Spark::MouseButtonReleasedEvent>(test_event2, {true, false})
 		.Start();
 }

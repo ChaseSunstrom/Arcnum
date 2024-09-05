@@ -6,13 +6,13 @@
 namespace Spark {
 class Entity;
 class Component;
-class BaseEvent {
+class IEvent {
 public:
-	virtual ~BaseEvent() = default;
+	virtual ~IEvent() = default;
 };
 
 template<typename T>
-class Event : public virtual BaseEvent {
+class Event : public virtual IEvent {
 public:
 	virtual ~Event() = default;
 };
@@ -24,11 +24,11 @@ template <typename EventType>
 using EventPtr  = std::shared_ptr<EventType>;
 
 template <typename... EventTypes>
-class MultiEvent : public BaseEvent {
+class MultiEvent : public IEvent {
   public:
 	using VariantType = std::variant<std::shared_ptr<EventTypes>...>;
 
-	MultiEvent(const EventPtr<BaseEvent>& base_event) {
+	MultiEvent(const EventPtr<IEvent>& base_event) {
 		((TrySetEvent<EventTypes>(base_event)) || ...);
 	}
 
@@ -48,7 +48,7 @@ class MultiEvent : public BaseEvent {
 
   private:
 	template <typename T>
-	bool TrySetEvent(const EventPtr<BaseEvent>& base_event) {
+	bool TrySetEvent(const EventPtr<IEvent>& base_event) {
 		if (auto derived = std::dynamic_pointer_cast<T>(base_event)) {
 			event = derived;
 			return true;
@@ -75,7 +75,7 @@ struct EntityDestroyedEvent : public Event<EntityDestroyedEvent> {
 
 enum class ComponentEventType { ADDED, UPDATED, REMOVED };
 
-class BaseComponentEvent : public virtual BaseEvent {
+class BaseComponentEvent : public virtual IEvent {
 public:
 	BaseComponentEvent(const Entity& entity, ComponentEventType type)
 		: entity(entity), type(type) {}

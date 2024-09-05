@@ -4,10 +4,9 @@
 #include <core/pch.hpp>
 
 namespace Spark {
-class Timer {
-};
+	class Timer {};
 
-std::string GetCurrentTime();
+	std::string GetCurrentTime();
 } // namespace Spark
 
 #endif

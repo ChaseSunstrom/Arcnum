@@ -5,21 +5,21 @@
 #include <core/pch.hpp>
 
 namespace Spark {
-class System {
-  public:
-	System(EventHandler& event_handler)
-		: m_event_handler(event_handler) {}
-	virtual ~System()                  = default;
-	virtual void Start()                = 0;
-	virtual void Update(f32 delta_time) = 0;
-	virtual void Shutdown()             = 0;
+	class System {
+	  public:
+		System(EventHandler& event_handler)
+			: m_event_handler(event_handler) {}
+		virtual ~System()                   = default;
+		virtual void Start()                = 0;
+		virtual void Update(f32 delta_time) = 0;
+		virtual void Shutdown()             = 0;
 
-  protected:
-	EventHandler& m_event_handler;
-};
+	  protected:
+		EventHandler& m_event_handler;
+	};
 
-template <typename T>
-concept IsSystem = std::derived_from<T, System>;
+	template<typename T>
+	concept IsSystem = std::derived_from<T, System>;
 } // namespace Spark
 
 #endif

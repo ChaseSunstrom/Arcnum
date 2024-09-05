@@ -1,6 +1,6 @@
+#include <core/render/gl/gl_renderer.hpp>
 #include <core/spark.hpp>
 #include <core/window/gl/gl_window.hpp>
-#include <core/render/gl/gl_renderer.hpp>
 
 void startup_fn(Spark::Application& app) {
 	auto& sm = app.GetManager<Spark::Scene>();
@@ -10,14 +10,15 @@ void startup_fn(Spark::Application& app) {
 void startup_fn2(Spark::Application& app) {
 	auto& ecs = app.GetEcs();
 
-	for (i32 i = 0; i < 5000; i++) {
+	for (i32 i = 0; i < 50; i++) {
 		auto& e = ecs.MakeEntity(Spark::PairOf("transform", Spark::TransformComponent(glm::vec3(0))));
-		ecs.AddComponent(e, "model", Spark::ModelComponent("model"));
+		// ecs.AddComponent(e, "model", Spark::ModelComponent("model"));
 	}
 }
 
-void test_event(Spark::Application& app, const Spark::EventPtr<Spark::ComponentAddedEvent<Spark::TransformComponent>>& event) {
-	LOG_TRACE("Component Added: " << event->entity.GetId());
+void test_event(Spark::Application& app, const Spark::EventPtr<Spark::EntityCreatedEvent>& event) {
+	auto& ecs = app.GetEcs();
+	//ecs.DestroyEntity(event->entity.GetId());
 }
 
 void test_event2(Spark::Application& app, const Spark::MultiEventPtr<Spark::MouseButtonPressedEvent, Spark::MouseButtonReleasedEvent>& event) {
@@ -36,9 +37,9 @@ i32 main() {
 	app.CreateWindow<Spark::GLWindow>("FPS Counter", 1000, 1000)
 		.CreateRenderer<Spark::GLRenderer>()
 		.AddSystem<Spark::FPSSystem>()
-		//.AddStartupFunction(startup_fn)
-		//.AddStartupFunction(startup_fn2)
-		//.AddEventFunction<Spark::ComponentAddedEvent<Spark::TransformComponent>>(test_event)
+		.AddStartupFunction(startup_fn)
+		.AddStartupFunction(startup_fn2, {true, false})
+		.AddEventFunction<Spark::EntityCreatedEvent>(test_event)
 		.AddEventFunction<Spark::MouseButtonPressedEvent, Spark::MouseButtonReleasedEvent>(test_event2, {true, false})
 		.Start();
 }

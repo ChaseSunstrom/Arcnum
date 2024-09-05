@@ -6,12 +6,12 @@
 #include <core/scene/transform.hpp>
 
 namespace Spark {
-struct TransformComponent : public Component {
-	TransformComponent(const Transform& transform)
-		: transform(transform) {}
+	struct TransformComponent : public Component {
+		TransformComponent(const Transform& transform)
+			: transform(transform) {}
 
-	Transform transform;
-};
+		Transform transform;
+	};
 } // namespace Spark
 
 #endif

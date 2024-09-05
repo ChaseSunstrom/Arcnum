@@ -8,28 +8,28 @@
 #include "gl_framebuffer.hpp"
 
 namespace Spark {
-class GLWindow : public Window {
-  public:
-	GLWindow(const std::string& title, i32 width, i32 height, EventHandler& event_handler, bool vsync = false);
-	~GLWindow();
-	void DestroyWindow() override;
-	void Update() override;
-	bool Running() override;
-	void SetTitle(const std::string&) override;
-	void SetSize(i32 width, i32 height) override;
-	void SetVSync(bool enabled) override;
-	bool IsVSync() const override;
-	WindowData& GetWindowData() const override;
-	GLFramebuffer& GetFrameBuffer() const override;
-	GLFWwindow* GetNativeWindow() const;
+	class GLWindow : public Window {
+	  public:
+		GLWindow(const std::string& title, i32 width, i32 height, EventHandler& event_handler, bool vsync = false);
+		~GLWindow();
+		void           DestroyWindow() override;
+		void           Update() override;
+		bool           Running() override;
+		void           SetTitle(const std::string&) override;
+		void           SetSize(i32 width, i32 height) override;
+		void           SetVSync(bool enabled) override;
+		bool           IsVSync() const override;
+		WindowData&    GetWindowData() const override;
+		GLFramebuffer& GetFrameBuffer() const override;
+		GLFWwindow*    GetNativeWindow() const;
 
-  private:
-	void CreateWindow(i32 width, i32 height, const std::string& title);
+	  private:
+		void CreateWindow(i32 width, i32 height, const std::string& title);
 
-  private:
-	GLFWwindow* m_window;
-	std::unique_ptr<GLFramebuffer> m_framebuffer;
-};
+	  private:
+		GLFWwindow*                    m_window;
+		std::unique_ptr<GLFramebuffer> m_framebuffer;
+	};
 } // namespace Spark
 
 #endif

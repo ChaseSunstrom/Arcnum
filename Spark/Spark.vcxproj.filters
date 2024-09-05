@@ -168,9 +168,6 @@
     <ClInclude Include="core\render\shader.hpp">
       <Filter>core\render</Filter>
     </ClInclude>
-    <ClInclude Include="core\render\uniform.hpp">
-      <Filter>core\render</Filter>
-    </ClInclude>
     <ClInclude Include="core\render\vertex.hpp">
       <Filter>core\render</Filter>
     </ClInclude>
@@ -942,6 +939,7 @@
     <ClInclude Include="core\util\time.hpp" />
     <ClInclude Include="core\window\framebuffer.hpp" />
     <ClInclude Include="core\window\gl\gl_framebuffer.hpp" />
+    <ClInclude Include="core\ecs\components\name_component.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\app\application.cpp">
@@ -994,5 +992,15 @@
     <ClCompile Include="core\scene\scene.cpp" />
     <ClCompile Include="core\util\time.cpp" />
     <ClCompile Include="core\window\gl\gl_framebuffer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\geometry_pass.vert" />
+    <None Include="shaders\geometry_pass.frag" />
+    <None Include="shaders\lighting_pass.vert" />
+    <None Include="shaders\lighting_pass.frag" />
+    <None Include="shaders\post_process.vert" />
+    <None Include="shaders\post_process.frag" />
+    <None Include="shaders\screen.vert" />
+    <None Include="shaders\screen.frag" />
   </ItemGroup>
 </Project>

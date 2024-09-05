@@ -6,11 +6,11 @@
 #include <include/glm/vec3.hpp>
 
 namespace Spark {
-struct Vertex {
-	glm::vec3 position;
-	glm::vec3 normal;
-	glm::vec2 texcoords;
-};
+	struct Vertex {
+		glm::vec3 position;
+		glm::vec3 normal;
+		glm::vec2 texcoords;
+	};
 } // namespace Spark
 
 #endif

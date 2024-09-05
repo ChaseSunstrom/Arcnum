@@ -153,6 +153,7 @@
     <ClInclude Include="core\audio\audio.hpp" />
     <ClInclude Include="core\ecs\component.hpp" />
     <ClInclude Include="core\ecs\components\model_component.hpp" />
+    <ClInclude Include="core\ecs\components\name_component.hpp" />
     <ClInclude Include="core\ecs\components\rigid_body_component.hpp" />
     <ClInclude Include="core\ecs\components\transform_component.hpp" />
     <ClInclude Include="core\ecs\ecs.hpp" />
@@ -175,7 +176,6 @@
     <ClInclude Include="core\render\model.hpp" />
     <ClInclude Include="core\render\renderer.hpp" />
     <ClInclude Include="core\render\shader.hpp" />
-    <ClInclude Include="core\render\uniform.hpp" />
     <ClInclude Include="core\render\vertex.hpp" />
     <ClInclude Include="core\resource\resource.hpp" />
     <ClInclude Include="core\scene\octree.hpp" />
@@ -458,6 +458,16 @@
     <ClCompile Include="core\window\gl\gl_window.cpp" />
     <ClCompile Include="include\glm\detail\glm.cpp" />
     <ClCompile Include="lib\windows\glad\glad.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\geometry_pass.frag" />
+    <None Include="shaders\geometry_pass.vert" />
+    <None Include="shaders\lighting_pass.frag" />
+    <None Include="shaders\lighting_pass.vert" />
+    <None Include="shaders\post_process.frag" />
+    <None Include="shaders\post_process.vert" />
+    <None Include="shaders\screen.frag" />
+    <None Include="shaders\screen.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

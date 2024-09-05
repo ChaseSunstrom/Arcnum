@@ -1,10 +1,10 @@
 #ifndef SPARK_LOG_HPP
 #define SPARK_LOG_HPP
 
-#include "defines.hpp"
-#include "types.hpp"
-#include "time.hpp"
 #include <iostream>
+#include "defines.hpp"
+#include "time.hpp"
+#include "types.hpp"
 
 // Magic windows color codes
 #define TEXT_COLOR_GREEN  2
@@ -49,7 +49,7 @@ void set_console_color(u32 color);
 #ifdef __FATAL__
 #	define LOG_FATAL(...)                                                                                                                                                                             \
 		set_console_color(TEXT_COLOR_RED);                                                                                                                                                             \
-		std::cout << "[ FATAL " << ::Spark::GetCurrentTime() << " ] " << __VA_ARGS__ << "\n";                                                                                                                                              \
+		std::cout << "[ FATAL " << ::Spark::GetCurrentTime() << " ] " << __VA_ARGS__ << "\n";                                                                                                          \
 		assert_false
 #else
 #	define LOG_FATAL(...) assert_false

@@ -7,7 +7,7 @@ TabWidth: 4
 UseTab: AlignWithSpaces
 ContinuationIndentWidth: 4
 # Column limit
-ColumnLimit: 0
+ColumnLimit: 200
 # Braces
 BreakBeforeBraces: Attach
 # Alignment
@@ -21,7 +21,7 @@ AlignConsecutiveMacros:
   AcrossEmptyLines: true
   AcrossComments: true
 AlignEscapedNewlines: Right
-AlignOperands: true
+AlignOperands: Align
 AlignTrailingComments:
   Kind: Always
   OverEmptyLines: 2
@@ -32,7 +32,7 @@ SpaceInEmptyParentheses: false
 SpacesInParentheses: false
 SpacesInSquareBrackets: false
 SpaceAfterCStyleCast: true
-SpaceAfterTemplateKeyword: true
+SpaceAfterTemplateKeyword: false
 SpaceBeforeAssignmentOperators: true
 SpaceBeforeCpp11BracedList: false
 SpaceBeforeCtorInitializerColon: true
@@ -55,7 +55,12 @@ ReflowComments: true
 # Preprocessor
 IndentPPDirectives: AfterHash
 # Include sorting
-SortIncludes: true
+SortIncludes: CaseInsensitive
+IncludeCategories:
+  - Regex: '^<.*'
+    Priority: 1
+  - Regex: '^".*'
+    Priority: 2
 # Other
 KeepEmptyLinesAtTheStartOfBlocks: false
 MaxEmptyLinesToKeep: 1
@@ -67,7 +72,23 @@ CompactNamespaces: false
 FixNamespaceComments: true
 IndentCaseLabels: true
 IndentGotoLabels: true
-
 # Disable alignment for non-class member functions
 DerivePointerAlignment: false
-AlignConsecutiveDeclarations: false
+AlignConsecutiveDeclarations: true
+# Template handling
+AlwaysBreakTemplateDeclarations: No
+# Lambdas
+AllowShortLambdasOnASingleLine: All
+LambdaBodyIndentation: Signature
+# Penalties
+PenaltyBreakAssignment: 100
+PenaltyBreakBeforeFirstCallParameter: 100
+PenaltyBreakComment: 100
+PenaltyBreakFirstLessLess: 0
+PenaltyBreakString: 100
+PenaltyExcessCharacter: 1
+PenaltyReturnTypeOnItsOwnLine: 50
+
+
+# Namespaces
+NamespaceIndentation: All

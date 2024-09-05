@@ -1,58 +1,64 @@
 #ifndef SPARK_MODEL_HPP
 #define SPARK_MODEL_HPP
 
-#include "material.hpp"
-#include "mesh.hpp"
 #include <core/pch.hpp>
 #include <core/system/manager.hpp>
+#include "material.hpp"
+#include "mesh.hpp"
 
 namespace Spark {
-// Static models will hold a reference to a static mesh, dynamic ones will
-// store their own local copy of the mesh which will take longer to create
-// because it needs to copy all the mesh data
 
-// TODO: Make Materials implementation independent?
+	class StaticModel {
+	  public:
+		friend class Manager<StaticModel>;
+		~StaticModel() = default;
 
-class StaticModel {
-  public:
-	friend class Manager<StaticModel>;
-	~StaticModel() = default;
+		const StaticMesh& GetMesh() const { return m_mesh; }
+		const Material*   GetMaterial() const { return m_material; }
+		const glm::mat4&  GetModelMatrix() const { return m_model_matrix; }
 
-  private:
-	StaticModel(const StaticMesh& mesh, std::vector<std::reference_wrapper<Material>> materials)
-		: m_mesh(mesh)
-		, m_materials(materials) {}
+		void SetMaterial(Material* material) { m_material = material; }
+		void SetModelMatrix(const glm::mat4& matrix) { m_model_matrix = matrix; }
 
-  private:
-	const StaticMesh& m_mesh;
-	std::vector<std::reference_wrapper<Material>> m_materials;
-};
+	  private:
+		StaticModel(const StaticMesh& mesh, Material* material = nullptr)
+			: m_mesh(mesh)
+			, m_material(material)
+			, m_model_matrix(1.0f) {}
 
-class DynamicModel {
-  public:
-	friend class Manager<DynamicModel>;
-	~DynamicModel() = default;
-	DynamicModel(const DynamicModel& other) {
-		DynamicMesh* mesh = new DynamicMesh(other.m_mesh->GetVertices(), other.m_mesh->GetIndices());
-		m_mesh            = std::unique_ptr<DynamicMesh>(mesh);
-		m_materials       = other.m_materials;
-	}
-	DynamicModel& operator=(const DynamicModel& other) {
-		DynamicMesh* mesh = new DynamicMesh(other.m_mesh->GetVertices(), other.m_mesh->GetIndices());
-		m_mesh            = std::unique_ptr<DynamicMesh>(mesh);
-		m_materials       = other.m_materials;
-		return *this;
-	}
+	  private:
+		const StaticMesh& m_mesh;
+		Material*         m_material;
+		glm::mat4         m_model_matrix;
+	};
 
-  private:
-	DynamicModel(std::unique_ptr<DynamicMesh> mesh, const std::vector<std::reference_wrapper<Material>>& materials)
-		: m_mesh(std::move(mesh))
-		, m_materials(materials) {}
+	class DynamicModel {
+	  public:
+		friend class Manager<DynamicModel>;
+		~DynamicModel() = default;
 
-  private:
-	std::unique_ptr<DynamicMesh> m_mesh;
-	std::vector<std::reference_wrapper<Material>> m_materials;
-};
+		DynamicModel(const DynamicModel& other);
+		DynamicModel& operator=(const DynamicModel& other);
+
+		const DynamicMesh& GetMesh() const { return *m_mesh; }
+		const Material*    GetMaterial() const { return m_material; }
+		const glm::mat4&   GetModelMatrix() const { return m_model_matrix; }
+
+		void SetMaterial(Material* material) { m_material = material; }
+		void SetModelMatrix(const glm::mat4& matrix) { m_model_matrix = matrix; }
+
+	  private:
+		DynamicModel(std::unique_ptr<DynamicMesh> mesh, Material* material = nullptr)
+			: m_mesh(std::move(mesh))
+			, m_material(material)
+			, m_model_matrix(1.0f) {}
+
+	  private:
+		std::unique_ptr<DynamicMesh> m_mesh;
+		Material*                    m_material;
+		glm::mat4                    m_model_matrix;
+	};
+
 } // namespace Spark
 
-#endif
+#endif // SPARK_MODEL_HPP

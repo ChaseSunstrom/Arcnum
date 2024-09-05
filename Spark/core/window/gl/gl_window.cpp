@@ -7,6 +7,13 @@ GLWindow::GLWindow(const std::string& title, i32 width, i32 height, EventHandler
 	: Window(title, width, height, event_handler, vsync) {
 	CreateWindow(width, height, title);
 	SetVSync(vsync);
+
+	m_framebuffer = std::make_unique<GLFramebuffer>(width, height);
+
+	// Subscribes to make sure window gets resized properly
+	event_handler.SubscribeToEvent<WindowResizedEvent>([this](const EventPtr<WindowResizedEvent>& event) {
+		SetSize(event->width, event->height);
+	});
 }
 
 GLWindow::~GLWindow() { DestroyWindow(); }
@@ -36,7 +43,6 @@ void GLWindow::CreateWindow(i32 width, i32 height, const std::string& title) {
 		WindowData& data = *(WindowData*) glfwGetWindowUserPointer(window);
 		data.width       = width;
 		data.height      = height;
-
 		data.event_handler.PublishEvent<WindowResizedEvent>(std::make_shared<WindowResizedEvent>(width, height));
 	});
 
@@ -114,6 +120,7 @@ void GLWindow::SetSize(i32 width, i32 height) {
 	m_window_data->width  = width;
 	m_window_data->height = height;
 	glfwSetWindowSize(m_window, m_window_data->width, m_window_data->height);
+	m_framebuffer->Resize(width, height);
 }
 
 void GLWindow::SetVSync(bool enabled) {
@@ -124,6 +131,8 @@ void GLWindow::SetVSync(bool enabled) {
 bool GLWindow::IsVSync() const { return m_window_data->vsync; }
 
 WindowData& GLWindow::GetWindowData() const { return *m_window_data; }
+
+GLFramebuffer& GLWindow::GetFrameBuffer() const { return *m_framebuffer; }
 
 GLFWwindow* GLWindow::GetNativeWindow() const { return m_window; }
 } // namespace Spark

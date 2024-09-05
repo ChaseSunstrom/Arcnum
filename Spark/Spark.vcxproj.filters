@@ -939,6 +939,9 @@
     <ClInclude Include="core\util\general.hpp" />
     <ClInclude Include="core\spark.hpp" />
     <ClInclude Include="core\util\fps.hpp" />
+    <ClInclude Include="core\util\time.hpp" />
+    <ClInclude Include="core\window\framebuffer.hpp" />
+    <ClInclude Include="core\window\gl\gl_framebuffer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\app\application.cpp">
@@ -989,5 +992,7 @@
     <ClCompile Include="core\physics\rigid_body.cpp" />
     <ClCompile Include="core\physics\physics.cpp" />
     <ClCompile Include="core\scene\scene.cpp" />
+    <ClCompile Include="core\util\time.cpp" />
+    <ClCompile Include="core\window\gl\gl_framebuffer.cpp" />
   </ItemGroup>
 </Project>

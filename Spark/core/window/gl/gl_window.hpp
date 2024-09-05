@@ -5,6 +5,7 @@
 #include <core/pch.hpp>
 #include <core/util/gl.hpp>
 #include <core/window/window.hpp>
+#include "gl_framebuffer.hpp"
 
 namespace Spark {
 class GLWindow : public Window {
@@ -19,6 +20,7 @@ class GLWindow : public Window {
 	void SetVSync(bool enabled) override;
 	bool IsVSync() const override;
 	WindowData& GetWindowData() const override;
+	GLFramebuffer& GetFrameBuffer() const override;
 	GLFWwindow* GetNativeWindow() const;
 
   private:
@@ -26,6 +28,7 @@ class GLWindow : public Window {
 
   private:
 	GLFWwindow* m_window;
+	std::unique_ptr<GLFramebuffer> m_framebuffer;
 };
 } // namespace Spark
 

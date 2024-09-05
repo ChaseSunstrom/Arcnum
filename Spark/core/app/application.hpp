@@ -232,7 +232,7 @@ Application& Application::CreateWindow(const std::string& title, i32 width, i32 
 
 template <IsRenderer T>
 Application& Application::CreateRenderer() {
-	m_renderer = std::make_unique<T>(m_gapi);
+	m_renderer = std::make_unique<T>(m_gapi, m_window->GetFrameBuffer());
 	return *this;
 }
 

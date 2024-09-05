@@ -58,7 +58,7 @@ template <class F, class... Args> std::future<typename std::invoke_result<F, Arg
 		std::unique_lock<std::mutex> lock(m_queue_mutex);
 
 		if (m_stop) {
-			LOG_FATAL("[THREAD POOL]: Enqueue() called after shutdown");
+			LOG_FATAL("[ THREAD POOL ] Enqueue() called after shutdown");
 		}
 
 		u32 queue_index = SelectQueue();
@@ -66,7 +66,7 @@ template <class F, class... Args> std::future<typename std::invoke_result<F, Arg
 			try {
 				(*task)();
 			} catch (std::runtime_error& e) {
-				LOG_ERROR("[THREAD POOL]: Task threw an exception" << e.what());
+				LOG_ERROR("[ THREAD POOL ] Task threw an exception" << e.what());
 			}
 			if (synchronize) {
 				// Only decrement sync_tasks if it was a synchronized task

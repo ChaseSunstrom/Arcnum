@@ -18,7 +18,7 @@ void ThreadPool::SyncThisThread(bool register_for_sync) {
 		(*it)->is_registered_for_sync.store(register_for_sync, std::memory_order_release);
 		(*it)->has_reached_sync_point.store(!register_for_sync, std::memory_order_release);
 	} else {
-		LOG_FATAL("[THREAD POOL]: Current thread is not part of the thread pool");
+		LOG_FATAL("[ THREAD POOL ] Current thread is not part of the thread pool");
 	}
 	m_sync_condition.notify_all();
 }
@@ -42,7 +42,7 @@ bool ThreadPool::SyncRegisteredTasks(std::chrono::milliseconds timeout) {
 			tcb->has_reached_sync_point.store(false, std::memory_order_release);
 		}
 	} else {
-		LOG_ERROR("[THREAD POOL]: Sync timed out after " << timeout.count() << "ms");
+		LOG_ERROR("[ THREAD POOL ] Sync timed out after " << timeout.count() << "ms");
 	}
 
 	return synced;

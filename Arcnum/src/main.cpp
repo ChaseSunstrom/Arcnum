@@ -11,7 +11,7 @@ void startup_fn2(Spark::Application& app) {
 	auto& ecs = app.GetEcs();
 
 	for (i32 i = 0; i < 5000; i++) {
-		auto& e = ecs.MakeEntity();
+		auto& e = ecs.MakeEntity(Spark::PairOf("transform", Spark::TransformComponent(glm::vec3(0))));
 		ecs.AddComponent(e, "model", Spark::ModelComponent("model"));
 	}
 }

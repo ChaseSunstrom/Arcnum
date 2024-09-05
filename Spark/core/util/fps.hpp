@@ -3,6 +3,7 @@
 
 #include <core/pch.hpp>
 #include <core/ecs/system.hpp>
+#include "time.hpp"
 
 namespace Spark {
 class FPSCalculator {
@@ -30,8 +31,9 @@ class FPSCalculator {
 			m_current_fps        = 1.0 / average_frame_time;
 
 			std::string title    = std::to_string(static_cast<i32>(m_current_fps));
+			auto now               = std::chrono::system_clock::now();
 
-			LOG_INFO(__TIME__ << " FPS { " << title << " }");
+			LOG_INFO("FPS: " << title << "   " << std::setprecision(2) << average_frame_time << "ms");
 
 			m_last_update_time = current_time;
 		}

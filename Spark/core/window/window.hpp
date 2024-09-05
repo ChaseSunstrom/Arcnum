@@ -1,6 +1,7 @@
 #ifndef SPARK_WINDOW_HPP
 #define SPARK_WINDOW_HPP
 
+#include "framebuffer.hpp"
 #include <core/event/event.hpp>
 #include <core/event/event_handler.hpp>
 #include <core/pch.hpp>
@@ -35,6 +36,7 @@ class Window {
 	virtual void SetVSync(bool enabled)                                        = 0;
 	virtual bool IsVSync() const                                               = 0;
 	virtual WindowData& GetWindowData() const                                  = 0;
+	virtual Framebuffer& GetFrameBuffer() const                                = 0;
 
   protected:
 	std::unique_ptr<WindowData> m_window_data;

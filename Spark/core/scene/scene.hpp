@@ -40,7 +40,12 @@ namespace Spark {
 	template<> class Manager<Scene> : public IManager {
 	  public:
 		Manager()
-			: m_registry(std::make_unique<Registry<Scene>>()) {}
+			: m_registry(std::make_unique<Registry<Scene>>()) 
+		{
+			// Default scene
+			Create("Default Scene");
+		}
+
 		~Manager() = default;
 
 		template<typename... Args> Scene& Create(const std::string& name, Args&&... args) {

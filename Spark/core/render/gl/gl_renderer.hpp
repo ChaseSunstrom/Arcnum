@@ -27,14 +27,13 @@ namespace Spark {
 		void RenderPostProcessPass();
 		void RenderFramebufferToScreen();
 
-		void RenderStaticModels(const std::vector<StaticModel*>& models);
-		void RenderDynamicModels(const std::vector<DynamicModel*>& models);
 		void SetupInstancedRendering(const GLStaticMesh& mesh, size_t instance_count);
 		void UpdateInstanceBuffer(const std::vector<glm::mat4>& transforms);
 
-		void SetCommonUniforms(RenderShader* shader);
+		void SetCommonUniforms(GLRenderShader* shader);
 
 	  private:
+		GLFramebuffer&                  m_g_framebuffer;
 		std::unique_ptr<GLRenderShader> m_geometry_pass_shader;
 		std::unique_ptr<GLRenderShader> m_lighting_pass_shader;
 		std::unique_ptr<GLRenderShader> m_post_process_shader;

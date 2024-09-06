@@ -163,10 +163,12 @@
     <ClInclude Include="core\event\event.hpp" />
     <ClInclude Include="core\event\event_handler.hpp" />
     <ClInclude Include="core\lighting\lighting.hpp" />
+    <ClInclude Include="core\math\math.hpp" />
     <ClInclude Include="core\pch.hpp" />
     <ClInclude Include="core\physics\collision_shape.hpp" />
     <ClInclude Include="core\physics\physics.hpp" />
     <ClInclude Include="core\physics\rigid_body.hpp" />
+    <ClInclude Include="core\render\camera.hpp" />
     <ClInclude Include="core\render\gl\gl_material.hpp" />
     <ClInclude Include="core\render\gl\gl_mesh.hpp" />
     <ClInclude Include="core\render\gl\gl_renderer.hpp" />
@@ -448,7 +450,6 @@
     <ClCompile Include="core\render\gl\gl_shader.cpp" />
     <ClCompile Include="core\scene\octree.cpp" />
     <ClCompile Include="core\scene\scene.cpp" />
-    <ClCompile Include="core\scene\transform.cpp" />
     <ClCompile Include="core\system\file_serializer.cpp" />
     <ClCompile Include="core\util\file.cpp" />
     <ClCompile Include="core\util\log.cpp" />

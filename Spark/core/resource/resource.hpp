@@ -7,6 +7,7 @@
 #include <core/render/model.hpp>
 #include <core/render/shader.hpp>
 #include <core/scene/scene.hpp>
+#include <core/render/camera.hpp>
 #include <core/system/manager.hpp>
 
 namespace Spark {
@@ -32,6 +33,7 @@ namespace Spark {
 			m_managers[typeid(DynamicModel)] = std::make_unique<Manager<DynamicModel>>();
 			m_managers[typeid(RenderShader)] = std::make_unique<Manager<RenderShader>>();
 			m_managers[typeid(Scene)]        = std::make_unique<Manager<Scene>>();
+			m_managers[typeid(Camera)]       = std::make_unique<Manager<Camera>>();
 		}
 
 		~Manager() = default;

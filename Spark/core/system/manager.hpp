@@ -20,7 +20,7 @@ namespace Spark {
 			return Register(name, std::unique_ptr<T>(object));
 		}
 
-		Handle Register(const std::string& name, std::unique_ptr<T> object) { return m_registry->Register(name, std::move(object)); }
+		T& Register(const std::string& name, std::unique_ptr<T> object) { return m_registry->Register(name, std::move(object)); }
 
 		T& Get(const std::string& name) const { return m_registry->Get(name); }
 

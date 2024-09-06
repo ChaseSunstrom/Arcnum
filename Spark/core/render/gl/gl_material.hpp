@@ -22,7 +22,7 @@ namespace Spark {
 
 		void ApplyToShader(RenderShader* shader) const override {
 			// Set common material properties
-			shader->SetVec3("u_material.albedo", m_albedo);
+			shader->SetVec4("u_material.albedo", m_albedo);
 			shader->SetF32("u_material.metallic", m_metallic);
 			shader->SetF32("u_material.roughness", m_roughness);
 

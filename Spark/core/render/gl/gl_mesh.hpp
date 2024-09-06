@@ -8,6 +8,7 @@
 namespace Spark {
 	class GLStaticMesh : public StaticMesh {
 	  public:
+		friend class Manager<StaticMesh>;
 		void CreateMesh() override;
 
 		u32 GetVAO() const { return m_vao; }
@@ -27,6 +28,7 @@ namespace Spark {
 
 	class GLDynamicMesh : public DynamicMesh {
 	  public:
+		friend class Manager<DynamicMesh>;
 		void CreateMesh() override;
 		void Update(const std::vector<Vertex>& vertices, const std::vector<u32>& indices) override;
 		void UpdateMesh(const std::vector<Vertex>& vertices) override;

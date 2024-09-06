@@ -33,6 +33,8 @@ namespace Spark {
 			},
 			{true, false});
 
+		m_event_handler->SubscribeToEvent<WindowResizedEvent>([this](const EventPtr<WindowResizedEvent>& event) { m_resource_manager->GetManager<Camera>().OnEvent(event); });
+		
 		RunStartupFunctions();
 		m_ecs->Start();
 

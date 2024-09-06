@@ -1,8 +1,6 @@
 #version 330 core
-out vec4 frag_color;
-
 in vec2 v_texcoords;
-
+out vec4 frag_color;
 uniform sampler2D u_screen_texture;
 
 void main()

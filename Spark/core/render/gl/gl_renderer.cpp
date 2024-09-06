@@ -8,22 +8,22 @@ namespace Spark {
 
 	GLRenderer::GLRenderer(GraphicsAPI gapi, Framebuffer& framebuffer, Manager<Resource>& resource_manager)
 		: Renderer(gapi, framebuffer, resource_manager)
+		, m_g_framebuffer(dynamic_cast<GLFramebuffer&>(framebuffer))
 		, m_window_width(framebuffer.GetWidth())
 		, m_window_height(framebuffer.GetHeight()) {
-		// Initialize G-Buffer
-		auto& gl_fbuffer = dynamic_cast<GLFramebuffer&>(m_framebuffer);
-		gl_fbuffer.AddColorAttachment(GL_RGB16F, GL_RGB, GL_FLOAT);      // Position
-		gl_fbuffer.AddColorAttachment(GL_RGB16F, GL_RGB, GL_FLOAT);      // Normal
-		gl_fbuffer.AddColorAttachment(GL_RGB, GL_RGB, GL_UNSIGNED_BYTE); // Albedo
-		gl_fbuffer.AddDepthAttachment();
+		m_g_framebuffer.AddColorAttachment(GL_RGB16F, GL_RGB, GL_FLOAT);      // Position
+		m_g_framebuffer.AddColorAttachment(GL_RGB16F, GL_RGB, GL_FLOAT);      // Normal
+		m_g_framebuffer.AddColorAttachment(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE); // Albedo
+		m_g_framebuffer.AddDepthAttachment();
+		m_g_framebuffer.Finalize();
 
 		std::filesystem::path current_file(__FILE__);
 		std::filesystem::path current_directory = current_file.parent_path();
 
 		// Initialize shaders
-		m_geometry_pass_shader = std::make_unique<GLRenderShader>(std::vector<std::pair<ShaderStage, const std::filesystem::path>>{
-			{  ShaderStage::VERTEX, current_directory / "shaders/geometry_pass.vert"},
-			{ShaderStage::FRAGMENT, current_directory / "shaders/geometry_pass.frag"}
+		m_geometry_pass_shader                  = std::make_unique<GLRenderShader>(std::vector<std::pair<ShaderStage, const std::filesystem::path>>{
+            {  ShaderStage::VERTEX, current_directory / "shaders/geometry_pass.vert"},
+            {ShaderStage::FRAGMENT, current_directory / "shaders/geometry_pass.frag"}
         });
 
 		m_geometry_pass_shader->Compile();
@@ -69,15 +69,16 @@ namespace Spark {
 
 	void GLRenderer::Render(const Scene& scene) {
 		RenderGeometryPass(scene);
-		RenderLightingPass();
-		RenderPostProcessPass();
+		// RenderLightingPass();
+		// RenderPostProcessPass();
 		RenderFramebufferToScreen();
 	}
 
 	void GLRenderer::RenderGeometryPass(const Scene& scene) {
-		auto& gl_fbuffer = dynamic_cast<GLFramebuffer&>(m_framebuffer);
-		gl_fbuffer.Bind();
+		m_g_framebuffer.Bind();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glViewport(0, 0, m_window_width, m_window_height);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f); // Dark gray background
 
 		m_geometry_pass_shader->Use();
 		SetCommonUniforms(m_geometry_pass_shader.get());
@@ -92,7 +93,7 @@ namespace Spark {
 			const GLStaticMesh& mesh     = static_cast<const GLStaticMesh&>(model->GetMesh());
 			const GLMaterial*   material = static_cast<const GLMaterial*>(model->GetMaterial());
 
-			RenderShader* shader         = material && material->HasCustomShader() ? material->GetCustomShader() : m_geometry_pass_shader.get();
+			GLRenderShader* shader       = material && material->HasCustomShader() ? static_cast<GLRenderShader*>(material->GetCustomShader()) : m_geometry_pass_shader.get();
 
 			shader->Use();
 			SetCommonUniforms(shader);
@@ -100,6 +101,9 @@ namespace Spark {
 			if (material) {
 				material->ApplyToShader(shader);
 			}
+
+			// Bind the VAO before setting up instanced rendering
+			glBindVertexArray(mesh.GetVAO());
 
 			// Set up instanced rendering
 			SetupInstancedRendering(mesh, transforms.size());
@@ -107,59 +111,13 @@ namespace Spark {
 			// Update instance buffer with transforms
 			UpdateInstanceBuffer(transforms);
 
-			glBindVertexArray(mesh.GetVAO());
 			glDrawElementsInstanced(GL_TRIANGLES, mesh.GetIndicesSize(), GL_UNSIGNED_INT, 0, transforms.size());
 		}
 
-		gl_fbuffer.Unbind();
-	}
-
-	void GLRenderer::RenderStaticModels(const std::vector<StaticModel*>& models) {
-		for (const auto* model : models) {
-			const GLStaticMesh& mesh     = static_cast<const GLStaticMesh&>(model->GetMesh());
-			const GLMaterial*   material = static_cast<const GLMaterial*>(model->GetMaterial());
-
-			RenderShader* shader         = material && material->HasCustomShader() ? material->GetCustomShader() : m_geometry_pass_shader.get();
-
-			shader->Use();
-			SetCommonUniforms(shader);
-
-			// Set model matrix
-			shader->SetMat4("u_model", model->GetModelMatrix());
-
-			if (material) {
-				material->ApplyToShader(shader);
-			}
-
-			glBindVertexArray(mesh.GetVAO());
-			glDrawElements(GL_TRIANGLES, mesh.GetIndicesSize(), GL_UNSIGNED_INT, 0);
-		}
-	}
-
-	void GLRenderer::RenderDynamicModels(const std::vector<DynamicModel*>& models) {
-		for (const auto* model : models) {
-			const GLDynamicMesh& mesh     = static_cast<const GLDynamicMesh&>(model->GetMesh());
-			const GLMaterial*    material = static_cast<const GLMaterial*>(model->GetMaterial());
-
-			RenderShader* shader          = material && material->HasCustomShader() ? material->GetCustomShader() : m_geometry_pass_shader.get();
-
-			shader->Use();
-			SetCommonUniforms(shader);
-
-			// Set model matrix
-			shader->SetMat4("u_model", model->GetModelMatrix());
-
-			if (material) {
-				material->ApplyToShader(shader);
-			}
-
-			glBindVertexArray(mesh.GetVAO());
-			glDrawElements(GL_TRIANGLES, mesh.GetIndicesSize(), GL_UNSIGNED_INT, 0);
-		}
+		m_g_framebuffer.Unbind();
 	}
 
 	void GLRenderer::RenderLightingPass() {
-		auto& gl_fbuffer = dynamic_cast<GLFramebuffer&>(m_framebuffer);
 		m_framebuffer.Bind();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -167,15 +125,15 @@ namespace Spark {
 
 		// Bind G-Buffer textures
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, gl_fbuffer.GetColorAttachment(0)); // Position
+		glBindTexture(GL_TEXTURE_2D, m_g_framebuffer.GetColorAttachment(0)); // Position
 		m_lighting_pass_shader->SetI32("g_position", 0);
 
 		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, gl_fbuffer.GetColorAttachment(1)); // Normal
+		glBindTexture(GL_TEXTURE_2D, m_g_framebuffer.GetColorAttachment(1)); // Normal
 		m_lighting_pass_shader->SetI32("g_normal", 1);
 
 		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, gl_fbuffer.GetColorAttachment(2)); // Albedo
+		glBindTexture(GL_TEXTURE_2D, m_g_framebuffer.GetColorAttachment(2)); // Albedo
 		m_lighting_pass_shader->SetI32("g_albedo", 2);
 
 		// Set lighting uniforms
@@ -197,21 +155,41 @@ namespace Spark {
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		m_screen_shader->Use();
+
 		glBindVertexArray(m_quad_vao);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, dynamic_cast<GLFramebuffer&>(m_framebuffer).GetColorAttachment(0));
+		glBindTexture(GL_TEXTURE_2D, m_g_framebuffer.GetColorAttachment(2));
+
 		m_screen_shader->SetI32("u_screen_texture", 0);
+
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
 
-	void GLRenderer::SetCommonUniforms(RenderShader* shader) {
-		// Set view and projection matrices
-		// TODO: Implement a camera system and set view/projection matrices here
-		glm::mat4 view       = glm::mat4(1.0f);
-		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (f32) m_window_width / (f32) m_window_height, 0.1f, 100.0f);
+	void GLRenderer::SetCommonUniforms(GLRenderShader* shader) {
+		Camera& camera = m_resource_manager.GetManager<Camera>().GetCurrentCamera();
 
-		shader->SetMat4("u_view", view);
-		shader->SetMat4("u_projection", projection);
+		// Get uniform locations
+		GLint view_loc = glGetUniformLocation(shader->GetId(), "u_view");
+		GLint proj_loc = glGetUniformLocation(shader->GetId(), "u_projection");
+
+		if (view_loc == -1 || proj_loc == -1) {
+			LOG_ERROR("Unable to find uniform locations for view or projection matrices");
+			return; // Early return to avoid setting invalid uniforms
+		}
+
+		// Get matrices from camera
+		Math::Mat4 view_matrix = camera.GetViewMatrix();
+		Math::Mat4 proj_matrix = camera.GetProjectionMatrix();
+
+		// Set uniforms
+		shader->SetMat4("u_view", view_matrix);
+		shader->SetMat4("u_projection", proj_matrix);
+
+		// Check for OpenGL errors
+		GLenum error = glGetError();
+		if (error != GL_NO_ERROR) {
+			LOG_ERROR("OpenGL error occurred while setting uniforms: " << error);
+		}
 	}
 
 	void GLRenderer::UpdateInstanceBuffer(const std::vector<glm::mat4>& transforms) {
@@ -240,14 +218,12 @@ namespace Spark {
 
 			// Set up attribute pointers for the instance matrix
 			for (u32 i = 0; i < 4; ++i) {
-				glEnableVertexAttribArray(3 + i); // Assuming attributes 0, 1, 2 are used for vertex data
+				glEnableVertexAttribArray(3 + i);
 				glVertexAttribPointer(3 + i, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*) (sizeof(glm::vec4) * i));
-				glVertexAttribDivisor(3 + i, 1);  // This attribute changes for each instance
+				glVertexAttribDivisor(3 + i, 1);
 			}
 
 			m_instance_vbos[vao] = instance_vbo;
 		}
-
-		// No need to update the buffer here, as it will be done in UpdateInstanceBuffer
 	}
 } // namespace Spark

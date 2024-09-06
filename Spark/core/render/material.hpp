@@ -2,6 +2,7 @@
 #define SPARK_MATERIAL_HPP
 
 #include <core/pch.hpp>
+#include <core/math/math.hpp>
 #include <core/render/shader.hpp>
 
 namespace Spark {
@@ -22,11 +23,11 @@ namespace Spark {
 		bool          HasCustomShader() const { return m_custom_shader != nullptr; }
 
 		// Common material properties
-		void SetAlbedo(const glm::vec3& albedo) { m_albedo = albedo; }
+		void SetAlbedo(const Math::Vec4& albedo) { m_albedo = albedo; }
 		void SetMetallic(f32 metallic) { m_metallic = metallic; }
 		void SetRoughness(f32 roughness) { m_roughness = roughness; }
 
-		const glm::vec3& GetAlbedo() const { return m_albedo; }
+		const Math::Vec4& GetAlbedo() const { return m_albedo; }
 		f32              GetMetallic() const { return m_metallic; }
 		f32              GetRoughness() const { return m_roughness; }
 
@@ -48,12 +49,38 @@ namespace Spark {
 		RenderShader* m_custom_shader;
 
 		// Common material properties
-		glm::vec3 m_albedo;
+		Math::Vec4 m_albedo;
 		f32       m_metallic;
 		f32       m_roughness;
 
 		// Custom properties
 		std::unordered_map<std::string, std::any> m_custom_properties;
+	};
+
+	template<> class Manager<Material> : public IManager {
+	  public:
+		Manager()
+			: m_registry(std::make_unique<Registry<Material>>()) {}
+		~Manager() = default;
+
+		template<typename DerivedMaterial, typename... Args> DerivedMaterial& Create(const std::string& name, Args&&... args) {
+			auto object = std::make_unique<DerivedMaterial>(name, std::forward<Args>(args)...);
+			return static_cast<DerivedMaterial&>(Register(name, std::move(object)));
+		}
+
+		Material& Register(const std::string& name, std::unique_ptr<Material> object) { return m_registry->Register(name, std::move(object)); }
+
+		Material&                Get(const std::string& name) const { return m_registry->Get(name); }
+		Material&                Get(const Handle handle) const { return m_registry->Get(handle); }
+		void                     Remove(const std::string& name) { m_registry->Remove(name); }
+		void                     Remove(const Handle handle) { m_registry->Remove(handle); }
+		size_t                   GetSize() const { return m_registry->GetSize(); }
+		std::vector<std::string> GetKeys() const { return m_registry->GetKeys(); }
+		void                     SetRegistry(std::unique_ptr<Registry<Material>> registry) { m_registry = std::move(registry); }
+		Registry<Material>&      GetRegistry() const { return *m_registry; }
+
+	  private:
+		std::unique_ptr<Registry<Material>> m_registry;
 	};
 
 } // namespace Spark

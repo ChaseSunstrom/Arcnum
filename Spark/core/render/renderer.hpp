@@ -8,6 +8,7 @@
 #include <core/scene/transform.hpp>
 #include <core/window/framebuffer.hpp>
 #include <core/resource/resource.hpp>
+#include "camera.hpp"
 
 namespace Spark {
 	class Renderer {

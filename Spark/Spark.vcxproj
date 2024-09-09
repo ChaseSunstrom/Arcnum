@@ -151,7 +151,7 @@
     <ClInclude Include="core\api.hpp" />
     <ClInclude Include="core\app\application.hpp" />
     <ClInclude Include="core\audio\audio.hpp" />
-    <ClInclude Include="core\debug\fps.hpp" />
+    <ClInclude Include="core\profile\fps.hpp" />
     <ClInclude Include="core\ecs\component.hpp" />
     <ClInclude Include="core\ecs\components\model_component.hpp" />
     <ClInclude Include="core\ecs\components\name_component.hpp" />

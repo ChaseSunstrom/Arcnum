@@ -201,9 +201,6 @@
     <ClInclude Include="core\util\defines.hpp">
       <Filter>core\util</Filter>
     </ClInclude>
-    <ClInclude Include="core\util\file.hpp">
-      <Filter>core\util</Filter>
-    </ClInclude>
     <ClInclude Include="core\util\gl.hpp">
       <Filter>core\util</Filter>
     </ClInclude>
@@ -935,13 +932,30 @@
     <ClInclude Include="core\ecs\components\rigid_body_component.hpp" />
     <ClInclude Include="core\util\general.hpp" />
     <ClInclude Include="core\spark.hpp" />
-    <ClInclude Include="core\util\fps.hpp" />
     <ClInclude Include="core\util\time.hpp" />
     <ClInclude Include="core\window\framebuffer.hpp" />
     <ClInclude Include="core\window\gl\gl_framebuffer.hpp" />
     <ClInclude Include="core\ecs\components\name_component.hpp" />
     <ClInclude Include="core\render\camera.hpp" />
     <ClInclude Include="core\math\math.hpp" />
+    <ClInclude Include="core\profile\fps.hpp" />
+    <ClInclude Include="core\util\classic\compare.hpp" />
+    <ClInclude Include="core\util\classic\file.hpp" />
+    <ClInclude Include="core\util\classic\util.hpp" />
+    <ClInclude Include="core\util\container\array.hpp" />
+    <ClInclude Include="core\util\container\callable.hpp" />
+    <ClInclude Include="core\util\container\list.hpp" />
+    <ClInclude Include="core\util\container\map.hpp" />
+    <ClInclude Include="core\util\container\pair.hpp" />
+    <ClInclude Include="core\util\container\queue.hpp" />
+    <ClInclude Include="core\util\container\stack.hpp" />
+    <ClInclude Include="core\util\container\unordered_map.hpp" />
+    <ClInclude Include="core\util\container\vector.hpp" />
+    <ClInclude Include="core\util\memory\const_ptr.hpp" />
+    <ClInclude Include="core\util\memory\ref_ptr.hpp" />
+    <ClInclude Include="core\util\memory\shared_ptr.hpp" />
+    <ClInclude Include="core\util\memory\unique_ptr.hpp" />
+    <ClInclude Include="core\util\memory\weak_ptr.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\app\application.cpp">
@@ -968,9 +982,6 @@
     <ClCompile Include="core\system\file_serializer.cpp">
       <Filter>core\system</Filter>
     </ClCompile>
-    <ClCompile Include="core\util\file.cpp">
-      <Filter>core\util</Filter>
-    </ClCompile>
     <ClCompile Include="core\util\log.cpp">
       <Filter>core\util</Filter>
     </ClCompile>
@@ -991,15 +1002,6 @@
     <ClCompile Include="core\scene\scene.cpp" />
     <ClCompile Include="core\util\time.cpp" />
     <ClCompile Include="core\window\gl\gl_framebuffer.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="shaders\geometry_pass.vert" />
-    <None Include="shaders\geometry_pass.frag" />
-    <None Include="shaders\lighting_pass.vert" />
-    <None Include="shaders\lighting_pass.frag" />
-    <None Include="shaders\post_process.vert" />
-    <None Include="shaders\post_process.frag" />
-    <None Include="shaders\screen.vert" />
-    <None Include="shaders\screen.frag" />
+    <ClCompile Include="core\util\classic\file.cpp" />
   </ItemGroup>
 </Project>

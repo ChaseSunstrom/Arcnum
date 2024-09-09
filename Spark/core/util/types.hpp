@@ -1,7 +1,6 @@
 #ifndef SPARK_TYPES_HPP
 #define SPARK_TYPES_HPP
 
-#include <cstddef>
 #include <cstdint>
 
 // Types

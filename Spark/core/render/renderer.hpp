@@ -18,7 +18,7 @@ namespace Spark {
 			, m_framebuffer(framebuffer)
 			, m_resource_manager(resource_manager) {}
 		virtual ~Renderer()                     = default;
-		virtual void Render(const Scene& scene) = 0;
+		virtual void Render(ConstPtr<Scene> scene) = 0;
 
 	  protected:
 		GraphicsAPI        m_gapi;

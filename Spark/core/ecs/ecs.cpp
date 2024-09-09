@@ -20,12 +20,12 @@ namespace Spark {
 		}
 	}
 
-	Entity& Ecs::GetEntity(const u32 id) const {
+	RefPtr<Entity> Ecs::GetEntity(const u32 id) const {
 		auto it = std::find_if(m_entities.begin(), m_entities.end(), [id](const Entity& e) { return e.GetId() == id; });
 		if (it != m_entities.end()) {
 			return const_cast<Entity&>(*it);
 		}
-		throw std::runtime_error("Entity not found");
+		LOG_FATAL("Entity not found");
 	}
 
 	i64 Ecs::GetEntityCount() const { return m_entities.size(); }
@@ -49,12 +49,12 @@ namespace Spark {
 		m_recycled_ids.push(recycled_id);
 	}
 
-	void Ecs::RemoveAllEntityComponents(Entity& entity) { RemoveAllEntityComponents(entity.GetId()); }
+	void Ecs::RemoveAllEntityComponents(RefPtr<Entity> entity) { RemoveAllEntityComponents(entity->GetId()); }
 
 	void Ecs::RemoveAllEntityComponents(const u32 id) {
 		// Remove components from the entity
-		Entity& entity = GetEntity(id);
-		entity.RemoveAllComponents();
+		auto entity = GetEntity(id);
+		entity->RemoveAllComponents();
 
 		// Remove components from the ECS storage
 		for (auto& [type, component_array] : m_components) {

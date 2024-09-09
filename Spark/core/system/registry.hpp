@@ -2,6 +2,7 @@
 #define SPARK_REGISTRY_HPP
 
 #include <core/pch.hpp>
+#include <core/util/memory/ref_ptr.hpp>
 
 namespace Spark {
 	struct Handle {
@@ -14,13 +15,13 @@ namespace Spark {
 	// std::unique_ptr<T>> so we can name the elements put into this (very useful
 	// for keeping track of meshes, materials, shaders, etc.)
 	template<typename T> class Registry {
-	  public:
+	public:
 		Registry()                           = default;
 		~Registry()                          = default;
 		Registry(const Registry&)            = delete;
 		Registry& operator=(const Registry&) = delete;
 
-		T& Register(const std::string& name, std::unique_ptr<T> object) {
+		RefPtr<T> Register(const std::string& name, std::unique_ptr<T> object) {
 			Handle handle;
 			if (!m_free_indices.empty()) {
 				handle.index = m_free_indices.back();
@@ -64,7 +65,7 @@ namespace Spark {
 			}
 		}
 
-		T& Get(const std::string& name) const {
+		RefPtr<T> Get(const std::string& name) const {
 			auto it = m_registry.find(name);
 			if (it != m_registry.end())
 				return *it->second.second;
@@ -74,7 +75,7 @@ namespace Spark {
 
 		size_t GetSize() const { return m_registry.size(); }
 
-		T& Get(const Handle handle) const {
+		RefPtr<T> Get(const Handle handle) const {
 			if (handle.index < m_handle_values.size() && handle.generation == m_generations[handle.index] && m_handle_values[handle.index].has_value()) {
 				return m_handle_values[handle.index].value().get();
 			}
@@ -116,7 +117,7 @@ namespace Spark {
 
 		u32 Size() const { return m_registry.size(); }
 
-	  private:
+	private:
 		std::unordered_map<std::string, std::pair<Handle, std::unique_ptr<T>>> m_registry;
 		std::vector<std::optional<std::reference_wrapper<T>>>                  m_handle_values;
 		std::vector<u32>                                                       m_generations;

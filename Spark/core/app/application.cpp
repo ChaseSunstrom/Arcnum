@@ -1,6 +1,6 @@
 #include "application.hpp"
 #include <core/ecs/components/transform_component.hpp>
-#include <core/util/fps.hpp>
+#include <core/debug/fps.hpp>
 
 namespace Spark {
 
@@ -40,6 +40,7 @@ namespace Spark {
 
 		while (Running()) {
 			Update();
+
 		}
 	}
 
@@ -48,7 +49,7 @@ namespace Spark {
 		m_ecs->Update(m_delta_time);
 		m_window->Update();
 
-		auto& cur_scene = m_resource_manager->GetManager<Scene>().GetCurrentScene();
+		auto cur_scene = m_resource_manager->GetManager<Scene>().GetCurrentScene();
 
 		m_renderer->Render(cur_scene);
 	}

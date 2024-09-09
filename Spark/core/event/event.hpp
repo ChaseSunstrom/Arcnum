@@ -160,6 +160,10 @@ namespace Spark {
 	};
 
 	struct WindowClosedEvent : public Event<WindowClosedEvent> {};
+
+	template <typename T, typename... Args> EventPtr<T> MakeEvent(Args&&... args) {
+		return std::make_shared<T>(std::forward<Args>(args)...);
+	}
 } // namespace Spark
 
 #endif

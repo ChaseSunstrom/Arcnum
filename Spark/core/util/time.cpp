@@ -1,4 +1,5 @@
 #include "time.hpp"
+#include <chrono>
 
 namespace Spark {
 	std::string GetCurrentTime() {

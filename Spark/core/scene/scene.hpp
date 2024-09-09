@@ -8,7 +8,7 @@
 
 namespace Spark {
 	class Scene {
-	  public:
+	public:
 		friend class Manager<Scene>;
 		~Scene() = default;
 
@@ -19,57 +19,53 @@ namespace Spark {
 		Octree& GetOctree() { return *m_octree; }
 
 		// New methods for managing model instances
-		void AddModelInstance(Entity& entity, const std::string& model_name, const glm::mat4& transform);
-		void UpdateModelInstance(const std::string& model_name, size_t index, const glm::mat4& transform);
+		void AddModelInstance(Entity& entity, const std::string& model_name, const Math::Mat4& transform);
+		void UpdateModelInstance(const std::string& model_name, size_t index, const Math::Mat4& transform);
 		void RemoveModelInstance(const std::string& model_name, size_t index);
 
 		// Method to get all model instances
-		const std::unordered_map<std::string, std::vector<glm::mat4>>& GetModelInstances() const { return m_model_instances; }
+		const std::unordered_map<std::string, std::vector<Math::Mat4>>& GetModelInstances() const { return m_model_instances; }
 
-	  private:
-		Scene(const glm::vec3& center = glm::vec3(0), f32 width = 100)
-			: m_octree(std::make_unique<Octree>(center, width)) {}
+	private:
+		Scene(const Math::Vec3& center = Math::Vec3(0), f32 width = 100) : m_octree(std::make_unique<Octree>(center, width)) {}
 
-	  private:
-		std::unique_ptr<Octree>                                 m_octree;
-		std::unordered_map<std::string, std::vector<glm::mat4>> m_model_instances;
-		std::unordered_map<i64, std::pair<std::string, size_t>> m_entity_to_instance_map;
+	private:
+		std::unique_ptr<Octree>                                  m_octree;
+		std::unordered_map<std::string, std::vector<Math::Mat4>> m_model_instances;
+		std::unordered_map<i64, std::pair<std::string, size_t>>  m_entity_to_instance_map;
 	};
 
 	// Deleted Copy functions
 	template<> class Manager<Scene> : public IManager {
-	  public:
+	public:
 		Manager()
-			: m_registry(std::make_unique<Registry<Scene>>()) 
-		{
+			: m_registry(std::make_unique<Registry<Scene>>()) {
 			// Default scene
 			Create("Default Scene");
 		}
 
 		~Manager() = default;
 
-		template<typename... Args> Scene& Create(const std::string& name, Args&&... args) {
+		template<typename... Args> RefPtr<Scene> Create(const std::string& name, Args&&... args) {
 			Scene* object = new Scene(std::forward<Args>(args)...);
 			Register(name, std::unique_ptr<Scene>(object));
 
 			if (GetSize() == 1)
-				m_current_scene = &Get(name);
+				m_current_scene = Get(name);
 
 			return *m_current_scene;
 		}
 
 		void OnEvent(const std::shared_ptr<ComponentEvent<TransformComponent>> event) { m_current_scene->OnEvent(event); }
 
-		Scene& Register(const std::string& name, std::unique_ptr<Scene> object) { return m_registry->Register(name, std::move(object)); }
+		RefPtr<Scene> Register(const std::string& name, std::unique_ptr<Scene> object) { return m_registry->Register(name, std::move(object)); }
+		RefPtr<Scene> Get(const std::string& name) const { return m_registry->Get(name); }
+		RefPtr<Scene> Get(const Handle handle) const { return m_registry->Get(handle); }
+		RefPtr<Scene> GetCurrentScene() const { return m_current_scene; }
 
-		Scene& Get(const std::string& name) const { return m_registry->Get(name); }
-
-		Scene& Get(const Handle handle) const { return m_registry->Get(handle); }
-
-		Scene& GetCurrentScene() const { return *m_current_scene; }
-		Scene& SetCurrentScene(const std::string& name) {
-			m_current_scene = &m_registry->Get(name);
-			return *m_current_scene;
+		RefPtr<Scene> SetCurrentScene(const std::string& name) {
+			m_current_scene = m_registry->Get(name);
+			return m_current_scene;
 		}
 
 		void Remove(const std::string& name) { m_registry->Remove(name); }
@@ -84,8 +80,8 @@ namespace Spark {
 
 		Registry<Scene>& GetRegistry() const { return *m_registry; }
 
-	  private:
-		Scene*                           m_current_scene;
+	private:
+		RefPtr<Scene>                    m_current_scene;
 		std::unique_ptr<Registry<Scene>> m_registry;
 	};
 } // namespace Spark

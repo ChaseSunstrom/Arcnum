@@ -1,6 +1,7 @@
 // framebuffer.hpp
 #ifndef SPARK_FRAMEBUFFER_HPP
 #define SPARK_FRAMEBUFFER_HPP
+
 #include <core/pch.hpp>
 
 namespace Spark {

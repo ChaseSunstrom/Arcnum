@@ -147,7 +147,8 @@ namespace Spark {
 			size_t size;
 			ReadRaw(size);
 			for (size_t i = 0; i < size; i++) {
-				std::string key = ReadString();
+				std::string key;
+				ReadString(key);
 
 				V value;
 				if constexpr (std::is_trivial<V>())

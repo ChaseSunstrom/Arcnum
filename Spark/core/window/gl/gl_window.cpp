@@ -41,13 +41,13 @@ namespace Spark {
 			WindowData& data = *(WindowData*) glfwGetWindowUserPointer(window);
 			data.width       = width;
 			data.height      = height;
-			data.event_handler.PublishEvent<WindowResizedEvent>(std::make_shared<WindowResizedEvent>(width, height));
+			data.event_handler.PublishEvent<WindowResizedEvent>(MakeEvent<WindowResizedEvent>(width, height));
 		});
 
 		glfwSetWindowCloseCallback(m_window, [](GLFWwindow* window) {
 			WindowData& data = *(WindowData*) glfwGetWindowUserPointer(window);
 
-			data.event_handler.PublishEvent<WindowClosedEvent>(std::make_shared<WindowClosedEvent>());
+			data.event_handler.PublishEvent<WindowClosedEvent>(MakeEvent<WindowClosedEvent>());
 		});
 
 		glfwSetKeyCallback(m_window, [](GLFWwindow* window, i32 key, i32 scancode, i32 action, i32 mods) {
@@ -55,15 +55,15 @@ namespace Spark {
 
 			switch (action) {
 				case GLFW_PRESS: {
-					data.event_handler.PublishEvent<KeyPressedEvent>(std::make_shared<KeyPressedEvent>(key, 0));
+					data.event_handler.PublishEvent<KeyPressedEvent>(MakeEvent<KeyPressedEvent>(key, 0));
 					break;
 				}
 				case GLFW_RELEASE: {
-					data.event_handler.PublishEvent<KeyReleasedEvent>(std::make_shared<KeyReleasedEvent>(key));
+					data.event_handler.PublishEvent<KeyReleasedEvent>(MakeEvent<KeyReleasedEvent>(key));
 					break;
 				}
 				case GLFW_REPEAT: {
-					data.event_handler.PublishEvent<KeyHeldEvent>(std::make_shared<KeyHeldEvent>(key));
+					data.event_handler.PublishEvent<KeyHeldEvent>(MakeEvent<KeyHeldEvent>(key));
 					break;
 				}
 			}
@@ -74,11 +74,11 @@ namespace Spark {
 
 			switch (action) {
 				case GLFW_PRESS: {
-					data.event_handler.PublishEvent<MouseButtonPressedEvent>(std::make_shared<MouseButtonPressedEvent>(button));
+					data.event_handler.PublishEvent<MouseButtonPressedEvent>(MakeEvent<MouseButtonPressedEvent>(button));
 					break;
 				}
 				case GLFW_RELEASE: {
-					data.event_handler.PublishEvent<MouseButtonReleasedEvent>(std::make_shared<MouseButtonReleasedEvent>(button));
+					data.event_handler.PublishEvent<MouseButtonReleasedEvent>(MakeEvent<MouseButtonReleasedEvent>(button));
 					break;
 				}
 			}
@@ -87,13 +87,13 @@ namespace Spark {
 		glfwSetCursorPosCallback(m_window, [](GLFWwindow* window, f64 x, f64 y) {
 			WindowData& data = *(WindowData*) glfwGetWindowUserPointer(window);
 
-			data.event_handler.PublishEvent<MouseMovedEvent>(std::make_shared<MouseMovedEvent>(x, y));
+			data.event_handler.PublishEvent<MouseMovedEvent>(MakeEvent<MouseMovedEvent>(x, y));
 		});
 
 		glfwSetScrollCallback(m_window, [](GLFWwindow* window, f64 x, f64 y) {
 			WindowData& data = *(WindowData*) glfwGetWindowUserPointer(window);
 
-			data.event_handler.PublishEvent<MouseScrolledEvent>(std::make_shared<MouseScrolledEvent>(x, y));
+			data.event_handler.PublishEvent<MouseScrolledEvent>(MakeEvent<MouseScrolledEvent>(x, y));
 		});
 	}
 

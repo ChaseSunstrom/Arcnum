@@ -29,14 +29,14 @@ namespace Spark {
 		}
 	}
 
-	void Scene::AddModelInstance(Entity& entity, const std::string& model_name, const glm::mat4& transform) {
+	void Scene::AddModelInstance(Entity& entity, const std::string& model_name, const Math::Mat4& transform) {
 		m_model_instances[model_name].push_back(transform);
 		size_t index = m_model_instances[model_name].size() - 1;
 
 		m_entity_to_instance_map[entity.GetId()] = {model_name, index};
 	}
 
-	void Scene::UpdateModelInstance(const std::string& model_name, size_t index, const glm::mat4& transform) {
+	void Scene::UpdateModelInstance(const std::string& model_name, size_t index, const Math::Mat4& transform) {
 		if (m_model_instances.count(model_name) > 0 && index < m_model_instances[model_name].size()) {
 			m_model_instances[model_name][index] = transform;
 		}

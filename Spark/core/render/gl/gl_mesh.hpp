@@ -16,7 +16,7 @@ namespace Spark {
 		u32 GetEBO() const { return m_ebo; }
 
 	  private:
-		GLStaticMesh(const std::vector<Vertex>& vertices, const std::vector<u32>& indices)
+		GLStaticMesh(const std::vector<Vertex>& vertices, const std::vector<u32>& indices = {})
 			: StaticMesh(vertices, indices) {}
 
 

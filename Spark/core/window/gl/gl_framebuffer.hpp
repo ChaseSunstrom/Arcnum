@@ -3,7 +3,6 @@
 
 #include <core/util/gl.hpp>
 #include <core/window/framebuffer.hpp>
-#include <vector>
 
 namespace Spark {
 

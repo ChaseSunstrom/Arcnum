@@ -21,30 +21,23 @@ namespace Spark {
 		}
 
 		bool IsPointInside(const Math::Vec3& point) const {
-			for (i32 i = 0; i < 6; ++i) {
-				if (Math::Dot(Math::Vec3(planes[i]), point) + planes[i].w < 0) {
-					return false;
-				}
-			}
+			for (i32 i = 0; i < 6; ++i) { if (Math::Dot(Math::Vec3(planes[i]), point) + planes[i].w < 0) { return false; } }
 			return true;
 		}
 
 		bool IsSphereInside(const Math::Vec3& center, f32 radius) const {
-			for (i32 i = 0; i < 6; ++i) {
-				if (Math::Dot(Math::Vec3(planes[i]), center) + planes[i].w < -radius) {
-					return false;
-				}
-			}
+			for (i32 i = 0; i < 6; ++i) { if (Math::Dot(Math::Vec3(planes[i]), center) + planes[i].w < -radius) { return false; } }
 			return true;
 		}
 	};
 
 	class Camera {
-	  public:
+	public:
 		friend class Manager<Camera>;
 		~Camera() = default;
 		void             SetTransform(const Transform& transform) { m_transform = transform; }
 		void             SetPosition(const Math::Vec3& position) { m_transform.SetPosition(position); }
+		void             SetPosition(f32 x, f32 y, f32 z) { m_transform.SetPosition(Math::Vec3(x, y, z)); }
 		const Math::Vec3 GetPosition() const { return m_transform.GetPosition(); }
 		void             SetRotation(const Math::Vec3& euler) { m_transform.SetRotation(Math::EulerToQuaternion(euler)); }
 		void             SetRotation(const Math::Quat& rotation) { m_transform.SetRotation(rotation); }
@@ -63,16 +56,29 @@ namespace Spark {
 		f32              GetNear() const { return m_near; }
 		void             SetFar(f32 far) { m_far = far; }
 		f32              GetFar() const { return m_far; }
-		void             Zoom(f32 amount) { m_fov -= amount; }
+		void             ZoomIn(f32 amount) { m_fov -= amount; }
+		void             ZoomOut(f32 amount) { m_fov += amount; }
 		void             Move(const Math::Vec3& direction) { m_transform.Move(direction); }
+		void             MoveX(f32 amount) { m_transform.MoveX(amount); }
+		void             MoveY(f32 amount) { m_transform.MoveY(amount); }
+		void             MoveZ(f32 amount) { m_transform.MoveZ(amount); }
+		void             Rotate(const Math::Vec3& euler) { m_transform.Rotate(euler); }
+		void             RotateX(f32 angle) { m_transform.RotateX(angle); }
+		void             RotateY(f32 angle) { m_transform.RotateY(angle); }
+		void             RotateZ(f32 angle) { m_transform.RotateZ(angle); }
 		void             Rotate(const Math::Vec3& axis, f32 angle) { m_transform.Rotate(axis, angle); }
 		void             Scale(const Math::Vec3& scale) { m_transform.Scale(scale); }
 		void             LookAt(const Math::Vec3& target) { m_transform.SetRotation(Math::EulerAngles(Math::Inverse(Math::LookAt(m_transform.GetPosition(), target, Math::Vec3(0, 1, 0))))); }
-		void             UpdateFrustum() { Math::Mat4 view_projection = GetProjectionMatrix() * GetViewMatrix(); m_frustum.Update(view_projection); }
-		bool			 IsPointVisible(const Math::Vec3& point) const { return m_frustum.IsPointInside(point); }
-		bool			 IsSphereVisible(const Math::Vec3& center, f32 radius) const { return m_frustum.IsSphereInside(center, radius); }
 
-	  private:
+		void UpdateFrustum() {
+			Math::Mat4 view_projection = GetProjectionMatrix() * GetViewMatrix();
+			m_frustum.Update(view_projection);
+		}
+
+		bool IsPointVisible(const Math::Vec3& point) const { return m_frustum.IsPointInside(point); }
+		bool IsSphereVisible(const Math::Vec3& center, f32 radius) const { return m_frustum.IsSphereInside(center, radius); }
+
+	private:
 		Camera(const Math::Vec3& position     = Math::Vec3(0.0f, 0.0f, 5.0f),
 		       const Math::Vec3& target       = Math::Vec3(0.0f, 0.0f, 0.0f),
 		       const Math::Vec3& up           = Math::Vec3(0.0f, 1.0f, 0.0f),
@@ -91,15 +97,12 @@ namespace Spark {
 			m_transform.SetRotation(Math::Quat(1, 0, 0, 0));
 
 			// If you want the camera to look at the target:
-			if (position != target) {
-				LookAt(target);
-			}
+			if (position != target) { LookAt(target); }
 
 			UpdateFrustum();
 		}
 
-
-	  private:
+	private:
 		Transform m_transform;
 		Frustum   m_frustum;
 		f32       m_fov;
@@ -109,43 +112,44 @@ namespace Spark {
 	};
 
 	template<> class Manager<Camera> : public IManager {
-	  public:
+	public:
 		Manager()
 			: m_registry(std::make_unique<Registry<Camera>>()) {
 			// Default camera
 			Create("Default Camera");
 		}
+
 		~Manager() = default;
 
-		template<typename... Args> Camera& Create(const std::string& name, Args&&... args) {
+		template<typename... Args> RefPtr<Camera> Create(const std::string& name, Args&&... args) {
 			Camera* object = new Camera(std::forward<Args>(args)...);
 			Register(name, std::unique_ptr<Camera>(object));
 
 			if (GetSize() == 1)
-				m_current_camera = &Get(name);
+				m_current_camera = Get(name);
 
-			return *m_current_camera;
+			return m_current_camera;
 		}
 
 		u32 GetSize() const { return m_registry->GetSize(); }
 
 		void OnEvent(const EventPtr<WindowResizedEvent> event) { m_current_camera->SetAspectRatio(static_cast<f32>(event->width) / static_cast<f32>(event->height)); }
 
-		Camera& Register(const std::string& name, std::unique_ptr<Camera> object) { return m_registry->Register(name, std::move(object)); }
+		RefPtr<Camera> Register(const std::string& name, std::unique_ptr<Camera> object) { return m_registry->Register(name, std::move(object)); }
 
-		Camera& Get(const std::string& name) const { return m_registry->Get(name); }
+		RefPtr<Camera> Get(const std::string& name) const { return m_registry->Get(name); }
 
-		Camera& Get(const Handle handle) const { return m_registry->Get(handle); }
+		RefPtr<Camera> Get(const Handle handle) const { return m_registry->Get(handle); }
 
-		Camera& GetCurrentCamera() const { return *m_current_camera; }
+		RefPtr<Camera> GetCurrentCamera() const { return m_current_camera; }
 
-		Camera& SetCurrentCamera(const std::string& name) {
-			m_current_camera = &m_registry->Get(name);
-			return *m_current_camera;
+		RefPtr<Camera> SetCurrentCamera(const std::string& name) {
+			m_current_camera = m_registry->Get(name);
+			return m_current_camera;
 		}
 
-	  private:
-		Camera*                           m_current_camera;
+	private:
+		RefPtr<Camera>                    m_current_camera;
 		std::unique_ptr<Registry<Camera>> m_registry;
 	};
 } // namespace Spark

@@ -1,7 +1,7 @@
 #ifndef SPARK_MATH_HPP
 #define SPARK_MATH_HPP
 
-#include <core/pch.hpp>
+#include <cmath>
 #include <include/glm/geometric.hpp>
 #include <include/glm/gtc/random.hpp>
 #include <include/glm/gtx/norm.hpp>
@@ -115,7 +115,6 @@ namespace Spark::Math {
 
 	// Permutations and Combinations
 	inline i32 Permutations(i32 n, i32 r) { return Factorial(n) / Factorial(n - r); }
-
 	inline i32 Combinations(i32 n, i32 r) { return Permutations(n, r) / Factorial(r); }
 
 	// Greatest Common Divisor (GCD) using Euclidean algorithm
@@ -221,7 +220,7 @@ namespace Spark::Math {
 	inline f32  AngleBetween(const Vec3& a, const Vec3& b) { return Math::Acos(Dot(Normalize(a), Normalize(b))); }
 
 	// Quat functions
-	inline Quat EulerToQuaternion(const Vec3& euler) { return glm::quat(glm::vec3(glm::radians(euler.x), glm::radians(euler.y), glm::radians(euler.z))); }
+	inline Quat EulerToQuaternion(const Vec3& euler) { return Quat(Vec3(glm::radians(euler.x), glm::radians(euler.y), glm::radians(euler.z))); }
 	inline Quat MatrixToQuaternion(const Mat4& matrix) { return glm::quat_cast(matrix); }
 	inline Quat Slerp(const Quat& a, const Quat& b, f32 t) { return glm::slerp(a, b, t); }
 	inline Quat LookAtQuaternion(const Vec3& direction, const Vec3& up = Vec3(0, 1, 0)) { return glm::quatLookAt(direction, up); }
@@ -242,7 +241,7 @@ namespace Spark::Math {
 	// Intersection tests
 	inline bool RayPlaneIntersection(const Vec3& ray_origin, const Vec3& ray_dir, const Vec3& plane_normal, const Vec3& plane_point, f32& t) {
 		f32 denom = Dot(plane_normal, ray_dir);
-		if (Math::Abs(denom) > EPSILON) {
+		if (Abs(denom) > EPSILON) {
 			Vec3 p0l0 = plane_point - ray_origin;
 			t         = Dot(p0l0, plane_normal) / denom;
 			return (t >= 0);
@@ -260,7 +259,7 @@ namespace Spark::Math {
 		if (discriminant < 0)
 			return false;
 
-		t = (-b - Math::Sqrt(discriminant)) / (2.0f * a);
+		t = (-b - Sqrt(discriminant)) / (2.0f * a);
 		return t >= 0;
 	}
 
@@ -277,9 +276,9 @@ namespace Spark::Math {
 		f32 t1 = t - 1;
 		return t1 * t1 * t1 + 1;
 	}
-	inline f32 EaseInSine(f32 t) { return 1.0f - Math::Cos(t * HALF_PI); }
-	inline f32 EaseOutSine(f32 t) { return Math::Sin(t * HALF_PI); }
-	inline f32 EaseInOutSine(f32 t) { return -0.5f * (Math::Cos(PI * t) - 1.0f); }
+	inline f32 EaseInSine(f32 t) { return 1.0f - Cos(t * HALF_PI); }
+	inline f32 EaseOutSine(f32 t) { return Sin(t * HALF_PI); }
+	inline f32 EaseInOutSine(f32 t) { return -0.5f * (Cos(PI * t) - 1.0f); }
 	inline f32 EaseInOutCubic(f32 t) { return t < 0.5f ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1; }
 
 	// Noise functions
@@ -346,6 +345,7 @@ namespace Spark::Math {
 		f32 phi   = Math::Atan2(cartesian.y, cartesian.x);
 		return Vec3(r, theta, phi);
 	}
+	
 	inline Vec3 SphericalToCartesian(const Vec3& spherical) {
 		f32 r = spherical.x, theta = spherical.y, phi = spherical.z;
 		f32 sin_theta = Math::Sin(theta);
@@ -366,16 +366,16 @@ namespace Spark::Math {
 	}
 
 	// Vector casts
-	inline Vec2 Vec2Cast(const Vec3& v) { return Vec2(v); }
-	inline Vec2 Vec2Cast(const Vec4& v) { return Vec2(v); }
-	inline Vec3 Vec3Cast(const Vec2& v, f32 z = 0.0f) { return Vec3(v, z); }
-	inline Vec3 Vec3Cast(const Vec4& v) { return Vec3(v); }
-	inline Vec4 Vec4Cast(const Vec2& v, f32 z = 0.0f, f32 w = 1.0f) { return Vec4(v, z, w); }
-	inline Vec4 Vec4Cast(const Vec3& v, f32 w = 1.0f) { return Vec4(v, w); }
+	inline Vec2 Vec2Cast(const Vec3& v) { return v; }
+	inline Vec2 Vec2Cast(const Vec4& v) { return v;}
+	inline Vec3 Vec3Cast(const Vec2& v, f32 z = 0.0f) { return {v, z}; }
+	inline Vec3 Vec3Cast(const Vec4& v) { return v;}
+	inline Vec4 Vec4Cast(const Vec2& v, f32 z = 0.0f, f32 w = 1.0f) { return {v, z, w}; }
+	inline Vec4 Vec4Cast(const Vec3& v, f32 w = 1.0f) { return {v, w}; }
 
 	// Matrix casts
-	inline Mat3 Mat3Cast(const Mat4& m) { return Mat3(m); }
-	inline Mat4 Mat4Cast(const Mat3& m) { return Mat4(m); }
+	inline Mat3 Mat3Cast(const Mat4& m) { return m; }
+	inline Mat4 Mat4Cast(const Mat3& m) { return m; }
 	inline Mat4 Mat4Cast(const Quat& q) { return glm::mat4_cast(q); }
 	inline Mat3 Mat3Cast(const Quat& q) { return glm::mat3_cast(q); }
 

@@ -1,9 +1,9 @@
 #ifndef SPARK_WINDOW_HPP
 #define SPARK_WINDOW_HPP
 
+#include <core/pch.hpp>
 #include <core/event/event.hpp>
 #include <core/event/event_handler.hpp>
-#include <core/pch.hpp>
 #include "framebuffer.hpp"
 
 namespace Spark {

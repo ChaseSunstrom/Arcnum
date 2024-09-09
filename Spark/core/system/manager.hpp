@@ -15,16 +15,16 @@ namespace Spark {
 			: m_registry(std::make_unique<Registry<T>>()) {}
 		~Manager() = default;
 
-		template<typename... Args> T& Create(const std::string& name, Args&&... args) {
+		template<typename... Args> RefPtr<T> Create(const std::string& name, Args&&... args) {
 			T* object = new T(std::forward<Args>(args)...);
 			return Register(name, std::unique_ptr<T>(object));
 		}
 
-		T& Register(const std::string& name, std::unique_ptr<T> object) { return m_registry->Register(name, std::move(object)); }
+		RefPtr<T> Register(const std::string& name, std::unique_ptr<T> object) { return m_registry->Register(name, std::move(object)); }
 
-		T& Get(const std::string& name) const { return m_registry->Get(name); }
+		RefPtr<T> Get(const std::string& name) const { return m_registry->Get(name); }
 
-		T& Get(const Handle handle) const { return m_registry->Get(handle); }
+		RefPtr<T> Get(const Handle handle) const { return m_registry->Get(handle); }
 
 		T GetCopy(const std::string& name) const { return m_registry->GetCopy(name); }
 

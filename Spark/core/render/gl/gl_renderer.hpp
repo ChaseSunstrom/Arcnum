@@ -19,10 +19,10 @@ namespace Spark {
 		GLRenderer(GraphicsAPI gapi, Framebuffer& framebuffer, Manager<Resource>& resource_manager);
 		~GLRenderer();
 
-		void Render(const Scene& scene) override;
+		void Render(ConstPtr<Scene> scene) override;
 
 	  private:
-		void RenderGeometryPass(const Scene& scene);
+		void RenderGeometryPass(ConstPtr<Scene> scene);
 		void RenderLightingPass();
 		void RenderPostProcessPass();
 		void RenderFramebufferToScreen();

@@ -3,6 +3,7 @@
 
 #include <core/pch.hpp>
 #include <core/math/math.hpp>
+#include <core/util/memory/ref_ptr.hpp>
 #include <core/render/shader.hpp>
 
 namespace Spark {
@@ -63,15 +64,15 @@ namespace Spark {
 			: m_registry(std::make_unique<Registry<Material>>()) {}
 		~Manager() = default;
 
-		template<typename DerivedMaterial, typename... Args> DerivedMaterial& Create(const std::string& name, Args&&... args) {
+		template<typename DerivedMaterial, typename... Args> RefPtr<DerivedMaterial> Create(const std::string& name, Args&&... args) {
 			auto object = std::make_unique<DerivedMaterial>(name, std::forward<Args>(args)...);
-			return static_cast<DerivedMaterial&>(Register(name, std::move(object)));
+			return RefCast<DerivedMaterial>(Register(name, std::move(object)));
 		}
 
-		Material& Register(const std::string& name, std::unique_ptr<Material> object) { return m_registry->Register(name, std::move(object)); }
+		RefPtr<Material> Register(const std::string& name, std::unique_ptr<Material> object) { return m_registry->Register(name, std::move(object)); }
 
-		Material&                Get(const std::string& name) const { return m_registry->Get(name); }
-		Material&                Get(const Handle handle) const { return m_registry->Get(handle); }
+		RefPtr<Material>                Get(const std::string& name) const { return m_registry->Get(name); }
+		RefPtr<Material>                Get(const Handle handle) const { return m_registry->Get(handle); }
 		void                     Remove(const std::string& name) { m_registry->Remove(name); }
 		void                     Remove(const Handle handle) { m_registry->Remove(handle); }
 		size_t                   GetSize() const { return m_registry->GetSize(); }

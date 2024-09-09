@@ -1,7 +1,7 @@
 #ifndef SPARK_TIME_HPP
 #define SPARK_TIME_HPP
 
-#include <core/pch.hpp>
+#include <string>
 
 namespace Spark {
 	class Timer {};

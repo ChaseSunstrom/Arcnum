@@ -5,14 +5,13 @@
 #include <include/glm/gtc/matrix_transform.hpp>
 
 namespace Spark {
-
 	GLRenderer::GLRenderer(GraphicsAPI gapi, Framebuffer& framebuffer, Manager<Resource>& resource_manager)
 		: Renderer(gapi, framebuffer, resource_manager)
 		, m_g_framebuffer(dynamic_cast<GLFramebuffer&>(framebuffer))
 		, m_window_width(framebuffer.GetWidth())
 		, m_window_height(framebuffer.GetHeight()) {
-		m_g_framebuffer.AddColorAttachment(GL_RGB16F, GL_RGB, GL_FLOAT);      // Position
-		m_g_framebuffer.AddColorAttachment(GL_RGB16F, GL_RGB, GL_FLOAT);      // Normal
+		m_g_framebuffer.AddColorAttachment(GL_RGB16F, GL_RGB, GL_FLOAT);        // Position
+		m_g_framebuffer.AddColorAttachment(GL_RGB16F, GL_RGB, GL_FLOAT);        // Normal
 		m_g_framebuffer.AddColorAttachment(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE); // Albedo
 		m_g_framebuffer.AddDepthAttachment();
 		m_g_framebuffer.Finalize();
@@ -21,29 +20,29 @@ namespace Spark {
 		std::filesystem::path current_directory = current_file.parent_path();
 
 		// Initialize shaders
-		m_geometry_pass_shader                  = std::make_unique<GLRenderShader>(std::vector<std::pair<ShaderStage, const std::filesystem::path>>{
-            {  ShaderStage::VERTEX, current_directory / "shaders/geometry_pass.vert"},
-            {ShaderStage::FRAGMENT, current_directory / "shaders/geometry_pass.frag"}
-        });
+		m_geometry_pass_shader = std::make_unique<GLRenderShader>(std::vector<std::pair<ShaderStage, const std::filesystem::path>>{
+			{ShaderStage::VERTEX, current_directory / "shaders/geometry_pass.vert"},
+			{ShaderStage::FRAGMENT, current_directory / "shaders/geometry_pass.frag"}
+		});
 
 		m_geometry_pass_shader->Compile();
 
 		m_lighting_pass_shader = std::make_unique<GLRenderShader>(std::vector<std::pair<ShaderStage, const std::filesystem::path>>{
-			{  ShaderStage::VERTEX, current_directory / "shaders/lighting_pass.vert"},
+			{ShaderStage::VERTEX, current_directory / "shaders/lighting_pass.vert"},
 			{ShaderStage::FRAGMENT, current_directory / "shaders/lighting_pass.frag"}
-        });
+		});
 		m_lighting_pass_shader->Compile();
 
 		m_post_process_shader = std::make_unique<GLRenderShader>(std::vector<std::pair<ShaderStage, const std::filesystem::path>>{
-			{  ShaderStage::VERTEX, current_directory / "shaders/post_process.vert"},
+			{ShaderStage::VERTEX, current_directory / "shaders/post_process.vert"},
 			{ShaderStage::FRAGMENT, current_directory / "shaders/post_process.frag"}
-        });
+		});
 		m_post_process_shader->Compile();
 
 		m_screen_shader = std::make_unique<GLRenderShader>(std::vector<std::pair<ShaderStage, const std::filesystem::path>>{
-			{  ShaderStage::VERTEX, current_directory / "shaders/screen.vert"},
+			{ShaderStage::VERTEX, current_directory / "shaders/screen.vert"},
 			{ShaderStage::FRAGMENT, current_directory / "shaders/screen.frag"}
-        });
+		});
 		m_screen_shader->Compile();
 
 		// Setup quad for fullscreen passes
@@ -62,19 +61,17 @@ namespace Spark {
 	GLRenderer::~GLRenderer() {
 		glDeleteVertexArrays(1, &m_quad_vao);
 		glDeleteBuffers(1, &m_quad_vbo);
-		for (auto& [vao, instance_vbo] : m_instance_vbos) {
-			glDeleteBuffers(1, &instance_vbo);
-		}
+		for (auto& [vao, instance_vbo] : m_instance_vbos) { glDeleteBuffers(1, &instance_vbo); }
 	}
 
-	void GLRenderer::Render(const Scene& scene) {
+	void GLRenderer::Render(ConstPtr<Scene> scene) {
 		RenderGeometryPass(scene);
 		// RenderLightingPass();
 		// RenderPostProcessPass();
 		RenderFramebufferToScreen();
 	}
 
-	void GLRenderer::RenderGeometryPass(const Scene& scene) {
+	void GLRenderer::RenderGeometryPass(ConstPtr<Scene> scene) {
 		m_g_framebuffer.Bind();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glViewport(0, 0, m_window_width, m_window_height);
@@ -83,27 +80,25 @@ namespace Spark {
 		m_geometry_pass_shader->Use();
 		SetCommonUniforms(m_geometry_pass_shader.get());
 
-		const auto& model_instances = scene.GetModelInstances();
+		const auto& model_instances = scene->GetModelInstances();
 		const auto& model_manager   = m_resource_manager.GetManager<StaticModel>();
 		for (const auto& [model_name, transforms] : model_instances) {
-			const StaticModel* model = &model_manager.Get(model_name);
+			ConstPtr<StaticModel> model = model_manager.Get(model_name);
 			if (!model)
 				continue;
 
-			const GLStaticMesh& mesh     = static_cast<const GLStaticMesh&>(model->GetMesh());
-			const GLMaterial*   material = static_cast<const GLMaterial*>(model->GetMaterial());
+			ConstPtr<GLStaticMesh> mesh     = ConstCast<GLStaticMesh>(model->GetMesh());
+			ConstPtr<GLMaterial>   material = ConstCast<GLMaterial>(RefPtr(model->GetMaterial()));
 
-			GLRenderShader* shader       = material && material->HasCustomShader() ? static_cast<GLRenderShader*>(material->GetCustomShader()) : m_geometry_pass_shader.get();
+			GLRenderShader* shader = material && material->HasCustomShader() ? static_cast<GLRenderShader*>(material->GetCustomShader()) : m_geometry_pass_shader.get();
 
 			shader->Use();
 			SetCommonUniforms(shader);
 
-			if (material) {
-				material->ApplyToShader(shader);
-			}
+			if (material) { material->ApplyToShader(shader); }
 
 			// Bind the VAO before setting up instanced rendering
-			glBindVertexArray(mesh.GetVAO());
+			glBindVertexArray(mesh->GetVAO());
 
 			// Set up instanced rendering
 			SetupInstancedRendering(mesh, transforms.size());
@@ -111,7 +106,9 @@ namespace Spark {
 			// Update instance buffer with transforms
 			UpdateInstanceBuffer(transforms);
 
-			glDrawElementsInstanced(GL_TRIANGLES, mesh.GetIndicesSize(), GL_UNSIGNED_INT, 0, transforms.size());
+			if (mesh->GetIndicesSize() == 0) { glDrawArraysInstanced(GL_TRIANGLES, 0, mesh->GetVerticesSize(), transforms.size()); } else {
+				glDrawElementsInstanced(GL_TRIANGLES, mesh->GetIndicesSize(), GL_UNSIGNED_INT, 0, transforms.size());
+			}
 		}
 
 		m_g_framebuffer.Unbind();
@@ -158,7 +155,7 @@ namespace Spark {
 
 		glBindVertexArray(m_quad_vao);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, m_g_framebuffer.GetColorAttachment(2));
+		glBindTexture(GL_TEXTURE_2D, m_g_framebuffer.GetColorAttachment(0));
 
 		m_screen_shader->SetI32("u_screen_texture", 0);
 
@@ -166,7 +163,7 @@ namespace Spark {
 	}
 
 	void GLRenderer::SetCommonUniforms(GLRenderShader* shader) {
-		Camera& camera = m_resource_manager.GetManager<Camera>().GetCurrentCamera();
+		RefPtr<Camera> camera = m_resource_manager.GetManager<Camera>().GetCurrentCamera();
 
 		// Get uniform locations
 		GLint view_loc = glGetUniformLocation(shader->GetId(), "u_view");
@@ -178,8 +175,8 @@ namespace Spark {
 		}
 
 		// Get matrices from camera
-		Math::Mat4 view_matrix = camera.GetViewMatrix();
-		Math::Mat4 proj_matrix = camera.GetProjectionMatrix();
+		Math::Mat4 view_matrix = camera->GetViewMatrix();
+		Math::Mat4 proj_matrix = camera->GetProjectionMatrix();
 
 		// Set uniforms
 		shader->SetMat4("u_view", view_matrix);
@@ -187,9 +184,7 @@ namespace Spark {
 
 		// Check for OpenGL errors
 		GLenum error = glGetError();
-		if (error != GL_NO_ERROR) {
-			LOG_ERROR("OpenGL error occurred while setting uniforms: " << error);
-		}
+		if (error != GL_NO_ERROR) { LOG_ERROR("OpenGL error occurred while setting uniforms: " << error); }
 	}
 
 	void GLRenderer::UpdateInstanceBuffer(const std::vector<glm::mat4>& transforms) {

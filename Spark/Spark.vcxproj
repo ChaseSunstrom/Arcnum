@@ -151,6 +151,7 @@
     <ClInclude Include="core\api.hpp" />
     <ClInclude Include="core\app\application.hpp" />
     <ClInclude Include="core\audio\audio.hpp" />
+    <ClInclude Include="core\debug\fps.hpp" />
     <ClInclude Include="core\ecs\component.hpp" />
     <ClInclude Include="core\ecs\components\model_component.hpp" />
     <ClInclude Include="core\ecs\components\name_component.hpp" />
@@ -189,12 +190,27 @@
     <ClInclude Include="core\system\registry.hpp" />
     <ClInclude Include="core\system\serializer.hpp" />
     <ClInclude Include="core\ui\ui.hpp" />
+    <ClInclude Include="core\util\classic\compare.hpp" />
+    <ClInclude Include="core\util\classic\file.hpp" />
+    <ClInclude Include="core\util\classic\util.hpp" />
+    <ClInclude Include="core\util\container\array.hpp" />
+    <ClInclude Include="core\util\container\callable.hpp" />
+    <ClInclude Include="core\util\container\list.hpp" />
+    <ClInclude Include="core\util\container\map.hpp" />
+    <ClInclude Include="core\util\container\pair.hpp" />
+    <ClInclude Include="core\util\container\queue.hpp" />
+    <ClInclude Include="core\util\container\stack.hpp" />
+    <ClInclude Include="core\util\container\unordered_map.hpp" />
+    <ClInclude Include="core\util\container\vector.hpp" />
     <ClInclude Include="core\util\defines.hpp" />
-    <ClInclude Include="core\util\file.hpp" />
-    <ClInclude Include="core\util\fps.hpp" />
     <ClInclude Include="core\util\general.hpp" />
     <ClInclude Include="core\util\gl.hpp" />
     <ClInclude Include="core\util\log.hpp" />
+    <ClInclude Include="core\util\memory\const_ptr.hpp" />
+    <ClInclude Include="core\util\memory\ref_ptr.hpp" />
+    <ClInclude Include="core\util\memory\shared_ptr.hpp" />
+    <ClInclude Include="core\util\memory\unique_ptr.hpp" />
+    <ClInclude Include="core\util\memory\weak_ptr.hpp" />
     <ClInclude Include="core\util\thread_pool.hpp" />
     <ClInclude Include="core\util\time.hpp" />
     <ClInclude Include="core\util\types.hpp" />
@@ -451,7 +467,83 @@
     <ClCompile Include="core\scene\octree.cpp" />
     <ClCompile Include="core\scene\scene.cpp" />
     <ClCompile Include="core\system\file_serializer.cpp" />
-    <ClCompile Include="core\util\file.cpp" />
+    <ClCompile Include="core\util\classic\file.cpp">
+      <AssemblerOutput>NoListing</AssemblerOutput>
+      <AssemblerListingLocation>..\obj\Release-windows-x86_64\Spark\</AssemblerListingLocation>
+      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
+      <BrowseInformation>false</BrowseInformation>
+      <BrowseInformationFile>..\obj\Release-windows-x86_64\Spark\</BrowseInformationFile>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <CompileAs>Default</CompileAs>
+      <ConformanceMode>Default</ConformanceMode>
+      <DiagnosticsFormat>Column</DiagnosticsFormat>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <ErrorReporting>Prompt</ErrorReporting>
+      <ExpandAttributedSource>false</ExpandAttributedSource>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <EnableASAN>false</EnableASAN>
+      <EnableFuzzer>false</EnableFuzzer>
+      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <GenerateModuleDependencies>false</GenerateModuleDependencies>
+      <GenerateSourceDependencies>false</GenerateSourceDependencies>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>Default</LanguageStandard_C>
+      <MinimalRebuild>false</MinimalRebuild>
+      <ModuleDependenciesFile>..\obj\Release-windows-x86_64\Spark\</ModuleDependenciesFile>
+      <ModuleOutputFile>..\obj\Release-windows-x86_64\Spark\</ModuleOutputFile>
+      <OmitDefaultLibName>false</OmitDefaultLibName>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <Optimization>Full</Optimization>
+      <ObjectFileName>..\obj\Release-windows-x86_64\Spark\</ObjectFileName>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ProgramDataBaseFileName>..\bin\Release-windows-x86_64\Spark\Spark.pdb</ProgramDataBaseFileName>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>..\obj\Release-windows-x86_64\Spark\Spark.pch</PrecompiledHeaderOutputFile>
+      <PreprocessToFile>false</PreprocessToFile>
+      <PreprocessKeepComments>false</PreprocessKeepComments>
+      <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+      <ShowIncludes>false</ShowIncludes>
+      <SourceDependenciesFile>..\obj\Release-windows-x86_64\Spark\</SourceDependenciesFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <SpectreMitigation>false</SpectreMitigation>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <SupportJustMyCode>false</SupportJustMyCode>
+      <TrackerLogDirectory>..\obj\Release-windows-x86_64\Spark\Spark.tlog\</TrackerLogDirectory>
+      <TranslateIncludes>false</TranslateIncludes>
+      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <UseFullPaths>true</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <XMLDocumentationFileName>..\obj\Release-windows-x86_64\Spark\</XMLDocumentationFileName>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <IntelJCCErratum>false</IntelJCCErratum>
+      <BuildStlModules>false</BuildStlModules>
+      <TreatAngleIncludeAsExternal>false</TreatAngleIncludeAsExternal>
+      <ExternalWarningLevel>Level3</ExternalWarningLevel>
+      <TreatExternalTemplatesAsInternal>true</TreatExternalTemplatesAsInternal>
+      <DisableAnalyzeExternal>false</DisableAnalyzeExternal>
+      <PreprocessorDefinitions>NDEBUG;_CRT_SECURE_NO_WARNINGS;_UNICODE;UNICODE;</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;include;</AdditionalIncludeDirectories>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <StringPooling>true</StringPooling>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LibCompiled>true</LibCompiled>
+    </ClCompile>
     <ClCompile Include="core\util\log.cpp" />
     <ClCompile Include="core\util\thread_pool.cpp" />
     <ClCompile Include="core\util\time.cpp" />
@@ -459,16 +551,6 @@
     <ClCompile Include="core\window\gl\gl_window.cpp" />
     <ClCompile Include="include\glm\detail\glm.cpp" />
     <ClCompile Include="lib\windows\glad\glad.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="shaders\geometry_pass.frag" />
-    <None Include="shaders\geometry_pass.vert" />
-    <None Include="shaders\lighting_pass.frag" />
-    <None Include="shaders\lighting_pass.vert" />
-    <None Include="shaders\post_process.frag" />
-    <None Include="shaders\post_process.vert" />
-    <None Include="shaders\screen.frag" />
-    <None Include="shaders\screen.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

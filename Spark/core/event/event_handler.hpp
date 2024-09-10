@@ -20,7 +20,7 @@ namespace Spark {
 		template<IsEvent T> void SubscribeToEvent(std::function<void(const EventPtr<T>&)> handler, const FunctionSettings settings = {}) {
 			std::lock_guard<std::mutex> lock(m_mutex);
 			m_single_event_handlers[typeid(T)].push_back({[handler](const EventPtr<IEvent>& base_event) {
-															  if (auto derived_event = std::dynamic_pointer_cast<T>(base_event)) {
+															  if (auto derived_event = DynamicPointerCast<T>(base_event)) {
 																  handler(derived_event);
 															  }
 														  },
@@ -30,7 +30,7 @@ namespace Spark {
 		template<IsEvent... EventTypes> void SubscribeToMultipleEvents(std::function<void(const MultiEventPtr<EventTypes...>&)> handler, const FunctionSettings settings = {}) {
 			std::lock_guard<std::mutex> lock(m_mutex);
 			auto                        wrapper = [handler](const EventPtr<IEvent>& base_event) {
-                if ((std::dynamic_pointer_cast<EventTypes>(base_event) || ...)) {
+                if ((DynamicPointerCast<EventTypes>(base_event) || ...)) {
                     auto multi_event = CreateMultiEvent<EventTypes...>(base_event);
                     if (multi_event) {
                         handler(multi_event);
@@ -79,7 +79,7 @@ namespace Spark {
 			m_multi_event_handlers[typeid(T)].push_back({handler, settings});
 		}
 
-		template<IsEvent... EventTypes> static MultiEventPtr<EventTypes...> CreateMultiEvent(const EventPtr<IEvent>& base_event) { return std::make_shared<MultiEvent<EventTypes...>>(base_event); }
+		template<IsEvent... EventTypes> static MultiEventPtr<EventTypes...> CreateMultiEvent(const EventPtr<IEvent>& base_event) { return MakeShared<MultiEvent<EventTypes...>>(base_event); }
 
 		std::unordered_map<std::type_index, std::vector<std::pair<std::function<void(const EventPtr<IEvent>&)>, FunctionSettings>>> m_single_event_handlers;
 		std::unordered_map<std::type_index, std::vector<std::pair<std::function<void(const EventPtr<IEvent>&)>, FunctionSettings>>> m_multi_event_handlers;

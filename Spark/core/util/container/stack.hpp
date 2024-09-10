@@ -18,12 +18,15 @@ namespace Spark {
 		Stack()
 			: m_data(nullptr)
 			, m_size(0)
-			, m_capacity(0) {}
+			, m_capacity(0) {
+			Reserve(1);
+		}
 
 		Stack(const std::stack<T>& other)
-			: m_data(new T[other.size()])
+			: m_data(nullptr)
 			, m_size(other.size())
 			, m_capacity(other.size()) {
+			Reserve(other.size());
 			std::stack<T> tmp = other;
 			for (i32 i = m_size - 1; i >= 0; --i) {
 				m_data[i] = tmp.top();
@@ -32,11 +35,19 @@ namespace Spark {
 		}
 
 		explicit Stack(size_t initial_capacity)
-			: m_data(new T[initial_capacity])
+			: m_data(nullptr)
 			, m_size(0)
-			, m_capacity(initial_capacity) {}
+			, m_capacity(initial_capacity) {
+			Reserve(initial_capacity);
+		}
 
-		~Stack() { delete[] m_data; }
+		~Stack() {
+			for (size_t i = 0; i < m_size; ++i) {
+				m_data[i].~T();
+			}
+			::operator delete(m_data);
+		}
+
 
 		Stack(const Stack& other)
 			: m_data(new T[other.m_capacity])
@@ -54,14 +65,28 @@ namespace Spark {
 			return *this;
 		}
 
-		void Push(ConstReference value) {
-			if (m_size == m_capacity) { Reserve(m_capacity == 0 ? 1 : m_capacity * 2); }
-			m_data[m_size++] = value;
+		void Push(const T& value) {
+			if (m_size == m_capacity) {
+				Reserve(m_capacity == 0 ? 1 : m_capacity * 2);
+			}
+			new (m_data + m_size) T(value);
+			++m_size;
+		}
+
+		void Push(T&& value) {
+			if (m_size == m_capacity) {
+				Reserve(m_capacity == 0 ? 1 : m_capacity * 2);
+			}
+			new (m_data + m_size) T(Move(value));
+			++m_size;
 		}
 
 		void Pop() {
-			if (Empty()) { LOG_FATAL("Stack is empty"); }
+			if (Empty()) {
+				return;
+			}
 			--m_size;
+			m_data[m_size].~T();
 		}
 
 		Reference Top() {
@@ -84,9 +109,12 @@ namespace Spark {
 
 		void Reserve(size_t new_capacity) {
 			if (new_capacity > m_capacity) {
-				Pointer new_data = new T[new_capacity];
-				Copy(m_data, m_data + m_size, new_data);
-				delete[] m_data;
+				T* new_data = static_cast<T*>(::operator new(new_capacity * sizeof(T)));
+				for (size_t i = 0; i < m_size; ++i) {
+					new (new_data + i) T(Move(m_data[i]));
+					m_data[i].~T();
+				}
+				::operator delete(m_data);
 				m_data     = new_data;
 				m_capacity = new_capacity;
 			}

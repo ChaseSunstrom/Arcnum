@@ -32,7 +32,7 @@
 #include "system/serializer.hpp"
 #include "util/defines.hpp"
 #include "util/classic/file.hpp"
-#include "debug/fps.hpp"
+#include "profile/fps.hpp"
 #include "util/general.hpp"
 #include "util/thread_pool.hpp"
 #include "window/window.hpp"

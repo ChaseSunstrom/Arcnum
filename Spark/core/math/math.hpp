@@ -2,6 +2,7 @@
 #define SPARK_MATH_HPP
 
 #include <cmath>
+#include <core/util/types.hpp>
 #include <include/glm/geometric.hpp>
 #include <include/glm/gtc/random.hpp>
 #include <include/glm/gtx/norm.hpp>
@@ -225,6 +226,7 @@ namespace Spark::Math {
 	inline Quat Slerp(const Quat& a, const Quat& b, f32 t) { return glm::slerp(a, b, t); }
 	inline Quat LookAtQuaternion(const Vec3& direction, const Vec3& up = Vec3(0, 1, 0)) { return glm::quatLookAt(direction, up); }
 	inline Quat RotationBetweenVectors(const Vec3& start, const Vec3& dest) { return glm::rotation(Normalize(start), Normalize(dest)); }
+	inline Quat Normalize(const Quat& q) { return glm::normalize(q); }
 
 	// Angle functions
 	inline f32 Angle(const Vec3& a, const Vec3& b) { return glm::angle(a, b); }
@@ -400,7 +402,6 @@ namespace Spark::Math {
 
 	inline Vec4 AxisAngleCast(const Mat3& m) { return AxisAngleCast(QuatCast(m)); }
 	inline Vec4 AxisAngleCast(const Mat4& m) { return AxisAngleCast(QuatCast(m)); }
-
 } // namespace Spark::Math
 
 #endif

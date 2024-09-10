@@ -1,6 +1,7 @@
 ﻿#ifndef SPARK_UTIL_HPP
 #define SPARK_UTIL_HPP
 
+#include <core/math/math.hpp>
 #include <core/util/types.hpp>
 
 namespace Spark {
@@ -69,7 +70,9 @@ namespace Spark {
 				if (first[j] < first[k]) {
 					Swap(first + j, first + k);
 					j = k;
-				} else { break; }
+				} else {
+					break;
+				}
 			}
 		}
 	}
@@ -82,7 +85,9 @@ namespace Spark {
 			if (first[j] < first[i]) {
 				Swap(first + j, first + i);
 				i = j;
-			} else { break; }
+			} else {
+				break;
+			}
 		}
 	}
 
@@ -99,7 +104,9 @@ namespace Spark {
 			if (first[i] < first[j]) {
 				Swap(first + i, first + j);
 				i = j;
-			} else { break; }
+			} else {
+				break;
+			}
 		}
 	}
 
@@ -119,17 +126,31 @@ namespace Spark {
 		}
 	}
 
-	template<typename T> void BubbleSort(T* first, T* last) { for (T* i = first; i != last; ++i) { for (T* j = last - 1; j != i; --j) { if (*j < *(j - 1)) { Swap(j, j - 1); } } } }
+	template<typename T> void BubbleSort(T* first, T* last) {
+		for (T* i = first; i != last; ++i) {
+			for (T* j = last - 1; j != i; --j) {
+				if (*j < *(j - 1)) {
+					Swap(j, j - 1);
+				}
+			}
+		}
+	}
 
 	template<typename T> void SelectionSort(T* first, T* last) {
 		for (T* i = first; i != last; ++i) {
 			T* min = i;
-			for (T* j = i + 1; j != last; ++j) { if (*j < *min) { min = j; } }
+			for (T* j = i + 1; j != last; ++j) {
+				if (*j < *min) {
+					min = j;
+				}
+			}
 			Swap(i, min);
 		}
 	}
 
-	template<typename T> T Forward(const T& value) { return value; }
+	template<typename T> constexpr T&& Forward(std::remove_reference_t<T>& t) noexcept { return static_cast<T&&>(t); }
+
+	template<typename T> constexpr T&& Forward(std::remove_reference_t<T>&& t) noexcept { return static_cast<T&&>(t); }
 
 	template<typename T> void Merge(T* first, T* mid, T* last, T* buffer) {
 		T* i = first;
@@ -197,7 +218,7 @@ namespace Spark {
 			Swap(pivot, last - 1);
 			pivot = last - 1;
 
-			T* i = first - 1;
+			T* i  = first - 1;
 			for (T* j = first; j != last - 1; ++j) {
 				if (*j <= *pivot) {
 					++i;
@@ -212,7 +233,6 @@ namespace Spark {
 		InsertionSort(first, last);
 	}
 
-
 	template<typename T> void QuickSort(T* first, T* last) {
 		if (first == last)
 			return;
@@ -221,7 +241,7 @@ namespace Spark {
 		Swap(pivot, last - 1);
 		pivot = last - 1;
 
-		T* i = first - 1;
+		T* i  = first - 1;
 		for (T* j = first; j != last - 1; ++j) {
 			if (*j <= *pivot) {
 				++i;
@@ -239,7 +259,7 @@ namespace Spark {
 		Swap(pivot, last - 1);
 		pivot = last - 1;
 
-		T* i = first - 1;
+		T* i  = first - 1;
 		for (T* j = first; j != last - 1; ++j) {
 			if (*j <= *pivot) {
 				++i;
@@ -252,7 +272,9 @@ namespace Spark {
 
 	template<typename T> void HeapSort(T* first, T* last) {
 		MakeHeap(first, last);
-		for (T* i = last; i != first; --i) { PopHeap(first, i); }
+		for (T* i = last; i != first; --i) {
+			PopHeap(first, i);
+		}
 	}
 
 	template<typename T> void IntroSortImpl(T* first, T* last, i32 max_depth) {
@@ -278,12 +300,20 @@ namespace Spark {
 		InsertionSort(first, last);
 	}
 
-	template<typename T> void Copy(const T* first, const T* last, T* d_first) { while (first != last) { *d_first++ = *first++; } }
+	template<typename T> void Copy(const T* first, const T* last, T* d_first) {
+		while (first != last) {
+			*d_first++ = *first++;
+		}
+	}
 
 	// Overload for non-const source and destination
 	template<typename T> void Copy(T* first, T* last, T* d_first) { Copy(static_cast<const T*>(first), static_cast<const T*>(last), d_first); }
 
-	template<typename T> void CopyBackwards(const T* first, const T* last, T* d_last) { while (first != last) { *--d_last = *--last; } }
+	template<typename T> void CopyBackwards(const T* first, const T* last, T* d_last) {
+		while (first != last) {
+			*--d_last = *--last;
+		}
+	}
 
 	template<typename T> void CopyBackwards(T* first, T* last, T* d_last) { CopyBackwards(static_cast<const T*>(first), static_cast<const T*>(last), d_last); }
 
@@ -301,7 +331,6 @@ namespace Spark {
 			++first;
 		}
 	}
-}
-
+} // namespace Spark
 
 #endif

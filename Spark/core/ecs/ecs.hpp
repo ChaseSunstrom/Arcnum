@@ -11,9 +11,10 @@
 
 namespace Spark {
 	class Ecs {
-	public:
-		Ecs(EventHandler& event_handler) : m_event_handler(event_handler) {}
-		~Ecs() = default;
+	  public:
+		Ecs(RefPtr<EventHandler> event_handler)
+			: m_event_handler(event_handler) {}
+		~Ecs()                     = default;
 
 		Ecs(const Ecs&)            = delete;
 		Ecs& operator=(const Ecs&) = delete;
@@ -22,14 +23,14 @@ namespace Spark {
 		void Update(f32 delta_time);
 		void Shutdown();
 
-		template<IsComponent... Ts> RefPtr<Entity> MakeEntity(const std::pair<const char*, Ts>&... components);
+		template<IsComponent... Ts> RefPtr<Entity> MakeEntity(const Pair<const char*, Ts>&... components);
 		RefPtr<Entity>                             GetEntity(const u32 id) const;
 		i64                                        GetEntityCount() const;
 		void                                       DestroyEntity(const u32 id);
 
-		template<IsComponent T> void AddComponent(RefPtr<Entity> entity, const std::string& name, const T& component);
+		template<IsComponent T> void AddComponent(RefPtr<Entity> entity, const String& name, const T& component);
 
-		template<IsSystem T> void AddSystem(std::unique_ptr<T> system);
+		template<IsSystem T> void AddSystem(UniquePtr<T> system);
 
 		template<IsComponent T> void RemoveComponents(RefPtr<Entity> entity);
 
@@ -38,64 +39,69 @@ namespace Spark {
 
 		template<IsComponent T> i64 GetComponentCount();
 
-		template<IsComponent T> T& GetComponent(RefPtr<Entity> entity, const std::string& name);
+		template<IsComponent T> T& GetComponent(RefPtr<Entity> entity, const String& name);
 
-		template<IsComponent T> T& GetComponent(const u32 id, const std::string& name);
+		template<IsComponent T> T& GetComponent(const u32 id, const String& name);
 
 		template<IsComponent T> Query<T>& GetComponents();
 
-	private:
+	  private:
 		template<IsComponent T> ComponentArray<T>& GetComponentArray();
 
-	private:
-		std::vector<Entity>                                                   m_entities;
-		std::vector<std::unique_ptr<System>>                                  m_systems;
-		std::unordered_map<std::type_index, std::unique_ptr<IComponentArray>> m_components;
-		std::stack<u32>                                                       m_recycled_ids;
-		EventHandler&                                                         m_event_handler;
+	  private:
+		Vector<Entity>                                                        m_entities;
+		Vector<UniquePtr<System>>                                       m_systems;
+		UnorderedMap<std::type_index, UniquePtr<IComponentArray>> m_components;
+		Stack<u32>                                                       m_recycled_ids;
+		RefPtr<EventHandler>                                                         m_event_handler;
 	};
 
-	template<IsComponent T> T& Ecs::GetComponent(RefPtr<Entity> entity, const std::string& name) {
+	template<IsComponent T> T& Ecs::GetComponent(RefPtr<Entity> entity, const String& name) {
 		auto& component_array = GetComponentArray<T>();
 		return component_array.GetData(entity->GetId());
 	}
 
-	template<IsComponent T> T& Ecs::GetComponent(const u32 id, const std::string& name) {
+	template<IsComponent T> T& Ecs::GetComponent(const u32 id, const String& name) {
 		auto& component_array = GetComponentArray<T>();
 		return component_array.GetData(id);
 	}
 
 	template<IsComponent T> ComponentArray<T>& Ecs::GetComponentArray() {
 		auto& ptr = m_components[typeid(T)];
-		if (!ptr) { ptr = std::make_unique<ComponentArray<T>>(); }
+		if (!ptr) {
+			ptr = MakeUnique<ComponentArray<T>>();
+		}
 		return *static_cast<ComponentArray<T>*>(ptr.get());
 	}
 
 	template<IsComponent T> i64 Ecs::GetComponentCount() { return GetComponentArray<T>().GetAllComponents().size(); }
 
-	template<IsComponent... Ts> RefPtr<Entity> Ecs::MakeEntity(const std::pair<const char*, Ts>&... components) {
+	template<IsComponent... Ts> RefPtr<Entity> Ecs::MakeEntity(const Pair<const char*, Ts>&... components) {
 		u32 id = 0;
-		if (!m_recycled_ids.empty()) { id = m_recycled_ids.top(); } else
-			if (!m_entities.empty()) { id = m_entities.back().GetId() + 1; }
+		if (!m_recycled_ids.Empty()) {
+			id = m_recycled_ids.Top();
+		} else if (!m_entities.Empty()) {
+			id = m_entities.Back().GetId() + 1;
+		}
 
 		Entity entity(id);
-		m_entities.push_back(entity);
+		m_entities.PushBack(entity);
 
-		m_event_handler.PublishEvent<EntityCreatedEvent>(MakeEvent<EntityCreatedEvent>(entity));
+		m_event_handler->PublishEvent<EntityCreatedEvent>(MakeEvent<EntityCreatedEvent>(entity));
 
 		(AddComponent(entity, components.first, components.second), ...);
 
-		return m_entities.back();
+		return m_entities.Back();
 	}
 
-	template<IsComponent T> void Ecs::AddComponent(RefPtr<Entity> entity, const std::string& name, const T& component) {
+	template<IsComponent T> void Ecs::AddComponent(RefPtr<Entity> entity, const String& name, const T& component) {
 		auto& component_array = GetComponentArray<T>();
 		component_array.InsertData(entity->GetId(), component);
 		entity->AddComponent<T>(name);
-		m_event_handler.PublishEvent<ComponentAddedEvent<T>>(MakeEvent<ComponentAddedEvent<T>>(entity, ComponentEventType::ADDED, component));
+		m_event_handler->PublishEvent<ComponentAddedEvent<T>>(MakeEvent<ComponentAddedEvent<T>>(entity, ComponentEventType::ADDED, component));
 	}
 
-	template<IsSystem T> void Ecs::AddSystem(std::unique_ptr<T> system) { m_systems.push_back(std::move(system)); }
+	template<IsSystem T> void Ecs::AddSystem(UniquePtr<T> system) { m_systems.PushBack(Move(system)); }
 
 	template<IsComponent T> void Ecs::RemoveComponents(RefPtr<Entity> entity) {
 		auto& component_array = GetComponentArray<T>();

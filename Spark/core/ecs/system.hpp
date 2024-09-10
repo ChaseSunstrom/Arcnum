@@ -7,7 +7,7 @@
 namespace Spark {
 	class System {
 	  public:
-		System(EventHandler& event_handler)
+		System(RefPtr<EventHandler> event_handler)
 			: m_event_handler(event_handler) {}
 		virtual ~System()                   = default;
 		virtual void Start()                = 0;
@@ -15,7 +15,7 @@ namespace Spark {
 		virtual void Shutdown()             = 0;
 
 	  protected:
-		EventHandler& m_event_handler;
+		RefPtr<EventHandler> m_event_handler;
 	};
 
 	template<typename T>

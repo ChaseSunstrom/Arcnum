@@ -21,18 +21,18 @@ namespace Spark {
 	}
 
 	RefPtr<Entity> Ecs::GetEntity(const u32 id) const {
-		auto it = std::find_if(m_entities.begin(), m_entities.end(), [id](const Entity& e) { return e.GetId() == id; });
-		if (it != m_entities.end()) {
+		auto it = std::find_if(m_entities.Begin(), m_entities.End(), [id](const Entity& e) { return e.GetId() == id; });
+		if (it != m_entities.End()) {
 			return const_cast<Entity&>(*it);
 		}
 		LOG_FATAL("Entity not found");
 	}
 
-	i64 Ecs::GetEntityCount() const { return m_entities.size(); }
+	i64 Ecs::GetEntityCount() const { return m_entities.Size(); }
 
 	void Ecs::DestroyEntity(const u32 id) {
-		auto it = std::find_if(m_entities.begin(), m_entities.end(), [id](const Entity& e) { return e.GetId() == id; });
-		if (it == m_entities.end()) {
+		auto it = std::find_if(m_entities.Begin(), m_entities.End(), [id](const Entity& e) { return e.GetId() == id; });
+		if (it == m_entities.End()) {
 			// Invalid ID, possibly already removed
 			return;
 		}
@@ -41,12 +41,12 @@ namespace Spark {
 
 		// Use swap-and-pop instead of erase to avoid shifting elements
 		if (it != m_entities.end() - 1) {
-			std::swap(*it, m_entities.back());
+			Swap(*it, m_entities.Back());
 		}
 
-		u32 recycled_id = m_entities.back().GetId();
-		m_entities.pop_back();
-		m_recycled_ids.push(recycled_id);
+		u32 recycled_id = m_entities.Back().GetId();
+		m_entities.PopBack();
+		m_recycled_ids.Push(recycled_id);
 	}
 
 	void Ecs::RemoveAllEntityComponents(RefPtr<Entity> entity) { RemoveAllEntityComponents(entity->GetId()); }

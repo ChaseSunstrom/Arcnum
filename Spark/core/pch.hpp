@@ -49,6 +49,7 @@
 #include "util/container/map.hpp"
 #include "util/container/pair.hpp"
 #include "util/container/callable.hpp"
+#include "util/container/string.hpp"
 #include "util/memory/unique_ptr.hpp"
 #include "util/memory/shared_ptr.hpp"
 #include "util/memory/weak_ptr.hpp"

@@ -18,7 +18,11 @@ namespace Spark {
 		using ConstIterator  = const T*;
 
 		// Default constructor
-		Array() = default;
+		Array() {
+			for (i32 i = 0; i < N; ++i) {
+				new (m_data + i) T();
+			}
+		}
 
 		// Fill constructor
 		explicit Array(const T& value) { Fill(value); }
@@ -29,7 +33,13 @@ namespace Spark {
 
 		Array(const std::initializer_list<T>& init) { Copy(init.begin(), init.end(), m_data); }
 
-		Array(const Array& other) { Copy(other.begin(), other.end(), m_data); }
+		Array(const Array& other) { Copy(other.Begin(), other.End(), m_data); }
+
+		~Array() {
+			for (i32 i = 0; i < N; ++i) {
+				m_data[i].~T();
+			}
+		}
 
 		Array& operator=(const Array& other) {
 			if (this != &other) { Copy(other.begin(), other.end(), m_data); }
@@ -108,7 +118,7 @@ namespace Spark {
 		bool operator!=(const Array& other) const { return !(*this == other); }
 
 	private:
-		T m_data[N];
+		alignas(T) u8 m_data[N * sizeof(T)];
 	};
 
 	template<typename T, i32 N> void Swap(Array<T, N>& lhs, Array<T, N>& rhs) { lhs.Swap(rhs); }

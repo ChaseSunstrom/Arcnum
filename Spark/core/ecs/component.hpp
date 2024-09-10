@@ -31,25 +31,25 @@ namespace Spark {
 	template<IsComponent T> class ComponentArray : public IComponentArray {
 	  public:
 		void InsertData(const u32 entity_id, const T& component) {
-			size_t new_index             = m_data.size();
+			size_t new_index             = m_data.Size();
 			m_entity_to_index[entity_id] = new_index;
 			m_index_to_entity[new_index] = entity_id;
-			m_data.push_back(component);
+			m_data.PushBack(component);
 		}
 
 		void RemoveData(const u32 entity_id) {
 			size_t removed_index              = m_entity_to_index[entity_id];
-			size_t last_index                 = m_data.size() - 1;
-			m_data[removed_index]             = std::move(m_data[last_index]);
+			size_t last_index                 = m_data.Size() - 1;
+			m_data[removed_index]             = Move(m_data[last_index]);
 
 			u32 last_entity_id                = m_index_to_entity[last_index];
 			m_entity_to_index[last_entity_id] = removed_index;
 			m_index_to_entity[removed_index]  = last_entity_id;
 
-			m_entity_to_index.erase(entity_id);
-			m_index_to_entity.erase(last_index);
+			m_entity_to_index.Erase(entity_id);
+			m_index_to_entity.Erase(last_index);
 
-			m_data.pop_back();
+			m_data.PopBack();
 		}
 
 		T& GetData(const u32 entity_id) { return m_data[m_entity_to_index[entity_id]]; }
@@ -64,8 +64,8 @@ namespace Spark {
 
 	  private:
 		Query<T>                        m_data;
-		std::unordered_map<u32, size_t> m_entity_to_index;
-		std::unordered_map<size_t, u32> m_index_to_entity;
+		UnorderedMap<u32, size_t> m_entity_to_index;
+		UnorderedMap<size_t, u32> m_index_to_entity;
 	};
 
 } // namespace Spark

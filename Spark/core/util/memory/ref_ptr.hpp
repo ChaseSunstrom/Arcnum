@@ -2,8 +2,8 @@
 #define SPARK_REF_PTR_HPP
 
 #include <core/pch.hpp>
-#include "unique_ptr.hpp"
 #include "shared_ptr.hpp"
+#include "unique_ptr.hpp"
 #include "weak_ptr.hpp"
 
 namespace Spark {
@@ -14,26 +14,40 @@ namespace Spark {
 	// cleaning up memory but want to also be able to store it somewhere else
 	// without using a raw pointer or a shared ptr
 	template<typename T> class RefPtr {
-	public:
-		RefPtr(const T* ptr) : m_ptr(ptr) {}
-		RefPtr(T* ptr) : m_ptr(ptr) {}
-		RefPtr(const T& ref) : m_ptr(&ref) {}
-		RefPtr(T& ref) : m_ptr(&ref) {}
-		RefPtr(std::nullptr_t) : m_ptr(nullptr) {}
-		RefPtr() : m_ptr(nullptr) {}
-		RefPtr(const RefPtr<T>& other) : m_ptr(other.m_ptr) {}
-		RefPtr(RefPtr<T>&& other) noexcept : m_ptr(other.m_ptr) {}
-		RefPtr(const std::unique_ptr<T>& ptr) : m_ptr(ptr.get()) {}
-		RefPtr(const std::shared_ptr<T>& ptr) : m_ptr(ptr.get()) {}
-		RefPtr(const std::weak_ptr<T>& ptr) : m_ptr(ptr.lock().get()) {}
-		RefPtr(const UniquePtr<T>& ptr) : m_ptr(ptr.Get()) {}
-		RefPtr(const SharedPtr<T>& ptr) : m_ptr(ptr.Get()) {}
-		RefPtr(const WeakPtr<T>& ptr) : m_ptr(ptr.Get()) {}
-		
+	  public:
+		RefPtr(const T* ptr)
+			: m_ptr(ptr) {}
+		RefPtr(T* ptr)
+			: m_ptr(ptr) {}
+		RefPtr(const T& ref)
+			: m_ptr(&ref) {}
+		RefPtr(T& ref)
+			: m_ptr(&ref) {}
+		RefPtr(std::nullptr_t)
+			: m_ptr(nullptr) {}
+		RefPtr()
+			: m_ptr(nullptr) {}
+		RefPtr(const RefPtr<T>& other)
+			: m_ptr(other.m_ptr) {}
+		RefPtr(RefPtr<T>&& other) noexcept
+			: m_ptr(other.m_ptr) {}
+		RefPtr(const std::unique_ptr<T>& ptr)
+			: m_ptr(ptr.get()) {}
+		RefPtr(const std::shared_ptr<T>& ptr)
+			: m_ptr(ptr.get()) {}
+		RefPtr(const std::weak_ptr<T>& ptr)
+			: m_ptr(ptr.lock().get()) {}
+		RefPtr(const UniquePtr<T>& ptr)
+			: m_ptr(ptr.Get()) {}
+		RefPtr(const SharedPtr<T>& ptr)
+			: m_ptr(ptr.Get()) {}
+		RefPtr(const WeakPtr<T>& ptr)
+			: m_ptr(ptr.Get()) {}
+
 		// Allow implicit conversion to the underlying pointer
 		operator T&() const { return *m_ptr; }
 		operator T*() const { return m_ptr; }
-		
+
 		RefPtr& operator=(const RefPtr<T>& other) {
 			m_ptr = other.m_ptr;
 			return *this;
@@ -59,6 +73,21 @@ namespace Spark {
 			return *this;
 		}
 
+		RefPtr& operator=(const UniquePtr<T>& ptr) {
+			m_ptr = ptr.Get();
+			return *this;
+		}
+
+		RefPtr& operator=(const SharedPtr<T>& ptr) {
+			m_ptr = ptr.Get();
+			return *this;
+		}
+
+		RefPtr& operator=(const WeakPtr<T>& ptr) {
+			m_ptr = ptr.Lock().Get();
+			return *this;
+		}
+
 		RefPtr& operator=(const T* ptr) {
 			m_ptr = ptr;
 			return *this;
@@ -68,7 +97,6 @@ namespace Spark {
 			m_ptr = ptr;
 			return *this;
 		}
-
 
 		RefPtr& operator=(std::nullptr_t) {
 			m_ptr = nullptr;
@@ -98,10 +126,10 @@ namespace Spark {
 		bool operator==(std::nullptr_t) const { return m_ptr == nullptr; }
 		bool operator!=(std::nullptr_t) const { return m_ptr != nullptr; }
 
-		T* Get() const { return m_ptr; }
+		T*       Get() const { return m_ptr; }
 		const T* GetConst() const { return m_ptr; }
 
-	private:
+	  private:
 		T* m_ptr;
 	};
 
@@ -117,6 +145,6 @@ namespace Spark {
 	template<typename To, typename From> RefPtr<To> RefCast(const RefPtr<From>& from) { return RefPtr<To>(static_cast<To*>(const_cast<From*>(from.Get()))); }
 
 	template<typename To, typename From> RefPtr<const To> RefCast(const RefPtr<const From>& from) { return RefPtr<const To>(dynamic_cast<const To*>(from.Get())); }
-}
+} // namespace Spark
 
 #endif // SPARK_REF_PTR_HPP

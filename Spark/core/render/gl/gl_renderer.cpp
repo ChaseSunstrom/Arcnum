@@ -14,7 +14,7 @@ namespace Spark {
 		m_g_framebuffer.AddColorAttachment(GL_RGB16F, GL_RGB, GL_FLOAT);        // Normal
 		m_g_framebuffer.AddColorAttachment(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE); // Albedo
 		m_g_framebuffer.AddDepthAttachment();
-		m_g_framebuffer.Finalize();
+		//m_g_framebuffer.Finalize();
 
 		std::filesystem::path current_file(__FILE__);
 		std::filesystem::path current_directory = current_file.parent_path();

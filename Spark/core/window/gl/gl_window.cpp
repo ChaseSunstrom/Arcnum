@@ -3,7 +3,7 @@
 #include <core/util/log.hpp>
 
 namespace Spark {
-	GLWindow::GLWindow(const std::string& title, i32 width, i32 height, EventHandler& event_handler, bool vsync)
+	GLWindow::GLWindow(const String& title, i32 width, i32 height, EventHandler& event_handler, bool vsync)
 		: Window(title, width, height, event_handler, vsync) {
 		CreateWindow(width, height, title);
 		SetVSync(vsync);
@@ -16,7 +16,7 @@ namespace Spark {
 
 	GLWindow::~GLWindow() { DestroyWindow(); }
 
-	void GLWindow::CreateWindow(i32 width, i32 height, const std::string& title) {
+	void GLWindow::CreateWindow(i32 width, i32 height, const String& title) {
 		m_window_data->width  = width;
 		m_window_data->height = height;
 		m_window_data->title  = title;
@@ -27,7 +27,7 @@ namespace Spark {
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-		m_window = glfwCreateWindow(m_window_data->width, m_window_data->height, m_window_data->title.c_str(), nullptr, nullptr);
+		m_window = glfwCreateWindow(m_window_data->width, m_window_data->height, m_window_data->title.CStr(), nullptr, nullptr);
 		glfwMakeContextCurrent(m_window);
 
 		if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
@@ -109,9 +109,9 @@ namespace Spark {
 
 	bool GLWindow::Running() { return !glfwWindowShouldClose(m_window); }
 
-	void GLWindow::SetTitle(const std::string& title) {
+	void GLWindow::SetTitle(const String& title) {
 		m_window_data->title = title;
-		glfwSetWindowTitle(m_window, m_window_data->title.c_str());
+		glfwSetWindowTitle(m_window, m_window_data->title.CStr());
 	}
 
 	void GLWindow::SetSize(i32 width, i32 height) {

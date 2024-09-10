@@ -13,7 +13,7 @@ namespace Spark {
 		}
 	}
 
-	void Octree::OnEvent(const std::shared_ptr<ComponentEvent<TransformComponent>> event) {
+	void Octree::OnEvent(const SharedPtr<ComponentEvent<TransformComponent>> event) {
 		switch (event->type) {
 			case ComponentEventType::ADDED: {
 				Insert({event->component.transform.GetPosition(), event->entity.GetId()});

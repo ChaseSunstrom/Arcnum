@@ -19,23 +19,23 @@ namespace Spark {
 	template<typename T>
 	concept IsEvent                             = std::derived_from<T, Event<T>>;
 
-	template<typename EventType> using EventPtr = std::shared_ptr<EventType>;
+	template<typename EventType> using EventPtr = SharedPtr<EventType>;
 
 	template<typename... EventTypes> class MultiEvent : public IEvent {
 	  public:
-		using VariantType = std::variant<std::shared_ptr<EventTypes>...>;
+		using VariantType = std::variant<SharedPtr<EventTypes>...>;
 
 		MultiEvent(const EventPtr<IEvent>& base_event) { ((TrySetEvent<EventTypes>(base_event)) || ...); }
 
-		template<typename T> bool Is() const { return std::holds_alternative<std::shared_ptr<T>>(event); }
+		template<typename T> bool Is() const { return std::holds_alternative<SharedPtr<T>>(event); }
 
-		template<typename T> const std::shared_ptr<T>& Get() const { return std::get<std::shared_ptr<T>>(event); }
+		template<typename T> const SharedPtr<T>& Get() const { return std::get<SharedPtr<T>>(event); }
 
 		static auto GetEventTypes() { return std::tuple<EventTypes...>{}; }
 
 	  private:
 		template<typename T> bool TrySetEvent(const EventPtr<IEvent>& base_event) {
-			if (auto derived = std::dynamic_pointer_cast<T>(base_event)) {
+			if (auto derived = DynamicPointerCast<T>(base_event)) {
 				event = derived;
 				return true;
 			}
@@ -45,7 +45,7 @@ namespace Spark {
 		VariantType event;
 	};
 
-	template<typename... EventTypes> using MultiEventPtr = std::shared_ptr<MultiEvent<EventTypes...>>;
+	template<typename... EventTypes> using MultiEventPtr = SharedPtr<MultiEvent<EventTypes...>>;
 
 	// ECS Events
 	struct EntityCreatedEvent : public Event<EntityCreatedEvent> {
@@ -162,7 +162,7 @@ namespace Spark {
 	struct WindowClosedEvent : public Event<WindowClosedEvent> {};
 
 	template <typename T, typename... Args> EventPtr<T> MakeEvent(Args&&... args) {
-		return std::make_shared<T>(std::forward<Args>(args)...);
+		return MakeShared<T>(Forward<Args>(args)...);
 	}
 } // namespace Spark
 

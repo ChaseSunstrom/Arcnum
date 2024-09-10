@@ -29,6 +29,41 @@ namespace Spark {
 			, m_ref_count(ptr.use_count() ? new std::atomic<i32>(ptr.use_count()) : nullptr)
 			, m_weak_count(ptr.use_count() ? new std::atomic<i32>(1) : nullptr) {}
 
+		template<typename U, typename = std::enable_if_t<std::is_convertible_v<U*, T*>>> SharedPtr(SharedPtr<U>&& other) noexcept
+			: m_ptr(other.Release()) {}
+
+		template<typename U> SharedPtr(const SharedPtr<U>& other, T* ptr) noexcept
+			: m_ptr(ptr)
+			, m_ref_count(other.m_ref_count)
+			, m_weak_count(other.m_weak_count) {
+			if (m_ref_count) {
+				m_ref_count->fetch_add(1);
+			}
+		}
+
+
+		template<typename U, typename = std::enable_if_t<std::is_convertible_v<U*, T*>>> SharedPtr(const SharedPtr<U>& other) noexcept
+			: m_ptr(other.m_ptr)
+			, m_ref_count(other.m_ref_count)
+			, m_weak_count(other.m_weak_count) {
+			if (m_ref_count) {
+				m_ref_count->fetch_add(1);
+			}
+		}
+
+		template<typename U, typename = std::enable_if_t<std::is_convertible_v<U*, T*>>> SharedPtr& operator=(const SharedPtr<U>& other) noexcept {
+			if (this != reinterpret_cast<const SharedPtr*>(&other)) {
+				Reset();
+				m_ptr        = other.m_ptr;
+				m_ref_count  = other.m_ref_count;
+				m_weak_count = other.m_weak_count;
+				if (m_ref_count) {
+					m_ref_count->fetch_add(1);
+				}
+			}
+			return *this;
+		}
+
 		explicit SharedPtr(T* ptr)
 			: m_ptr(ptr)
 			, m_ref_count(ptr ? new std::atomic<i32>(1) : nullptr)
@@ -74,6 +109,9 @@ namespace Spark {
 			return *this;
 		}
 
+		operator bool() const { return m_ptr != nullptr;
+		}
+
 		T& operator*() const { return *m_ptr; }
 		T* operator->() const { return m_ptr; }
 		T& operator[](i32 index) const { return m_ptr[index]; }
@@ -117,6 +155,7 @@ namespace Spark {
 			, m_weak_count(weak_count) { if (m_ref_count) { m_ref_count->fetch_add(1); } }
 
 		friend class WeakPtr<T>;
+		template<typename U> friend class SharedPtr;
 	};
 
 	template <typename T, typename... Args> SharedPtr<T> MakeShared(Args&&... args) {
@@ -129,6 +168,21 @@ namespace Spark {
 
 	template <typename T> SharedPtr<T> MakeShared(const T& ref) {
 		return SharedPtr<T>(&ref);
+	}
+
+	template<typename To, typename From> SharedPtr<To> StaticPointerCast(const SharedPtr<From>& from) {
+		auto* ptr = static_cast<To*>(from.Get());
+		return ptr ? SharedPtr<To>(from, ptr) : nullptr;
+	}
+
+	template<typename To, typename From> SharedPtr<To> DynamicPointerCast(const SharedPtr<From>& from) {
+		auto* ptr = dynamic_cast<To*>(from.Get());
+		return ptr ? SharedPtr<To>(from, ptr) : nullptr;
+	}
+
+	template<typename To, typename From> SharedPtr<To> ReinterpretPointerCast(const SharedPtr<From>& from) {
+		auto* ptr = reinterpret_cast<To*>(from.Get());
+		return ptr ? SharedPtr<To>(from, ptr) : nullptr;
 	}
 }
 

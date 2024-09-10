@@ -28,8 +28,14 @@
     <Filter Include="core\lighting">
       <UniqueIdentifier>{B3A7D5EC-1F68-5123-E8A2-9AA0542296FF}</UniqueIdentifier>
     </Filter>
+    <Filter Include="core\math">
+      <UniqueIdentifier>{07925FA5-73FC-131C-BC3A-C5C128E4F170}</UniqueIdentifier>
+    </Filter>
     <Filter Include="core\physics">
       <UniqueIdentifier>{E049B7E4-CCAC-4689-7532-7F3F6174120C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\profile">
+      <UniqueIdentifier>{4ECB4EFB-3A2E-DE9F-E3B3-1656CFF5A922}</UniqueIdentifier>
     </Filter>
     <Filter Include="core\render">
       <UniqueIdentifier>{1D0F7B87-89C4-F37C-12B9-ED537E6DEA80}</UniqueIdentifier>
@@ -51,6 +57,15 @@
     </Filter>
     <Filter Include="core\util">
       <UniqueIdentifier>{7B4464A5-E7AE-181C-30ED-C9C19C96F670}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\util\classic">
+      <UniqueIdentifier>{EC9617F7-58AD-158D-A124-A1AE0D7AE614}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\util\container">
+      <UniqueIdentifier>{2D42E3C9-99A3-C0D7-2211-078A8E71F796}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\util\memory">
+      <UniqueIdentifier>{A3D7A554-8FD0-C4A6-B802-AA2BA45AA4B2}</UniqueIdentifier>
     </Filter>
     <Filter Include="core\window">
       <UniqueIdentifier>{953D6D93-01F3-E588-8AE7-DF5FF69BDC8C}</UniqueIdentifier>
@@ -111,6 +126,12 @@
     <ClInclude Include="core\ecs\components\model_component.hpp">
       <Filter>core\ecs\components</Filter>
     </ClInclude>
+    <ClInclude Include="core\ecs\components\name_component.hpp">
+      <Filter>core\ecs\components</Filter>
+    </ClInclude>
+    <ClInclude Include="core\ecs\components\rigid_body_component.hpp">
+      <Filter>core\ecs\components</Filter>
+    </ClInclude>
     <ClInclude Include="core\ecs\components\transform_component.hpp">
       <Filter>core\ecs\components</Filter>
     </ClInclude>
@@ -135,11 +156,26 @@
     <ClInclude Include="core\lighting\lighting.hpp">
       <Filter>core\lighting</Filter>
     </ClInclude>
+    <ClInclude Include="core\math\math.hpp">
+      <Filter>core\math</Filter>
+    </ClInclude>
     <ClInclude Include="core\pch.hpp">
       <Filter>core</Filter>
     </ClInclude>
+    <ClInclude Include="core\physics\collision_shape.hpp">
+      <Filter>core\physics</Filter>
+    </ClInclude>
     <ClInclude Include="core\physics\physics.hpp">
       <Filter>core\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="core\physics\rigid_body.hpp">
+      <Filter>core\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="core\profile\fps.hpp">
+      <Filter>core\profile</Filter>
+    </ClInclude>
+    <ClInclude Include="core\render\camera.hpp">
+      <Filter>core\render</Filter>
     </ClInclude>
     <ClInclude Include="core\render\gl\gl_material.hpp">
       <Filter>core\render\gl</Filter>
@@ -183,6 +219,9 @@
     <ClInclude Include="core\scene\transform.hpp">
       <Filter>core\scene</Filter>
     </ClInclude>
+    <ClInclude Include="core\spark.hpp">
+      <Filter>core</Filter>
+    </ClInclude>
     <ClInclude Include="core\system\file_serializer.hpp">
       <Filter>core\system</Filter>
     </ClInclude>
@@ -198,7 +237,49 @@
     <ClInclude Include="core\ui\ui.hpp">
       <Filter>core\ui</Filter>
     </ClInclude>
+    <ClInclude Include="core\util\classic\compare.hpp">
+      <Filter>core\util\classic</Filter>
+    </ClInclude>
+    <ClInclude Include="core\util\classic\file.hpp">
+      <Filter>core\util\classic</Filter>
+    </ClInclude>
+    <ClInclude Include="core\util\classic\util.hpp">
+      <Filter>core\util\classic</Filter>
+    </ClInclude>
+    <ClInclude Include="core\util\container\array.hpp">
+      <Filter>core\util\container</Filter>
+    </ClInclude>
+    <ClInclude Include="core\util\container\callable.hpp">
+      <Filter>core\util\container</Filter>
+    </ClInclude>
+    <ClInclude Include="core\util\container\list.hpp">
+      <Filter>core\util\container</Filter>
+    </ClInclude>
+    <ClInclude Include="core\util\container\map.hpp">
+      <Filter>core\util\container</Filter>
+    </ClInclude>
+    <ClInclude Include="core\util\container\pair.hpp">
+      <Filter>core\util\container</Filter>
+    </ClInclude>
+    <ClInclude Include="core\util\container\queue.hpp">
+      <Filter>core\util\container</Filter>
+    </ClInclude>
+    <ClInclude Include="core\util\container\stack.hpp">
+      <Filter>core\util\container</Filter>
+    </ClInclude>
+    <ClInclude Include="core\util\container\string.hpp">
+      <Filter>core\util\container</Filter>
+    </ClInclude>
+    <ClInclude Include="core\util\container\unordered_map.hpp">
+      <Filter>core\util\container</Filter>
+    </ClInclude>
+    <ClInclude Include="core\util\container\vector.hpp">
+      <Filter>core\util\container</Filter>
+    </ClInclude>
     <ClInclude Include="core\util\defines.hpp">
+      <Filter>core\util</Filter>
+    </ClInclude>
+    <ClInclude Include="core\util\general.hpp">
       <Filter>core\util</Filter>
     </ClInclude>
     <ClInclude Include="core\util\gl.hpp">
@@ -207,11 +288,35 @@
     <ClInclude Include="core\util\log.hpp">
       <Filter>core\util</Filter>
     </ClInclude>
+    <ClInclude Include="core\util\memory\const_ptr.hpp">
+      <Filter>core\util\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="core\util\memory\ref_ptr.hpp">
+      <Filter>core\util\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="core\util\memory\shared_ptr.hpp">
+      <Filter>core\util\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="core\util\memory\unique_ptr.hpp">
+      <Filter>core\util\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="core\util\memory\weak_ptr.hpp">
+      <Filter>core\util\memory</Filter>
+    </ClInclude>
     <ClInclude Include="core\util\thread_pool.hpp">
+      <Filter>core\util</Filter>
+    </ClInclude>
+    <ClInclude Include="core\util\time.hpp">
       <Filter>core\util</Filter>
     </ClInclude>
     <ClInclude Include="core\util\types.hpp">
       <Filter>core\util</Filter>
+    </ClInclude>
+    <ClInclude Include="core\window\framebuffer.hpp">
+      <Filter>core\window</Filter>
+    </ClInclude>
+    <ClInclude Include="core\window\gl\gl_framebuffer.hpp">
+      <Filter>core\window\gl</Filter>
     </ClInclude>
     <ClInclude Include="core\window\gl\gl_window.hpp">
       <Filter>core\window\gl</Filter>
@@ -927,35 +1032,6 @@
     <ClInclude Include="include\glm\vector_relational.hpp">
       <Filter>include\glm</Filter>
     </ClInclude>
-    <ClInclude Include="core\physics\rigid_body.hpp" />
-    <ClInclude Include="core\physics\collision_shape.hpp" />
-    <ClInclude Include="core\ecs\components\rigid_body_component.hpp" />
-    <ClInclude Include="core\util\general.hpp" />
-    <ClInclude Include="core\spark.hpp" />
-    <ClInclude Include="core\util\time.hpp" />
-    <ClInclude Include="core\window\framebuffer.hpp" />
-    <ClInclude Include="core\window\gl\gl_framebuffer.hpp" />
-    <ClInclude Include="core\ecs\components\name_component.hpp" />
-    <ClInclude Include="core\render\camera.hpp" />
-    <ClInclude Include="core\math\math.hpp" />
-    <ClInclude Include="core\profile\fps.hpp" />
-    <ClInclude Include="core\util\classic\compare.hpp" />
-    <ClInclude Include="core\util\classic\file.hpp" />
-    <ClInclude Include="core\util\classic\util.hpp" />
-    <ClInclude Include="core\util\container\array.hpp" />
-    <ClInclude Include="core\util\container\callable.hpp" />
-    <ClInclude Include="core\util\container\list.hpp" />
-    <ClInclude Include="core\util\container\map.hpp" />
-    <ClInclude Include="core\util\container\pair.hpp" />
-    <ClInclude Include="core\util\container\queue.hpp" />
-    <ClInclude Include="core\util\container\stack.hpp" />
-    <ClInclude Include="core\util\container\unordered_map.hpp" />
-    <ClInclude Include="core\util\container\vector.hpp" />
-    <ClInclude Include="core\util\memory\const_ptr.hpp" />
-    <ClInclude Include="core\util\memory\ref_ptr.hpp" />
-    <ClInclude Include="core\util\memory\shared_ptr.hpp" />
-    <ClInclude Include="core\util\memory\unique_ptr.hpp" />
-    <ClInclude Include="core\util\memory\weak_ptr.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\app\application.cpp">
@@ -966,6 +1042,12 @@
     </ClCompile>
     <ClCompile Include="core\pch.cpp">
       <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="core\physics\physics.cpp">
+      <Filter>core\physics</Filter>
+    </ClCompile>
+    <ClCompile Include="core\physics\rigid_body.cpp">
+      <Filter>core\physics</Filter>
     </ClCompile>
     <ClCompile Include="core\render\gl\gl_mesh.cpp">
       <Filter>core\render\gl</Filter>
@@ -979,14 +1061,29 @@
     <ClCompile Include="core\scene\octree.cpp">
       <Filter>core\scene</Filter>
     </ClCompile>
+    <ClCompile Include="core\scene\scene.cpp">
+      <Filter>core\scene</Filter>
+    </ClCompile>
     <ClCompile Include="core\system\file_serializer.cpp">
       <Filter>core\system</Filter>
+    </ClCompile>
+    <ClCompile Include="core\util\classic\file.cpp">
+      <Filter>core\util\classic</Filter>
+    </ClCompile>
+    <ClCompile Include="core\util\container\string.cpp">
+      <Filter>core\util\container</Filter>
     </ClCompile>
     <ClCompile Include="core\util\log.cpp">
       <Filter>core\util</Filter>
     </ClCompile>
     <ClCompile Include="core\util\thread_pool.cpp">
       <Filter>core\util</Filter>
+    </ClCompile>
+    <ClCompile Include="core\util\time.cpp">
+      <Filter>core\util</Filter>
+    </ClCompile>
+    <ClCompile Include="core\window\gl\gl_framebuffer.cpp">
+      <Filter>core\window\gl</Filter>
     </ClCompile>
     <ClCompile Include="core\window\gl\gl_window.cpp">
       <Filter>core\window\gl</Filter>
@@ -997,11 +1094,5 @@
     <ClCompile Include="lib\windows\glad\glad.c">
       <Filter>lib\windows\glad</Filter>
     </ClCompile>
-    <ClCompile Include="core\physics\rigid_body.cpp" />
-    <ClCompile Include="core\physics\physics.cpp" />
-    <ClCompile Include="core\scene\scene.cpp" />
-    <ClCompile Include="core\util\time.cpp" />
-    <ClCompile Include="core\window\gl\gl_framebuffer.cpp" />
-    <ClCompile Include="core\util\classic\file.cpp" />
   </ItemGroup>
 </Project>

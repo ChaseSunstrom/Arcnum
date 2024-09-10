@@ -12,7 +12,7 @@ namespace Spark {
 		friend class Manager<Scene>;
 		~Scene() = default;
 
-		void    OnEvent(const std::shared_ptr<ComponentEvent<TransformComponent>> event);
+		void    OnEvent(const SharedPtr<ComponentEvent<TransformComponent>> event);
 		void    Insert(const PointData& point_data);
 		void    Update(const PointData& point_data);
 		void    Remove(i64 entity_id);
@@ -56,7 +56,7 @@ namespace Spark {
 			return *m_current_scene;
 		}
 
-		void OnEvent(const std::shared_ptr<ComponentEvent<TransformComponent>> event) { m_current_scene->OnEvent(event); }
+		void OnEvent(const SharedPtr<ComponentEvent<TransformComponent>> event) { m_current_scene->OnEvent(event); }
 
 		RefPtr<Scene> Register(const std::string& name, std::unique_ptr<Scene> object) { return m_registry->Register(name, std::move(object)); }
 		RefPtr<Scene> Get(const std::string& name) const { return m_registry->Get(name); }

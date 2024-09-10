@@ -1,7 +1,7 @@
 #include "physics.hpp"
 
 namespace Spark {
-	PhysicsSystem::PhysicsSystem(EventHandler& event_handler, f32 time_step, const glm::vec3& gravity, i32 iterations)
+	PhysicsSystem::PhysicsSystem(RefPtr<EventHandler> event_handler, f32 time_step, const Math::Vec3& gravity, i32 iterations)
 		: System(event_handler)
 		, m_gravity(gravity)
 		, m_time_step(time_step)
@@ -30,7 +30,7 @@ namespace Spark {
 
 	void PhysicsSystem::Shutdown() {
 		// Clean up any resources used by the physics system
-		m_rigid_bodies.clear();
+		m_rigid_bodies.Clear();
 	}
 
 	void PhysicsSystem::IntegrateForces(RigidBodyComponent& rb, f32 dt) {
@@ -47,8 +47,8 @@ namespace Spark {
 		rb.rb->GetAngularVelocity() += rb.rb->GetInvInertiaTensor() * rb.rb->GetTorque() * dt;
 
 		// Clear forces and torques
-		rb.rb->GetForce()  = glm::vec3(0.0f);
-		rb.rb->GetTorque() = glm::vec3(0.0f);
+		rb.rb->GetForce()  = Math::Vec3(0.0f);
+		rb.rb->GetTorque() = Math::Vec3(0.0f);
 	}
 
 	void PhysicsSystem::IntegrateVelocities(RigidBodyComponent& rb, f32 dt) {
@@ -59,8 +59,8 @@ namespace Spark {
 		rb.rb->GetPosition() += rb.rb->GetVelocity() * dt;
 
 		// Update orientation
-		glm::quat spin(0, rb.rb->GetAngularVelocity() * 0.5f * dt);
-		rb.rb->GetOrientation() = glm::normalize(spin * rb.rb->GetOrientation());
+		Math::Quat spin(0, rb.rb->GetAngularVelocity() * 0.5f * dt);
+		rb.rb->GetOrientation() = Math::Normalize(spin * rb.rb->GetOrientation());
 
 		// Update the shape's orientation if it's an OBB
 		if (rb.rb->GetShape()->GetType() == ShapeType::OBB) {

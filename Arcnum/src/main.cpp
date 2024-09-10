@@ -1,5 +1,5 @@
-#include <core/spark.hpp>
 #include <core/render/gl/gl_renderer.hpp>
+#include <core/spark.hpp>
 #include <core/window/gl/gl_window.hpp>
 
 void MouseEvents(Spark::Application& app, const Spark::MultiEventPtr<Spark::MouseButtonPressedEvent, Spark::MouseButtonReleasedEvent>& event) {
@@ -12,22 +12,22 @@ void MouseEvents(Spark::Application& app, const Spark::MultiEventPtr<Spark::Mous
 	}
 }
 
-
 void CreateTriangleMesh(Spark::Application& app) {
-	auto& mesh_manager = app.GetManager<Spark::StaticMesh>();
+	auto& mesh_manager                  = app.GetManager<Spark::StaticMesh>();
 
 	std::vector<Spark::Vertex> vertices = {
 		{{-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},
-		{{0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},
-		{{0.0f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.5f, 1.0f}}
-	};
+		{ {0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},
+		{  {0.0f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.5f, 1.0f}}
+    };
+
 	std::vector<u32> indices = {0, 1, 2, 2, 1, 0};
 	mesh_manager.Create<Spark::GLStaticMesh>("triangle", vertices, indices)->CreateMesh();
 }
 
 void CreateSimpleMaterial(Spark::Application& app) {
 	auto& material_manager = app.GetManager<Spark::Material>();
-	material_manager.Create<Spark::GLMaterial>("simple_material")->SetAlbedo(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+	material_manager.Create<Spark::GLMaterial>("simple_material")->SetAlbedo(Spark::Math::Vec4(0.0f, 1.0f, 0.0f, 1.0f));
 }
 
 void CreateTriangleModel(Spark::Application& app) {
@@ -35,8 +35,8 @@ void CreateTriangleModel(Spark::Application& app) {
 	auto& mesh_manager     = app.GetManager<Spark::StaticMesh>();
 	auto& material_manager = app.GetManager<Spark::Material>();
 
-	auto triangle_mesh   = mesh_manager.Get("triangle");
-	auto simple_material = material_manager.Get("simple_material");
+	auto triangle_mesh     = mesh_manager.Get("triangle");
+	auto simple_material   = material_manager.Get("simple_material");
 
 	model_manager.Create("triangle_model", triangle_mesh, simple_material);
 }
@@ -46,8 +46,8 @@ void AddTriangleToScene(Spark::Application& app) {
 	auto  current_scene = scene_manager.GetCurrentScene();
 
 	// Add multiple instances to ensure instanced rendering is triggered
-	for (int i = 0; i < 2000000; ++i) {
-		glm::mat4 transform = Spark::Math::Translate(glm::mat4(1.0f), glm::vec3(i * 0.5f, 0.0f, 0.0f));
+	for (i32 i = 0; i < 1000; ++i) {
+		Spark::Math::Mat4 transform = Spark::Math::Translate(Spark::Math::Mat4(1.0f), Spark::Math::Vec3(i * 0.5f, 0.0f, 0.0f));
 		current_scene->AddModelInstance(app.GetEcs().MakeEntity(), "triangle_model", transform);
 	}
 }
@@ -61,8 +61,9 @@ void SetupTestScene(Spark::Application& app) {
 
 void UpdateCamera(Spark::Application& app) {
 	auto cam = app.GetManager<Spark::Camera>().GetCurrentCamera();
+	cam->SetFar(100000.0f);
 	cam->MoveX(2.44f);
-	cam->RotateZ(1.00f);
+	cam->Rotate(Spark::Math::Vec3(45.0f, 1.0f, 45.0f));
 }
 
 void TestVector(Spark::Application& app) {
@@ -74,19 +75,36 @@ void TestVector(Spark::Application& app) {
 
 	vec -= 10;
 
-	std::cout << vec << std::endl;
+	LOG_WARN(vec);
+}
+
+void TestString(Spark::Application& app) {
+	Spark::String str  = "Hello, World! ";
+	bool          test = true;
+	f32           x    = 1.019981;
+	str += test;
+	str += " ";
+	str += x;
+	LOG_WARN(str);
+}
+
+void TestCallable(Spark::Application& app) {
+	Spark::Callable<i32(i32, i32)>                   fn       = [](i32 x, i32 y) -> i32 { return x + y; };
+	Spark::Callable<void(const Spark::Application&)> other_fn = [](const Spark::Application& app) {};
+	LOG_WARN(fn(1, 2));
 }
 
 i32 main() {
 	Spark::Application app(Spark::GraphicsAPI::OpenGL);
-
 	app.CreateWindow<Spark::GLWindow>("FPS Counter", 1920 / 2, 1080 / 2)
-	   .CreateRenderer<Spark::GLRenderer>()
-	   .AddSystem<Spark::FPSSystem>()
-	   .AddStartupFunction(TestVector)
-	   .AddStartupFunction(SetupTestScene)
-	   .AddUpdateFunction(UpdateCamera)
-	   //.AddStartupFunction(startup_fn2, {true, false})
-	   .AddEventFunction<Spark::MouseButtonPressedEvent, Spark::MouseButtonReleasedEvent>(MouseEvents, {true, false})
-	   .Start();
+		.CreateRenderer<Spark::GLRenderer>()
+		.AddSystem<Spark::FPSSystem>()
+		.AddStartupFunction(TestVector)
+		.AddStartupFunction(TestString)
+		.AddStartupFunction(TestCallable)
+		.AddStartupFunction(SetupTestScene)
+		.AddUpdateFunction(UpdateCamera)
+		//.AddStartupFunction(startup_fn2, {true, false})
+		.AddEventFunction<Spark::MouseButtonPressedEvent, Spark::MouseButtonReleasedEvent>(MouseEvents, {true, false})
+		.Start();
 }

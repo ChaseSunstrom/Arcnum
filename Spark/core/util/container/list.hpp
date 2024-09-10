@@ -2,34 +2,39 @@
 #define SPARK_LIST_HPP
 
 #include <core/util/types.hpp>
+#include <core/util/memory/unique_ptr.hpp>
 
 namespace Spark {
 	template<typename T> class List {
-	public:
+	  private:
+		struct Node {
+			T     data;
+			Node* next;
+			Node(const T& value)
+				: data(value)
+				, next(nullptr) {}
+			Node(T&& value)
+				: data(Move(value))
+				, next(nullptr) {}
+		};
+
+	  public:
 		using Pointer        = T*;
 		using ConstPointer   = const T*;
 		using Reference      = T&;
 		using ConstReference = const T&;
-
-		class Node {
-			Pointer data;
-			Node*   next;
-		};
-
-		using NodePtr = Node*;
+		using NodePtr        = UniquePtr<Node>;
 
 		class Iterator {
-		public:
-			using ValueType      = T;
-			using DifferenceType = i64;
+		  public:
+			Iterator(Node* node)
+				: m_node(node) {}
 
-			Iterator(Pointer ptr) : m_ptr(ptr) {}
-
-			Reference operator*() const { return *m_ptr; }
-			Pointer   operator->() { return m_ptr; }
+			Reference operator*() const { return m_node->data; }
+			Pointer   operator->() { return &(m_node->data); }
 
 			Iterator& operator++() {
-				m_ptr++;
+				m_node = m_node->next;
 				return *this;
 			}
 
@@ -39,33 +44,12 @@ namespace Spark {
 				return tmp;
 			}
 
-			Iterator& operator--() {
-				m_ptr--;
-				return *this;
-			}
+			bool operator==(const Iterator& other) const { return m_node == other.m_node; }
+			bool operator!=(const Iterator& other) const { return m_node != other.m_node; }
 
-			Iterator operator--(i32) {
-				Iterator tmp = *this;
-				--(*this);
-				return tmp;
-			}
-
-			Iterator operator+(DifferenceType n) const { return Iterator(m_ptr + n); }
-			Iterator operator-(DifferenceType n) const { return Iterator(m_ptr - n); }
-
-			DifferenceType operator-(const Iterator& other) const { return m_ptr - other.m_ptr; }
-
-			Reference operator[](DifferenceType n) const { return *(m_ptr + n); }
-
-			bool operator==(const Iterator& other) const { return m_ptr == other.m_ptr; }
-			bool operator!=(const Iterator& other) const { return m_ptr != other.m_ptr; }
-			bool operator<(const Iterator& other) const { return m_ptr < other.m_ptr; }
-			bool operator>(const Iterator& other) const { return m_ptr > other.m_ptr; }
-			bool operator<=(const Iterator& other) const { return m_ptr <= other.m_ptr; }
-			bool operator>=(const Iterator& other) const { return m_ptr >= other.m_ptr; }
-
-		private:
-			Pointer m_ptr;
+		  private:
+			Node* m_node;
+			friend class List;
 		};
 
 		using ConstIterator = Iterator;
@@ -79,18 +63,17 @@ namespace Spark {
 			: m_head(nullptr)
 			, m_tail(nullptr)
 			, m_size(0) {
-			NodePtr current = other.m_head;
+			Node* current = other.m_head.Get();
 			while (current) {
-				PushBack(*current->data);
-				current = current->next;
+				PushBack(current->data);
+				current = current->next.Get();
 			}
 		}
 
 		List(List&& other) noexcept
-			: m_head(other.m_head)
+			: m_head(Move(other.m_head))
 			, m_tail(other.m_tail)
 			, m_size(other.m_size) {
-			other.m_head = nullptr;
 			other.m_tail = nullptr;
 			other.m_size = 0;
 		}
@@ -98,27 +81,39 @@ namespace Spark {
 		List(const std::initializer_list<T>& values)
 			: m_head(nullptr)
 			, m_tail(nullptr)
-			, m_size(0) { for (ConstReference value : values) { PushBack(value); } }
+			, m_size(0) {
+			for (ConstReference value : values) {
+				PushBack(value);
+			}
+		}
 
 		List(const std::vector<T>& values)
 			: m_head(nullptr)
 			, m_tail(nullptr)
-			, m_size(0) { for (ConstReference value : values) { PushBack(value); } }
+			, m_size(0) {
+			for (ConstReference value : values) {
+				PushBack(value);
+			}
+		}
 
 		List(const std::list<T>& values)
 			: m_head(nullptr)
 			, m_tail(nullptr)
-			, m_size(0) { for (ConstReference value : values) { PushBack(value); } }
+			, m_size(0) {
+			for (ConstReference value : values) {
+				PushBack(value);
+			}
+		}
 
 		~List() { Clear(); }
 
 		List& operator=(const List& other) {
 			if (this != &other) {
 				Clear();
-				NodePtr current = other.m_head;
+				Node* current = other.m_head.Get();
 				while (current) {
-					PushBack(*current->data);
-					current = current->next;
+					PushBack(current->data);
+					current = current->next.Get();
 				}
 			}
 			return *this;
@@ -127,93 +122,64 @@ namespace Spark {
 		List& operator=(List&& other) noexcept {
 			if (this != &other) {
 				Clear();
-				m_head       = other.m_head;
+				m_head       = Move(other.m_head);
 				m_tail       = other.m_tail;
 				m_size       = other.m_size;
-				other.m_head = nullptr;
 				other.m_tail = nullptr;
 				other.m_size = 0;
 			}
 			return *this;
 		}
 
-		void PushBack(ConstReference value) {
-			NodePtr new_node = new Node();
-			new_node->data   = new T(value);
-			new_node->next   = nullptr;
-
-			if (m_tail) {
-				m_tail->next = new_node;
-				m_tail       = new_node;
-			} else {
-				m_head = new_node;
-				m_tail = new_node;
-			}
-			m_size++;
-		}
 
 		void PushFront(ConstReference value) {
-			NodePtr new_node = new Node();
-			new_node->data   = new T(value);
-			new_node->next   = m_head;
-
-			if (m_head) { m_head = new_node; } else {
-				m_head = new_node;
-				m_tail = new_node;
+			NodePtr new_node = MakeUnique<Node>(value);
+			new_node->next   = Move(m_head);
+			m_head           = Move(new_node);
+			if (!m_tail) {
+				m_tail = m_head.Get();
 			}
 			m_size++;
-		}
-
-		void PopBack() {
-			if (m_size == 0) { return; }
-			if (m_size == 1) {
-				delete m_head->data;
-				delete m_head;
-				m_head = nullptr;
-				m_tail = nullptr;
-				m_size = 0;
-				return;
-			}
-
-			NodePtr current = m_head;
-			while (current->next != m_tail) { current = current->next; }
-			delete m_tail->data;
-			delete m_tail;
-			m_tail       = current;
-			m_tail->next = nullptr;
-			m_size--;
 		}
 
 		void PopFront() {
-			if (m_size == 0) { return; }
+			if (m_size == 0) {
+				return;
+			}
+			m_head = Move(m_head->next);
+			m_size--;
+			if (m_size == 0) {
+				m_tail = nullptr;
+			}
+		}
+
+		void PopBack() {
+			if (m_size == 0) {
+				return;
+			}
 			if (m_size == 1) {
-				delete m_head->data;
-				delete m_head;
-				m_head = nullptr;
+				m_head.Reset();
 				m_tail = nullptr;
 				m_size = 0;
 				return;
 			}
 
-			NodePtr current = m_head;
-			m_head          = m_head->next;
-			delete current->data;
-			delete current;
+			Node* current = m_head.Get();
+			while (current->next.Get() != m_tail) {
+				current = current->next.Get();
+			}
+			current->next.Reset();
+			m_tail = current;
 			m_size--;
 		}
 
+		
 		void Clear() {
-			NodePtr current = m_head;
-			while (current) {
-				NodePtr next = current->next;
-				delete current->data;
-				delete current;
-				current = next;
-			}
-			m_head = nullptr;
+			m_head.Reset();
 			m_tail = nullptr;
 			m_size = 0;
 		}
+
 
 		void Swap(List& other) {
 			Spark::Swap(m_head, other.m_head);
@@ -236,7 +202,9 @@ namespace Spark {
 		}
 
 		void RotateLeft() {
-			if (m_size <= 1) { return; }
+			if (m_size <= 1) {
+				return;
+			}
 			NodePtr new_tail = m_head;
 			m_head           = m_head->next;
 			m_tail->next     = new_tail;
@@ -245,10 +213,14 @@ namespace Spark {
 		}
 
 		void RotateRight() {
-			if (m_size <= 1) { return; }
+			if (m_size <= 1) {
+				return;
+			}
 			NodePtr new_head = m_tail;
 			NodePtr current  = m_head;
-			while (current->next != m_tail) { current = current->next; }
+			while (current->next != m_tail) {
+				current = current->next;
+			}
 			m_tail         = current;
 			m_tail->next   = nullptr;
 			new_head->next = m_head;
@@ -256,13 +228,17 @@ namespace Spark {
 		}
 
 		void Sort() {
-			if (m_size <= 1) { return; }
+			if (m_size <= 1) {
+				return;
+			}
 			NodePtr current = m_head;
 			while (current) {
 				NodePtr min  = current;
 				NodePtr next = current->next;
 				while (next) {
-					if (*next->data < *min->data) { min = next; }
+					if (*next->data < *min->data) {
+						min = next;
+					}
 					next = next->next;
 				}
 				Spark::Swap(current->data, min->data);
@@ -274,69 +250,41 @@ namespace Spark {
 			NodePtr current = m_head;
 			NodePtr prev    = nullptr;
 			while (current) {
-				if (*current->data == value) {
+				if (current->data == value) {
 					if (prev) {
 						prev->next = current->next;
-						delete current->data;
-						delete current;
-						current = prev->next;
 					} else {
-						NodePtr next = current->next;
-						delete current->data;
-						delete current;
-						m_head  = next;
-						current = m_head;
+						m_head = current->next;
 					}
+					if (current == m_tail) {
+						m_tail = prev;
+					}
+					delete current; // This is correct now
 					m_size--;
-				} else {
-					prev    = current;
-					current = current->next;
+					return;
 				}
-			}
-		}
-
-		void Erase(size_t index) {
-			if (index >= m_size) { return; }
-			if (index == 0) {
-				NodePtr next = m_head->next;
-				delete m_head->data;
-				delete m_head;
-				m_head = next;
-				m_size--;
-				return;
-			}
-
-			NodePtr current = m_head;
-			NodePtr prev    = nullptr;
-			size_t  i       = 0;
-			while (current && i < index) {
 				prev    = current;
 				current = current->next;
-				i++;
-			}
-			if (current) {
-				prev->next = current->next;
-				delete current->data;
-				delete current;
-				m_size--;
 			}
 		}
 
 		Reference At(size_t index) {
-			if (index >= m_size) { LOG_FATAL("Index out of bounds"); }
-			NodePtr current = m_head;
-			size_t  i       = 0;
+			if (index >= m_size) {
+				LOG_FATAL("Index out of bounds");
+			}
+			Node*  current = m_head.Get();
+			size_t i       = 0;
 			while (current && i < index) {
-				current = current->next;
+				current = current->next.Get();
 				i++;
 			}
-			return *current->data;
+			return current->data;
 		}
 
 		friend std::ostream& operator<<(std::ostream& os, const List& list) {
 			os << "[ ";
 			NodePtr current = list.m_head;
-			size_t i       = 0;
+			size_t  i       = 0;
 			while (current) {
 				os << *current->data << " ";
 				current = current->next;
@@ -350,10 +298,10 @@ namespace Spark {
 			return os;
 		}
 
-		Iterator      Begin() { return Iterator(m_head->data); }
-		Iterator      End() { return Iterator(m_tail->data); }
-		ConstIterator Begin() const { return ConstIterator(m_head->data); }
-		ConstIterator End() const { return ConstIterator(m_tail->data); }
+		Iterator      Begin() { return Iterator(m_head.Get()); }
+		Iterator      End() { return Iterator(nullptr); }
+		ConstIterator Begin() const { return ConstIterator(m_head.Get()); }
+		ConstIterator End() const { return ConstIterator(nullptr); }
 
 		Iterator      begin() { return Begin(); }
 		Iterator      end() { return End(); }
@@ -394,7 +342,9 @@ namespace Spark {
 		bool Contains(ConstReference value) const {
 			NodePtr current = m_head;
 			while (current) {
-				if (*current->data == value) { return true; }
+				if (*current->data == value) {
+					return true;
+				}
 				current = current->next;
 			}
 			return false;
@@ -415,11 +365,15 @@ namespace Spark {
 		}
 
 		bool operator==(const List& other) const {
-			if (m_size != other.m_size) { return false; }
+			if (m_size != other.m_size) {
+				return false;
+			}
 			NodePtr current = m_head;
 			NodePtr other   = other.m_head;
 			while (current && other) {
-				if (*current->data != *other->data) { return false; }
+				if (*current->data != *other->data) {
+					return false;
+				}
 				current = current->next;
 				other   = other->next;
 			}
@@ -434,46 +388,83 @@ namespace Spark {
 			}
 		}
 
-		template<typename... Args> void EmplaceBack(Args&&... args) {
-			NodePtr new_node = new Node();
-			new_node->data   = new T(Forward<Args>(args)...);
-			new_node->next   = nullptr;
+		  void PushBack(const T& value) {
+			NodePtr new_node = MakeUnique<Node>(value);
+			if (m_tail) {
+				m_tail->next = Move(new_node);
+				m_tail       = m_tail->next.Get();
+			} else {
+				m_head = Move(new_node);
+				m_tail = m_head.Get();
+			}
+			++m_size;
+		}
 
+		void PushBack(T&& value) {
+			NodePtr new_node = MakeUnique<Node>(Move(value));
+			if (m_tail) {
+				m_tail->next = Move(new_node);
+				m_tail       = m_tail->next.Get();
+			} else {
+				m_head = Move(new_node);
+				m_tail = m_head.Get();
+			}
+			++m_size;
+		}
+
+		template<typename... Args> void EmplaceBack(Args&&... args) {
+			Node* new_node = new Node(T(Forward<Args>(args)...));
 			if (m_tail) {
 				m_tail->next = new_node;
 				m_tail       = new_node;
 			} else {
-				m_head = new_node;
-				m_tail = new_node;
+				m_head = m_tail = new_node;
 			}
-			m_size++;
+			++m_size;
+		}
+
+		void Erase(Iterator it) {
+			if (it.m_node == m_head) {
+				PopFront();
+			} else {
+				Node* prev = m_head;
+				while (prev->next != it.m_node) {
+					prev = prev->next;
+				}
+				prev->next = it.m_node->next;
+				if (it.m_node == m_tail) {
+					m_tail = prev;
+				}
+				delete it.m_node;
+				--m_size;
+			}
 		}
 
 		template<typename... Args> void EmplaceFront(Args&&... args) {
-			NodePtr new_node = new Node();
-			new_node->data   = new T(Forward<Args>(args)...);
+			NodePtr new_node = new Node(T(Forward<Args>(args)...));
 			new_node->next   = m_head;
 
-			if (m_head) { m_head = new_node; } else {
-				m_head = new_node;
+			if (!m_head) {
 				m_tail = new_node;
 			}
+			m_head = new_node;
 			m_size++;
 		}
 
 		template<typename... Args> void Emplace(size_t index, Args&&... args) {
-			if (index >= m_size) { return; }
+			if (index >= m_size) {
+				return;
+			}
 			if (index == 0) {
 				EmplaceFront(Forward<Args>(args)...);
 				return;
 			}
 
-			NodePtr new_node = new Node();
-			new_node->data   = new T(Forward<Args>(args)...);
+			NodePtr new_node = new Node(T(Forward<Args>(args)...));
 
-			NodePtr current = m_head;
-			NodePtr prev    = nullptr;
-			size_t  i       = 0;
+			NodePtr current  = m_head;
+			NodePtr prev     = nullptr;
+			size_t  i        = 0;
 			while (current && i < index) {
 				prev    = current;
 				current = current->next;
@@ -486,7 +477,11 @@ namespace Spark {
 			}
 		}
 
-		void operator+=(const std::initializer_list<T>& values) { for (ConstReference value : values) { PushBack(value); } }
+		void operator+=(const std::initializer_list<T>& values) {
+			for (ConstReference value : values) {
+				PushBack(value);
+			}
+		}
 
 		void operator+=(ConstReference value) { PushBack(value); }
 
@@ -496,13 +491,13 @@ namespace Spark {
 
 		size_t Size() const { return m_size; }
 
-	private:
+	  private:
 		NodePtr m_head;
-		NodePtr m_tail;
+		Node*   m_tail; // Raw pointer, as it doesn't own the node
 		size_t  m_size;
 	};
 
 	template<typename T> void Swap(List<T>& a, List<T>& b) { a.Swap(b); }
-}
+} // namespace Spark
 
 #endif

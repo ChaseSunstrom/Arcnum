@@ -17,7 +17,4 @@ using u64   = uint64_t;
 using f32   = float;
 using f64   = double;
 
-using isize = signed long long;
-using usize = std::size_t;
-
 #endif

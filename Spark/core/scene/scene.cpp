@@ -2,7 +2,7 @@
 
 namespace Spark {
 
-	void Scene::OnEvent(const std::shared_ptr<ComponentEvent<TransformComponent>> event) {
+	void Scene::OnEvent(const SharedPtr<ComponentEvent<TransformComponent>> event) {
 		// Update the Octree
 		m_octree->OnEvent(event);
 

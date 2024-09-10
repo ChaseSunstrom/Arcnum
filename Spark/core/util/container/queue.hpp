@@ -19,13 +19,16 @@ namespace Spark {
 			: m_data(nullptr)
 			, m_front(0)
 			, m_size(0)
-			, m_capacity(0) {}
+			, m_capacity(0) {
+			Reserve(1);
+		}
 
 		Queue(const std::queue<T>& other)
-			: m_data(new T[other.size()])
+			: m_data(nullptr)
 			, m_front(0)
 			, m_size(other.size())
 			, m_capacity(other.size()) {
+			Reserve(other.size());
 			std::queue<T> tmp = other;
 			for (i32 i = 0; i < m_size; ++i) {
 				m_data[i] = tmp.front();
@@ -34,12 +37,19 @@ namespace Spark {
 		}
 
 		explicit Queue(size_t initial_capacity)
-			: m_data(new T[initial_capacity])
+			: m_data(nullptr)
 			, m_front(0)
 			, m_size(0)
-			, m_capacity(initial_capacity) {}
+			, m_capacity(initial_capacity) {
+			Reserve(initial_capacity);
+		}
 
-		~Queue() { delete[] m_data; }
+		~Queue() {
+			for (size_t i = 0; i < m_size; ++i) {
+				m_data[(m_front + i) % m_capacity].~T();
+			}
+			::operator delete(m_data);
+		}
 
 		Queue(const Queue& other)
 			: m_data(new T[other.m_capacity])
@@ -59,14 +69,27 @@ namespace Spark {
 			return *this;
 		}
 
-		void Enqueue(ConstReference value) {
-			if (m_size == m_capacity) { Reserve(m_capacity == 0 ? 1 : m_capacity * 2); }
-			m_data[(m_front + m_size) % m_capacity] = value;
+		void Enqueue(const T& value) {
+			if (m_size == m_capacity) {
+				Reserve(m_capacity == 0 ? 1 : m_capacity * 2);
+			}
+			new (m_data + (m_front + m_size) % m_capacity) T(value);
+			++m_size;
+		}
+
+		void Enqueue(T&& value) {
+			if (m_size == m_capacity) {
+				Reserve(m_capacity == 0 ? 1 : m_capacity * 2);
+			}
+			new (m_data + (m_front + m_size) % m_capacity) T(Move(value));
 			++m_size;
 		}
 
 		void Dequeue() {
-			if (Empty()) { LOG_FATAL("Queue is empty"); }
+			if (Empty()) {
+				LOG_FATAL("Queue is empty");
+			}
+			m_data[m_front].~T();
 			m_front = (m_front + 1) % m_capacity;
 			--m_size;
 		}
@@ -118,9 +141,12 @@ namespace Spark {
 
 		void Reserve(size_t new_capacity) {
 			if (new_capacity > m_capacity) {
-				Pointer new_data = new T[new_capacity];
-				for (size_t i = 0; i < m_size; ++i) { new_data[i] = m_data[(m_front + i) % m_capacity]; }
-				delete[] m_data;
+				T* new_data = static_cast<T*>(::operator new(new_capacity * sizeof(T)));
+				for (size_t i = 0; i < m_size; ++i) {
+					new (new_data + i) T(Move(m_data[(m_front + i) % m_capacity]));
+					m_data[(m_front + i) % m_capacity].~T();
+				}
+				::operator delete(m_data);
 				m_data     = new_data;
 				m_capacity = new_capacity;
 				m_front    = 0;
@@ -144,6 +170,8 @@ namespace Spark {
 			Spark::Swap(m_size, other.m_size);
 			Spark::Swap(m_capacity, other.m_capacity);
 		}
+
+
 
 		template<typename... Args> void Emplace(Args&&... args) {
 			if (m_size == m_capacity) { Reserve(m_capacity == 0 ? 1 : m_capacity * 2); }

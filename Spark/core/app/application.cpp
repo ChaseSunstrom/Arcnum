@@ -1,14 +1,12 @@
 #include "application.hpp"
-#include <core/ecs/components/transform_component.hpp>
-#include <core/debug/fps.hpp>
 
 namespace Spark {
 
-	Application::Application(GraphicsAPI gapi, f32 delta_time, std::unique_ptr<ThreadPool> tp)
-		: m_thread_pool(std::move(tp))
-		, m_event_handler(std::make_unique<EventHandler>(*m_thread_pool))
-		, m_ecs(std::make_unique<Ecs>(*m_event_handler))
-		, m_resource_manager(std::make_unique<Manager<Resource>>())
+	Application::Application(GraphicsAPI gapi, f32 delta_time, UniquePtr<ThreadPool> tp)
+		: m_thread_pool(Move(tp))
+		, m_event_handler(MakeUnique<EventHandler>(*m_thread_pool))
+		, m_ecs(MakeUnique<Ecs>(m_event_handler))
+		, m_resource_manager(MakeUnique<Manager<Resource>>())
 		, m_delta_time(delta_time)
 		, m_gapi(gapi) {}
 
@@ -55,17 +53,17 @@ namespace Spark {
 	}
 
 	Application& Application::AddStartupFunction(const ApplicationFunction& fn, const FunctionSettings settings) {
-		m_startup_functions.push_back({fn, settings});
+		m_startup_functions.PushBack({fn, settings});
 		return *this;
 	}
 
 	Application& Application::AddUpdateFunction(const ApplicationFunction& fn, const FunctionSettings settings) {
-		m_update_functions.push_back({fn, settings});
+		m_update_functions.PushBack({fn, settings});
 		return *this;
 	}
 
 	Application& Application::AddShutdownFunction(const ApplicationFunction& fn, const FunctionSettings settings) {
-		m_shutdown_functions.push_back({fn, settings});
+		m_shutdown_functions.PushBack({fn, settings});
 		return *this;
 	}
 

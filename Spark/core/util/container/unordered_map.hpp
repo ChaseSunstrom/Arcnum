@@ -34,6 +34,11 @@ namespace Spark {
 				}
 			}
 
+			Iterator(Vector<Bucket>* buckets, size_t bucket_index, typename Bucket::Iterator it)
+				: m_buckets(buckets)
+				, m_bucket_index(bucket_index)
+				, m_it(it) {}
+
 			Reference operator*() const { return (*m_it).m_pair; }
 			Pointer   operator->() const { return &((*m_it).m_pair); }
 
@@ -134,7 +139,7 @@ namespace Spark {
 		}
 
 		void Insert(const Key& key, const Value& value) {
-			if (static_cast<float>(m_size + 1) / m_buckets.Size() > MAX_LOAD_FACTOR) {
+			if (static_cast<f32>(m_size + 1) / m_buckets.Size() > MAX_LOAD_FACTOR) {
 				Rehash(m_buckets.Size() * 2);
 			}
 
@@ -151,7 +156,7 @@ namespace Spark {
 		}
 
 		template<typename K, typename V> void Insert(K&& key, V&& value) {
-			if (static_cast<float>(m_size + 1) / m_buckets.Size() > MAX_LOAD_FACTOR) {
+			if (static_cast<f32>(m_size + 1) / m_buckets.Size() > MAX_LOAD_FACTOR) {
 				Rehash(m_buckets.Size() * 2);
 			}
 
@@ -195,12 +200,19 @@ namespace Spark {
 		const Value& At(const Key& key) const { return const_cast<UnorderedMap*>(this)->At(key); }
 
 		Value& operator[](const Key& key) {
+			if (key == std::type_index(typeid(void))) {
+				LOG_FATAL("Invalid type_index key");
+			}
+
 			size_t index = GetBucketIndex(key);
+			std::cout << "Accessing bucket " << index << " for key " << key.name() << std::endl;
+			std::cout << "Bucket size: " << m_buckets[index].Size() << std::endl;
 			for (auto& node : m_buckets[index]) {
 				if (node.m_pair.first == key) {
 					return node.m_pair.second;
 				}
 			}
+
 			m_buckets[index].EmplaceBack(key, Value());
 			++m_size;
 			return m_buckets[index].Back().m_pair.second;
@@ -265,14 +277,14 @@ namespace Spark {
 			Spark::Swap(m_hasher, other.m_hasher);
 		}
 
-		float  LoadFactor() const { return static_cast<float>(m_size) / m_buckets.Size(); }
+		f32  LoadFactor() const { return static_cast<f32>(m_size) / m_buckets.Size(); }
 		size_t BucketCount() const { return m_buckets.Size(); }
 		size_t MaxBucketCount() const { return m_buckets.MaxSize(); }
 		size_t BucketSize(size_t n) const { return m_buckets[n].Size(); }
 		size_t GetBucket(const Key& key) const { return GetBucketIndex(key); }
 
 		void Reserve(size_t count) {
-			size_t bucketCount = static_cast<size_t>(std::ceil(count / MAX_LOAD_FACTOR));
+			size_t bucketCount = static_cast<size_t>(Math::Ceil(count / MAX_LOAD_FACTOR));
 			if (bucketCount > m_buckets.Size()) {
 				Rehash(bucketCount);
 			}

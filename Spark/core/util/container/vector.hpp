@@ -6,8 +6,8 @@
 #include <core/util/log.hpp>
 #include <initializer_list>
 #include <iostream>
-#include <vector>
 #include <list>
+#include <vector>
 
 namespace Spark {
 	template<typename T> class Vector {
@@ -19,7 +19,7 @@ namespace Spark {
 
 		class Iterator {
 		  public:
-			using DifferenceType = i64;
+			using DifferenceType = std::ptrdiff_t;
 
 			Iterator(Pointer ptr)
 				: m_ptr(ptr) {}
@@ -31,18 +31,15 @@ namespace Spark {
 				m_ptr++;
 				return *this;
 			}
-
 			Iterator operator++(i32) {
 				Iterator tmp = *this;
 				++(*this);
 				return tmp;
 			}
-
 			Iterator& operator--() {
 				m_ptr--;
 				return *this;
 			}
-
 			Iterator operator--(i32) {
 				Iterator tmp = *this;
 				--(*this);
@@ -53,8 +50,7 @@ namespace Spark {
 			Iterator operator-(DifferenceType n) const { return Iterator(m_ptr - n); }
 
 			DifferenceType operator-(const Iterator& other) const { return m_ptr - other.m_ptr; }
-
-			Reference operator[](DifferenceType n) const { return *(m_ptr + n); }
+			Reference      operator[](DifferenceType n) const { return *(m_ptr + n); }
 
 			bool operator==(const Iterator& other) const { return m_ptr == other.m_ptr; }
 			bool operator!=(const Iterator& other) const { return m_ptr != other.m_ptr; }
@@ -70,13 +66,12 @@ namespace Spark {
 		using ConstIterator = const Iterator;
 
 		Vector()
-			: m_data((T*)new u8[1 * sizeof(T)])
+			: m_data((T*) new u8[1 * sizeof(T)])
 			, m_size(0)
-			, m_capacity(1) {
-		}
+			, m_capacity(1) {}
 
 		Vector(size_t initial_size, ConstReference value)
-			: m_data((T*)new u8[initial_size * sizeof(T)])
+			: m_data((T*) new u8[initial_size * sizeof(T)])
 			, m_size(initial_size)
 			, m_capacity(initial_size) {
 			for (size_t i = 0; i < m_size; ++i) {
@@ -85,7 +80,7 @@ namespace Spark {
 		}
 
 		Vector(const std::vector<T>& vec)
-			: m_data((T*)new u8[vec.size() * sizeof(T)])
+			: m_data((T*) new u8[vec.size() * sizeof(T)])
 			, m_size(vec.size())
 			, m_capacity(vec.size()) {
 			for (size_t i = 0; i < m_size; ++i) {
@@ -94,7 +89,7 @@ namespace Spark {
 		}
 
 		Vector(const std::list<T>& list)
-			: m_data((T*)new u8[list.size() * sizeof(T)])
+			: m_data((T*) new u8[list.size() * sizeof(T)])
 			, m_size(list.size())
 			, m_capacity(list.size()) {
 			size_t i = 0;
@@ -105,7 +100,7 @@ namespace Spark {
 		}
 
 		Vector(size_t initial_size, Reference& value)
-			: m_data((T*)new u8[initial_size * sizeof(T)])
+			: m_data((T*) new u8[initial_size * sizeof(T)])
 			, m_size(initial_size)
 			, m_capacity(initial_size) {
 			for (size_t i = 0; i < m_size; ++i) {
@@ -114,7 +109,7 @@ namespace Spark {
 		}
 
 		Vector(std::initializer_list<T> list)
-			: m_data((T*)new u8[list.size() * sizeof(T)])
+			: m_data((T*) new u8[list.size() * sizeof(T)])
 			, m_size(list.size())
 			, m_capacity(list.size()) {
 			size_t i = 0;
@@ -125,14 +120,13 @@ namespace Spark {
 		}
 
 		explicit Vector(size_t initial_size)
-			: m_data((T*)new u8[initial_size * sizeof(T)])
+			: m_data((T*) new u8[initial_size * sizeof(T)])
 			, m_size(initial_size)
-			, m_capacity(initial_size) {
-		}
+			, m_capacity(initial_size) {}
 
 		// Copy constructor
 		Vector(const Vector& other)
-			: m_data((T*)new u8[other.size() * sizeof(T)])
+			: m_data((T*) new u8[other.m_size * sizeof(T)])
 			, m_size(other.m_size)
 			, m_capacity(other.m_capacity) {
 			for (size_t i = 0; i < m_size; ++i) {
@@ -295,6 +289,24 @@ namespace Spark {
 
 		void operator-=(ConstReference value) { Remove(value); }
 
+		void operator-=(const Vector& other) {
+			for (size_t i = 0; i < other.m_size; ++i) {
+				Remove(other.m_data[i]);
+			}
+		}
+
+		void operator-=(std::initializer_list<T> list) {
+			for (const auto& item : list) {
+				Remove(item);
+			}
+		}
+
+		void operator-=(const std::vector<T>& vec) {
+			for (const auto& item : vec) {
+				Remove(item);
+			}
+		}
+
 		void Insert(size_t index, ConstReference value) {
 			if (index > m_size) {
 				LOG_FATAL("Index out of range");
@@ -306,6 +318,41 @@ namespace Spark {
 			m_data[index] = value;
 			++m_size;
 		}
+
+		void Insert(Iterator position, ConstReference value) { Insert(position - m_data, value); }
+
+		void Insert(Iterator position, Reference value) { Insert(position - m_data, value); }
+
+		void Insert(size_t index, Reference value) {
+			if (index > m_size) {
+				LOG_FATAL("Index out of range");
+			}
+			if (m_size == m_capacity) {
+				Reserve(m_capacity == 0 ? 1 : m_capacity * 2);
+			}
+			CopyBackwards(m_data + index, m_data + m_size, m_data + m_size + 1);
+			m_data[index] = value;
+			++m_size;
+		}
+
+		void Insert(Iterator position, Iterator first, Iterator last) { Insert(position - m_data, first, last); }
+
+		void Insert(size_t index, Iterator first, Iterator last) {
+			if (index > m_size) {
+				LOG_FATAL("Index out of range");
+			}
+			size_t count = last - first;
+			if (m_size + count > m_capacity) {
+				Reserve(m_size + count);
+			}
+			CopyBackwards(m_data + index, m_data + m_size, m_data + m_size + count);
+			for (size_t i = 0; i < count; ++i) {
+				m_data[index + i] = *first++;
+			}
+			m_size += count;
+		}
+
+		void Erase(Iterator position) { Erase(position - m_data); }
 
 		void Erase(size_t index) {
 			if (index >= m_size) {
@@ -344,7 +391,7 @@ namespace Spark {
 			m_size = 0;
 		}
 
-		void PushBack(const T& value) {
+		void PushBack(ConstReference value) {
 			if (m_size == m_capacity) {
 				Reserve(m_capacity == 0 ? 1 : m_capacity * 2);
 			}
@@ -398,7 +445,6 @@ namespace Spark {
 		Pointer      Data() { return m_data; }
 		ConstPointer Data() const { return m_data; }
 
-		
 		void Reserve(size_t new_capacity) {
 			if (new_capacity > m_capacity) {
 				T* new_data = static_cast<T*>(::operator new(new_capacity * sizeof(T)));

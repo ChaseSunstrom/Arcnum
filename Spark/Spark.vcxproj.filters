@@ -1032,6 +1032,7 @@
     <ClInclude Include="include\glm\vector_relational.hpp">
       <Filter>include\glm</Filter>
     </ClInclude>
+    <ClInclude Include="core\util\classic\type.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\app\application.cpp">
@@ -1094,5 +1095,6 @@
     <ClCompile Include="lib\windows\glad\glad.c">
       <Filter>lib\windows\glad</Filter>
     </ClCompile>
+    <ClCompile Include="core\util\classic\type.cpp" />
   </ItemGroup>
 </Project>

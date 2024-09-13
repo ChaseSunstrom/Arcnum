@@ -192,6 +192,7 @@
     <ClInclude Include="core\ui\ui.hpp" />
     <ClInclude Include="core\util\classic\compare.hpp" />
     <ClInclude Include="core\util\classic\file.hpp" />
+    <ClInclude Include="core\util\classic\type.hpp" />
     <ClInclude Include="core\util\classic\util.hpp" />
     <ClInclude Include="core\util\container\array.hpp" />
     <ClInclude Include="core\util\container\callable.hpp" />
@@ -469,6 +470,7 @@
     <ClCompile Include="core\scene\scene.cpp" />
     <ClCompile Include="core\system\file_serializer.cpp" />
     <ClCompile Include="core\util\classic\file.cpp" />
+    <ClCompile Include="core\util\classic\type.cpp" />
     <ClCompile Include="core\util\container\string.cpp" />
     <ClCompile Include="core\util\log.cpp" />
     <ClCompile Include="core\util\thread_pool.cpp" />

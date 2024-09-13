@@ -334,7 +334,7 @@ namespace Spark {
 			return *slow->data;
 		}
 
-		Reference      Back() { return *m_tail->data; }
+		Reference      Back() { return m_tail->data; }
 		ConstReference Back() const { return *m_tail->data; }
 
 		bool Empty() const { return m_size == 0; }

@@ -19,18 +19,13 @@ namespace Spark {
 
 		template<IsEvent T> void SubscribeToEvent(Callable<void(const EventPtr<T>&)> handler, const FunctionSettings settings = {}) {
 			std::lock_guard<std::mutex> lock(m_mutex);
-			auto&                        typeIndex = typeid(T);
-			std::cout << "Subscribing to event: " << typeIndex.name() << std::endl;
-			std::cout << "Current map size: " << m_single_event_handlers.Size() << std::endl;
-			auto& handlers = m_single_event_handlers[typeIndex];
-			std::cout << "Handlers before push: " << handlers.Size() << std::endl;
-			handlers.PushBack({[handler](const EventPtr<IEvent>& base_event) {
+			
+			m_single_event_handlers[typeid(T)].PushBack({[handler](const EventPtr<IEvent>& base_event) {
 								   if (auto derived_event = DynamicPointerCast<T>(base_event)) {
 									   handler(derived_event);
 								   }
 							   },
 			                   settings});
-			std::cout << "Handlers after push: " << handlers.Size() << std::endl;
 		}
 
 		template<IsEvent... EventTypes> void SubscribeToMultipleEvents(Callable<void(const MultiEventPtr<EventTypes...>&)> handler, const FunctionSettings settings = {}) {
@@ -87,11 +82,11 @@ namespace Spark {
 
 		template<IsEvent... EventTypes> static MultiEventPtr<EventTypes...> CreateMultiEvent(const EventPtr<IEvent>& base_event) { return MakeShared<MultiEvent<EventTypes...>>(base_event); }
 
-		UnorderedMap<std::type_index, Vector<Pair<Callable<void(const EventPtr<IEvent>&)>, FunctionSettings>>> m_single_event_handlers;
-		UnorderedMap<std::type_index, Vector<Pair<Callable<void(const EventPtr<IEvent>&)>, FunctionSettings>>> m_multi_event_handlers;
-		Vector<Pair<Callable<void(const EventPtr<IEvent>&)>, FunctionSettings>>                                m_all_event_handlers;
-		ThreadPool&                                                                                            m_thread_pool;
-		std::mutex                                                                                             m_mutex;
+		UnorderedMap<TypeIndex, Vector<Pair<Callable<void(const EventPtr<IEvent>&)>, FunctionSettings>>> m_single_event_handlers;
+		UnorderedMap<TypeIndex, Vector<Pair<Callable<void(const EventPtr<IEvent>&)>, FunctionSettings>>> m_multi_event_handlers;
+		Vector<Pair<Callable<void(const EventPtr<IEvent>&)>, FunctionSettings>>                          m_all_event_handlers;
+		ThreadPool&                                                                                      m_thread_pool;
+		std::mutex                                                                                       m_mutex;
 	};
 } // namespace Spark
 

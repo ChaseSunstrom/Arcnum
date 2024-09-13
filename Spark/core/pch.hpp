@@ -55,6 +55,8 @@
 #include "util/memory/weak_ptr.hpp"
 #include "util/memory/ref_ptr.hpp"
 #include "util/memory/const_ptr.hpp"
-
+#include "util/classic/type.hpp"
+#include "util/classic/file.hpp"
+#include "util/classic/util.hpp"
 
 #endif

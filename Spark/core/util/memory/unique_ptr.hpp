@@ -20,19 +20,24 @@ namespace Spark {
 		template<typename U, typename = std::enable_if_t<std::is_convertible_v<U*, T*>>> UniquePtr(UniquePtr<U>&& other) noexcept
 			: m_ptr(other.Release()) {}
 
-		~UniquePtr() { delete m_ptr; }
+		~UniquePtr() {
+			if (m_ptr)
+				delete m_ptr; 
+		}
 
 		UniquePtr(const UniquePtr&)            = delete;
 		UniquePtr& operator=(const UniquePtr&) = delete;
 
-		UniquePtr(UniquePtr&& other) noexcept {
-			m_ptr       = other.m_ptr;
+		UniquePtr(UniquePtr&& other) noexcept
+			: m_ptr(other.m_ptr) {
 			other.m_ptr = nullptr;
 		}
 
 		UniquePtr& operator=(UniquePtr&& other) noexcept {
 			if (this != &other) {
-				delete m_ptr;
+				if (m_ptr) {
+					delete m_ptr;
+				}
 				m_ptr       = other.m_ptr;
 				other.m_ptr = nullptr;
 			}
@@ -56,10 +61,13 @@ namespace Spark {
 		}
 
 		void Reset(T* ptr = nullptr) noexcept {
-			delete m_ptr;
-			m_ptr = ptr;
+			if (m_ptr != ptr) {
+				if (m_ptr) {
+					delete m_ptr;
+				}
+				m_ptr = ptr;
+			}
 		}
-
 	  private:
 		T* m_ptr;
 	};

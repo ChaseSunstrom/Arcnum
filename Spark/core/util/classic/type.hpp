@@ -8,12 +8,15 @@
 namespace Spark {
 	struct TypeInfoData {
 		const char* undecorated_name;
-		const char  decorated_name[1];
+		const char* decorated_name;
+
+		TypeInfoData(const char* undecorated, const char* decorated)
+			: undecorated_name(undecorated)
+			, decorated_name(decorated) {}
 
 		TypeInfoData()                               = delete;
 		TypeInfoData(const TypeInfoData&)            = delete;
 		TypeInfoData(TypeInfoData&&)                 = delete;
-
 		TypeInfoData& operator=(const TypeInfoData&) = delete;
 		TypeInfoData& operator=(TypeInfoData&&)      = delete;
 	};
@@ -23,7 +26,12 @@ namespace Spark {
 
 	class TypeInfo {
 	  public:
-		TypeInfo(const TypeInfo&)            = delete;
+		TypeInfo(const std::type_info& info)
+			: m_type_info_data(info.name(), info.raw_name()) {}
+
+		TypeInfo(const TypeInfo& other)
+			: m_type_info_data(other.m_type_info_data.undecorated_name, other.m_type_info_data.decorated_name) {}
+
 		TypeInfo& operator=(const TypeInfo&) = delete;
 
 		operator const std::type_info&() const noexcept { return *reinterpret_cast<const std::type_info*>(&m_type_info_data); }
@@ -42,7 +50,7 @@ namespace Spark {
 		~TypeInfo() noexcept = default;
 
 	  private:
-		mutable TypeInfoData m_type_info_data;
+		const TypeInfoData m_type_info_data;
 	};
 
 	class TypeIndex {
@@ -50,22 +58,29 @@ namespace Spark {
 		TypeIndex()
 			: m_type_info(nullptr) {}
 		TypeIndex(const TypeInfo& info)
-			: m_type_info(&info) {}
+			: m_type_info(new TypeInfo(info)) {}
+		TypeIndex(const std::type_info& info)
+			: m_type_info(new TypeInfo(info)) {}
+
 		TypeIndex(const TypeIndex& other)
-			: m_type_info(other.m_type_info) {}
+			: m_type_info(other.m_type_info ? new TypeInfo(*other.m_type_info) : nullptr) {}
 		TypeIndex(TypeIndex&& other) noexcept
-			: m_type_info(other.m_type_info) {}
+			: m_type_info(other.m_type_info) {
+			other.m_type_info = nullptr;
+		}
 
-		size_t          HashCode() const { return m_type_info->HashCode(); }
-		const TypeInfo& Info() const { return *reinterpret_cast<const TypeInfo*>(m_type_info); }
-		const char*     Name() const { return m_type_info->Name(); }
+		~TypeIndex() { delete m_type_info; }
 
-		bool operator==(const TypeIndex& other) const { return m_type_info->HashCode() == other.m_type_info->HashCode(); }
-		bool operator!=(const TypeIndex& other) const { return m_type_info->HashCode() != other.m_type_info->HashCode(); }
-		bool operator<(const TypeIndex& other) const { return m_type_info->HashCode() < other.m_type_info->HashCode(); }
-		bool operator>(const TypeIndex& other) const { return m_type_info->HashCode() > other.m_type_info->HashCode(); }
-		bool operator<=(const TypeIndex& other) const { return m_type_info->HashCode() <= other.m_type_info->HashCode(); }
-		bool operator>=(const TypeIndex& other) const { return m_type_info->HashCode() >= other.m_type_info->HashCode(); }
+		size_t          HashCode() const { return m_type_info ? m_type_info->HashCode() : 0; }
+		const TypeInfo& Info() const { return *m_type_info; }
+		const char*     Name() const { return m_type_info ? m_type_info->Name() : ""; }
+
+		bool operator==(const TypeIndex& other) const { return (m_type_info == other.m_type_info) || (m_type_info && other.m_type_info && m_type_info->HashCode() == other.m_type_info->HashCode()); }
+		bool operator!=(const TypeIndex& other) const { return !(*this == other); }
+		bool operator<(const TypeIndex& other) const { return (m_type_info && other.m_type_info && m_type_info->HashCode() < other.m_type_info->HashCode()) || (!m_type_info && other.m_type_info); }
+		bool operator>(const TypeIndex& other) const { return other < *this; }
+		bool operator<=(const TypeIndex& other) const { return !(other < *this); }
+		bool operator>=(const TypeIndex& other) const { return !(*this < other); }
 
 		TypeIndex& operator=(const TypeIndex& other) {
 			m_type_info = other.m_type_info;
@@ -73,7 +88,8 @@ namespace Spark {
 		}
 
 		TypeIndex& operator=(TypeIndex&& other) noexcept {
-			m_type_info = other.m_type_info;
+			m_type_info       = other.m_type_info;
+			other.m_type_info = nullptr;
 			return *this;
 		}
 

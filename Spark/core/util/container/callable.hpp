@@ -13,40 +13,32 @@ namespace Spark {
 
 	template<typename ReturnType, typename... Args> class Callable<ReturnType(Args...)> {
 	  public:
-		// Default constructor
+
 		Callable() noexcept = default;
 
-		// Null pointer constructor
 		Callable(std::nullptr_t) noexcept
 			: Callable() {}
 
-		// Constructor taking any callable object
 		template<typename F, typename = std::enable_if_t<!std::is_same_v<std::decay_t<F>, Callable>>> Callable(F&& f)
 			: m_function(MakeUnique<CallableImpl<std::decay_t<F>>>(Forward<F>(f))) {}
 
-		// Copy constructor
 		Callable(const Callable& other)
 			: m_function(other.m_function ? other.m_function->Clone() : nullptr) {}
 
-		// Move constructor
 		Callable(Callable&& other) noexcept = default;
 
-		// Copy assignment operator
 		Callable& operator=(const Callable& other) {
 			Callable(other).Swap(*this);
 			return *this;
 		}
 
-		// Move assignment operator
 		Callable& operator=(Callable&& other) noexcept = default;
 
-		// Null assignment operator
 		Callable& operator=(std::nullptr_t) noexcept {
 			m_function.Reset();
 			return *this;
 		}
 
-		// Function call operator
 		ReturnType operator()(Args... args) const {
 			if (!m_function) {
 				LOG_FATAL("Bad function call!");
@@ -54,17 +46,14 @@ namespace Spark {
 			return m_function->Invoke(Forward<Args>(args)...);
 		}
 
-		// Check if the Callable contains a valid function
 		explicit operator bool() const noexcept { return static_cast<bool>(m_function); }
 
-		// Swap function
 		void Swap(Callable& other) noexcept {
 			using std::swap;
 			swap(m_function, other.m_function);
 		}
 
 	  private:
-		// Base class for callable objects
 		class CallableBase {
 		  public:
 			virtual ~CallableBase()                               = default;
@@ -72,7 +61,6 @@ namespace Spark {
 			virtual UniquePtr<CallableBase> Clone() const         = 0;
 		};
 
-		// Derived class to store the actual callable object
 		template<typename F> class CallableImpl : public CallableBase {
 		  public:
 			template<typename Func> explicit CallableImpl(Func&& f)
@@ -93,7 +81,6 @@ namespace Spark {
 
 	// Swap function
 	template<typename Signature> void Swap(Callable<Signature>& lhs, Callable<Signature>& rhs) noexcept { lhs.Swap(rhs); }
-
 } // namespace Spark
 
 #endif // SPARK_CALLABLE_HPP

@@ -46,7 +46,7 @@ void AddTriangleToScene(Spark::Application& app) {
 	auto  current_scene = scene_manager.GetCurrentScene();
 
 	// Add multiple instances to ensure instanced rendering is triggered
-	for (i32 i = 0; i < 1000; ++i) {
+	for (i32 i = 0; i < 10; ++i) {
 		Spark::Math::Mat4 transform = Spark::Math::Translate(Spark::Math::Mat4(1.0f), Spark::Math::Vec3(i * 0.5f, 0.0f, 0.0f));
 		current_scene->AddModelInstance(app.GetEcs().MakeEntity(), "triangle_model", transform);
 	}
@@ -62,8 +62,8 @@ void SetupTestScene(Spark::Application& app) {
 void UpdateCamera(Spark::Application& app) {
 	auto cam = app.GetManager<Spark::Camera>().GetCurrentCamera();
 	cam->SetFar(100000.0f);
-	cam->MoveX(2.44f);
-	cam->Rotate(Spark::Math::Vec3(45.0f, 1.0f, 45.0f));
+	//cam->MoveX(2.44f);
+	//cam->Rotate(Spark::Math::Vec3(45.0f, 1.0f, 45.0f));
 }
 
 void TestVector(Spark::Application& app) {

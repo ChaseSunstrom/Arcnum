@@ -331,6 +331,8 @@ namespace Spark {
 			++first;
 		}
 	}
+
+	template<typename T> T* AddressOf(const T& value) { return reinterpret_cast<T*>(const_cast<char*>(&reinterpret_cast<const volatile char&>(value))); }
 } // namespace Spark
 
 #endif

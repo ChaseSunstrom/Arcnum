@@ -480,11 +480,11 @@ namespace Spark {
 		static char        ToLowerChar(char c);
 		static char        ToUpperChar(char c);
 		static bool        IsSpace(char c);
-		static int         StringCompare(const char* s1, const char* s2, size_t n = -1);
+		static i32         StringCompare(const char* s1, const char* s2, size_t n = -1);
 		static const char* StringFind(const char* str, const char* substr);
-		static int64_t     StringToInt64(const char* str);
-		static float       StringToFloat(const char* str);
-		static double      StringToDouble(const char* str);
+		static i64     StringToInt64(const char* str);
+		static f32       StringToFloat(const char* str);
+		static f64      StringToDouble(const char* str);
 		static bool        IsDigit(char c);
 		static bool        IsAlpha(char c);
 		static bool        IsAlphanumeric(char c);

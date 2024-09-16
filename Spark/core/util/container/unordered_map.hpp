@@ -103,6 +103,14 @@ namespace Spark {
 			}
 		}
 
+		UnorderedMap(const std::unordered_map<Key, Value>& other)
+			: m_buckets(DEFAULT_BUCKET_COUNT)
+			, m_size(0) {
+			for (const auto& pair : other) {
+				Insert(pair.first, pair.second);
+			}
+		}
+
 		~UnorderedMap() { Clear(); }
 
 		UnorderedMap& operator=(const UnorderedMap& other) {

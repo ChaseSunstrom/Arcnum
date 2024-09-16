@@ -203,11 +203,13 @@
     <ClInclude Include="core\util\container\stack.hpp" />
     <ClInclude Include="core\util\container\string.hpp" />
     <ClInclude Include="core\util\container\unordered_map.hpp" />
+    <ClInclude Include="core\util\container\unordered_set.hpp" />
     <ClInclude Include="core\util\container\vector.hpp" />
     <ClInclude Include="core\util\defines.hpp" />
     <ClInclude Include="core\util\general.hpp" />
     <ClInclude Include="core\util\gl.hpp" />
     <ClInclude Include="core\util\log.hpp" />
+    <ClInclude Include="core\util\memory\allocator.hpp" />
     <ClInclude Include="core\util\memory\const_ptr.hpp" />
     <ClInclude Include="core\util\memory\ref_ptr.hpp" />
     <ClInclude Include="core\util\memory\shared_ptr.hpp" />

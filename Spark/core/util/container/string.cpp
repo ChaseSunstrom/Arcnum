@@ -16,7 +16,7 @@ namespace Spark
 
 	bool String::IsSpace(char c) { return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f' || c == '\v'; }
 
-	int String::StringCompare(const char* s1, const char* s2, size_t n) {
+	i32 String::StringCompare(const char* s1, const char* s2, size_t n) {
 		if (n == -1) {
 			while (*s1 && (*s1 == *s2)) {
 				++s1;

@@ -381,10 +381,11 @@ namespace Spark {
 			}
 			CopyBackwards(m_data + index, m_data + m_size, m_data + m_size + count);
 			for (size_t i = 0; i < count; ++i) {
-				m_data[index + i] = *first++;
+				new (m_data + index + i) T(*(first + i));
 			}
 			m_size += count;
 		}
+
 
 		void Erase(Iterator position) { Erase(position - m_data); }
 
@@ -565,6 +566,24 @@ namespace Spark {
 		Iterator      end() { return End(); }
 		ConstIterator begin() const { return Begin(); }
 		ConstIterator end() const { return End(); }
+
+	  private:
+		void CopyBackwards(Pointer src_begin, Pointer src_end, Pointer dest_end) {
+			while (src_end != src_begin) {
+				--src_end;
+				--dest_end;
+				new (dest_end) T(Move(*src_end));
+				src_end->~T();
+			}
+		}
+		void Copy(Pointer src_begin, Pointer src_end, Pointer dest_begin) {
+			while (src_begin != src_end) {
+				new (dest_begin) T(Move(*src_begin));
+				src_begin->~T();
+				++src_begin;
+				++dest_begin;
+			}
+		}
 
 	  private:
 		Pointer m_data;

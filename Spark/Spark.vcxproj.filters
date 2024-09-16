@@ -1033,6 +1033,8 @@
       <Filter>include\glm</Filter>
     </ClInclude>
     <ClInclude Include="core\util\classic\type.hpp" />
+    <ClInclude Include="core\util\container\unordered_set.hpp" />
+    <ClInclude Include="core\util\memory\allocator.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\app\application.cpp">

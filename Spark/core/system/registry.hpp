@@ -12,16 +12,16 @@ namespace Spark {
 	};
 
 	// Basically just a wrapper around a std::unordered_map<std::string,
-	// std::unique_ptr<T>> so we can name the elements put into this (very useful
+	// std::unique_ptr<_Ty>> so we can name the elements put into this (very useful
 	// for keeping track of meshes, materials, shaders, etc.)
-	template<typename T> class Registry {
+	template<typename _Ty> class Registry {
 	public:
 		Registry()                           = default;
 		~Registry()                          = default;
 		Registry(const Registry&)            = delete;
 		Registry& operator=(const Registry&) = delete;
 
-		RefPtr<T> Register(const std::string& name, std::unique_ptr<T> object) {
+		RefPtr<_Ty> Register(const std::string& name, std::unique_ptr<_Ty> object) {
 			Handle handle;
 			if (!m_free_indices.empty()) {
 				handle.index = m_free_indices.back();
@@ -34,7 +34,7 @@ namespace Spark {
 				m_generations.push_back(0);
 			}
 
-			T& ref                        = *object;
+			_Ty& ref                        = *object;
 			m_handle_values[handle.index] = std::ref(ref);
 			m_registry[name]              = std::make_pair(handle, std::move(object));
 			return ref;
@@ -65,7 +65,7 @@ namespace Spark {
 			}
 		}
 
-		RefPtr<T> Get(const std::string& name) const {
+		RefPtr<_Ty> Get(const std::string& name) const {
 			auto it = m_registry.find(name);
 			if (it != m_registry.end())
 				return *it->second.second;
@@ -75,7 +75,7 @@ namespace Spark {
 
 		size_t GetSize() const { return m_registry.size(); }
 
-		RefPtr<T> Get(const Handle handle) const {
+		RefPtr<_Ty> Get(const Handle handle) const {
 			if (handle.index < m_handle_values.size() && handle.generation == m_generations[handle.index] && m_handle_values[handle.index].has_value()) {
 				return m_handle_values[handle.index].value().get();
 			}
@@ -86,14 +86,14 @@ namespace Spark {
 			return handle.index < m_handle_values.size() && handle.generation == m_generations[handle.index] && m_handle_values[handle.index].has_value();
 		}
 
-		T GetCopy(const std::string& name) const {
+		_Ty GetCopy(const std::string& name) const {
 			auto it = m_registry.find(name);
 			if (it != m_registry.end())
 				return *it->second;
 			LOG_FATAL("Could not find object with name: " << name);
 		}
 
-		T GetCopy(const Handle handle) const {
+		_Ty GetCopy(const Handle handle) const {
 			if (handle.index < m_handle_values.size() && handle.generation == m_generations[handle.index] && m_handle_values[handle.index].has_value()) {
 				return m_handle_values[handle.index].value().get();
 			}
@@ -107,7 +107,7 @@ namespace Spark {
 			return keys;
 		}
 
-		std::vector<std::reference_wrapper<T>>& GetValues() const { return m_handle_values; }
+		std::vector<std::reference_wrapper<_Ty>>& GetValues() const { return m_handle_values; }
 
 		bool Contains(const std::string& name) const { return m_registry.find(name) != m_registry.end(); }
 
@@ -118,8 +118,8 @@ namespace Spark {
 		u32 Size() const { return m_registry.size(); }
 
 	private:
-		std::unordered_map<std::string, std::pair<Handle, std::unique_ptr<T>>> m_registry;
-		std::vector<std::optional<std::reference_wrapper<T>>>                  m_handle_values;
+		std::unordered_map<std::string, std::pair<Handle, std::unique_ptr<_Ty>>> m_registry;
+		std::vector<std::optional<std::reference_wrapper<_Ty>>>                  m_handle_values;
 		std::vector<u32>                                                       m_generations;
 		std::vector<u32>                                                       m_free_indices;
 	};

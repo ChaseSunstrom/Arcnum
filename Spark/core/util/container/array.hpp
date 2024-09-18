@@ -6,38 +6,38 @@
 #include <core/util/classic/util.hpp>
 
 namespace Spark {
-	template<typename T, i32 N> class Array {
+	template<typename _Ty, i32 N> class Array {
 	public:
-		using ValueType      = T;
+		using ValueType      = _Ty;
 		using SizeType       = i32;
-		using Reference      = T&;
-		using ConstReference = const T&;
-		using Pointer        = T*;
-		using ConstPointer   = const T*;
-		using Iterator       = T*;
-		using ConstIterator  = const T*;
+		using Reference      = _Ty&;
+		using ConstReference = const _Ty&;
+		using Pointer        = _Ty*;
+		using ConstPointer   = const _Ty*;
+		using Iterator       = _Ty*;
+		using ConstIterator  = const _Ty*;
 
 		// Default constructor
 		Array() {
 			for (i32 i = 0; i < N; ++i) {
-				new (m_data + i) T();
+				new (m_data + i) _Ty();
 			}
 		}
 
 		// Fill constructor
-		explicit Array(const T& value) { Fill(value); }
+		explicit Array(const _Ty& value) { Fill(value); }
 
-		Array(const T& value, i32 count) { for (i32 i = 0; i < count; ++i) { m_data[i] = value; } }
+		Array(const _Ty& value, i32 count) { for (i32 i = 0; i < count; ++i) { m_data[i] = value; } }
 
-		Array(const std::array<T, N>& other) { for (i32 i = 0; i < N; ++i) { m_data[i] = other[i]; } }
+		Array(const std::array<_Ty, N>& other) { for (i32 i = 0; i < N; ++i) { m_data[i] = other[i]; } }
 
-		Array(const std::initializer_list<T>& init) { Copy(init.begin(), init.end(), m_data); }
+		Array(const std::initializer_list<_Ty>& init) { Copy(init.begin(), init.end(), m_data); }
 
 		Array(const Array& other) { Copy(other.Begin(), other.End(), m_data); }
 
 		~Array() {
 			for (i32 i = 0; i < N; ++i) {
-				m_data[i].~T();
+				m_data[i].~_Ty();
 			}
 		}
 
@@ -105,9 +105,9 @@ namespace Spark {
 
 		constexpr SizeType MaxSize() const { return N; }
 
-		void Fill(const T& value) { for (SizeType i = 0; i < N; ++i) { m_data[i] = value; } }
+		void Fill(const _Ty& value) { for (SizeType i = 0; i < N; ++i) { m_data[i] = value; } }
 
-		void Swap(Array& other) { for (SizeType i = 0; i < N; ++i) { Spark::Swap(m_data[i], other.m_data[i]); } }
+		void Swap(Array& other) { for (SizeType i = 0; i < N; ++i) { _SPARKSwap(m_data[i], other.m_data[i]); } }
 
 		bool operator==(const Array& other) const {
 			for (i32 i = 0; i < N; ++i) { if (m_data[i] != other.m_data[i]) { return false; } }
@@ -118,10 +118,10 @@ namespace Spark {
 		bool operator!=(const Array& other) const { return !(*this == other); }
 
 	private:
-		alignas(T) u8 m_data[N * sizeof(T)];
+		alignas(_Ty) u8 m_data[N * sizeof(_Ty)];
 	};
 
-	template<typename T, i32 N> void Swap(Array<T, N>& lhs, Array<T, N>& rhs) { lhs.Swap(rhs); }
+	template<typename _Ty, i32 N> void Swap(Array<_Ty, N>& lhs, Array<_Ty, N>& rhs) { lhs.Swap(rhs); }
 }
 
 #endif // SPARK_ARRAY_HPP

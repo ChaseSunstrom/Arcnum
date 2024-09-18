@@ -8,18 +8,18 @@
 #include "vector.hpp"
 
 namespace Spark {
-	template<typename T, typename Hash = std::hash<T>> class UnorderedSet {
+	template<typename _Ty, typename Hash = std::hash<_Ty>> class UnorderedSet {
 	  public:
 		struct Node {
-			T value;
-			Node(const T& value)
+			_Ty value;
+			Node(const _Ty& value)
 				: value(value) {}
-			Node(T&& value)
+			Node(_Ty&& value)
 				: value(Move(value)) {}
 		};
 		
 		using Bucket         = List<Node>;
-		using ValueType      = T;
+		using ValueType      = _Ty;
 		using Pointer        = ValueType*;
 		using Reference      = ValueType&;
 		using ConstReference = const ValueType&;
@@ -82,7 +82,7 @@ namespace Spark {
 			other.m_size = 0;
 		}
 
-		UnorderedSet(const std::unordered_set<T, Hash>& other)
+		UnorderedSet(const std::unordered_set<_Ty, Hash>& other)
 			: m_buckets(DEFAULT_BUCKET_COUNT)
 			, m_size(0) {
 			for (const auto& value : other) {

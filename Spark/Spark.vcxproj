@@ -192,6 +192,7 @@
     <ClInclude Include="core\ui\ui.hpp" />
     <ClInclude Include="core\util\classic\compare.hpp" />
     <ClInclude Include="core\util\classic\file.hpp" />
+    <ClInclude Include="core\util\classic\traits.hpp" />
     <ClInclude Include="core\util\classic\type.hpp" />
     <ClInclude Include="core\util\classic\util.hpp" />
     <ClInclude Include="core\util\container\array.hpp" />
@@ -204,6 +205,7 @@
     <ClInclude Include="core\util\container\string.hpp" />
     <ClInclude Include="core\util\container\unordered_map.hpp" />
     <ClInclude Include="core\util\container\unordered_set.hpp" />
+    <ClInclude Include="core\util\container\variant.hpp" />
     <ClInclude Include="core\util\container\vector.hpp" />
     <ClInclude Include="core\util\defines.hpp" />
     <ClInclude Include="core\util\general.hpp" />

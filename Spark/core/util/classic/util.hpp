@@ -5,21 +5,21 @@
 #include <core/util/types.hpp>
 
 namespace Spark {
-	template<typename T> T&& Move(T& value) { return static_cast<T&&>(value); }
+	template<typename _Ty> _Ty&& Move(_Ty& value) { return static_cast<_Ty&&>(value); }
 
-	template<typename T> void Swap(T& a, T& b) {
-		T tmp = Move(a);
+	template<typename _Ty> void Swap(_Ty& a, _Ty& b) {
+		_Ty tmp = Move(a);
 		a     = Move(b);
 		b     = Move(tmp);
 	}
 
-	template<typename T> void Swap(T* a, T* b) {
-		T tmp = Move(*a);
+	template<typename _Ty> void Swap(_Ty* a, _Ty* b) {
+		_Ty tmp = Move(*a);
 		*a    = Move(*b);
 		*b    = Move(tmp);
 	}
 
-	template<typename T> void Reverse(T* first, T* last) {
+	template<typename _Ty> void Reverse(_Ty* first, _Ty* last) {
 		while (first < last) {
 			--last;
 			Swap(first, last);
@@ -27,16 +27,16 @@ namespace Spark {
 		}
 	}
 
-	template<typename T> void Rotate(T* first, T* n_first, T* last) {
+	template<typename _Ty> void Rotate(_Ty* first, _Ty* n_first, _Ty* last) {
 		Reverse(first, n_first);
 		Reverse(n_first, last);
 		Reverse(first, last);
 	}
 
-	template<typename T> void RotateLeft(T* first, T* last) {
-		T  tmp = Move(*first);
-		T* i   = first;
-		T* j   = first + 1;
+	template<typename _Ty> void RotateLeft(_Ty* first, _Ty* last) {
+		_Ty  tmp = Move(*first);
+		_Ty* i   = first;
+		_Ty* j   = first + 1;
 		while (j != last) {
 			*i = Move(*j);
 			++i;
@@ -45,10 +45,10 @@ namespace Spark {
 		*i = Move(tmp);
 	}
 
-	template<typename T> void RotateRight(T* first, T* last) {
-		T  tmp = Move(*(last - 1));
-		T* i   = last - 1;
-		T* j   = last - 2;
+	template<typename _Ty> void RotateRight(_Ty* first, _Ty* last) {
+		_Ty  tmp = Move(*(last - 1));
+		_Ty* i   = last - 1;
+		_Ty* j   = last - 2;
 		while (j != first - 1) {
 			*i = Move(*j);
 			--i;
@@ -57,7 +57,7 @@ namespace Spark {
 		*i = Move(tmp);
 	}
 
-	template<typename T> void MakeHeap(T* first, T* last) {
+	template<typename _Ty> void MakeHeap(_Ty* first, _Ty* last) {
 		i32 n = last - first;
 		for (i32 i = n / 2 - 1; i >= 0; --i) {
 			i32 j = i;
@@ -77,7 +77,7 @@ namespace Spark {
 		}
 	}
 
-	template<typename T> void PushHeap(T* first, T* last) {
+	template<typename _Ty> void PushHeap(_Ty* first, _Ty* last) {
 		i32 n = last - first;
 		i32 i = n - 1;
 		while (i > 0) {
@@ -91,7 +91,7 @@ namespace Spark {
 		}
 	}
 
-	template<typename T> void PopHeap(T* first, T* last) {
+	template<typename _Ty> void PopHeap(_Ty* first, _Ty* last) {
 		Swap(first, last - 1);
 		i32 n = last - first - 1;
 		i32 i = 0;
@@ -110,14 +110,14 @@ namespace Spark {
 		}
 	}
 
-	template<typename T> void SortHeap(T* first, T* last) {
+	template<typename _Ty> void SortHeap(_Ty* first, _Ty* last) {
 		while (last - first > 1) {
 			PopHeap(first, last);
 			--last;
 		}
 	}
 
-	template<typename T> void SortHeap(T* first, T* last, T* buffer) {
+	template<typename _Ty> void SortHeap(_Ty* first, _Ty* last, _Ty* buffer) {
 		while (last - first > 1) {
 			PopHeap(first, last);
 			--last;
@@ -126,9 +126,9 @@ namespace Spark {
 		}
 	}
 
-	template<typename T> void BubbleSort(T* first, T* last) {
-		for (T* i = first; i != last; ++i) {
-			for (T* j = last - 1; j != i; --j) {
+	template<typename _Ty> void BubbleSort(_Ty* first, _Ty* last) {
+		for (_Ty* i = first; i != last; ++i) {
+			for (_Ty* j = last - 1; j != i; --j) {
 				if (*j < *(j - 1)) {
 					Swap(j, j - 1);
 				}
@@ -136,10 +136,10 @@ namespace Spark {
 		}
 	}
 
-	template<typename T> void SelectionSort(T* first, T* last) {
-		for (T* i = first; i != last; ++i) {
-			T* min = i;
-			for (T* j = i + 1; j != last; ++j) {
+	template<typename _Ty> void SelectionSort(_Ty* first, _Ty* last) {
+		for (_Ty* i = first; i != last; ++i) {
+			_Ty* min = i;
+			for (_Ty* j = i + 1; j != last; ++j) {
 				if (*j < *min) {
 					min = j;
 				}
@@ -148,14 +148,14 @@ namespace Spark {
 		}
 	}
 
-	template<typename T> constexpr T&& Forward(std::remove_reference_t<T>& t) noexcept { return static_cast<T&&>(t); }
+	template<typename _Ty> constexpr _Ty&& Forward(std::remove_reference_t<_Ty>& t) noexcept { return static_cast<_Ty&&>(t); }
 
-	template<typename T> constexpr T&& Forward(std::remove_reference_t<T>&& t) noexcept { return static_cast<T&&>(t); }
+	template<typename _Ty> constexpr _Ty&& Forward(std::remove_reference_t<_Ty>&& t) noexcept { return static_cast<_Ty&&>(t); }
 
-	template<typename T> void Merge(T* first, T* mid, T* last, T* buffer) {
-		T* i = first;
-		T* j = mid;
-		T* k = buffer;
+	template<typename _Ty> void Merge(_Ty* first, _Ty* mid, _Ty* last, _Ty* buffer) {
+		_Ty* i = first;
+		_Ty* j = mid;
+		_Ty* k = buffer;
 		while (i != mid && j != last) {
 			if (*i < *j) {
 				*k = Move(*i);
@@ -179,10 +179,10 @@ namespace Spark {
 		Copy(buffer, buffer + (last - first), first);
 	}
 
-	template<typename T> void InsertionSort(T* first, T* last) {
-		for (T* i = first + 1; i != last; ++i) {
-			T  key = Move(*i);
-			T* j   = i - 1;
+	template<typename _Ty> void InsertionSort(_Ty* first, _Ty* last) {
+		for (_Ty* i = first + 1; i != last; ++i) {
+			_Ty  key = Move(*i);
+			_Ty* j   = i - 1;
 			while (j >= first && *j > key) {
 				*(j + 1) = Move(*j);
 				--j;
@@ -191,7 +191,7 @@ namespace Spark {
 		}
 	}
 
-	template<typename T> T* MedianOfThree(T* a, T* b, T* c) {
+	template<typename _Ty> _Ty* MedianOfThree(_Ty* a, _Ty* b, _Ty* c) {
 		if (*a < *b) {
 			if (*b < *c)
 				return b;
@@ -206,7 +206,7 @@ namespace Spark {
 		return b;
 	}
 
-	template<typename T> void QuickSort(T* first, T* last, i32 max_depth) {
+	template<typename _Ty> void QuickSort(_Ty* first, _Ty* last, i32 max_depth) {
 		while (last - first > 16) {
 			if (max_depth == 0) {
 				HeapSort(first, last);
@@ -214,12 +214,12 @@ namespace Spark {
 			}
 
 			--max_depth;
-			T* pivot = MedianOfThree(first, first + (last - first) / 2, last - 1);
+			_Ty* pivot = MedianOfThree(first, first + (last - first) / 2, last - 1);
 			Swap(pivot, last - 1);
 			pivot = last - 1;
 
-			T* i  = first - 1;
-			for (T* j = first; j != last - 1; ++j) {
+			_Ty* i  = first - 1;
+			for (_Ty* j = first; j != last - 1; ++j) {
 				if (*j <= *pivot) {
 					++i;
 					Swap(i, j);
@@ -233,16 +233,16 @@ namespace Spark {
 		InsertionSort(first, last);
 	}
 
-	template<typename T> void QuickSort(T* first, T* last) {
+	template<typename _Ty> void QuickSort(_Ty* first, _Ty* last) {
 		if (first == last)
 			return;
 
-		T* pivot = MedianOfThree(first, first + (last - first) / 2, last - 1);
+		_Ty* pivot = MedianOfThree(first, first + (last - first) / 2, last - 1);
 		Swap(pivot, last - 1);
 		pivot = last - 1;
 
-		T* i  = first - 1;
-		for (T* j = first; j != last - 1; ++j) {
+		_Ty* i  = first - 1;
+		for (_Ty* j = first; j != last - 1; ++j) {
 			if (*j <= *pivot) {
 				++i;
 				Swap(i, j);
@@ -254,13 +254,13 @@ namespace Spark {
 		QuickSort(i + 2, last);
 	}
 
-	template<typename T> T* Partition(T* first, T* last) {
-		T* pivot = MedianOfThree(first, first + (last - first) / 2, last - 1);
+	template<typename _Ty> _Ty* Partition(_Ty* first, _Ty* last) {
+		_Ty* pivot = MedianOfThree(first, first + (last - first) / 2, last - 1);
 		Swap(pivot, last - 1);
 		pivot = last - 1;
 
-		T* i  = first - 1;
-		for (T* j = first; j != last - 1; ++j) {
+		_Ty* i  = first - 1;
+		for (_Ty* j = first; j != last - 1; ++j) {
 			if (*j <= *pivot) {
 				++i;
 				Swap(i, j);
@@ -270,14 +270,14 @@ namespace Spark {
 		return i + 1;
 	}
 
-	template<typename T> void HeapSort(T* first, T* last) {
+	template<typename _Ty> void HeapSort(_Ty* first, _Ty* last) {
 		MakeHeap(first, last);
-		for (T* i = last; i != first; --i) {
+		for (_Ty* i = last; i != first; --i) {
 			PopHeap(first, i);
 		}
 	}
 
-	template<typename T> void IntroSortImpl(T* first, T* last, i32 max_depth) {
+	template<typename _Ty> void IntroSortImpl(_Ty* first, _Ty* last, i32 max_depth) {
 		while (last - first > 16) {
 			if (max_depth == 0) {
 				HeapSort(first, last);
@@ -285,39 +285,39 @@ namespace Spark {
 			}
 
 			--max_depth;
-			T* pivot = Partition(first, last);
+			_Ty* pivot = Partition(first, last);
 			IntroSortImpl(pivot + 1, last, max_depth);
 			last = pivot;
 		}
 	}
 
-	template<typename T> void Sort(T* first, T* last) {
+	template<typename _Ty> void Sort(_Ty* first, _Ty* last) {
 		if (first == last)
 			return;
 
-		i32 max_depth = 2 * static_cast<i32>(Math::Log2(last - first));
+		i32 max_depth = 2 * static_cast<i32>(_MATH Log2(last - first));
 		IntroSortImpl(first, last, max_depth);
 		InsertionSort(first, last);
 	}
 
-	template<typename T> void Copy(const T* first, const T* last, T* d_first) {
+	template<typename _Ty> void Copy(const _Ty* first, const _Ty* last, _Ty* d_first) {
 		while (first != last) {
 			*d_first++ = *first++;
 		}
 	}
 
 	// Overload for non-const source and destination
-	template<typename T> void Copy(T* first, T* last, T* d_first) { Copy(static_cast<const T*>(first), static_cast<const T*>(last), d_first); }
+	template<typename _Ty> void Copy(_Ty* first, _Ty* last, _Ty* d_first) { Copy(static_cast<const _Ty*>(first), static_cast<const _Ty*>(last), d_first); }
 
-	template<typename T> void CopyBackwards(const T* first, const T* last, T* d_last) {
+	template<typename _Ty> void CopyBackwards(const _Ty* first, const _Ty* last, _Ty* d_last) {
 		while (first != last) {
 			*--d_last = *--last;
 		}
 	}
 
-	template<typename T> void CopyBackwards(T* first, T* last, T* d_last) { CopyBackwards(static_cast<const T*>(first), static_cast<const T*>(last), d_last); }
+	template<typename _Ty> void CopyBackwards(_Ty* first, _Ty* last, _Ty* d_last) { CopyBackwards(static_cast<const _Ty*>(first), static_cast<const _Ty*>(last), d_last); }
 
-	template<typename T> void Move(T* first, T* last, T* dest) {
+	template<typename _Ty> void Move(_Ty* first, _Ty* last, _Ty* dest) {
 		while (first != last) {
 			*dest = Move(*first);
 			++first;
@@ -325,14 +325,14 @@ namespace Spark {
 		}
 	}
 
-	template<typename T> void Fill(T* first, T* last, const T& value) {
+	template<typename _Ty> void Fill(_Ty* first, _Ty* last, const _Ty& value) {
 		while (first != last) {
 			*first = value;
 			++first;
 		}
 	}
 
-	template<typename T> T* AddressOf(const T& value) { return reinterpret_cast<T*>(const_cast<char*>(&reinterpret_cast<const volatile char&>(value))); }
+	template<typename _Ty> _Ty* AddressOf(const _Ty& value) { return reinterpret_cast<_Ty*>(const_cast<char*>(&reinterpret_cast<const volatile char&>(value))); }
 } // namespace Spark
 
 #endif

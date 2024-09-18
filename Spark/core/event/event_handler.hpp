@@ -17,11 +17,11 @@ namespace Spark {
 			: m_thread_pool(thread_pool) {}
 		~EventHandler() = default;
 
-		template<IsEvent T> void SubscribeToEvent(Callable<void(const EventPtr<T>&)> handler, const FunctionSettings settings = {}) {
+		template<IsEvent _Ty> void SubscribeToEvent(Callable<void(const EventPtr<_Ty>&)> handler, const FunctionSettings settings = {}) {
 			std::lock_guard<std::mutex> lock(m_mutex);
 			
-			m_single_event_handlers[typeid(T)].PushBack({[handler](const EventPtr<IEvent>& base_event) {
-								   if (auto derived_event = DynamicPointerCast<T>(base_event)) {
+			m_single_event_handlers[typeid(_Ty)].PushBack({[handler](const EventPtr<IEvent>& base_event) {
+								   if (auto derived_event = DynamicPointerCast<_Ty>(base_event)) {
 									   handler(derived_event);
 								   }
 							   },
@@ -47,18 +47,18 @@ namespace Spark {
 			m_all_event_handlers.PushBack({handler, settings});
 		}
 
-		template<IsEvent T> void PublishEvent(const EventPtr<T>& event) {
+		template<IsEvent _Ty> void PublishEvent(const EventPtr<_Ty>& event) {
 			Vector<Pair<Callable<void(const EventPtr<IEvent>&)>, FunctionSettings>> handlers_to_call;
 
 			{
 				std::lock_guard<std::mutex> lock(m_mutex);
 
-				auto single_it = m_single_event_handlers.Find(typeid(T));
+				auto single_it = m_single_event_handlers.Find(typeid(_Ty));
 				if (single_it != m_single_event_handlers.End()) {
 					handlers_to_call.Insert(handlers_to_call.End(), single_it->second.Begin(), single_it->second.End());
 				}
 
-				auto multi_it = m_multi_event_handlers.Find(typeid(T));
+				auto multi_it = m_multi_event_handlers.Find(typeid(_Ty));
 				if (multi_it != m_multi_event_handlers.End()) {
 					handlers_to_call.Insert(handlers_to_call.End(), multi_it->second.Begin(), multi_it->second.End());
 				}
@@ -76,8 +76,8 @@ namespace Spark {
 		}
 
 	  private:
-		template<IsEvent T> void RegisterMultiEventHandler(const Callable<void(const EventPtr<IEvent>&)>& handler, const FunctionSettings& settings) {
-			m_multi_event_handlers[typeid(T)].PushBack({handler, settings});
+		template<IsEvent _Ty> void RegisterMultiEventHandler(const Callable<void(const EventPtr<IEvent>&)>& handler, const FunctionSettings& settings) {
+			m_multi_event_handlers[typeid(_Ty)].PushBack({handler, settings});
 		}
 
 		template<IsEvent... EventTypes> static MultiEventPtr<EventTypes...> CreateMultiEvent(const EventPtr<IEvent>& base_event) { return MakeShared<MultiEvent<EventTypes...>>(base_event); }

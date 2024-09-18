@@ -461,7 +461,7 @@ namespace Spark {
 		// Reverse the string
 		String Reverse() const {
 			String result(*this);
-			Spark::Reverse(result.m_data, result.m_data + result.Length());
+			_SPARK Reverse(result.m_data, result.m_data + result.Length());
 			return result;
 		}
 

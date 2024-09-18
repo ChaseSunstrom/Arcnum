@@ -24,21 +24,21 @@ namespace Spark {
 		bool          HasCustomShader() const { return m_custom_shader != nullptr; }
 
 		// Common material properties
-		void SetAlbedo(const Math::Vec4& albedo) { m_albedo = albedo; }
+		void SetAlbedo(const _MATH Vec4& albedo) { m_albedo = albedo; }
 		void SetMetallic(f32 metallic) { m_metallic = metallic; }
 		void SetRoughness(f32 roughness) { m_roughness = roughness; }
 
-		const Math::Vec4& GetAlbedo() const { return m_albedo; }
+		const _MATH Vec4& GetAlbedo() const { return m_albedo; }
 		f32              GetMetallic() const { return m_metallic; }
 		f32              GetRoughness() const { return m_roughness; }
 
 		// Custom properties
-		template<typename T> void SetProperty(const std::string& name, const T& value) { m_custom_properties[name] = value; }
+		template<typename _Ty> void SetProperty(const std::string& name, const _Ty& value) { m_custom_properties[name] = value; }
 
-		template<typename T> T GetProperty(const std::string& name) const {
+		template<typename _Ty> _Ty GetProperty(const std::string& name) const {
 			auto it = m_custom_properties.find(name);
 			if (it != m_custom_properties.end()) {
-				return std::any_cast<T>(it->second);
+				return std::any_cast<_Ty>(it->second);
 			}
 			throw std::runtime_error("Property not found: " + name);
 		}
@@ -50,7 +50,7 @@ namespace Spark {
 		RenderShader* m_custom_shader;
 
 		// Common material properties
-		Math::Vec4 m_albedo;
+		_MATH Vec4 m_albedo;
 		f32       m_metallic;
 		f32       m_roughness;
 

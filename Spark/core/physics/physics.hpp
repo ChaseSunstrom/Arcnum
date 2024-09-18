@@ -9,14 +9,14 @@
 namespace Spark {
 	class PhysicsSystem : public System {
 	  public:
-		PhysicsSystem(RefPtr<EventHandler> event_handler, f32 time_step, const Math::Vec3& gravity = Math::Vec3(0.0f, -9.81f, 0.0f), i32 iterations = 4);
+		PhysicsSystem(RefPtr<EventHandler> event_handler, f32 time_step, const _MATH Vec3& gravity = _MATH Vec3(0.0f, -9.81f, 0.0f), i32 iterations = 4);
 		~PhysicsSystem() override = default;
 
 		void Start() override;
 		void Update(f32 delta_time) override;
 		void Shutdown() override;
 
-		void SetGravity(const Math::Vec3& gravity) { m_gravity = gravity; }
+		void SetGravity(const _MATH Vec3& gravity) { m_gravity = gravity; }
 		void SetTimeStep(f32 time_step) { m_time_step = time_step; }
 		void SetIterations(i32 iterations) { m_iterations = iterations; }
 
@@ -28,7 +28,7 @@ namespace Spark {
 
 	  private:
 		Query<RigidBodyComponent> m_rigid_bodies;
-		Math::Vec3                 m_gravity;
+		_MATH Vec3                 m_gravity;
 		f32                       m_time_step;
 		i32                       m_iterations;
 	};

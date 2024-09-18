@@ -28,9 +28,9 @@ namespace Spark {
 		virtual void RemoveEntity(u32 entity_id) = 0;
 	};
 
-	template<IsComponent T> class ComponentArray : public IComponentArray {
+	template<IsComponent _Ty> class ComponentArray : public IComponentArray {
 	  public:
-		void InsertData(const u32 entity_id, const T& component) {
+		void InsertData(const u32 entity_id, const _Ty& component) {
 			size_t new_index             = m_data.Size();
 			m_entity_to_index[entity_id] = new_index;
 			m_index_to_entity[new_index] = entity_id;
@@ -52,7 +52,7 @@ namespace Spark {
 			m_data.PopBack();
 		}
 
-		T& GetData(const u32 entity_id) { return m_data[m_entity_to_index[entity_id]]; }
+		_Ty& GetData(const u32 entity_id) { return m_data[m_entity_to_index[entity_id]]; }
 
 		void RemoveEntity(const u32 entity_id) override {
 			if (m_entity_to_index.find(entity_id) != m_entity_to_index.end()) {
@@ -60,10 +60,10 @@ namespace Spark {
 			}
 		}
 
-		Query<T>& GetAllComponents() { return m_data; }
+		Query<_Ty>& GetAllComponents() { return m_data; }
 
 	  private:
-		Query<T>                        m_data;
+		Query<_Ty>                        m_data;
 		UnorderedMap<u32, size_t> m_entity_to_index;
 		UnorderedMap<size_t, u32> m_index_to_entity;
 	};

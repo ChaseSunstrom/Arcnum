@@ -8,12 +8,12 @@
 #include <core/util/classic/util.hpp>
 
 namespace Spark {
-	template<typename T> class Stack {
+	template<typename _Ty> class Stack {
 	public:
-		using Pointer        = T*;
-		using ConstPointer   = const T*;
-		using Reference      = T&;
-		using ConstReference = const T&;
+		using Pointer        = _Ty*;
+		using ConstPointer   = const _Ty*;
+		using Reference      = _Ty&;
+		using ConstReference = const _Ty&;
 
 		Stack()
 			: m_data(nullptr)
@@ -22,12 +22,12 @@ namespace Spark {
 			Reserve(1);
 		}
 
-		Stack(const std::stack<T>& other)
+		Stack(const std::stack<_Ty>& other)
 			: m_data(nullptr)
 			, m_size(other.size())
 			, m_capacity(other.size()) {
 			Reserve(other.size());
-			std::stack<T> tmp = other;
+			std::stack<_Ty> tmp = other;
 			for (i32 i = m_size - 1; i >= 0; --i) {
 				m_data[i] = tmp.top();
 				tmp.pop();
@@ -43,14 +43,14 @@ namespace Spark {
 
 		~Stack() {
 			for (size_t i = 0; i < m_size; ++i) {
-				m_data[i].~T();
+				m_data[i].~_Ty();
 			}
 			::operator delete(m_data);
 		}
 
 
 		Stack(const Stack& other)
-			: m_data(new T[other.m_capacity])
+			: m_data(new _Ty[other.m_capacity])
 			, m_size(other.m_size)
 			, m_capacity(other.m_capacity) { Copy(other.m_data, other.m_data + m_size, m_data); }
 
@@ -59,25 +59,25 @@ namespace Spark {
 				delete[] m_data;
 				m_size     = other.m_size;
 				m_capacity = other.m_capacity;
-				m_data     = new T[m_capacity];
+				m_data     = new _Ty[m_capacity];
 				Copy(other.m_data, other.m_data + m_size, m_data);
 			}
 			return *this;
 		}
 
-		void Push(const T& value) {
+		void Push(const _Ty& value) {
 			if (m_size == m_capacity) {
 				Reserve(m_capacity == 0 ? 1 : m_capacity * 2);
 			}
-			new (m_data + m_size) T(value);
+			new (m_data + m_size) _Ty(value);
 			++m_size;
 		}
 
-		void Push(T&& value) {
+		void Push(_Ty&& value) {
 			if (m_size == m_capacity) {
 				Reserve(m_capacity == 0 ? 1 : m_capacity * 2);
 			}
-			new (m_data + m_size) T(Move(value));
+			new (m_data + m_size) _Ty(Move(value));
 			++m_size;
 		}
 
@@ -86,7 +86,7 @@ namespace Spark {
 				return;
 			}
 			--m_size;
-			m_data[m_size].~T();
+			m_data[m_size].~_Ty();
 		}
 
 		Reference Top() {
@@ -109,10 +109,10 @@ namespace Spark {
 
 		void Reserve(size_t new_capacity) {
 			if (new_capacity > m_capacity) {
-				T* new_data = static_cast<T*>(::operator new(new_capacity * sizeof(T)));
+				_Ty* new_data = static_cast<_Ty*>(::operator new(new_capacity * sizeof(_Ty)));
 				for (size_t i = 0; i < m_size; ++i) {
-					new (new_data + i) T(Move(m_data[i]));
-					m_data[i].~T();
+					new (new_data + i) _Ty(Move(m_data[i]));
+					m_data[i].~_Ty();
 				}
 				::operator delete(m_data);
 				m_data     = new_data;
@@ -136,7 +136,7 @@ namespace Spark {
 
 		void ShrinkToFit() {
 			if (m_size < m_capacity) {
-				Pointer new_data = new T[m_size];
+				Pointer new_data = new _Ty[m_size];
 				Copy(m_data, m_data + m_size, new_data);
 				delete[] m_data;
 				m_data     = new_data;
@@ -145,14 +145,14 @@ namespace Spark {
 		}
 
 		void Swap(Stack& other) {
-			Spark::Swap(m_data, other.m_data);
-			Spark::Swap(m_size, other.m_size);
-			Spark::Swap(m_capacity, other.m_capacity);
+			_SPARK Swap(m_data, other.m_data);
+			_SPARK Swap(m_size, other.m_size);
+			_SPARK Swap(m_capacity, other.m_capacity);
 		}
 
 		template<typename... Args> void Emplace(Args&&... args) {
 			if (m_size == m_capacity) { Reserve(m_capacity == 0 ? 1 : m_capacity * 2); }
-			new(&m_data[m_size]) T(Forward<Args>(args)...);
+			new(&m_data[m_size]) _Ty(Forward<Args>(args)...);
 			++m_size;
 		}
 
@@ -162,7 +162,7 @@ namespace Spark {
 		size_t  m_capacity;
 	};
 
-	template<typename T> void Swap(Stack<T>& lhs, Stack<T>& rhs) { lhs.Swap(rhs); }
+	template<typename _Ty> void Swap(Stack<_Ty>& lhs, Stack<_Ty>& rhs) { lhs.Swap(rhs); }
 } // namespace Spark
 
 #endif // SPARK_STACK_HPP

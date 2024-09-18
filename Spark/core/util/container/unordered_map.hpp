@@ -226,8 +226,8 @@ namespace Spark {
 
 		void Swap(UnorderedMap& other) {
 			m_buckets.Swap(other.m_buckets);
-			Spark::Swap(m_size, other.m_size);
-			Spark::Swap(m_hasher, other.m_hasher);
+			_SPARK Swap(m_size, other.m_size);
+			_SPARK Swap(m_hasher, other.m_hasher);
 		}
 
 		f32  LoadFactor() const { return static_cast<f32>(m_size) / m_buckets.Size(); }

@@ -2,7 +2,7 @@
 #define SPARK_TYPE_HPP
 
 #include <core/util/types.hpp>
-#include <typeindex>
+#include <core/util/defines.hpp>
 #include <typeinfo>
 
 namespace Spark {
@@ -98,8 +98,8 @@ namespace Spark {
 	};
 } // namespace Spark
 
-template<> struct std::hash<Spark::TypeIndex> {
-	size_t operator()(const Spark::TypeIndex& type_index) const { return type_index.HashCode(); }
+template<> struct std::hash<_SPARK TypeIndex> {
+	size_t operator()(const _SPARK TypeIndex& type_index) const { return type_index.HashCode(); }
 };
 
 #endif

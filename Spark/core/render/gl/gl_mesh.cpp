@@ -26,15 +26,15 @@ namespace Spark {
 		glBindVertexArray(0);
 	}
 
-	template<typename T> static void GLUpdateMesh(std::vector<T>& old_data, const std::vector<T>& new_data, u32 bo) {
+	template<typename _Ty> static void GLUpdateMesh(std::vector<_Ty>& old_data, const std::vector<_Ty>& new_data, u32 bo) {
 		glBindBuffer(GL_ARRAY_BUFFER, bo);
 
 		if (new_data.size() != old_data.size()) {
 			// Resize necessary, use glBufferData
-			glBufferData(GL_ARRAY_BUFFER, new_data.size() * sizeof(T), new_data.data(), GL_DYNAMIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, new_data.size() * sizeof(_Ty), new_data.data(), GL_DYNAMIC_DRAW);
 		} else {
 			// Same size, use glBufferSubData for potentially better performance
-			glBufferSubData(GL_ARRAY_BUFFER, 0, new_data.size() * sizeof(T), new_data.data());
+			glBufferSubData(GL_ARRAY_BUFFER, 0, new_data.size() * sizeof(_Ty), new_data.data());
 		}
 
 		old_data = new_data;

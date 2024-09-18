@@ -175,8 +175,8 @@ namespace Spark {
 		}
 
 		// Get matrices from camera
-		Math::Mat4 view_matrix = camera->GetViewMatrix();
-		Math::Mat4 proj_matrix = camera->GetProjectionMatrix();
+		_MATH Mat4 view_matrix = camera->GetViewMatrix();
+		_MATH Mat4 proj_matrix = camera->GetProjectionMatrix();
 
 		// Set uniforms
 		shader->SetMat4("u_view", view_matrix);

@@ -26,8 +26,8 @@ namespace Spark {
 		Manager<Resource>& m_resource_manager;
 	};
 
-	template<typename T>
-	concept IsRenderer = std::derived_from<T, Renderer>;
+	template<typename _Ty>
+	concept IsRenderer = std::derived_from<_Ty, Renderer>;
 } // namespace Spark
 
 #endif

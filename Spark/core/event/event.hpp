@@ -11,13 +11,13 @@ namespace Spark {
 		virtual ~IEvent() = default;
 	};
 
-	template<typename T> class Event : public virtual IEvent {
+	template<typename _Ty> class Event : public virtual IEvent {
 	  public:
 		virtual ~Event() = default;
 	};
 
-	template<typename T>
-	concept IsEvent                             = std::derived_from<T, Event<T>>;
+	template<typename _Ty>
+	concept IsEvent                             = std::derived_from<_Ty, Event<_Ty>>;
 
 	template<typename EventType> using EventPtr = SharedPtr<EventType>;
 
@@ -27,15 +27,15 @@ namespace Spark {
 
 		MultiEvent(const EventPtr<IEvent>& base_event) { ((TrySetEvent<EventTypes>(base_event)) || ...); }
 
-		template<typename T> bool Is() const { return std::holds_alternative<SharedPtr<T>>(event); }
+		template<typename _Ty> bool Is() const { return std::holds_alternative<SharedPtr<_Ty>>(event); }
 
-		template<typename T> const SharedPtr<T>& Get() const { return std::get<SharedPtr<T>>(event); }
+		template<typename _Ty> const SharedPtr<_Ty>& Get() const { return std::get<SharedPtr<_Ty>>(event); }
 
 		static auto GetEventTypes() { return std::tuple<EventTypes...>{}; }
 
 	  private:
-		template<typename T> bool TrySetEvent(const EventPtr<IEvent>& base_event) {
-			if (auto derived = DynamicPointerCast<T>(base_event)) {
+		template<typename _Ty> bool TrySetEvent(const EventPtr<IEvent>& base_event) {
+			if (auto derived = DynamicPointerCast<_Ty>(base_event)) {
 				event = derived;
 				return true;
 			}
@@ -74,22 +74,22 @@ namespace Spark {
 		ComponentEventType type;
 	};
 
-	template<typename T> class ComponentEvent
-		: public Event<ComponentEvent<T>>
+	template<typename _Ty> class ComponentEvent
+		: public Event<ComponentEvent<_Ty>>
 		, public BaseComponentEvent {
 	  public:
-		ComponentEvent(const Entity& entity, ComponentEventType type, const T& component)
+		ComponentEvent(const Entity& entity, ComponentEventType type, const _Ty& component)
 			: BaseComponentEvent(entity, type)
 			, component(component) {}
 
-		const T& component;
+		const _Ty& component;
 	};
 
-	template<typename T> using ComponentAddedEvent   = ComponentEvent<T>;
+	template<typename _Ty> using ComponentAddedEvent   = ComponentEvent<_Ty>;
 
-	template<typename T> using ComponentUpdatedEvent = ComponentEvent<T>;
+	template<typename _Ty> using ComponentUpdatedEvent = ComponentEvent<_Ty>;
 
-	template<typename T> using ComponentRemovedEvent = ComponentEvent<T>;
+	template<typename _Ty> using ComponentRemovedEvent = ComponentEvent<_Ty>;
 
 	// Physics Events
 	struct CollisionEvent : public Event<CollisionEvent> {
@@ -161,8 +161,8 @@ namespace Spark {
 
 	struct WindowClosedEvent : public Event<WindowClosedEvent> {};
 
-	template <typename T, typename... Args> EventPtr<T> MakeEvent(Args&&... args) {
-		return MakeShared<T>(Forward<Args>(args)...);
+	template <typename _Ty, typename... Args> EventPtr<_Ty> MakeEvent(Args&&... args) {
+		return MakeShared<_Ty>(Forward<Args>(args)...);
 	}
 } // namespace Spark
 

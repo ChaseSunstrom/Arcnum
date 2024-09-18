@@ -2,17 +2,17 @@
 #define SPARK_PAIR_HPP
 
 namespace Spark {
-	template<typename T1, typename T2> struct Pair {
-		using FirstType  = T1;
-		using SecondType = T2;
+	template<typename _Ty1, typename _Ty2> struct Pair {
+		using FirstType  = _Ty1;
+		using SecondType = _Ty2;
 		
 		Pair() = default;
-		Pair(const T1& first, const T2& second)
+		Pair(const _Ty1& first, const _Ty2& second)
 			: first(first)
 			, second(second) {}
 
-		T1 first;
-		T2 second;
+		_Ty1 first;
+		_Ty2 second;
 	};
 } // namespace Spark
 

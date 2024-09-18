@@ -26,6 +26,7 @@
 #include <include/glm/gtx/rotate_vector.hpp>
 #include <include/glm/gtx/spline.hpp>
 #include <include/glm/gtx/vector_angle.hpp>
+#include <core/util/defines.hpp>
 
 namespace Spark::Math {
 	using Vec2            = glm::vec2;
@@ -50,13 +51,13 @@ namespace Spark::Math {
 	constexpr f32 SQRT1_2 = 0.707106781186547524401f;
 
 	// Basic arithmetic
-	template<typename T> inline T Add(T a, T b) { return a + b; }
+	template<typename _Ty> inline _Ty Add(_Ty a, _Ty b) { return a + b; }
 
-	template<typename T> inline T Subtract(T a, T b) { return a - b; }
+	template<typename _Ty> inline _Ty Subtract(_Ty a, _Ty b) { return a - b; }
 
-	template<typename T> inline T Multiply(T a, T b) { return a * b; }
+	template<typename _Ty> inline _Ty Multiply(_Ty a, _Ty b) { return a * b; }
 
-	template<typename T> inline T Divide(T a, T b) { return a / b; }
+	template<typename _Ty> inline _Ty Divide(_Ty a, _Ty b) { return a / b; }
 
 	// Power and root functions
 	inline f32 Pow(f32 base, f32 exponent) { return std::pow(base, exponent); }
@@ -94,18 +95,18 @@ namespace Spark::Math {
 	inline f32 Fmod(f32 x, f32 y) { return std::fmod(x, y); }
 
 	// Absolute value and sign
-	template<typename T> inline T Abs(T x) { return std::abs(x); }
-	template<typename T> inline T Sign(T x) { return (T(0) < x) - (x < T(0)); }
+	template<typename _Ty> inline _Ty Abs(_Ty x) { return std::abs(x); }
+	template<typename _Ty> inline _Ty Sign(_Ty x) { return (_Ty(0) < x) - (x < _Ty(0)); }
 
 	// Min and Max
-	template<typename T> inline T Min(T a, T b) { return (a < b) ? a : b; }
-	template<typename T> inline T Max(T a, T b) { return (a > b) ? a : b; }
+	template<typename _Ty> inline _Ty Min(_Ty a, _Ty b) { return (a < b) ? a : b; }
+	template<typename _Ty> inline _Ty Max(_Ty a, _Ty b) { return (a > b) ? a : b; }
 
 	// Clamping
-	template<typename T> inline T Clamp(T x, T min, T max) { return Min(Max(x, min), max); }
+	template<typename _Ty> inline _Ty Clamp(_Ty x, _Ty min, _Ty max) { return Min(Max(x, min), max); }
 
 	// Interpolation
-	template<typename T> inline T Lerp(T a, T b, f32 t) { return a + t * (b - a); }
+	template<typename _Ty> inline _Ty Lerp(_Ty a, _Ty b, f32 t) { return a + t * (b - a); }
 
 	// Factorial (for integers)
 	inline i32 Factorial(i32 n) {
@@ -218,7 +219,7 @@ namespace Spark::Math {
 	inline f32  Distance(const Vec3& a, const Vec3& b) { return glm::distance(a, b); }
 	inline f32  DistanceSquared(const Vec3& a, const Vec3& b) { return glm::distance2(a, b); }
 	inline Vec3 ProjectOnPlane(const Vec3& v, const Vec3& plane_normal) { return v - Project(v, plane_normal); }
-	inline f32  AngleBetween(const Vec3& a, const Vec3& b) { return Math::Acos(Dot(Normalize(a), Normalize(b))); }
+	inline f32  AngleBetween(const Vec3& a, const Vec3& b) { return _MATH Acos(Dot(Normalize(a), Normalize(b))); }
 
 	// Quat functions
 	inline Quat EulerToQuaternion(const Vec3& euler) { return Quat(Vec3(glm::radians(euler.x), glm::radians(euler.y), glm::radians(euler.z))); }
@@ -343,15 +344,15 @@ namespace Spark::Math {
 	// Conversion functions
 	inline Vec3 CartesianToSpherical(const Vec3& cartesian) {
 		f32 r     = Length(cartesian);
-		f32 theta = Math::Acos(cartesian.z / r);
-		f32 phi   = Math::Atan2(cartesian.y, cartesian.x);
+		f32 theta = _MATH Acos(cartesian.z / r);
+		f32 phi   = _MATH Atan2(cartesian.y, cartesian.x);
 		return Vec3(r, theta, phi);
 	}
 	
 	inline Vec3 SphericalToCartesian(const Vec3& spherical) {
 		f32 r = spherical.x, theta = spherical.y, phi = spherical.z;
-		f32 sin_theta = Math::Sin(theta);
-		return Vec3(r * sin_theta * Math::Cos(phi), r * sin_theta * Math::Sin(phi), r * Math::Cos(theta));
+		f32 sin_theta = _MATH Sin(theta);
+		return Vec3(r * sin_theta * _MATH Cos(phi), r * sin_theta * _MATH Sin(phi), r * _MATH Cos(theta));
 	}
 
 	// Matrix decomposition
@@ -364,7 +365,7 @@ namespace Spark::Math {
 	// Frustum functions
 	inline bool PointInFrustum(const Vec3& point, const Mat4& view_projection) {
 		Vec4 clip_space = view_projection * Vec4(point, 1.0f);
-		return Math::Abs(clip_space.x) <= clip_space.w && Math::Abs(clip_space.y) <= clip_space.w && 0 <= clip_space.z && clip_space.z <= clip_space.w;
+		return _MATH Abs(clip_space.x) <= clip_space.w && _MATH Abs(clip_space.y) <= clip_space.w && 0 <= clip_space.z && clip_space.z <= clip_space.w;
 	}
 
 	// Vector casts
@@ -396,12 +397,12 @@ namespace Spark::Math {
 	inline Vec4 AxisAngleCast(const Quat& q) {
 		Vec3 axis;
 		f32  angle;
-		glm::axisAngle(Math::Mat4Cast(q), axis, angle);
+		glm::axisAngle(_MATH Mat4Cast(q), axis, angle);
 		return Vec4(axis, angle);
 	}
 
 	inline Vec4 AxisAngleCast(const Mat3& m) { return AxisAngleCast(QuatCast(m)); }
 	inline Vec4 AxisAngleCast(const Mat4& m) { return AxisAngleCast(QuatCast(m)); }
-} // namespace Spark::Math
+} // namespace _SPARKMath
 
 #endif

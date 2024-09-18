@@ -20,7 +20,7 @@ namespace Spark {
 		ThreadPool(const ThreadPool&)            = delete;
 		ThreadPool& operator=(const ThreadPool&) = delete;
 
-		template<class F, class... Args> std::future<typename std::invoke_result<F, Args...>::type> Enqueue(TaskPriority priority, bool synchronize, F&& f, Args&&... args);
+		template<class _Fty, class... Args> std::future<typename std::invoke_result<_Fty, Args...>::type> Enqueue(TaskPriority priority, bool synchronize, _Fty&& f, Args&&... args);
 		void                                                                                        SyncThisThread(bool register_for_sync);
 		bool                                                                                        SyncRegisteredTasks(std::chrono::milliseconds timeout = std::chrono::milliseconds(500));
 		void                                                                                        ExecuteAndWait(const std::vector<std::function<void()>>& tasks);
@@ -48,10 +48,10 @@ namespace Spark {
 		std::atomic<bool>                                                       m_stop;
 	};
 
-	template<class F, class... Args> std::future<typename std::invoke_result<F, Args...>::type> ThreadPool::Enqueue(TaskPriority priority, bool synchronize, F&& f, Args&&... args) {
-		using return_type            = typename std::invoke_result<F, Args...>::type;
+	template<class _Fty, class... Args> std::future<typename std::invoke_result<_Fty, Args...>::type> ThreadPool::Enqueue(TaskPriority priority, bool synchronize, _Fty&& f, Args&&... args) {
+		using return_type            = typename std::invoke_result<_Fty, Args...>::type;
 
-		auto task                    = std::make_shared<std::packaged_task<return_type()>>(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
+		auto task                    = std::make_shared<std::packaged_task<return_type()>>(std::bind(std::forward<_Fty>(f), std::forward<Args>(args)...));
 
 		std::future<return_type> res = task->get_future();
 		{

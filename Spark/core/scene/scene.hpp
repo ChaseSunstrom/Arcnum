@@ -19,19 +19,19 @@ namespace Spark {
 		Octree& GetOctree() { return *m_octree; }
 
 		// New methods for managing model instances
-		void AddModelInstance(Entity& entity, const std::string& model_name, const Math::Mat4& transform);
-		void UpdateModelInstance(const std::string& model_name, size_t index, const Math::Mat4& transform);
+		void AddModelInstance(Entity& entity, const std::string& model_name, const _MATH Mat4& transform);
+		void UpdateModelInstance(const std::string& model_name, size_t index, const _MATH Mat4& transform);
 		void RemoveModelInstance(const std::string& model_name, size_t index);
 
 		// Method to get all model instances
-		const std::unordered_map<std::string, std::vector<Math::Mat4>>& GetModelInstances() const { return m_model_instances; }
+		const std::unordered_map<std::string, std::vector<_MATH Mat4>>& GetModelInstances() const { return m_model_instances; }
 
 	private:
-		Scene(const Math::Vec3& center = Math::Vec3(0), f32 width = 100) : m_octree(std::make_unique<Octree>(center, width)) {}
+		Scene(const _MATH Vec3& center = _MATH Vec3(0), f32 width = 100) : m_octree(std::make_unique<Octree>(center, width)) {}
 
 	private:
 		std::unique_ptr<Octree>                                  m_octree;
-		std::unordered_map<std::string, std::vector<Math::Mat4>> m_model_instances;
+		std::unordered_map<std::string, std::vector<_MATH Mat4>> m_model_instances;
 		std::unordered_map<i64, std::pair<std::string, size_t>>  m_entity_to_instance_map;
 	};
 

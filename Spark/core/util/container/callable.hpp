@@ -19,8 +19,8 @@ namespace Spark {
 		Callable(std::nullptr_t) noexcept
 			: Callable() {}
 
-		template<typename F, typename = std::enable_if_t<!std::is_same_v<std::decay_t<F>, Callable>>> Callable(F&& f)
-			: m_function(MakeUnique<CallableImpl<std::decay_t<F>>>(Forward<F>(f))) {}
+		template<typename _Fty, typename = std::enable_if_t<!std::is_same_v<std::decay_t<_Fty>, Callable>>> Callable(_Fty&& f)
+			: m_function(MakeUnique<CallableImpl<std::decay_t<_Fty>>>(Forward<_Fty>(f))) {}
 
 		Callable(const Callable& other)
 			: m_function(other.m_function ? other.m_function->Clone() : nullptr) {}
@@ -61,7 +61,7 @@ namespace Spark {
 			virtual UniquePtr<CallableBase> Clone() const         = 0;
 		};
 
-		template<typename F> class CallableImpl : public CallableBase {
+		template<typename _Fty> class CallableImpl : public CallableBase {
 		  public:
 			template<typename Func> explicit CallableImpl(Func&& f)
 				: m_f(Forward<Func>(f)) {}
@@ -70,14 +70,14 @@ namespace Spark {
 			UniquePtr<CallableBase> Clone() const override { return MakeUnique<CallableImpl>(m_f); }
 
 		  private:
-			F m_f;
+			_Fty m_f;
 		};
 
 		UniquePtr<CallableBase> m_function;
 	};
 
 	// Deduction guide
-	template<typename F> Callable(F) -> Callable<typename std::invoke_result_t<F>>;
+	template<typename _Fty> Callable(_Fty) -> Callable<typename std::invoke_result_t<_Fty>>;
 
 	// Swap function
 	template<typename Signature> void Swap(Callable<Signature>& lhs, Callable<Signature>& rhs) noexcept { lhs.Swap(rhs); }

@@ -4,14 +4,14 @@
 #include "shared_ptr.hpp"
 
 namespace Spark {
-	template<typename T> class WeakPtr {
+	template<typename _Ty> class WeakPtr {
 	public:
 		WeakPtr()
 			: m_ptr(nullptr)
 			, m_ref_count(nullptr)
 			, m_weak_count(nullptr) {}
 
-		WeakPtr(const SharedPtr<T>& shared_ptr)
+		WeakPtr(const SharedPtr<_Ty>& shared_ptr)
 			: m_ptr(shared_ptr.m_ptr)
 			, m_ref_count(shared_ptr.m_ref_count)
 			, m_weak_count(shared_ptr.m_weak_count) { if (m_weak_count) { m_weak_count->fetch_add(1); } }
@@ -21,12 +21,12 @@ namespace Spark {
 			, m_ref_count(nullptr)
 			, m_weak_count(nullptr) {}
 
-		WeakPtr(const std::shared_ptr<T>& ptr)
+		WeakPtr(const std::shared_ptr<_Ty>& ptr)
 			: m_ptr(ptr.get())
 			, m_ref_count(ptr.use_count() ? new std::atomic<i32>(ptr.use_count()) : nullptr)
 			, m_weak_count(ptr.use_count() ? new std::atomic<i32>(1) : nullptr) {}
 
-		WeakPtr(const std::weak_ptr<T>& ptr)
+		WeakPtr(const std::weak_ptr<_Ty>& ptr)
 			: m_ptr(ptr.lock().get())
 			, m_ref_count(ptr.use_count() ? new std::atomic<i32>(ptr.use_count()) : nullptr)
 			, m_weak_count(ptr.use_count() ? new std::atomic<i32>(1) : nullptr) {}
@@ -85,9 +85,9 @@ namespace Spark {
 			}
 		}
 
-		SharedPtr<T> Lock() const {
-			if (m_ref_count && m_ref_count->load() > 0) { return SharedPtr<T>(m_ptr, m_ref_count, m_weak_count); }
-			return SharedPtr<T>(nullptr);
+		SharedPtr<_Ty> Lock() const {
+			if (m_ref_count && m_ref_count->load() > 0) { return SharedPtr<_Ty>(m_ptr, m_ref_count, m_weak_count); }
+			return SharedPtr<_Ty>(nullptr);
 		}
 
 		bool Expired() const { return m_ref_count == nullptr || m_ref_count->load() == 0; }
@@ -97,11 +97,11 @@ namespace Spark {
 		i32 WeakCount() const { return m_weak_count ? m_weak_count->load() : 0; }
 
 	private:
-		T*                m_ptr;
+		_Ty*                m_ptr;
 		std::atomic<i32>* m_ref_count;
 		std::atomic<i32>* m_weak_count;
 
-		friend class SharedPtr<T>;
+		friend class SharedPtr<_Ty>;
 	};
 } // namespace Spark
 

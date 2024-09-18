@@ -1,7 +1,7 @@
 #include "physics.hpp"
 
 namespace Spark {
-	PhysicsSystem::PhysicsSystem(RefPtr<EventHandler> event_handler, f32 time_step, const Math::Vec3& gravity, i32 iterations)
+	PhysicsSystem::PhysicsSystem(RefPtr<EventHandler> event_handler, f32 time_step, const _MATH Vec3& gravity, i32 iterations)
 		: System(event_handler)
 		, m_gravity(gravity)
 		, m_time_step(time_step)
@@ -47,8 +47,8 @@ namespace Spark {
 		rb.rb->GetAngularVelocity() += rb.rb->GetInvInertiaTensor() * rb.rb->GetTorque() * dt;
 
 		// Clear forces and torques
-		rb.rb->GetForce()  = Math::Vec3(0.0f);
-		rb.rb->GetTorque() = Math::Vec3(0.0f);
+		rb.rb->GetForce()  = _MATH Vec3(0.0f);
+		rb.rb->GetTorque() = _MATH Vec3(0.0f);
 	}
 
 	void PhysicsSystem::IntegrateVelocities(RigidBodyComponent& rb, f32 dt) {
@@ -59,8 +59,8 @@ namespace Spark {
 		rb.rb->GetPosition() += rb.rb->GetVelocity() * dt;
 
 		// Update orientation
-		Math::Quat spin(0, rb.rb->GetAngularVelocity() * 0.5f * dt);
-		rb.rb->GetOrientation() = Math::Normalize(spin * rb.rb->GetOrientation());
+		_MATH Quat spin(0, rb.rb->GetAngularVelocity() * 0.5f * dt);
+		rb.rb->GetOrientation() = _MATH Normalize(spin * rb.rb->GetOrientation());
 
 		// Update the shape's orientation if it's an OBB
 		if (rb.rb->GetShape()->GetType() == ShapeType::OBB) {

@@ -17,9 +17,9 @@ namespace Spark {
 			WriteData((char*) str.c_str(), str.size());
 		}
 
-		template<typename T> void WriteRaw(const T& data) { WriteData((char*) &data, sizeof(T)); }
+		template<typename _Ty> void WriteRaw(const _Ty& data) { WriteData((char*) &data, sizeof(_Ty)); }
 
-		template<typename T> void WriteObj(const T& data) { T::Serialize(this, data); }
+		template<typename _Ty> void WriteObj(const _Ty& data) { _Ty::Serialize(this, data); }
 
 		template<typename K, typename V> void WriteMap(const std::map<K, V>& map) {
 			WriteRaw(map.size());
@@ -63,20 +63,20 @@ namespace Spark {
 			}
 		}
 
-		template<typename T> void WriteVector(const std::vector<T>& vec) {
+		template<typename _Ty> void WriteVector(const std::vector<_Ty>& vec) {
 			WriteRaw(vec.size());
 			for (const auto& value : vec) {
-				if constexpr (std::is_trivial<T>())
+				if constexpr (std::is_trivial<_Ty>())
 					WriteRaw(value);
 				else
 					WriteObj(value);
 			}
 		}
 
-		template<typename T> void WriteArray(const T* data, size_t size) {
+		template<typename _Ty> void WriteArray(const _Ty* data, size_t size) {
 			WriteRaw(size);
 			for (size_t i = 0; i < size; i++) {
-				if constexpr (std::is_trivial<T>())
+				if constexpr (std::is_trivial<_Ty>())
 					WriteRaw(data[i]);
 				else
 					WriteObj(data[i]);
@@ -99,9 +99,9 @@ namespace Spark {
 			str = cstr;
 		}
 
-		template<typename T> void ReadRaw(T& data) { ReadData((char*) &data, sizeof(T)); }
+		template<typename _Ty> void ReadRaw(_Ty& data) { ReadData((char*) &data, sizeof(_Ty)); }
 
-		template<typename T> void ReadObj(T& data) { T::Deserialize(this, data); }
+		template<typename _Ty> void ReadObj(_Ty& data) { _Ty::Deserialize(this, data); }
 
 		template<typename K, typename V> void ReadMap(std::map<K, V>& map) {
 			size_t size;
@@ -160,23 +160,23 @@ namespace Spark {
 			}
 		}
 
-		template<typename T> void ReadVector(std::vector<T>& vec) {
+		template<typename _Ty> void ReadVector(std::vector<_Ty>& vec) {
 			size_t size;
 			ReadRaw(size);
 			vec.resize(size);
 			for (size_t i = 0; i < size; i++) {
-				if constexpr (std::is_trivial<T>())
+				if constexpr (std::is_trivial<_Ty>())
 					ReadRaw(vec[i]);
 				else
 					ReadObj(vec[i]);
 			}
 		}
 
-		template<typename T> void ReadArray(T* data, size_t size) {
+		template<typename _Ty> void ReadArray(_Ty* data, size_t size) {
 			size_t arraySize;
 			ReadRaw(arraySize);
 			for (size_t i = 0; i < arraySize; i++) {
-				if constexpr (std::is_trivial<T>())
+				if constexpr (std::is_trivial<_Ty>())
 					ReadRaw(data[i]);
 				else
 					ReadObj(data[i]);

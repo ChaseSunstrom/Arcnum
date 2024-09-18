@@ -38,62 +38,62 @@ namespace Spark {
 
 		~Manager() = default;
 
-		template<typename T, typename... Args> T& Create(const std::string& name, Args&&... args) {
-			auto& manager = GetManager<T>();
+		template<typename _Ty, typename... Args> _Ty& Create(const std::string& name, Args&&... args) {
+			auto& manager = GetManager<_Ty>();
 			return manager.Create(name, std::forward<Args>(args)...);
 		}
 
-		template<typename T> T& Register(const std::string& name, std::unique_ptr<T> object) {
-			auto& manager = GetManager<T>();
+		template<typename _Ty> _Ty& Register(const std::string& name, std::unique_ptr<_Ty> object) {
+			auto& manager = GetManager<_Ty>();
 			return manager.Register(name, std::move(object));
 		}
 
-		template<typename T> T& Get(const std::string& name) {
-			auto& manager = GetManager<T>();
+		template<typename _Ty> _Ty& Get(const std::string& name) {
+			auto& manager = GetManager<_Ty>();
 			return manager.Get(name);
 		}
 
-		template<typename T> T& Get(const Handle handle) {
-			auto& manager = GetManager<T>();
+		template<typename _Ty> _Ty& Get(const Handle handle) {
+			auto& manager = GetManager<_Ty>();
 			return manager.Get(handle);
 		}
 
-		template<typename T> T GetCopy(const std::string& name) {
-			auto& manager = GetManager<T>();
+		template<typename _Ty> _Ty GetCopy(const std::string& name) {
+			auto& manager = GetManager<_Ty>();
 			return manager.GetCopy(name);
 		}
 
-		template<typename T> T GetCopy(const Handle handle) {
-			auto& manager = GetManager<T>();
+		template<typename _Ty> _Ty GetCopy(const Handle handle) {
+			auto& manager = GetManager<_Ty>();
 			return manager.GetCopy(handle);
 		}
 
-		template<typename T> void Remove(const std::string& name) {
-			auto& manager = GetManager<T>();
+		template<typename _Ty> void Remove(const std::string& name) {
+			auto& manager = GetManager<_Ty>();
 			manager.Remove(name);
 		}
 
-		template<typename T> void Remove(const Handle handle) {
-			auto& manager = GetManager<T>();
+		template<typename _Ty> void Remove(const Handle handle) {
+			auto& manager = GetManager<_Ty>();
 			manager.Remove(handle);
 		}
 
-		template<typename T> std::vector<std::string> GetKeys() {
-			auto& manager = GetManager<T>();
+		template<typename _Ty> std::vector<std::string> GetKeys() {
+			auto& manager = GetManager<_Ty>();
 			return manager.GetKeys();
 		}
 
-		template<typename T> void SetRegistry(std::unique_ptr<Registry<T>> registry) {
-			auto& manager = GetManager<T>();
+		template<typename _Ty> void SetRegistry(std::unique_ptr<Registry<_Ty>> registry) {
+			auto& manager = GetManager<_Ty>();
 			manager.SetRegistry(std::move(registry));
 		}
 
-		template<typename T> Manager<T>& GetManager() {
-			auto it = m_managers.find(typeid(T));
+		template<typename _Ty> Manager<_Ty>& GetManager() {
+			auto it = m_managers.find(typeid(_Ty));
 			if (it == m_managers.end()) {
 				LOG_FATAL("Manager for type not found");
 			}
-			return static_cast<Manager<T>&>(*it->second);
+			return static_cast<Manager<_Ty>&>(*it->second);
 		}
 
 	  private:

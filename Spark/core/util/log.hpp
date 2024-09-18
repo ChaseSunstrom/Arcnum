@@ -17,7 +17,7 @@ void set_console_color(u32 color);
 #ifdef __TRACE__
 #	define LOG_TRACE(...)                                                                                                                                                                             \
 		set_console_color(TEXT_COLOR_CYAN);                                                                                                                                                            \
-		std::cout << "[ TRACE " << ::Spark::GetCurrentTime() << " ] " << __VA_ARGS__ << "\n"
+		std::cout << "[ TRACE " << _SPARK GetCurrentTime() << " ] " << __VA_ARGS__ << "\n"
 #else
 #	define LOG_TRACE(...)
 #endif // __TRACE__
@@ -25,7 +25,7 @@ void set_console_color(u32 color);
 #ifdef __INFO__
 #	define LOG_INFO(...)                                                                                                                                                                              \
 		set_console_color(TEXT_COLOR_GREEN);                                                                                                                                                           \
-		std::cout << "[ INFO " << ::Spark::GetCurrentTime() << " ] " << __VA_ARGS__ << "\n"
+		std::cout << "[ INFO " << _SPARK GetCurrentTime() << " ] " << __VA_ARGS__ << "\n"
 #else
 #	define LOG_INFO(...)
 #endif // __INFO__
@@ -33,7 +33,7 @@ void set_console_color(u32 color);
 #ifdef __WARN__
 #	define LOG_WARN(...)                                                                                                                                                                              \
 		set_console_color(TEXT_COLOR_YELLOW);                                                                                                                                                          \
-		std::cout << "[ WARNING " << ::Spark::GetCurrentTime() << " ] " << __VA_ARGS__ << "\n"
+		std::cout << "[ WARNING " << _SPARK GetCurrentTime() << " ] " << __VA_ARGS__ << "\n"
 #else
 #	define LOG_WARN(...)
 #endif // __WARN__
@@ -41,7 +41,7 @@ void set_console_color(u32 color);
 #ifdef __ERROR__
 #	define LOG_ERROR(...)                                                                                                                                                                             \
 		set_console_color(TEXT_COLOR_RED);                                                                                                                                                             \
-		std::cout << "[ ERROR " << ::Spark::GetCurrentTime() << " ] " << __VA_ARGS__ << "\n"
+		std::cout << "[ ERROR " << _SPARK GetCurrentTime() << " ] " << __VA_ARGS__ << "\n"
 #else
 #	define LOG_ERROR(...)
 #endif // __ERROR__
@@ -49,7 +49,7 @@ void set_console_color(u32 color);
 #ifdef __FATAL__
 #	define LOG_FATAL(...)                                                                                                                                                                             \
 		set_console_color(TEXT_COLOR_RED);                                                                                                                                                             \
-		std::cout << "[ FATAL " << ::Spark::GetCurrentTime() << " ] " << __VA_ARGS__ << "\n";                                                                                                          \
+		std::cout << "[ FATAL " << _SPARK GetCurrentTime() << " ] " << __VA_ARGS__ << "\n";                                                                                                          \
 		assert_false
 #else
 #	define LOG_FATAL(...) assert_false

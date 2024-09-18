@@ -42,8 +42,8 @@ namespace Spark {
 		std::unique_ptr<WindowData> m_window_data;
 	};
 
-	template<typename T>
-	concept IsWindow = std::derived_from<T, Window>;
+	template<typename _Ty>
+	concept IsWindow = std::derived_from<_Ty, Window>;
 } // namespace Spark
 
 #endif

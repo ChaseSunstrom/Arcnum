@@ -58,5 +58,6 @@
 #include "util/classic/type.hpp"
 #include "util/classic/file.hpp"
 #include "util/classic/util.hpp"
+#include "util/memory/allocator.hpp"
 
 #endif

@@ -216,8 +216,8 @@ namespace Spark {
 		Iterator end() const { return End(); }
 
 		void Swap(Map& other) {
-			Spark::Swap(m_root, other.m_root);
-			Spark::Swap(m_size, other.m_size);
+			_SPARKSwap(m_root, other.m_root);
+			_SPARKSwap(m_size, other.m_size);
 		}
 
 		Iterator Find(const Key& key) const { return Iterator(FindNode(key), this); }

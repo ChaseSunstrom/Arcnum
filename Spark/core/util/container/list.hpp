@@ -6,24 +6,24 @@
 #include <stdexcept>
 
 namespace Spark {
-	template<typename T> class List {
+	template<typename _Ty> class List {
 	  private:
 		struct Node {
-			T     data;
+			_Ty     data;
 			Node* next;
-			Node(const T& value)
+			Node(const _Ty& value)
 				: data(value)
 				, next(nullptr) {}
-			Node(T&& value)
+			Node(_Ty&& value)
 				: data(Move(value))
 				, next(nullptr) {}
 		};
 
 	  public:
-		using Pointer        = T*;
-		using ConstPointer   = const T*;
-		using Reference      = T&;
-		using ConstReference = const T&;
+		using Pointer        = _Ty*;
+		using ConstPointer   = const _Ty*;
+		using Reference      = _Ty&;
+		using ConstReference = const _Ty&;
 
 		class Iterator {
 		  public:
@@ -77,7 +77,7 @@ namespace Spark {
 			other.m_size = 0;
 		}
 
-		List(const std::initializer_list<T>& values)
+		List(const std::initializer_list<_Ty>& values)
 			: m_head(nullptr)
 			, m_tail(nullptr)
 			, m_size(0) {
@@ -112,7 +112,7 @@ namespace Spark {
 			return *this;
 		}
 
-		void PushFront(const T& value) {
+		void PushFront(const _Ty& value) {
 			Node* new_node = new Node(value);
 			new_node->next = m_head;
 			m_head         = new_node;
@@ -122,7 +122,7 @@ namespace Spark {
 			m_size++;
 		}
 
-		void PushFront(T&& value) {
+		void PushFront(_Ty&& value) {
 			Node* new_node = new Node(Move(value));
 			new_node->next = m_head;
 			m_head         = new_node;
@@ -144,7 +144,7 @@ namespace Spark {
 			}
 		}
 
-		void PushBack(const T& value) {
+		void PushBack(const _Ty& value) {
 			Node* new_node = new Node(value);
 			if (m_tail) {
 				m_tail->next = new_node;
@@ -155,7 +155,7 @@ namespace Spark {
 			m_size++;
 		}
 
-		void PushBack(T&& value) {
+		void PushBack(_Ty&& value) {
 			Node* new_node = new Node(Move(value));
 			if (m_tail) {
 				m_tail->next = new_node;
@@ -201,7 +201,7 @@ namespace Spark {
 			std::swap(m_size, other.m_size);
 		}
 
-		void Remove(const T& value) {
+		void Remove(const _Ty& value) {
 			Node** current = &m_head;
 			while (*current) {
 				if ((*current)->data == value) {
@@ -275,7 +275,7 @@ namespace Spark {
 		size_t m_size;
 	};
 
-	template<typename T> void Swap(List<T>& a, List<T>& b) { a.Swap(b); }
+	template<typename _Ty> void Swap(List<_Ty>& a, List<_Ty>& b) { a.Swap(b); }
 } // namespace Spark
 
 #endif // SPARK_LIST_HPP

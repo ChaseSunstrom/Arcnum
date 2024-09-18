@@ -18,4 +18,7 @@
 
 #define assert_false assert(false)
 
+#define _SPARK ::Spark::
+#define _MATH ::Spark::Math:: 
+
 #endif

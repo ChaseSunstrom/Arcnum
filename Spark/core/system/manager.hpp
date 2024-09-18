@@ -9,26 +9,26 @@ namespace Spark {
 		virtual ~IManager() = default;
 	};
 
-	template<typename T> class Manager : public IManager {
+	template<typename _Ty> class Manager : public IManager {
 	  public:
 		Manager()
-			: m_registry(std::make_unique<Registry<T>>()) {}
+			: m_registry(std::make_unique<Registry<_Ty>>()) {}
 		~Manager() = default;
 
-		template<typename... Args> RefPtr<T> Create(const std::string& name, Args&&... args) {
-			T* object = new T(std::forward<Args>(args)...);
-			return Register(name, std::unique_ptr<T>(object));
+		template<typename... Args> RefPtr<_Ty> Create(const std::string& name, Args&&... args) {
+			_Ty* object = new _Ty(std::forward<Args>(args)...);
+			return Register(name, std::unique_ptr<_Ty>(object));
 		}
 
-		RefPtr<T> Register(const std::string& name, std::unique_ptr<T> object) { return m_registry->Register(name, std::move(object)); }
+		RefPtr<_Ty> Register(const std::string& name, std::unique_ptr<_Ty> object) { return m_registry->Register(name, std::move(object)); }
 
-		RefPtr<T> Get(const std::string& name) const { return m_registry->Get(name); }
+		RefPtr<_Ty> Get(const std::string& name) const { return m_registry->Get(name); }
 
-		RefPtr<T> Get(const Handle handle) const { return m_registry->Get(handle); }
+		RefPtr<_Ty> Get(const Handle handle) const { return m_registry->Get(handle); }
 
-		T GetCopy(const std::string& name) const { return m_registry->GetCopy(name); }
+		_Ty GetCopy(const std::string& name) const { return m_registry->GetCopy(name); }
 
-		T GetCopy(const Handle handle) const { return m_registry->GetCopy(handle); }
+		_Ty GetCopy(const Handle handle) const { return m_registry->GetCopy(handle); }
 
 		void Remove(const std::string& name) { m_registry->Remove(name); }
 
@@ -38,12 +38,12 @@ namespace Spark {
 
 		std::vector<std::string> GetKeys() const { return m_registry->GetKeys(); }
 
-		void SetRegistry(std::unique_ptr<Registry<T>> registry) { m_registry = std::move(registry); }
+		void SetRegistry(std::unique_ptr<Registry<_Ty>> registry) { m_registry = std::move(registry); }
 
-		Registry<T>& GetRegistry() const { return *m_registry; }
+		Registry<_Ty>& GetRegistry() const { return *m_registry; }
 
 	  private:
-		std::unique_ptr<Registry<T>> m_registry;
+		std::unique_ptr<Registry<_Ty>> m_registry;
 	};
 } // namespace Spark
 

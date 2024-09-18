@@ -18,8 +18,8 @@ namespace Spark {
 		RefPtr<EventHandler> m_event_handler;
 	};
 
-	template<typename T>
-	concept IsSystem = std::derived_from<T, System>;
+	template<typename _Ty>
+	concept IsSystem = std::derived_from<_Ty, System>;
 } // namespace Spark
 
 #endif

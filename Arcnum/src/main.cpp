@@ -76,6 +76,15 @@ void TestVector(Spark::Application& app) {
 	vec -= 10;
 
 	LOG_WARN(vec);
+
+	std::vector<i32, Spark::Allocator<i32>> test_vec;
+
+	test_vec.push_back(1);
+	test_vec.push_back(2);
+
+	for (auto& i : test_vec) {
+		LOG_WARN(i);
+	}
 }
 
 void TestString(Spark::Application& app) {

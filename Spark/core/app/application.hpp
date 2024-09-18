@@ -17,11 +17,11 @@ namespace Spark {
 	class Application {
 	  public:
 		using ApplicationFunction                                                           = Callable<void(Application&)>;
-		template<typename T> using ApplicationEventFunction                                 = Callable<void(Application&, const EventPtr<T>&)>;
+		template<typename _Ty> using ApplicationEventFunction                                 = Callable<void(Application&, const EventPtr<_Ty>&)>;
 		template<typename... EventTypes> using ApplicationMultiEventFunction                = Callable<void(Application&, const MultiEventPtr<EventTypes...>&)>;
 		using ApplicationFunctionList                                                       = Vector<Pair<ApplicationFunction, FunctionSettings>>;
-		template<IsComponent T> using ApplicationQueryFunction                              = Callable<void(Application&, Query<T>&)>;
-		template<IsComponent T, typename... EventTypes> using ApplicationQueryEventFunction = Callable<void(Application&, Query<T>&, const MultiEventPtr<EventTypes...>&)>;
+		template<IsComponent _Ty> using ApplicationQueryFunction                              = Callable<void(Application&, Query<_Ty>&)>;
+		template<IsComponent _Ty, typename... EventTypes> using ApplicationQueryEventFunction = Callable<void(Application&, Query<_Ty>&, const MultiEventPtr<EventTypes...>&)>;
 
 		Application(GraphicsAPI gapi, f32 delta_time = 60, UniquePtr<ThreadPool> tp = MakeUnique<ThreadPool>(std::thread::hardware_concurrency()));
 		~Application();
@@ -32,11 +32,11 @@ namespace Spark {
 		Application& AddUpdateFunction(const ApplicationFunction& fn, const FunctionSettings settings = {});
 		Application& AddShutdownFunction(const ApplicationFunction& fn, const FunctionSettings settings = {});
 
-		template<IsSystem T, typename... Args> Application& AddSystem(Args&&... args);
+		template<IsSystem _Ty, typename... Args> Application& AddSystem(Args&&... args);
 
-		template<IsSystem T> Application& AddSystem(T* t);
+		template<IsSystem _Ty> Application& AddSystem(_Ty* t);
 
-		template<IsSystem T> Application& AddSystem(UniquePtr<T> t);
+		template<IsSystem _Ty> Application& AddSystem(UniquePtr<_Ty> t);
 
 		template<IsEvent EventType> Application& AddEventFunction(const ApplicationEventFunction<EventType>& fn, const FunctionSettings settings = {});
 
@@ -44,18 +44,18 @@ namespace Spark {
 
 		Application& AddAllEventsFunction(const ApplicationEventFunction<IEvent>& fn, const FunctionSettings settings = {});
 
-		template<IsComponent T> Application& AddQueryFunction(const ApplicationQueryFunction<T>& fn, const FunctionSettings settings = {});
+		template<IsComponent _Ty> Application& AddQueryFunction(const ApplicationQueryFunction<_Ty>& fn, const FunctionSettings settings = {});
 
 		// Single event query function
-		template<IsComponent T, IsEvent EventType> Application& AddQueryEventFunction(const Callable<void(Application&, Query<T>&, const EventPtr<EventType>&)>& fn, const FunctionSettings settings = {});
+		template<IsComponent _Ty, IsEvent EventType> Application& AddQueryEventFunction(const Callable<void(Application&, Query<_Ty>&, const EventPtr<EventType>&)>& fn, const FunctionSettings settings = {});
 
 		// Multiple events query function
-		template<IsComponent T, IsEvent... EventTypes>
-		Application& AddQueryEventFunction(const Callable<void(Application&, Query<T>&, const MultiEventPtr<EventTypes...>&)>& fn, const FunctionSettings settings = {});
+		template<IsComponent _Ty, IsEvent... EventTypes>
+		Application& AddQueryEventFunction(const Callable<void(Application&, Query<_Ty>&, const MultiEventPtr<EventTypes...>&)>& fn, const FunctionSettings settings = {});
 
-		template<IsWindow T> Application&   CreateWindow(const String& title, i32 width, i32 height);
-		template<IsRenderer T> Application& CreateRenderer();
-		template<typename T> Manager<T>&    GetManager() const;
+		template<IsWindow _Ty> Application&   CreateWindow(const String& title, i32 width, i32 height);
+		template<IsRenderer _Ty> Application& CreateRenderer();
+		template<typename _Ty> Manager<_Ty>&    GetManager() const;
 		Ecs&                                GetEcs() const;
 		Window&                             GetWindow() const;
 		Renderer&                           GetRenderer() const;
@@ -80,19 +80,19 @@ namespace Spark {
 			virtual void Execute(Application& app, const EventPtr<IEvent>& event) = 0;
 		};
 
-		template<IsComponent T> struct UpdateFunctionWrapper : IUpdateFunctionWrapper {
-			ApplicationQueryFunction<T> fn;
+		template<IsComponent _Ty> struct UpdateFunctionWrapper : IUpdateFunctionWrapper {
+			ApplicationQueryFunction<_Ty> fn;
 			Ecs&                        ecs;
 
-			UpdateFunctionWrapper(Ecs& ecs, ApplicationQueryFunction<T> fn)
+			UpdateFunctionWrapper(Ecs& ecs, ApplicationQueryFunction<_Ty> fn)
 				: ecs(ecs)
 				, fn(fn) {}
 
-			void Execute(Application& app) override { fn(app, ecs.GetComponents<T>()); }
+			void Execute(Application& app) override { fn(app, ecs.GetComponents<_Ty>()); }
 		};
 
-		template<IsComponent T, typename... EventTypes> struct QueryEventFunctionWrapper : IQueryEventFunctionWrapper {
-			Callable<void(Application&, Query<T>&, const std::conditional_t<sizeof...(EventTypes) == 1, EventPtr<typename std::tuple_element<0, std::tuple<EventTypes...>>::type>, MultiEventPtr<EventTypes...>>&)> fn;
+		template<IsComponent _Ty, typename... EventTypes> struct QueryEventFunctionWrapper : IQueryEventFunctionWrapper {
+			Callable<void(Application&, Query<_Ty>&, const std::conditional_t<sizeof...(EventTypes) == 1, EventPtr<typename std::tuple_element<0, std::tuple<EventTypes...>>::type>, MultiEventPtr<EventTypes...>>&)> fn;
 			Ecs& ecs;
 
 			QueryEventFunctionWrapper(Ecs& ecs, const decltype(fn)& fn)
@@ -102,11 +102,11 @@ namespace Spark {
 			void Execute(Application& app, const EventPtr<IEvent>& event) override {
 				if constexpr (sizeof...(EventTypes) == 1) {
 					if (auto typed_event = std::dynamic_pointer_cast<typename std::tuple_element<0, std::tuple<EventTypes...>>::type>(event)) {
-						fn(app, ecs.GetComponents<T>(), typed_event);
+						fn(app, ecs.GetComponents<_Ty>(), typed_event);
 					}
 				} else {
 					if (auto multi_event = std::dynamic_pointer_cast<MultiEvent<EventTypes...>>(event)) {
-						fn(app, ecs.GetComponents<T>(), multi_event);
+						fn(app, ecs.GetComponents<_Ty>(), multi_event);
 					}
 				}
 			}
@@ -154,8 +154,8 @@ namespace Spark {
 		return *this;
 	}
 
-	template<IsComponent T, IsEvent EventType> Application& Application::AddQueryEventFunction(const Callable<void(Application&, Query<T>&, const EventPtr<EventType>&)>& fn, const FunctionSettings settings) {
-		auto  query_event_wrapper     = MakeUnique<QueryEventFunctionWrapper<T, EventType>>(*m_ecs, fn);
+	template<IsComponent _Ty, IsEvent EventType> Application& Application::AddQueryEventFunction(const Callable<void(Application&, Query<_Ty>&, const EventPtr<EventType>&)>& fn, const FunctionSettings settings) {
+		auto  query_event_wrapper     = MakeUnique<QueryEventFunctionWrapper<_Ty, EventType>>(*m_ecs, fn);
 		auto& query_event_wrapper_ref = *query_event_wrapper;
 		m_query_event_functions.PushBack(Move(query_event_wrapper));
 
@@ -171,9 +171,9 @@ namespace Spark {
 		return *this;
 	}
 
-	template<IsComponent T, IsEvent... EventTypes>
-	Application& Application::AddQueryEventFunction(const Callable<void(Application&, Query<T>&, const MultiEventPtr<EventTypes...>&)>& fn, const FunctionSettings settings) {
-		auto  query_event_wrapper     = MakeUnique<QueryEventFunctionWrapper<T, EventTypes...>>(*m_ecs, fn);
+	template<IsComponent _Ty, IsEvent... EventTypes>
+	Application& Application::AddQueryEventFunction(const Callable<void(Application&, Query<_Ty>&, const MultiEventPtr<EventTypes...>&)>& fn, const FunctionSettings settings) {
+		auto  query_event_wrapper     = MakeUnique<QueryEventFunctionWrapper<_Ty, EventTypes...>>(*m_ecs, fn);
 		auto& query_event_wrapper_ref = *query_event_wrapper;
 		m_query_event_functions.PushBack(Move(query_event_wrapper));
 
@@ -189,37 +189,37 @@ namespace Spark {
 		return *this;
 	}
 
-	template<IsSystem T, typename... Args> Application& Application::AddSystem(Args&&... args) {
-		m_ecs->AddSystem(MakeUnique<T>(*m_event_handler, std::forward<Args>(args)...));
+	template<IsSystem _Ty, typename... Args> Application& Application::AddSystem(Args&&... args) {
+		m_ecs->AddSystem(MakeUnique<_Ty>(*m_event_handler, std::forward<Args>(args)...));
 		return *this;
 	}
 
-	template<IsSystem T> Application& Application::AddSystem(T* t) {
-		m_ecs->AddSystem(UniquePtr<T>(t));
+	template<IsSystem _Ty> Application& Application::AddSystem(_Ty* t) {
+		m_ecs->AddSystem(UniquePtr<_Ty>(t));
 		return *this;
 	}
 
-	template<IsSystem T> Application& Application::AddSystem(UniquePtr<T> t) {
+	template<IsSystem _Ty> Application& Application::AddSystem(UniquePtr<_Ty> t) {
 		m_ecs->AddSystem(Move(t));
 		return *this;
 	}
 
-	template<IsWindow T> Application& Application::CreateWindow(const String& title, i32 width, i32 height) {
-		m_window = MakeUnique<T>(title, width, height, *m_event_handler);
+	template<IsWindow _Ty> Application& Application::CreateWindow(const String& title, i32 width, i32 height) {
+		m_window = MakeUnique<_Ty>(title, width, height, *m_event_handler);
 		return *this;
 	}
 
-	template<IsRenderer T> Application& Application::CreateRenderer() {
-		m_renderer = MakeUnique<T>(m_gapi, m_window->GetFrameBuffer(), *m_resource_manager);
+	template<IsRenderer _Ty> Application& Application::CreateRenderer() {
+		m_renderer = MakeUnique<_Ty>(m_gapi, m_window->GetFrameBuffer(), *m_resource_manager);
 		return *this;
 	}
 
-	template<IsComponent T> Application& Application::AddQueryFunction(const ApplicationQueryFunction<T>& fn, const FunctionSettings settings) {
-		m_query_functions.PushBack({MakeUnique<UpdateFunctionWrapper<T>>(*m_ecs, fn), settings});
+	template<IsComponent _Ty> Application& Application::AddQueryFunction(const ApplicationQueryFunction<_Ty>& fn, const FunctionSettings settings) {
+		m_query_functions.PushBack({MakeUnique<UpdateFunctionWrapper<_Ty>>(*m_ecs, fn), settings});
 		return *this;
 	}
 
-	template<typename T> Manager<T>& Application::GetManager() const { return m_resource_manager->GetManager<T>(); }
+	template<typename _Ty> Manager<_Ty>& Application::GetManager() const { return m_resource_manager->GetManager<_Ty>(); }
 
 } // namespace Spark
 

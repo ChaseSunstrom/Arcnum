@@ -15,8 +15,8 @@ namespace Spark {
 } // namespace Spark
 
 namespace std {
-	template<> struct hash<Spark::ComponentKey> {
-		size_t operator()(const Spark::ComponentKey& key) const { return (std::hash<std::string>()(key.name) ^ (std::hash<std::type_index>()(key.type) << 1)) >> 1; }
+	template<> struct hash<_SPARK ComponentKey> {
+		size_t operator()(const _SPARK ComponentKey& key) const { return (std::hash<std::string>()(key.name) ^ (std::hash<std::type_index>()(key.type) << 1)) >> 1; }
 	};
 } // namespace std
 
@@ -29,8 +29,8 @@ namespace Spark {
 		operator u32() { return m_id; }
 		u32 GetId() const { return m_id; }
 
-		template<IsComponent T> bool HasComponent(const std::string& name) const {
-			ComponentKey key = {typeid(T), name};
+		template<IsComponent _Ty> bool HasComponent(const std::string& name) const {
+			ComponentKey key = {typeid(_Ty), name};
 			return m_components.find(key) != m_components.end();
 		}
 
@@ -41,20 +41,20 @@ namespace Spark {
 			: m_id(id) {}
 		void SetId(u32 id) { m_id = id; }
 
-		template<IsComponent T> void AddComponent(const std::string& name) {
-			ComponentKey key = {typeid(T), name};
+		template<IsComponent _Ty> void AddComponent(const std::string& name) {
+			ComponentKey key = {typeid(_Ty), name};
 			m_components.insert(key);
 		}
 
-		template<IsComponent T> void RemoveComponent(const std::string& name) {
-			ComponentKey key = {typeid(T), name};
+		template<IsComponent _Ty> void RemoveComponent(const std::string& name) {
+			ComponentKey key = {typeid(_Ty), name};
 			m_components.erase(key);
 		}
 
-		template<IsComponent T> void RemoveComponents() {
+		template<IsComponent _Ty> void RemoveComponents() {
 			std::vector<ComponentKey> keys_to_remove;
 			for (const auto& key : m_components) {
-				if (key.type == typeid(T)) {
+				if (key.type == typeid(_Ty)) {
 					keys_to_remove.push_back(key);
 				}
 			}

@@ -68,7 +68,7 @@ namespace Spark {
 		using ConstPointer    = const _Ty*;
 		using Reference       = _Ty&;
 		using ConstReference  = const _Ty&;
-		using SizeType        = std::size_t;
+		using SizeType        = std::size_t ;
 		using DifferenceType  = std::ptrdiff_t;
 
 		using value_type      = ValueType;

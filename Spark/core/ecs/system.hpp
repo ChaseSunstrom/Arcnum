@@ -19,7 +19,7 @@ namespace Spark {
 	};
 
 	template<typename _Ty>
-	concept IsSystem = std::derived_from<_Ty, System>;
+	concept IsSystem = DerivedFrom<_Ty, System>;
 } // namespace Spark
 
 #endif

@@ -49,8 +49,8 @@ namespace Spark {
 	}
 
 	void ThreadPool::ExecuteAndWait(const std::vector<std::function<void()>>& tasks) {
-		std::atomic<size_t> completed_tasks(0);
-		size_t              total_tasks = tasks.size();
+		std::atomic<size_t > completed_tasks(0);
+		size_t               total_tasks = tasks.size();
 
 		for (const auto& task : tasks) {
 			Enqueue(TaskPriority::NORMAL, false, [&completed_tasks, task]() {

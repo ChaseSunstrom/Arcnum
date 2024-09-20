@@ -1,9 +1,10 @@
 ﻿#ifndef SPARK_UNORDERED_MAP_HPP
 #define SPARK_UNORDERED_MAP_HPP
 
+#include <core/math/math.hpp>
+#include <core/util/classic/type.hpp>
 #include <core/util/types.hpp>
 #include <initializer_list>
-#include <core/util/classic/type.hpp>
 #include "list.hpp"
 #include "pair.hpp"
 #include "vector.hpp"
@@ -76,12 +77,10 @@ namespace Spark {
 
 		UnorderedMap()
 			: m_buckets(DEFAULT_BUCKET_COUNT)
-			, m_size(0) {
-		}
+			, m_size(0) {}
 		explicit UnorderedMap(size_t bucket_count)
 			: m_buckets(bucket_count)
-			, m_size(0) {
-		}
+			, m_size(0) {}
 
 		UnorderedMap(const UnorderedMap& other)
 			: m_buckets(other.m_buckets)
@@ -133,7 +132,6 @@ namespace Spark {
 			}
 			return *this;
 		}
-
 
 		void Insert(const Key& key, const Value& value) {
 			if (LoadFactor() > MAX_LOAD_FACTOR) {
@@ -230,12 +228,12 @@ namespace Spark {
 			_SPARK Swap(m_hasher, other.m_hasher);
 		}
 
-		f32  LoadFactor() const { return static_cast<f32>(m_size) / m_buckets.Size(); }
+		f32    LoadFactor() const { return static_cast<f32>(m_size) / m_buckets.Size(); }
 		size_t BucketCount() const { return m_buckets.Size(); }
 		size_t BucketSize(size_t n) const { return m_buckets[n].Size(); }
 
 		void Reserve(size_t count) {
-			size_t bucketCount = static_cast<size_t>(std::ceil(count / MAX_LOAD_FACTOR));
+			size_t bucketCount = static_cast<size_t>(_MATH Ceil(count / MAX_LOAD_FACTOR));
 			if (bucketCount > m_buckets.Size()) {
 				Rehash(bucketCount);
 			}
@@ -289,7 +287,7 @@ namespace Spark {
 		size_t GetBucketIndex(const Key& key) const { return m_hasher(key) % m_buckets.Size(); }
 
 		static constexpr size_t DEFAULT_BUCKET_COUNT = 16;
-		static constexpr f32  MAX_LOAD_FACTOR      = 0.75f;
+		static constexpr f32    MAX_LOAD_FACTOR      = 0.75f;
 
 		Vector<Bucket> m_buckets;
 		size_t         m_size;

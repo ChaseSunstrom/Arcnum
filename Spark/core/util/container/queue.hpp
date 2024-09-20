@@ -36,7 +36,7 @@ namespace Spark {
 			}
 		}
 
-		explicit Queue(size_t initial_capacity)
+		explicit Queue(size_t  initial_capacity)
 			: m_data(nullptr)
 			, m_front(0)
 			, m_size(0)
@@ -45,7 +45,7 @@ namespace Spark {
 		}
 
 		~Queue() {
-			for (size_t i = 0; i < m_size; ++i) {
+			for (size_t  i = 0; i < m_size; ++i) {
 				m_data[(m_front + i) % m_capacity].~_Ty();
 			}
 			::operator delete(m_data);
@@ -55,7 +55,7 @@ namespace Spark {
 			: m_data(new _Ty[other.m_capacity])
 			, m_front(0)
 			, m_size(other.m_size)
-			, m_capacity(other.m_capacity) { for (size_t i = 0; i < m_size; ++i) { m_data[i] = other.m_data[(other.m_front + i) % other.m_capacity]; } }
+			, m_capacity(other.m_capacity) { for (size_t  i = 0; i < m_size; ++i) { m_data[i] = other.m_data[(other.m_front + i) % other.m_capacity]; } }
 
 		Queue& operator=(const Queue& other) {
 			if (this != &other) {
@@ -64,7 +64,7 @@ namespace Spark {
 				m_size     = other.m_size;
 				m_front    = 0;
 				m_data     = new _Ty[m_capacity];
-				for (size_t i = 0; i < m_size; ++i) { m_data[i] = other.m_data[(other.m_front + i) % other.m_capacity]; }
+				for (size_t  i = 0; i < m_size; ++i) { m_data[i] = other.m_data[(other.m_front + i) % other.m_capacity]; }
 			}
 			return *this;
 		}
@@ -116,7 +116,7 @@ namespace Spark {
 
 		friend std::ostream& operator<<(std::ostream& os, const Queue& queue) {
 			std::cout << "[";
-			for (size_t i = 0; i < queue.m_size; ++i) {
+			for (size_t  i = 0; i < queue.m_size; ++i) {
 				std::cout << queue.m_data[(queue.m_front + i) % queue.m_capacity];
 				if (i < queue.m_size - 1) { std::cout << ", "; }
 				if (i == 10) {
@@ -130,19 +130,19 @@ namespace Spark {
 
 		bool Empty() const { return m_size == 0; }
 
-		size_t Size() const { return m_size; }
+		size_t  Size() const { return m_size; }
 
-		size_t Capacity() const { return m_capacity; }
+		size_t  Capacity() const { return m_capacity; }
 
 		void Clear() {
 			m_front = 0;
 			m_size  = 0;
 		}
 
-		void Reserve(size_t new_capacity) {
+		void Reserve(size_t  new_capacity) {
 			if (new_capacity > m_capacity) {
 				_Ty* new_data = static_cast<_Ty*>(::operator new(new_capacity * sizeof(_Ty)));
-				for (size_t i = 0; i < m_size; ++i) {
+				for (size_t  i = 0; i < m_size; ++i) {
 					new (new_data + i) _Ty(Move(m_data[(m_front + i) % m_capacity]));
 					m_data[(m_front + i) % m_capacity].~_Ty();
 				}
@@ -156,7 +156,7 @@ namespace Spark {
 		void ShrinkToFit() {
 			if (m_size < m_capacity) {
 				Pointer new_data = new _Ty[m_size];
-				for (size_t i = 0; i < m_size; ++i) { new_data[i] = m_data[(m_front + i) % m_capacity]; }
+				for (size_t  i = 0; i < m_size; ++i) { new_data[i] = m_data[(m_front + i) % m_capacity]; }
 				delete[] m_data;
 				m_data     = new_data;
 				m_capacity = m_size;
@@ -181,9 +181,9 @@ namespace Spark {
 
 	private:
 		Pointer m_data;
-		size_t  m_front;
-		size_t  m_size;
-		size_t  m_capacity;
+		size_t   m_front;
+		size_t   m_size;
+		size_t   m_capacity;
 	};
 
 	template<typename _Ty> void Swap(Queue<_Ty>& lhs, Queue<_Ty>& rhs) { lhs.Swap(rhs); }

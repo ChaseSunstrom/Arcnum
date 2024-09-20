@@ -8,7 +8,7 @@ namespace Spark {
 
 	FileSerializer::~FileSerializer() { m_output.close(); }
 
-	void FileSerializer::WriteData(const char* data, size_t size) { m_output.write(data, size); }
+	void FileSerializer::WriteData(const char* data, size_t  size) { m_output.write(data, size); }
 
 	FileDeserializer::FileDeserializer(const std::filesystem::path& path)
 		: m_path(path) {
@@ -17,5 +17,5 @@ namespace Spark {
 
 	FileDeserializer::~FileDeserializer() { m_input.close(); }
 
-	void FileDeserializer::ReadData(char* data, size_t size) { m_input.read(data, size); }
+	void FileDeserializer::ReadData(char* data, size_t  size) { m_input.read(data, size); }
 } // namespace Spark

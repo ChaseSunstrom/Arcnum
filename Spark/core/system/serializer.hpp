@@ -10,7 +10,7 @@ namespace Spark {
 	  public:
 		virtual ~ISerializer()                                = default;
 
-		virtual void WriteData(const char* data, size_t size) = 0;
+		virtual void WriteData(const char* data, size_t  size) = 0;
 
 		void WriteString(const std::string& str) {
 			WriteRaw(str.size());
@@ -73,9 +73,9 @@ namespace Spark {
 			}
 		}
 
-		template<typename _Ty> void WriteArray(const _Ty* data, size_t size) {
+		template<typename _Ty> void WriteArray(const _Ty* data, size_t  size) {
 			WriteRaw(size);
-			for (size_t i = 0; i < size; i++) {
+			for (size_t  i = 0; i < size; i++) {
 				if constexpr (std::is_trivial<_Ty>())
 					WriteRaw(data[i]);
 				else
@@ -88,10 +88,10 @@ namespace Spark {
 	  public:
 		virtual ~IDeserializer()                       = default;
 
-		virtual void ReadData(char* data, size_t size) = 0;
+		virtual void ReadData(char* data, size_t  size) = 0;
 
 		void ReadString(std::string& str) {
-			size_t size;
+			size_t  size;
 			ReadRaw(size);
 			str.resize(size);
 			char* cstr;
@@ -104,9 +104,9 @@ namespace Spark {
 		template<typename _Ty> void ReadObj(_Ty& data) { _Ty::Deserialize(this, data); }
 
 		template<typename K, typename V> void ReadMap(std::map<K, V>& map) {
-			size_t size;
+			size_t  size;
 			ReadRaw(size);
-			for (size_t i = 0; i < size; i++) {
+			for (size_t  i = 0; i < size; i++) {
 				K key;
 				if constexpr (std::is_trivial<K>())
 					ReadRaw(key);
@@ -124,9 +124,9 @@ namespace Spark {
 		}
 
 		template<typename K, typename V> void ReadMap(std::unordered_map<K, V>& map) {
-			size_t size;
+			size_t  size;
 			ReadRaw(size);
-			for (size_t i = 0; i < size; i++) {
+			for (size_t  i = 0; i < size; i++) {
 				K key;
 				if constexpr (std::is_trivial<K>())
 					ReadRaw(key);
@@ -144,9 +144,9 @@ namespace Spark {
 		}
 
 		template<typename V> void ReadMap(std::unordered_map<std::string, V>& map) {
-			size_t size;
+			size_t  size;
 			ReadRaw(size);
-			for (size_t i = 0; i < size; i++) {
+			for (size_t  i = 0; i < size; i++) {
 				std::string key;
 				ReadString(key);
 
@@ -161,10 +161,10 @@ namespace Spark {
 		}
 
 		template<typename _Ty> void ReadVector(std::vector<_Ty>& vec) {
-			size_t size;
+			size_t  size;
 			ReadRaw(size);
 			vec.resize(size);
-			for (size_t i = 0; i < size; i++) {
+			for (size_t  i = 0; i < size; i++) {
 				if constexpr (std::is_trivial<_Ty>())
 					ReadRaw(vec[i]);
 				else
@@ -172,10 +172,10 @@ namespace Spark {
 			}
 		}
 
-		template<typename _Ty> void ReadArray(_Ty* data, size_t size) {
-			size_t arraySize;
+		template<typename _Ty> void ReadArray(_Ty* data, size_t  size) {
+			size_t  arraySize;
 			ReadRaw(arraySize);
-			for (size_t i = 0; i < arraySize; i++) {
+			for (size_t  i = 0; i < arraySize; i++) {
 				if constexpr (std::is_trivial<_Ty>())
 					ReadRaw(data[i]);
 				else

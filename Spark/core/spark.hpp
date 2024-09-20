@@ -14,7 +14,6 @@
 #include "event/event_handler.hpp"
 #include "pch.hpp"
 #include "physics/collision_shape.hpp"
-#include "physics/physics.hpp"
 #include "physics/rigid_body.hpp"
 #include "render/material.hpp"
 #include "render/mesh.hpp"
@@ -35,6 +34,7 @@
 #include "profile/fps.hpp"
 #include "util/general.hpp"
 #include "util/thread_pool.hpp"
+#include "util/container/variant.hpp"
 #include "window/window.hpp"
 
 #endif

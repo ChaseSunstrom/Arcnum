@@ -7,10 +7,10 @@
 
 namespace Spark {
 	struct ModelComponent : public Component {
-		ModelComponent(const std::string& model_name, Material* material = nullptr)
+		ModelComponent(const String& model_name, Material* material = nullptr)
 			: model_name(model_name)
 			, material(material) {}
-		std::string model_name;
+		String model_name;
 		Material*   material;
 	};
 } // namespace Spark

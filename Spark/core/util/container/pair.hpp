@@ -1,6 +1,8 @@
 ﻿#ifndef SPARK_PAIR_HPP
 #define SPARK_PAIR_HPP
 
+#include <core/util/classic/util.hpp>
+
 namespace Spark {
 	template<typename _Ty1, typename _Ty2> struct Pair {
 		using FirstType  = _Ty1;
@@ -10,6 +12,10 @@ namespace Spark {
 		Pair(const _Ty1& first, const _Ty2& second)
 			: first(first)
 			, second(second) {}
+
+		Pair(_Ty1&& first, _Ty2&& second)
+			: first(Move(first))
+			, second(Move(second)) {}
 
 		_Ty1 first;
 		_Ty2 second;

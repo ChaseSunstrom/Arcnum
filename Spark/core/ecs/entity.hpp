@@ -7,16 +7,16 @@
 namespace Spark {
 
 	struct ComponentKey {
-		std::type_index type;
-		std::string     name;
-		bool            operator==(const ComponentKey& other) const = default;
+		TypeIndex type;
+		String    name;
+		bool      operator==(const ComponentKey& other) const = default;
 	};
 
 } // namespace Spark
 
 namespace std {
 	template<> struct hash<_SPARK ComponentKey> {
-		size_t operator()(const _SPARK ComponentKey& key) const { return (std::hash<std::string>()(key.name) ^ (std::hash<std::type_index>()(key.type) << 1)) >> 1; }
+		size_t operator()(const _SPARK ComponentKey& key) const noexcept { return (hash<_SPARK String>()(key.name) ^ (hash<_SPARK TypeIndex>()(key.type) << 1)) >> 1; }
 	};
 } // namespace std
 

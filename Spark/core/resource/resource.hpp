@@ -26,29 +26,29 @@ namespace Spark {
 	  public:
 		friend class Application;
 		Manager() {
-			m_managers[typeid(StaticMesh)]   = std::make_unique<Manager<StaticMesh>>();
-			m_managers[typeid(DynamicMesh)]  = std::make_unique<Manager<DynamicMesh>>();
-			m_managers[typeid(Material)]     = std::make_unique<Manager<Material>>();
-			m_managers[typeid(StaticModel)]  = std::make_unique<Manager<StaticModel>>();
-			m_managers[typeid(DynamicModel)] = std::make_unique<Manager<DynamicModel>>();
-			m_managers[typeid(RenderShader)] = std::make_unique<Manager<RenderShader>>();
-			m_managers[typeid(Scene)]        = std::make_unique<Manager<Scene>>();
-			m_managers[typeid(Camera)]       = std::make_unique<Manager<Camera>>();
+			m_managers[typeid(StaticMesh)]   = MakeUnique<Manager<StaticMesh>>();
+			m_managers[typeid(DynamicMesh)]  = MakeUnique<Manager<DynamicMesh>>();
+			m_managers[typeid(Material)]     = MakeUnique<Manager<Material>>();
+			m_managers[typeid(StaticModel)]  = MakeUnique<Manager<StaticModel>>();
+			m_managers[typeid(DynamicModel)] = MakeUnique<Manager<DynamicModel>>();
+			m_managers[typeid(RenderShader)] = MakeUnique<Manager<RenderShader>>();
+			m_managers[typeid(Scene)]        = MakeUnique<Manager<Scene>>();
+			m_managers[typeid(Camera)]       = MakeUnique<Manager<Camera>>();
 		}
 
 		~Manager() = default;
 
-		template<typename _Ty, typename... Args> _Ty& Create(const std::string& name, Args&&... args) {
+		template<typename _Ty, typename... Args> _Ty& Create(const String& name, Args&&... args) {
 			auto& manager = GetManager<_Ty>();
-			return manager.Create(name, std::forward<Args>(args)...);
+			return manager.Create(name, Forward<Args>(args)...);
 		}
 
-		template<typename _Ty> _Ty& Register(const std::string& name, std::unique_ptr<_Ty> object) {
+		template<typename _Ty> _Ty& Register(const String& name, UniquePtr<_Ty> object) {
 			auto& manager = GetManager<_Ty>();
-			return manager.Register(name, std::move(object));
+			return manager.Register(name, Move(object));
 		}
 
-		template<typename _Ty> _Ty& Get(const std::string& name) {
+		template<typename _Ty> _Ty& Get(const String& name) {
 			auto& manager = GetManager<_Ty>();
 			return manager.Get(name);
 		}
@@ -58,7 +58,7 @@ namespace Spark {
 			return manager.Get(handle);
 		}
 
-		template<typename _Ty> _Ty GetCopy(const std::string& name) {
+		template<typename _Ty> _Ty GetCopy(const String& name) {
 			auto& manager = GetManager<_Ty>();
 			return manager.GetCopy(name);
 		}
@@ -68,7 +68,7 @@ namespace Spark {
 			return manager.GetCopy(handle);
 		}
 
-		template<typename _Ty> void Remove(const std::string& name) {
+		template<typename _Ty> void Remove(const String& name) {
 			auto& manager = GetManager<_Ty>();
 			manager.Remove(name);
 		}
@@ -78,26 +78,26 @@ namespace Spark {
 			manager.Remove(handle);
 		}
 
-		template<typename _Ty> std::vector<std::string> GetKeys() {
+		template<typename _Ty> Vector<String> GetKeys() {
 			auto& manager = GetManager<_Ty>();
 			return manager.GetKeys();
 		}
 
-		template<typename _Ty> void SetRegistry(std::unique_ptr<Registry<_Ty>> registry) {
+		template<typename _Ty> void SetRegistry(UniquePtr<Registry<_Ty>> registry) {
 			auto& manager = GetManager<_Ty>();
-			manager.SetRegistry(std::move(registry));
+			manager.SetRegistry(Move(registry));
 		}
 
 		template<typename _Ty> Manager<_Ty>& GetManager() {
-			auto it = m_managers.find(typeid(_Ty));
-			if (it == m_managers.end()) {
+			auto it = m_managers.Find(typeid(_Ty));
+			if (it == m_managers.End()) {
 				LOG_FATAL("Manager for type not found");
 			}
 			return static_cast<Manager<_Ty>&>(*it->second);
 		}
 
 	  private:
-		std::unordered_map<std::type_index, std::unique_ptr<IManager>> m_managers;
+		UnorderedMap<TypeIndex, UniquePtr<IManager>> m_managers;
 		std::mutex                                                     m_mutex;
 	};
 } // namespace Spark

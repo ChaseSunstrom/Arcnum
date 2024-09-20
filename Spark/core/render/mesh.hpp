@@ -16,8 +16,8 @@ namespace Spark {
 		virtual void               CreateMesh() = 0;
 		const std::vector<Vertex>& GetVertices() const { return m_vertices; }
 		const std::vector<u32>&    GetIndices() const { return m_indices; }
-		size_t                     GetVerticesSize() const { return m_vertices.size(); }
-		size_t                     GetIndicesSize() const { return m_indices.size(); }
+		size_t                      GetVerticesSize() const { return m_vertices.size(); }
+		size_t                      GetIndicesSize() const { return m_indices.size(); }
 
 		// API-specific methods (to be implemented in derived classes)
 		virtual u32 GetVAO() const = 0;
@@ -47,8 +47,8 @@ namespace Spark {
 
 		const std::vector<Vertex>& GetVertices() const { return m_vertices; }
 		const std::vector<u32>&    GetIndices() const { return m_indices; }
-		size_t                     GetVerticesSize() const { return m_vertices.size(); }
-		size_t                     GetIndicesSize() const { return m_indices.size(); }
+		size_t                      GetVerticesSize() const { return m_vertices.size(); }
+		size_t                      GetIndicesSize() const { return m_indices.size(); }
 
 		// API-specific methods (to be implemented in derived classes)
 		virtual u32 GetVAO() const = 0;
@@ -80,7 +80,7 @@ namespace Spark {
 		RefPtr<StaticMesh>       Get(const Handle handle) const { return m_registry->Get(handle); }
 		void                     Remove(const std::string& name) { m_registry->Remove(name); }
 		void                     Remove(const Handle handle) { m_registry->Remove(handle); }
-		size_t                   GetSize() const { return m_registry->GetSize(); }
+		size_t                    GetSize() const { return m_registry->GetSize(); }
 		std::vector<std::string> GetKeys() const { return m_registry->GetKeys(); }
 		void                     SetRegistry(std::unique_ptr<Registry<StaticMesh>> registry) { m_registry = std::move(registry); }
 		Registry<StaticMesh>&    GetRegistry() const { return *m_registry; }

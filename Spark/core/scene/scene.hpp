@@ -20,8 +20,8 @@ namespace Spark {
 
 		// New methods for managing model instances
 		void AddModelInstance(Entity& entity, const std::string& model_name, const _MATH Mat4& transform);
-		void UpdateModelInstance(const std::string& model_name, size_t index, const _MATH Mat4& transform);
-		void RemoveModelInstance(const std::string& model_name, size_t index);
+		void UpdateModelInstance(const std::string& model_name, size_t  index, const _MATH Mat4& transform);
+		void RemoveModelInstance(const std::string& model_name, size_t  index);
 
 		// Method to get all model instances
 		const std::unordered_map<std::string, std::vector<_MATH Mat4>>& GetModelInstances() const { return m_model_instances; }
@@ -32,7 +32,7 @@ namespace Spark {
 	private:
 		std::unique_ptr<Octree>                                  m_octree;
 		std::unordered_map<std::string, std::vector<_MATH Mat4>> m_model_instances;
-		std::unordered_map<i64, std::pair<std::string, size_t>>  m_entity_to_instance_map;
+		std::unordered_map<i64, std::pair<std::string, size_t >>  m_entity_to_instance_map;
 	};
 
 	// Deleted Copy functions
@@ -72,7 +72,7 @@ namespace Spark {
 
 		void Remove(const Handle handle) { m_registry->Remove(handle); }
 
-		size_t GetSize() const { return m_registry->GetSize(); }
+		size_t  GetSize() const { return m_registry->GetSize(); }
 
 		std::vector<std::string> GetKeys() const { return m_registry->GetKeys(); }
 

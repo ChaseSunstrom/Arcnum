@@ -6,7 +6,7 @@
 
 namespace Spark {
 	struct NameComponent : public Component {
-		std::string name;
+		String name;
 	};
 }
 

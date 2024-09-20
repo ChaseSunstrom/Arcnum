@@ -221,18 +221,18 @@ namespace Spark {
 			}
 		}
 
-		Reference At(size_t index) {
+		Reference At(size_t  index) {
 			if (index >= m_size) {
 				throw std::out_of_range("Index out of bounds");
 			}
 			Node* current = m_head;
-			for (size_t i = 0; i < index; ++i) {
+			for (size_t  i = 0; i < index; ++i) {
 				current = current->next;
 			}
 			return current->data;
 		}
 
-		ConstReference At(size_t index) const { return const_cast<List*>(this)->At(index); }
+		ConstReference At(size_t  index) const { return const_cast<List*>(this)->At(index); }
 
 		Iterator      Begin() { return Iterator(m_head); }
 		Iterator      End() { return Iterator(nullptr); }
@@ -251,7 +251,7 @@ namespace Spark {
 		ConstReference Back() const { return m_tail->data; }
 
 		bool   Empty() const { return m_size == 0; }
-		size_t Size() const { return m_size; }
+		size_t  Size() const { return m_size; }
 
 		bool operator==(const List& other) const {
 			if (m_size != other.m_size)
@@ -272,7 +272,7 @@ namespace Spark {
 	  private:
 		Node*  m_head;
 		Node*  m_tail;
-		size_t m_size;
+		size_t  m_size;
 	};
 
 	template<typename _Ty> void Swap(List<_Ty>& a, List<_Ty>& b) { a.Swap(b); }

@@ -27,7 +27,7 @@ namespace Spark {
 		void RenderPostProcessPass();
 		void RenderFramebufferToScreen();
 
-		void SetupInstancedRendering(const GLStaticMesh& mesh, size_t instance_count);
+		void SetupInstancedRendering(const GLStaticMesh& mesh, size_t  instance_count);
 		void UpdateInstanceBuffer(const std::vector<glm::mat4>& transforms);
 
 		void SetCommonUniforms(GLRenderShader* shader);

@@ -17,7 +17,7 @@ namespace Spark {
 	};
 
 	template<typename _Ty>
-	concept IsEvent                             = std::derived_from<_Ty, Event<_Ty>>;
+	concept IsEvent                             = DerivedFrom<_Ty, Event<_Ty>>;
 
 	template<typename EventType> using EventPtr = SharedPtr<EventType>;
 

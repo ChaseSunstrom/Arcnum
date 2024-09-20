@@ -551,7 +551,7 @@ namespace std {
 	template<typename T>
 	using numeric_limits = ::std::numeric_limits<T>;
 
-	using ::std::size_t;
+	using ::std::size_t ;
 
 	using ::std::uint8_t;
 	using ::std::uint16_t;
@@ -574,7 +574,7 @@ namespace std {
 
 ///////////////////////////////////////////////////////////////////////////////////
 // Length type: all length functions returns a length_t type.
-// When GLM_FORCE_SIZE_T_LENGTH is defined, length_t is a typedef of size_t otherwise
+// When GLM_FORCE_SIZE_T_LENGTH is defined, length_t is a typedef of size_t  otherwise
 // length_t is a typedef of int like GLSL defines it.
 
 #define GLM_LENGTH_INT		1
@@ -588,9 +588,9 @@ namespace std {
 
 namespace glm
 {
-	using std::size_t;
+	using std::size_t ;
 #	if GLM_CONFIG_LENGTH_TYPE == GLM_LENGTH_SIZE_T
-		typedef size_t length_t;
+		typedef size_t  length_t;
 #	else
 		typedef int length_t;
 #	endif
@@ -604,8 +604,8 @@ namespace glm
 
 	namespace glm
 	{
-		template<typename T, std::size_t N>
-		constexpr std::size_t countof(T const (&)[N])
+		template<typename T, std::size_t  N>
+		constexpr std::size_t  countof(T const (&)[N])
 		{
 			return N;
 		}
@@ -1081,7 +1081,7 @@ namespace detail
 
 	// Report .length() type
 #	if GLM_CONFIG_LENGTH_TYPE == GLM_LENGTH_SIZE_T
-#		pragma message("GLM: GLM_FORCE_SIZE_T_LENGTH is defined. .length() returns a glm::length_t, a typedef of std::size_t.")
+#		pragma message("GLM: GLM_FORCE_SIZE_T_LENGTH is defined. .length() returns a glm::length_t, a typedef of std::size_t .")
 #	else
 #		pragma message("GLM: GLM_FORCE_SIZE_T_LENGTH is undefined. .length() returns a glm::length_t, a typedef of int following GLSL.")
 #	endif

@@ -63,7 +63,7 @@ namespace Spark {
 		Query<_Ty>& GetAllComponents() { return m_data; }
 
 	  private:
-		Query<_Ty>                        m_data;
+		Query<_Ty>                m_data;
 		UnorderedMap<u32, size_t> m_entity_to_index;
 		UnorderedMap<size_t, u32> m_index_to_entity;
 	};

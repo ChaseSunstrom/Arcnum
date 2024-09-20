@@ -203,7 +203,7 @@ namespace Spark {
 		glBufferData(GL_ARRAY_BUFFER, transforms.size() * sizeof(glm::mat4), transforms.data(), GL_DYNAMIC_DRAW);
 	}
 
-	void GLRenderer::SetupInstancedRendering(const GLStaticMesh& mesh, size_t instance_count) {
+	void GLRenderer::SetupInstancedRendering(const GLStaticMesh& mesh, size_t  instance_count) {
 		u32 vao = mesh.GetVAO();
 		if (m_instance_vbos.find(vao) == m_instance_vbos.end()) {
 			u32 instance_vbo;

@@ -94,7 +94,7 @@ namespace Spark {
 				m_ptr = ptr;
 			}
 		}
-		_Ty&       operator[](size_t i) const { return m_ptr[i]; }
+		_Ty&       operator[](size_t  i) const { return m_ptr[i]; }
 		explicit operator bool() const { return m_ptr != nullptr; }
 
 	  private:
@@ -105,19 +105,19 @@ namespace Spark {
 	template<typename _Ty, typename... Args> UniquePtr<_Ty> MakeUnique(Args&&... args) { return UniquePtr<_Ty>(new _Ty(Forward<Args>(args)...)); }
 
 	// MakeUniqueArray for arrays
-	template<typename _Ty> UniquePtr<_Ty[]> MakeUniqueArray(size_t size) { return UniquePtr<_Ty[]>(new _Ty[size]); }
+	template<typename _Ty> UniquePtr<_Ty[]> MakeUniqueArray(size_t  size) { return UniquePtr<_Ty[]>(new _Ty[size]); }
 
-	template<typename _Ty> UniquePtr<_Ty[]> MakeUniqueArray(size_t size, const _Ty& value) {
+	template<typename _Ty> UniquePtr<_Ty[]> MakeUniqueArray(size_t  size, const _Ty& value) {
 		_Ty* ptr = new _Ty[size];
-		for (size_t i = 0; i < size; ++i) {
+		for (size_t  i = 0; i < size; ++i) {
 			ptr[i] = value;
 		}
 		return UniquePtr<_Ty[]>(ptr);
 	}
 
-	template<typename _Ty> UniquePtr<_Ty[]> MakeUniqueArray(size_t size, _Ty&& value) {
+	template<typename _Ty> UniquePtr<_Ty[]> MakeUniqueArray(size_t  size, _Ty&& value) {
 		_Ty* ptr = new _Ty[size];
-		for (size_t i = 0; i < size; ++i) {
+		for (size_t  i = 0; i < size; ++i) {
 			ptr[i] = Move(value);
 		}
 		return UniquePtr<_Ty[]>(ptr);

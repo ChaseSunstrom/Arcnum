@@ -3,6 +3,7 @@
 
 #include <core/util/types.hpp>
 #include <core/util/defines.hpp>
+#include <core/util/types.hpp>
 #include <typeinfo>
 
 namespace Spark {
@@ -22,7 +23,7 @@ namespace Spark {
 	};
 
 	i32    TypeInfoDataCompare(const TypeInfoData& lhs, const TypeInfoData& rhs) noexcept;
-	size_t TypeInfoDataHash(const TypeInfoData& type_info_data) noexcept;
+	size_t  TypeInfoDataHash(const TypeInfoData& type_info_data) noexcept;
 
 	class TypeInfo {
 	  public:
@@ -37,7 +38,7 @@ namespace Spark {
 		operator const std::type_info&() const noexcept { return *reinterpret_cast<const std::type_info*>(&m_type_info_data); }
 		operator const std::type_info*() const noexcept { return reinterpret_cast<const std::type_info*>(&m_type_info_data); }
 
-		size_t      HashCode() const noexcept { return TypeInfoDataHash(m_type_info_data); }
+		size_t       HashCode() const noexcept { return TypeInfoDataHash(m_type_info_data); }
 		bool        operator==(const TypeInfo& other) const noexcept { return TypeInfoDataCompare(m_type_info_data, other.m_type_info_data) == 0; }
 		bool        operator!=(const TypeInfo& other) const noexcept { return TypeInfoDataCompare(m_type_info_data, other.m_type_info_data) != 0; }
 		bool        Before(const TypeInfo& other) const noexcept { return TypeInfoDataCompare(m_type_info_data, other.m_type_info_data) < 0; }
@@ -71,7 +72,7 @@ namespace Spark {
 
 		~TypeIndex() { delete m_type_info; }
 
-		size_t          HashCode() const { return m_type_info ? m_type_info->HashCode() : 0; }
+		size_t           HashCode() const { return m_type_info ? m_type_info->HashCode() : 0; }
 		const TypeInfo& Info() const { return *m_type_info; }
 		const char*     Name() const { return m_type_info ? m_type_info->Name() : ""; }
 
@@ -99,7 +100,7 @@ namespace Spark {
 } // namespace Spark
 
 template<> struct std::hash<_SPARK TypeIndex> {
-	size_t operator()(const _SPARK TypeIndex& type_index) const { return type_index.HashCode(); }
+	size_t  operator()(const _SPARK TypeIndex& type_index) const { return type_index.HashCode(); }
 };
 
 #endif

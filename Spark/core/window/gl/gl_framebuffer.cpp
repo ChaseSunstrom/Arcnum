@@ -32,7 +32,7 @@ namespace Spark {
 		m_width  = width;
 		m_height = height;
 
-		for (size_t i = 0; i < m_color_attachments.size(); ++i) {
+		for (size_t  i = 0; i < m_color_attachments.size(); ++i) {
 			glBindTexture(GL_TEXTURE_2D, m_color_attachments[i]);
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_width, m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
 		}
@@ -102,7 +102,7 @@ namespace Spark {
 		}
 
 		std::vector<GLenum> attachments;
-		for (size_t i = 0; i < m_color_attachments.size(); ++i) {
+		for (size_t  i = 0; i < m_color_attachments.size(); ++i) {
 			attachments.push_back(GL_COLOR_ATTACHMENT0 + i);
 		}
 		glDrawBuffers(attachments.size(), attachments.data());

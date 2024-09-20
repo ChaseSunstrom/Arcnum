@@ -6,7 +6,7 @@
 
 namespace Spark {
 	struct Handle {
-		size_t index;
+		size_t  index;
 		u32    generation;
 		bool   operator==(const Handle& other) const { return index == other.index && generation == other.generation; }
 	};
@@ -73,7 +73,7 @@ namespace Spark {
 			LOG_FATAL("Could not find object with name: " << name);
 		}
 
-		size_t GetSize() const { return m_registry.size(); }
+		size_t  GetSize() const { return m_registry.size(); }
 
 		RefPtr<_Ty> Get(const Handle handle) const {
 			if (handle.index < m_handle_values.size() && handle.generation == m_generations[handle.index] && m_handle_values[handle.index].has_value()) {

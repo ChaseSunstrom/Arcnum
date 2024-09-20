@@ -213,6 +213,7 @@ namespace Spark::Math {
 	inline Vec3 Radians(const Vec3& v) { return glm::radians(v); }
 	inline Vec3 Project(const Vec3& v, const Vec3& normal) { return glm::proj(v, glm::normalize(normal)); }
 	inline Vec3 Reject(const Vec3& v, const Vec3& normal) { return v - Project(v, normal); }
+	inline Vec3 Rotate(const Quat& q, const Vec3& v) { return glm::rotate(q, v); }
 	inline Vec3 QuaternionToEuler(const Quat& q) { return glm::degrees(glm::eulerAngles(q)); }
 	inline Vec3 EulerAngles(const Quat& q) { return glm::eulerAngles(q); }
 	inline Vec3 RotateVector(const Vec3& v, const Quat& q) { return glm::rotate(q, v); }
@@ -228,6 +229,7 @@ namespace Spark::Math {
 	inline Quat LookAtQuaternion(const Vec3& direction, const Vec3& up = Vec3(0, 1, 0)) { return glm::quatLookAt(direction, up); }
 	inline Quat RotationBetweenVectors(const Vec3& start, const Vec3& dest) { return glm::rotation(Normalize(start), Normalize(dest)); }
 	inline Quat Normalize(const Quat& q) { return glm::normalize(q); }
+	inline Quat Conjugate(const Quat& q) { return glm::conjugate(q); }
 
 	// Angle functions
 	inline f32 Angle(const Vec3& a, const Vec3& b) { return glm::angle(a, b); }

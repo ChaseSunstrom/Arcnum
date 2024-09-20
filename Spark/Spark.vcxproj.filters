@@ -165,9 +165,6 @@
     <ClInclude Include="core\physics\collision_shape.hpp">
       <Filter>core\physics</Filter>
     </ClInclude>
-    <ClInclude Include="core\physics\physics.hpp">
-      <Filter>core\physics</Filter>
-    </ClInclude>
     <ClInclude Include="core\physics\rigid_body.hpp">
       <Filter>core\physics</Filter>
     </ClInclude>
@@ -1047,9 +1044,6 @@
     </ClCompile>
     <ClCompile Include="core\pch.cpp">
       <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="core\physics\physics.cpp">
-      <Filter>core\physics</Filter>
     </ClCompile>
     <ClCompile Include="core\physics\rigid_body.cpp">
       <Filter>core\physics</Filter>

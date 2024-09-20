@@ -482,9 +482,9 @@ namespace Spark {
 		static bool        IsSpace(char c);
 		static i32         StringCompare(const char* s1, const char* s2, size_t n = -1);
 		static const char* StringFind(const char* str, const char* substr);
-		static i64     StringToInt64(const char* str);
-		static f32       StringToFloat(const char* str);
-		static f64      StringToDouble(const char* str);
+		static i64         StringToInt64(const char* str);
+		static f32         StringToFloat(const char* str);
+		static f64         StringToDouble(const char* str);
 		static bool        IsDigit(char c);
 		static bool        IsAlpha(char c);
 		static bool        IsAlphanumeric(char c);
@@ -493,5 +493,11 @@ namespace Spark {
 		char* m_data;
 	};
 } // namespace Spark
+
+namespace std {
+	template<> struct hash<_SPARK String> {
+		size_t operator()(const _SPARK String& str) const noexcept { return hash<const char*>()(str.CStr()); }
+	};
+} // namespace std
 
 #endif

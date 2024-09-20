@@ -170,7 +170,7 @@ namespace Spark {
 
 		bool Contains(const Key& key) const { return FindNode(key) != nullptr; }
 
-		size_t Size() const { return m_size; }
+		size_t  Size() const { return m_size; }
 		bool   Empty() const { return m_size == 0; }
 
 		void Clear() {
@@ -181,9 +181,9 @@ namespace Spark {
 
 		friend std::ostream& operator<<(std::ostream& os, const Map& map) {
 			os << "{ ";
-			for (size_t i = 0; i < map.m_size; ++i) {
+			for (size_t  i = 0; i < map.m_size; ++i) {
 				auto it = map.Begin();
-				for (size_t j = 0; j < i; ++j) { ++it; }
+				for (size_t  j = 0; j < i; ++j) { ++it; }
 				os << it->first << ": " << it->second;
 				if (i < map.m_size - 1) { os << ", "; }
 				if (i == 10) {
@@ -222,7 +222,7 @@ namespace Spark {
 
 		Iterator Find(const Key& key) const { return Iterator(FindNode(key), this); }
 
-		size_t Count(const Key& key) const { return Contains(key) ? 1 : 0; }
+		size_t  Count(const Key& key) const { return Contains(key) ? 1 : 0; }
 
 		Pair<Iterator, bool> InsertOrAssign(const Key& key, const Value& value) {
 			Pointer node = FindNode(key);
@@ -459,7 +459,7 @@ namespace Spark {
 		}
 
 		Pointer m_root;
-		size_t  m_size;
+		size_t   m_size;
 		Compare m_compare;
 	};
 

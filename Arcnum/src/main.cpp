@@ -103,11 +103,19 @@ void TestCallable(Spark::Application& app) {
 	LOG_WARN(fn(1, 2));
 }
 
+void TestVariant(Spark::Application& app) { 
+	Spark::Variant<i32, Spark::String, f64> variant;
+	variant = 6;
+
+	LOG_WARN(variant.Get<i32>());
+}
+
 i32 main() {
 	Spark::Application app(Spark::GraphicsAPI::OpenGL);
 	app.CreateWindow<Spark::GLWindow>("FPS Counter", 1920 / 2, 1080 / 2)
 		.CreateRenderer<Spark::GLRenderer>()
 		.AddSystem<Spark::FPSSystem>()
+		.AddStartupFunction(TestVariant)
 		.AddStartupFunction(TestVector)
 		.AddStartupFunction(TestString)
 		.AddStartupFunction(TestCallable)

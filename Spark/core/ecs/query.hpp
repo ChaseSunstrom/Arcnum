@@ -8,7 +8,7 @@ namespace Spark {
 	class Component;
 
 	template<typename _Ty>
-	concept IsComponent                 = std::derived_from<_Ty, Component>;
+	concept IsComponent                 = DerivedFrom<_Ty, Component>;
 
 	template<IsComponent _Ty> using Query = Vector<_Ty>;
 } // namespace Spark

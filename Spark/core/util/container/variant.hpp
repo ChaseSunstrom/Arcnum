@@ -1,46 +1,47 @@
 #ifndef SPARK_VARIANT_HPP
 #define SPARK_VARIANT_HPP
 
+#include <core/util/classic/traits.hpp>
 #include <core/util/classic/util.hpp>
+#include <core/util/types.hpp>
 #include <core/util/log.hpp>
-#include <type_traits>
 
 namespace Spark {
+	static constexpr size_t  invalid_index = static_cast<size_t >(-1);
 
-	// Metafunction to get the index of a type in a list of types
 	template<typename _Ty, typename... Ts> struct IndexOfType;
 
 	template<typename _Ty, typename First, typename... Rest> struct IndexOfType<_Ty, First, Rest...> {
-		static constexpr size_t value = std::is_same_v<_Ty, First> ? 0 : 1 + IndexOfType<_Ty, Rest...>::value;
+		static constexpr size_t  temp  = IndexOfType<_Ty, Rest...>::Value;
+		static constexpr size_t  Value = IsSameV<_Ty, First> ? 0 : (temp == invalid_index ? invalid_index : 1 + temp);
 	};
 
 	template<typename _Ty> struct IndexOfType<_Ty> {
-		static_assert(!std::is_same_v<_Ty, _Ty>, "Type not found in variant!");
+		static constexpr size_t  Value = invalid_index;
 	};
 
-	// Metafunction to get the type at a specific index
-	template<size_t Index, typename... Types> struct TypeAtIndex;
+	template<size_t  Index, typename... Types> struct TypeAtIndex;
 
 	template<typename First, typename... Rest> struct TypeAtIndex<0, First, Rest...> {
 		using Type = First;
 	};
 
-	template<size_t Index, typename First, typename... Rest> struct TypeAtIndex<Index, First, Rest...> {
+	template<size_t  Index, typename First, typename... Rest> struct TypeAtIndex<Index, First, Rest...> {
+		static_assert(Index < sizeof...(Rest) + 1, "Index out of bounds");
 		using Type = typename TypeAtIndex<Index - 1, Rest...>::Type;
 	};
 
-	// Recursive union to store any of the types
 	template<typename... Ts> union VariantUnion;
 
 	template<typename First, typename... Rest> union VariantUnion<First, Rest...> {
 		First                 first;
 		VariantUnion<Rest...> rest;
 
-		VariantUnion()  = default;
-		~VariantUnion() = default;
+		VariantUnion() {}
+		~VariantUnion() {}
 
 		template<typename _Ty> _Ty* GetPointer() {
-			if constexpr (std::is_same_v<_Ty, First>) {
+			if constexpr (IsSameV<_Ty, First>) {
 				return &first;
 			} else {
 				return rest.template GetPointer<_Ty>();
@@ -48,14 +49,14 @@ namespace Spark {
 		}
 
 		template<typename _Ty> const _Ty* GetPointer() const {
-			if constexpr (std::is_same_v<_Ty, First>) {
+			if constexpr (IsSameV<_Ty, First>) {
 				return &first;
 			} else {
 				return rest.template GetPointer<_Ty>();
 			}
 		}
 
-		void DestroyAtIndex(size_t index) {
+		void DestroyAtIndex(size_t  index) {
 			if (index == 0) {
 				first.~First();
 			} else {
@@ -63,7 +64,7 @@ namespace Spark {
 			}
 		}
 
-		void CopyAtIndex(VariantUnion& dest, const VariantUnion& src, size_t index) const {
+		void CopyAtIndex(VariantUnion& dest, const VariantUnion& src, size_t  index) const {
 			if (index == 0) {
 				new (&dest.first) First(src.first);
 			} else {
@@ -71,7 +72,7 @@ namespace Spark {
 			}
 		}
 
-		void MoveAtIndex(VariantUnion& dest, VariantUnion&& src, size_t index) {
+		void MoveAtIndex(VariantUnion& dest, VariantUnion&& src, size_t  index) {
 			if (index == 0) {
 				new (&dest.first) First(Move(src.first));
 			} else {
@@ -80,24 +81,27 @@ namespace Spark {
 		}
 	};
 
+	// Base case (no types)
 	template<> union VariantUnion<> {
-		VariantUnion()  = default;
-		~VariantUnion() = default;
+		VariantUnion() {}
+		~VariantUnion() {}
 
-		template<typename _Ty> _Ty* GetPointer() { return nullptr; }
-
+		template<typename _Ty> _Ty*       GetPointer() { return nullptr; }
 		template<typename _Ty> const _Ty* GetPointer() const { return nullptr; }
 
-		void DestroyAtIndex(size_t) {
-			// Base case
+		// Destroy does nothing as there are no active members
+		void DestroyAtIndex(size_t ) {
+			// Base case: nothing to destroy
 		}
 
-		void CopyAtIndex(VariantUnion& dest, const VariantUnion& src, size_t) const {
-			// Base case
+		// Copy does nothing as there are no active members
+		void CopyAtIndex(VariantUnion& dest, const VariantUnion& src, size_t ) const {
+			// Base case: nothing to copy
 		}
 
-		void MoveAtIndex(VariantUnion& dest, VariantUnion&& src, size_t) {
-			// Base case
+		// Move does nothing as there are no active members
+		void MoveAtIndex(VariantUnion& dest, VariantUnion&& src, size_t ) {
+			// Base case: nothing to move
 		}
 	};
 
@@ -106,7 +110,9 @@ namespace Spark {
 		Variant()
 			: m_type_index(s_invalid_index) {}
 
-		template<typename _Ty, typename = std::enable_if_t<(std::is_same_v<std::decay_t<_Ty>, Types> || ...)>> Variant(_Ty&& val)
+		// Templated constructor: enabled only if DecayT<_Ty> is one of Types...
+		template<typename _Ty, typename = EnableIfT<(IsSameV<DecayT<_Ty>, Types> || ...) || (IsConstructibleV<DecayT<_Ty>, Types> || ...)>> Variant(_Ty&& val)
+
 			: m_type_index(s_invalid_index) {
 			Construct(Forward<_Ty>(val));
 		}
@@ -139,28 +145,39 @@ namespace Spark {
 
 		~Variant() { Destroy(); }
 
-		template<typename _Ty> bool Is() const { return m_type_index == IndexOfType<_Ty, Types...>::value; }
+		template<typename _Ty> bool Is() const { return m_type_index == IndexOfType<DecayT<_Ty>, Types...>::Value; }
 
 		template<typename _Ty> _Ty& Get() {
 			if (!Is<_Ty>()) {
-				LOG_FATAL();
+				LOG_FATAL("Bad variant get!");
 			}
 			return *GetPointer<_Ty>();
+		}
+
+		template<typename _Ty> Variant& operator=(_Ty&& val) {
+			using Uty = DecayT<_Ty>;
+
+			// Ensure the value being assigned can be converted to one of the types in the Variant
+			static_assert((IsSameV<Uty, Types> || ...), "Type not supported by this Variant!");
+
+			Destroy();
+			Construct(Forward<_Ty>(val));
+			return *this;
 		}
 
 		template<typename _Ty> const _Ty& Get() const {
 			if (!Is<_Ty>()) {
-				throw std::bad_variant_access();
+				LOG_FATAL("Bad variant access!");
 			}
 			return *GetPointer<_Ty>();
 		}
 
-		size_t Index() const { return m_type_index; }
+		size_t  Index() const { return m_type_index; }
 
 	  private:
-		template<typename _Ty> _Ty* GetPointer() { return m_storage.template GetPointer<_Ty>(); }
+		template<typename _Ty> _Ty* GetPointer() { return m_storage.template GetPointer<DecayT<_Ty>>(); }
 
-		template<typename _Ty> const _Ty* GetPointer() const { return m_storage.template GetPointer<_Ty>(); }
+		template<typename _Ty> const _Ty* GetPointer() const { return m_storage.template GetPointer<DecayT<_Ty>>(); }
 
 		void Destroy() {
 			if (m_type_index != s_invalid_index) {
@@ -170,9 +187,9 @@ namespace Spark {
 		}
 
 		template<typename _Ty> void Construct(_Ty&& val) {
-			using _Uty = std::decay_t<_Ty>;
-			new (GetPointer<_Uty>()) _Uty(Forward<_Ty>(val));
-			m_type_index = IndexOfType<_Uty, Types...>::value;
+			using Uty = DecayT<_Ty>;
+			new (GetPointer<Uty>()) Uty(Forward<_Ty>(val));
+			m_type_index = IndexOfType<Uty, Types...>::Value;
 		}
 
 		void CopyFrom(const Variant& other) {
@@ -191,9 +208,9 @@ namespace Spark {
 		}
 
 		using Storage                           = VariantUnion<Types...>;
-		static constexpr size_t s_invalid_index = static_cast<size_t>(-1);
+		static constexpr size_t  s_invalid_index = static_cast<size_t >(-1);
 
-		size_t  m_type_index;
+		size_t   m_type_index;
 		Storage m_storage;
 	};
 

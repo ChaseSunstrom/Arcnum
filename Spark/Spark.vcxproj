@@ -166,7 +166,6 @@
     <ClInclude Include="core\math\math.hpp" />
     <ClInclude Include="core\pch.hpp" />
     <ClInclude Include="core\physics\collision_shape.hpp" />
-    <ClInclude Include="core\physics\physics.hpp" />
     <ClInclude Include="core\physics\rigid_body.hpp" />
     <ClInclude Include="core\profile\fps.hpp" />
     <ClInclude Include="core\render\camera.hpp" />
@@ -465,7 +464,6 @@
     <ClCompile Include="core\app\application.cpp" />
     <ClCompile Include="core\ecs\ecs.cpp" />
     <ClCompile Include="core\pch.cpp" />
-    <ClCompile Include="core\physics\physics.cpp" />
     <ClCompile Include="core\physics\rigid_body.cpp" />
     <ClCompile Include="core\render\gl\gl_mesh.cpp" />
     <ClCompile Include="core\render\gl\gl_renderer.cpp" />

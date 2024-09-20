@@ -36,6 +36,9 @@ namespace Spark {
 		RunStartupFunctions();
 		m_ecs->Start();
 
+		// Clear these so it uses less memory
+		m_startup_functions.Clear();
+
 		while (Running()) {
 			Update();
 

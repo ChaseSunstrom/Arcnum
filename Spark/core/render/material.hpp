@@ -75,7 +75,7 @@ namespace Spark {
 		RefPtr<Material>                Get(const Handle handle) const { return m_registry->Get(handle); }
 		void                     Remove(const std::string& name) { m_registry->Remove(name); }
 		void                     Remove(const Handle handle) { m_registry->Remove(handle); }
-		size_t                   GetSize() const { return m_registry->GetSize(); }
+		size_t                    GetSize() const { return m_registry->GetSize(); }
 		std::vector<std::string> GetKeys() const { return m_registry->GetKeys(); }
 		void                     SetRegistry(std::unique_ptr<Registry<Material>> registry) { m_registry = std::move(registry); }
 		Registry<Material>&      GetRegistry() const { return *m_registry; }

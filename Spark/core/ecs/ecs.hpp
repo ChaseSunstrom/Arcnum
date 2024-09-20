@@ -49,11 +49,11 @@ namespace Spark {
 		template<IsComponent _Ty> ComponentArray<_Ty>& GetComponentArray();
 
 	  private:
-		Vector<Entity>                                                        m_entities;
-		Vector<UniquePtr<System>>                                       m_systems;
-		UnorderedMap<std::type_index, UniquePtr<IComponentArray>> m_components;
-		Stack<u32>                                                       m_recycled_ids;
-		RefPtr<EventHandler>                                                         m_event_handler;
+		Vector<Entity>                                      m_entities;
+		Vector<UniquePtr<System>>                           m_systems;
+		UnorderedMap<TypeIndex, UniquePtr<IComponentArray>> m_components;
+		Stack<u32>                                          m_recycled_ids;
+		RefPtr<EventHandler>                                m_event_handler;
 	};
 
 	template<IsComponent _Ty> _Ty& Ecs::GetComponent(RefPtr<Entity> entity, const String& name) {

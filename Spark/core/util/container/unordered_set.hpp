@@ -26,7 +26,7 @@ namespace Spark {
 
 		class Iterator {
 		  public:
-			Iterator(Vector<Bucket>* buckets, size_t bucket_index, typename Bucket::Iterator it)
+			Iterator(Vector<Bucket>* buckets, size_t  bucket_index, typename Bucket::Iterator it)
 				: m_buckets(buckets)
 				, m_bucket_index(bucket_index)
 				, m_it(it) {
@@ -59,7 +59,7 @@ namespace Spark {
 
 		  private:
 			Vector<Bucket>*           m_buckets;
-			size_t                    m_bucket_index;
+			size_t                     m_bucket_index;
 			typename Bucket::Iterator m_it;
 			friend class UnorderedSet;
 		};
@@ -68,7 +68,7 @@ namespace Spark {
 			: m_buckets(DEFAULT_BUCKET_COUNT)
 			, m_size(0) {}
 
-		UnorderedSet(size_t bucket_count)
+		UnorderedSet(size_t  bucket_count)
 			: m_buckets(bucket_count)
 			, m_size(0) {}
 
@@ -111,11 +111,11 @@ namespace Spark {
 			Clear(); }
 
 	  private:
-		static constexpr size_t DEFAULT_BUCKET_COUNT = 16;
+		static constexpr size_t  DEFAULT_BUCKET_COUNT = 16;
 		static constexpr f32    MAX_LOAD_FACTOR      = 0.75f;
 
 		Vector<Bucket> m_buckets;
-		size_t         m_size;
+		size_t          m_size;
 		Hash           m_hash;
 	};
 } // namespace Spark

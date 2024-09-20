@@ -24,7 +24,7 @@ namespace Spark {
 
 			if (current_time - m_last_update_time >= UPDATE_INTERVAL) {
 				f64 total_time = 0.0;
-				for (size_t i = 0; i < m_frame_count; ++i) {
+				for (size_t  i = 0; i < m_frame_count; ++i) {
 					total_time += m_frame_times[i];
 				}
 				f64 average_frame_time = total_time / m_frame_count;
@@ -42,12 +42,12 @@ namespace Spark {
 		f64 GetFPS() const { return m_current_fps; }
 
 	  private:
-		static constexpr size_t                MAX_SAMPLES     = 120; // 2 seconds at 60 FPS
+		static constexpr size_t                 MAX_SAMPLES     = 120; // 2 seconds at 60 FPS
 		static constexpr std::chrono::duration UPDATE_INTERVAL = std::chrono::milliseconds(500);
 
 		std::array<f64, MAX_SAMPLES>          m_frame_times;
-		size_t                                m_frame_index = 0;
-		size_t                                m_frame_count = 0;
+		size_t                                 m_frame_index = 0;
+		size_t                                 m_frame_count = 0;
 		std::chrono::steady_clock::time_point m_last_update_time;
 		std::chrono::steady_clock::time_point m_last_frame_time;
 		f64                                   m_current_fps = 0.0;

@@ -34,7 +34,7 @@ namespace Spark {
 
 		void Remove(const Handle handle) { m_registry->Remove(handle); }
 
-		size_t GetSize() const { return m_registry->GetSize(); }
+		size_t  GetSize() const { return m_registry->GetSize(); }
 
 		std::vector<std::string> GetKeys() const { return m_registry->GetKeys(); }
 

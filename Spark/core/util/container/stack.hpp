@@ -34,7 +34,7 @@ namespace Spark {
 			}
 		}
 
-		explicit Stack(size_t initial_capacity)
+		explicit Stack(size_t  initial_capacity)
 			: m_data(nullptr)
 			, m_size(0)
 			, m_capacity(initial_capacity) {
@@ -42,7 +42,7 @@ namespace Spark {
 		}
 
 		~Stack() {
-			for (size_t i = 0; i < m_size; ++i) {
+			for (size_t  i = 0; i < m_size; ++i) {
 				m_data[i].~_Ty();
 			}
 			::operator delete(m_data);
@@ -101,16 +101,16 @@ namespace Spark {
 
 		bool Empty() const { return m_size == 0; }
 
-		size_t Size() const { return m_size; }
+		size_t  Size() const { return m_size; }
 
-		size_t Capacity() const { return m_capacity; }
+		size_t  Capacity() const { return m_capacity; }
 
 		void Clear() { m_size = 0; }
 
-		void Reserve(size_t new_capacity) {
+		void Reserve(size_t  new_capacity) {
 			if (new_capacity > m_capacity) {
 				_Ty* new_data = static_cast<_Ty*>(::operator new(new_capacity * sizeof(_Ty)));
-				for (size_t i = 0; i < m_size; ++i) {
+				for (size_t  i = 0; i < m_size; ++i) {
 					new (new_data + i) _Ty(Move(m_data[i]));
 					m_data[i].~_Ty();
 				}
@@ -122,7 +122,7 @@ namespace Spark {
 
 		friend std::ostream& operator<<(std::ostream& os, const Stack& stack) {
 			os << "[";
-			for (size_t i = 0; i < stack.m_size; ++i) {
+			for (size_t  i = 0; i < stack.m_size; ++i) {
 				os << stack.m_data[i];
 				if (i < stack.m_size - 1) { os << ", "; }
 				if (i == 10) {
@@ -158,8 +158,8 @@ namespace Spark {
 
 	private:
 		Pointer m_data;
-		size_t  m_size;
-		size_t  m_capacity;
+		size_t   m_size;
+		size_t   m_capacity;
 	};
 
 	template<typename _Ty> void Swap(Stack<_Ty>& lhs, Stack<_Ty>& rhs) { lhs.Swap(rhs); }

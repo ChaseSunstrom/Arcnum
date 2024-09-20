@@ -16,10 +16,10 @@
 namespace Spark {
 	class Application {
 	  public:
-		using ApplicationFunction                                                           = Callable<void(Application&)>;
+		using ApplicationFunction                                                             = Callable<void(Application&)>;
 		template<typename _Ty> using ApplicationEventFunction                                 = Callable<void(Application&, const EventPtr<_Ty>&)>;
-		template<typename... EventTypes> using ApplicationMultiEventFunction                = Callable<void(Application&, const MultiEventPtr<EventTypes...>&)>;
-		using ApplicationFunctionList                                                       = Vector<Pair<ApplicationFunction, FunctionSettings>>;
+		template<typename... EventTypes> using ApplicationMultiEventFunction                  = Callable<void(Application&, const MultiEventPtr<EventTypes...>&)>;
+		using ApplicationFunctionList                                                         = Vector<Pair<ApplicationFunction, FunctionSettings>>;
 		template<IsComponent _Ty> using ApplicationQueryFunction                              = Callable<void(Application&, Query<_Ty>&)>;
 		template<IsComponent _Ty, typename... EventTypes> using ApplicationQueryEventFunction = Callable<void(Application&, Query<_Ty>&, const MultiEventPtr<EventTypes...>&)>;
 
@@ -55,12 +55,12 @@ namespace Spark {
 
 		template<IsWindow _Ty> Application&   CreateWindow(const String& title, i32 width, i32 height);
 		template<IsRenderer _Ty> Application& CreateRenderer();
-		template<typename _Ty> Manager<_Ty>&    GetManager() const;
-		Ecs&                                GetEcs() const;
-		Window&                             GetWindow() const;
-		Renderer&                           GetRenderer() const;
-		EventHandler&                       GetEventHandler() const;
-		ThreadPool&                         GetThreadPool() const;
+		template<typename _Ty> Manager<_Ty>&  GetManager() const;
+		Ecs&                                  GetEcs() const;
+		Window&                               GetWindow() const;
+		Renderer&                             GetRenderer() const;
+		EventHandler&                         GetEventHandler() const;
+		ThreadPool&                           GetThreadPool() const;
 
 		void SetDeltaTime(f32 delta_time);
 
@@ -82,7 +82,7 @@ namespace Spark {
 
 		template<IsComponent _Ty> struct UpdateFunctionWrapper : IUpdateFunctionWrapper {
 			ApplicationQueryFunction<_Ty> fn;
-			Ecs&                        ecs;
+			Ecs&                          ecs;
 
 			UpdateFunctionWrapper(Ecs& ecs, ApplicationQueryFunction<_Ty> fn)
 				: ecs(ecs)
@@ -112,20 +112,20 @@ namespace Spark {
 			}
 		};
 
-		UniquePtr<ThreadPool>                                                       m_thread_pool;
-		UniquePtr<EventHandler>                                                           m_event_handler;
-		UniquePtr<Ecs>                                                                    m_ecs;
-		UniquePtr<Window>                                                                 m_window;
-		UniquePtr<Renderer>                                                               m_renderer;
-		UniquePtr<Manager<Resource>>                                                      m_resource_manager;
-		ApplicationFunctionList                                                           m_startup_functions;
-		ApplicationFunctionList                                                           m_update_functions;
-		ApplicationFunctionList                                                           m_shutdown_functions;
+		UniquePtr<ThreadPool>                                             m_thread_pool;
+		UniquePtr<EventHandler>                                           m_event_handler;
+		UniquePtr<Ecs>                                                    m_ecs;
+		UniquePtr<Window>                                                 m_window;
+		UniquePtr<Renderer>                                               m_renderer;
+		UniquePtr<Manager<Resource>>                                      m_resource_manager;
+		ApplicationFunctionList                                           m_startup_functions;
+		ApplicationFunctionList                                           m_update_functions;
+		ApplicationFunctionList                                           m_shutdown_functions;
 		Vector<Pair<UniquePtr<IUpdateFunctionWrapper>, FunctionSettings>> m_query_functions;
-		Vector<UniquePtr<IQueryEventFunctionWrapper>>                                m_query_event_functions;
-		GraphicsAPI                                                                       m_gapi;
-		f32                                                                               m_delta_time;
-		std::mutex                                                                        m_mutex;
+		Vector<UniquePtr<IQueryEventFunctionWrapper>>                     m_query_event_functions;
+		GraphicsAPI                                                       m_gapi;
+		f32                                                               m_delta_time;
+		std::mutex                                                        m_mutex;
 	};
 
 	// Implementation of template methods

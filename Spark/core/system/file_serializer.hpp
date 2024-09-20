@@ -8,7 +8,7 @@ namespace Spark {
 	  public:
 		FileSerializer(const std::filesystem::path& path);
 		~FileSerializer();
-		void WriteData(const char* data, size_t size) override;
+		void WriteData(const char* data, size_t  size) override;
 
 	  private:
 		std::filesystem::path m_path;
@@ -19,7 +19,7 @@ namespace Spark {
 	  public:
 		FileDeserializer(const std::filesystem::path& path);
 		~FileDeserializer();
-		void ReadData(char* data, size_t size) override;
+		void ReadData(char* data, size_t  size) override;
 
 	  private:
 		std::filesystem::path m_path;

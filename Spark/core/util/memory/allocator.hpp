@@ -2,6 +2,8 @@
 #define SPARK_ALLOCATOR_TRAITS_HPP
 
 #include <core/util/classic/util.hpp>
+#include <core/util/types.hpp>
+#include <core/util/classic/traits.hpp>
 #include <memory>
 
 namespace Spark {
@@ -35,7 +37,7 @@ namespace Spark {
 	};
 
 	// Partial specialization for standard allocators using SFINAE
-	template<typename Allocator> class AllocatorTraits<Allocator, typename std::enable_if<!std::is_base_of<_SPARK Allocator<typename Allocator::value_type>, Allocator>::value>::type> {
+	template<typename Allocator> class AllocatorTraits<Allocator, typename EnableIfT<!IsBaseOfV<_SPARK Allocator<typename Allocator::value_type>, Allocator>>> {
 	  public:
 		using AllocatorType                    = Allocator;
 		using ValueType                        = typename Allocator::value_type;
@@ -68,8 +70,8 @@ namespace Spark {
 		using ConstPointer    = const _Ty*;
 		using Reference       = _Ty&;
 		using ConstReference  = const _Ty&;
-		using SizeType        = std::size_t ;
-		using DifferenceType  = std::ptrdiff_t;
+		using SizeType        = usize ;
+		using DifferenceType  = ptrdiff;
 
 		using value_type      = ValueType;
 		using pointer         = Pointer;

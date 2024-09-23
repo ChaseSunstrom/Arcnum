@@ -1,0 +1,41 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build Debug",
+            "command": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\MSBuild.exe",
+            "args": [
+                "/property:Configuration=Debug",
+                "/property:Platform=x64",
+                "Arcnum.sln"
+            ],
+            "type": "shell",
+            "group": "build",
+            "problemMatcher": ["$msCompile"]
+        },
+        {
+            "label": "Build Release",
+            "command": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\MSBuild.exe",
+            "args": [
+                "/property:Configuration=Release",
+                "/property:Platform=x64",
+                "Arcnum.sln"
+            ],
+            "type": "shell",
+            "group": "build",
+            "problemMatcher": ["$msCompile"]
+        },
+        {
+            "label": "Build Distribution",
+            "command": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\MSBuild.exe",
+            "args": [
+                "/property:Configuration=Distribution",
+                "/property:Platform=x64",
+                "Arcnum.sln"
+            ],
+            "type": "shell",
+            "group": "build",
+            "problemMatcher": ["$msCompile"]
+        },
+    ]
+}

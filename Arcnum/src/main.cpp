@@ -111,7 +111,7 @@ void TestVariant(Spark::Application& app) {
 }
 
 i32 main() {
-	Spark::Application app(Spark::GraphicsAPI::OpenGL);
+	Spark::Application app(Spark::GraphicsAPI::OPENGL);
 	app.CreateWindow<Spark::GLWindow>("FPS Counter", 1920 / 2, 1080 / 2)
 		.CreateRenderer<Spark::GLRenderer>()
 		.AddSystem<Spark::FPSSystem>()

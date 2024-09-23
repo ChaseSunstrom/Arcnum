@@ -4,7 +4,7 @@
 #include <core/pch.hpp>
 
 namespace Spark {
-	enum class GraphicsAPI { OpenGL, Vulkan, DirectX };
+	enum class GraphicsAPI { OPENGL, VULKAN, DIRECTX };
 }
 
 #endif

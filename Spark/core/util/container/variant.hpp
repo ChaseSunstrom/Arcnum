@@ -7,6 +7,7 @@
 #include <core/util/log.hpp>
 
 namespace Spark {
+	
 	static constexpr size_t  invalid_index = static_cast<size_t >(-1);
 
 	template<typename _Ty, typename... Ts> struct IndexOfType;

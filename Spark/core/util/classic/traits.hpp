@@ -70,6 +70,34 @@ namespace Spark {
 		using Type = _Ty;
 	};
 
+	// InvokeResult trait
+	template<typename _Void, typename _Callable, typename... _Args>
+	struct InvokeResultImpl {
+		// Default case: not invocable
+	};
+
+	template<typename _Callable, typename... _Args>
+	struct InvokeResultImpl<
+		EnableIfT<IsSameV<decltype(DeclVal<_Callable>()(DeclVal<_Args>()...)), void>>,
+		_Callable, _Args...
+	> {
+		using Type = void;
+	};
+
+	template<typename _Callable, typename... _Args>
+	struct InvokeResultImpl<
+		EnableIfT<!IsSameV<decltype(DeclVal<_Callable>()(DeclVal<_Args>()...)), void>>,
+		_Callable, _Args...
+	> {
+		using Type = decltype(DeclVal<_Callable>()(DeclVal<_Args>()...));
+	};
+
+	template<typename _Callable, typename... _Args>
+	struct InvokeResult : InvokeResultImpl<void, _Callable, _Args...> {};
+
+	template<typename _Callable, typename... _Args>
+	using InvokeResultT = typename InvokeResult<_Callable, _Args...>::Type;
+
 	// Type aliases for convenience
 	template<typename _Ty> using RemoveRefT      = typename RemoveRef<_Ty>::Type;
 	template<typename _Ty> using RemoveConstT    = typename RemoveConst<_Ty>::Type;
@@ -381,6 +409,12 @@ namespace Spark {
 
 	template<bool B, typename _Ty, typename F> using ConditionalT = typename Conditional<B, _Ty, F>::Type;
 
+	// IsBaseOf Trait using compiler built-ins
+	template<typename Base, typename Derived>
+	struct IsBaseOf {
+		static constexpr bool Value = __is_base_of(Base, Derived);
+	};
+
 	// EnableIf Trait
 	template<bool B, typename _Ty = void> struct EnableIf {};
 	template<typename _Ty> struct EnableIf<true, _Ty> {
@@ -397,7 +431,6 @@ namespace Spark {
 	template<typename Derived, typename Base>
 	concept DerivedFrom                                                                  = __is_base_of(Base, Derived) && __is_convertible_to(const volatile Derived*, const volatile Base*);
 
-	// Value aliases for traits
 	// Value aliases for traits
 	template<typename _Ty> constexpr bool                 IsArrayV                       = IsArray<_Ty>::Value;
 	template<typename _Ty> constexpr bool                 IsIntegralV                    = IsIntegral<_Ty>::Value;
@@ -427,6 +460,7 @@ namespace Spark {
 	template<typename _Ty> constexpr bool                 IsAssignableV                  = IsAssignable<_Ty>::Value;
 	template<typename _Ty> constexpr bool                 IsNothrowDefaultConstructibleV = IsNothrowDefaultConstructible<_Ty>::Value;
 	template<typename _Ty1, typename _Ty2> constexpr bool IsSameV                        = IsSame<_Ty1, _Ty2>::Value;
+	template<typename Base, typename Derived> constexpr bool IsBaseOfV                   = IsBaseOf<Base, Derived>::Value;
 	template<typename _Ty> using AddPointerT                                             = AddPointer<_Ty>::Type;
 
 	template<bool> struct Select {

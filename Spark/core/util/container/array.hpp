@@ -107,7 +107,7 @@ namespace Spark {
 
 		void Fill(const _Ty& value) { for (SizeType i = 0; i < N; ++i) { m_data[i] = value; } }
 
-		void Swap(Array& other) { for (SizeType i = 0; i < N; ++i) { _SPARKSwap(m_data[i], other.m_data[i]); } }
+		void Swap(Array& other) { for (SizeType i = 0; i < N; ++i) { _SPARK Swap(m_data[i], other.m_data[i]); } }
 
 		bool operator==(const Array& other) const {
 			for (i32 i = 0; i < N; ++i) { if (m_data[i] != other.m_data[i]) { return false; } }

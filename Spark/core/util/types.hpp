@@ -18,6 +18,7 @@ using f32   = float;
 using f64   = double;
 
 using ptrdiff = ptrdiff_t;
+using nullptr_t = decltype(nullptr);
 
 using usize = size_t;
 using isize = long long;

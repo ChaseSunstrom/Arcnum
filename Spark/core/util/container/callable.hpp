@@ -4,8 +4,7 @@
 #include <core/util/classic/util.hpp>
 #include <core/util/log.hpp>
 #include <core/util/memory/unique_ptr.hpp>
-#include <type_traits>
-#include <functional>
+#include <core/util/classic/traits.hpp>
 
 namespace Spark {
 
@@ -16,11 +15,11 @@ namespace Spark {
 
 		Callable() noexcept = default;
 
-		Callable(std::nullptr_t) noexcept
+		Callable(nullptr_t) noexcept
 			: Callable() {}
 
-		template<typename _Fty, typename = std::enable_if_t<!std::is_same_v<std::decay_t<_Fty>, Callable>>> Callable(_Fty&& f)
-			: m_function(MakeUnique<CallableImpl<std::decay_t<_Fty>>>(Forward<_Fty>(f))) {}
+		template<typename _Fty, typename = EnableIfT<!IsSameV<DecayT<_Fty>, Callable>>> Callable(_Fty&& f)
+			: m_function(MakeUnique<CallableImpl<DecayT<_Fty>>>(Forward<_Fty>(f))) {}
 
 		Callable(const Callable& other)
 			: m_function(other.m_function ? other.m_function->Clone() : nullptr) {}
@@ -34,7 +33,7 @@ namespace Spark {
 
 		Callable& operator=(Callable&& other) noexcept = default;
 
-		Callable& operator=(std::nullptr_t) noexcept {
+		Callable& operator=(nullptr_t) noexcept {
 			m_function.Reset();
 			return *this;
 		}
@@ -49,8 +48,7 @@ namespace Spark {
 		explicit operator bool() const noexcept { return static_cast<bool>(m_function); }
 
 		void Swap(Callable& other) noexcept {
-			using std::swap;
-			swap(m_function, other.m_function);
+			_SPARK Swap(m_function, other.m_function);
 		}
 
 	  private:
@@ -77,7 +75,7 @@ namespace Spark {
 	};
 
 	// Deduction guide
-	template<typename _Fty> Callable(_Fty) -> Callable<typename std::invoke_result_t<_Fty>>;
+	template<typename _Fty> Callable(_Fty) -> Callable<typename InvokeResultT<_Fty>>;
 
 	// Swap function
 	template<typename Signature> void Swap(Callable<Signature>& lhs, Callable<Signature>& rhs) noexcept { lhs.Swap(rhs); }

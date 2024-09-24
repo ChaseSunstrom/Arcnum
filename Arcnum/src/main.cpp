@@ -88,7 +88,7 @@ void TestVector(Spark::Application& app) {
 }
 
 void TestString(Spark::Application& app) {
-	Spark::String str  = "Hello, World! ";
+	Spark::BasicString str  = "Hello, World! ";
 	bool          test = true;
 	f32           x    = 1.019981;
 	str += test;
@@ -104,7 +104,7 @@ void TestCallable(Spark::Application& app) {
 }
 
 void TestVariant(Spark::Application& app) { 
-	Spark::Variant<i32, Spark::String, f64> variant;
+	Spark::Variant<i32, Spark::BasicString, f64> variant;
 	variant = 6;
 
 	LOG_WARN(variant.Get<i32>());

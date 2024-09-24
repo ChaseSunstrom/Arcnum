@@ -2,7 +2,7 @@
 #include <chrono>
 
 namespace Spark {
-	std::string GetCurrentTime() {
+	String GetCurrentTime() {
 		auto     now   = std::chrono::system_clock::now();
 		auto     now_c = std::chrono::system_clock::to_time_t(now);
 		std::tm* time  = std::localtime(&now_c);

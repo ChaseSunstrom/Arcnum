@@ -35,15 +35,28 @@ namespace Spark {
 				: m_pair(Move(key), Move(value)) {}
 		};
 
+		using AllocatorType  = Allocator;
+		using AllocatorTraits = AllocatorTraits<AllocatorType>;
+
 		using Bucket         = List<Node, Allocator>;
 		using ValueType      = Pair<const Key, Value>;
 		using Pointer        = ValueType*;
 		using Reference      = ValueType&;
 		using ConstReference = const ValueType&;
+		using SizeType       = AllocatorTraits::SizeType;
+		using DifferenceType = AllocatorTraits::DifferenceType;
 
 		class Iterator {
 		  public:
-			Iterator(Vector<Bucket>* buckets, size_t bucket_index, typename Bucket::Iterator it)
+			using IteratorCategory = std::forward_iterator_tag;
+			using ValueType          = typename AllocatorTraits::ValueType;
+			using PointerType        = typename AllocatorTraits::PointerType;
+			using ReferenceType      = typename AllocatorTraits::ReferenceType;
+			using ConstReferenceType = typename AllocatorTraits::ConstReferenceType;
+			using SizeType           = typename AllocatorTraits::SizeType;
+			using DifferenceType     = typename AllocatorTraits::DifferenceType;
+
+			Iterator(Vector<Bucket>* buckets, SizeType bucket_index, typename Bucket::Iterator it)
 				: m_buckets(buckets)
 				, m_bucket_index(bucket_index)
 				, m_it(it) {
@@ -83,14 +96,14 @@ namespace Spark {
 
 		  private:
 			Vector<Bucket>*           m_buckets;
-			size_t                    m_bucket_index;
+			SizeType                    m_bucket_index;
 			typename Bucket::Iterator m_it;
 			friend class UnorderedMap;
 		};
 
 		using ConstIterator = Iterator;
 
-		explicit UnorderedMap(size_t bucket_count = DEFAULT_BUCKET_COUNT, const Hash& hasher = Hash(), const KeyEqual& key_equal = KeyEqual(), const Allocator& allocator = Allocator())
+		explicit UnorderedMap(SizeType bucket_count = DEFAULT_BUCKET_COUNT, const Hash& hasher = Hash(), const KeyEqual& key_equal = KeyEqual(), const Allocator& allocator = Allocator())
 			: m_buckets(bucket_count)
 			, m_size(0)
 			, m_hasher(hasher)
@@ -128,7 +141,7 @@ namespace Spark {
 			, m_key_equal(other.key_eq())
 			, m_allocator(other.get_allocator()) {
 			for (const auto& pair : other) {
-				Insert(pair.first, pair.second);
+				Insert(pair.first, pair.second); 
 			}
 		}
 
@@ -164,7 +177,7 @@ namespace Spark {
 				Rehash(m_buckets.Size() * 2);
 			}
 
-			size_t index = GetBucketIndex(key);
+			SizeType index = GetBucketIndex(key);
 			for (auto& node : m_buckets[index]) {
 				if (m_key_equal(node.m_pair.first, key)) {
 					node.m_pair.second = value;
@@ -177,7 +190,7 @@ namespace Spark {
 		}
 
 		bool Remove(const Key& key) {
-			size_t index  = GetBucketIndex(key);
+			SizeType index  = GetBucketIndex(key);
 			auto&  bucket = m_buckets[index];
 			for (auto it = bucket.Begin(); it != bucket.End(); ++it) {
 				if (m_key_equal((*it).m_pair.first, key)) {
@@ -190,7 +203,7 @@ namespace Spark {
 		}
 
 		Value& At(const Key& key) {
-			size_t index = GetBucketIndex(key);
+			SizeType index = GetBucketIndex(key);
 			for (auto& node : m_buckets[index]) {
 				if (m_key_equal(node.m_pair.first, key)) {
 					return node.m_pair.second;
@@ -224,7 +237,7 @@ namespace Spark {
 			return false;
 		}
 
-		size_t Size() const { return m_size; }
+		SizeType Size() const { return m_size; }
 		bool   Empty() const { return m_size == 0; }
 
 		void Clear() {
@@ -235,7 +248,7 @@ namespace Spark {
 		}
 
 		Iterator Begin() {
-			for (size_t i = 0; i < m_buckets.Size(); ++i) {
+			for (SizeType i = 0; i < m_buckets.Size(); ++i) {
 				if (!m_buckets[i].Empty()) {
 					return Iterator(&m_buckets, i, m_buckets[i].Begin());
 				}
@@ -257,21 +270,21 @@ namespace Spark {
 		}
 
 		f32    LoadFactor() const { return static_cast<f32>(m_size) / m_buckets.Size(); }
-		size_t BucketCount() const { return m_buckets.Size(); }
-		size_t BucketSize(size_t n) const { return m_buckets[n].Size(); }
+		SizeType BucketCount() const { return m_buckets.Size(); }
+		SizeType BucketSize(SizeType n) const { return m_buckets[n].Size(); }
 
-		void Reserve(size_t count) {
-			size_t bucketCount = static_cast<size_t>(_MATH Ceil(count / MAX_LOAD_FACTOR));
+		void Reserve(SizeType count) {
+			SizeType bucketCount = static_cast<SizeType>(_MATH Ceil(count / MAX_LOAD_FACTOR));
 			if (bucketCount > m_buckets.Size()) {
 				Rehash(bucketCount);
 			}
 		}
 
-		void Rehash(size_t new_bucket_count) {
+		void Rehash(SizeType new_bucket_count) {
 			Vector<Bucket> new_buckets(new_bucket_count);
 			for (const auto& bucket : m_buckets) {
 				for (const auto& node : bucket) {
-					size_t new_index = m_hasher(node.m_pair.first) % new_bucket_count;
+					SizeType new_index = m_hasher(node.m_pair.first) % new_bucket_count;
 					new_buckets[new_index].PushBack(node);
 				}
 			}
@@ -292,7 +305,7 @@ namespace Spark {
 		bool operator!=(const UnorderedMap& other) const { return !(*this == other); }
 
 		Iterator Find(const Key& key) {
-			size_t index = GetBucketIndex(key);
+			SizeType index = GetBucketIndex(key);
 			auto   it    = m_buckets[index].Begin();
 			for (; it != m_buckets[index].End(); ++it) {
 				if (m_key_equal(it->m_pair.first, key)) {
@@ -304,7 +317,7 @@ namespace Spark {
 
 		ConstIterator Find(const Key& key) const { return const_cast<UnorderedMap*>(this)->Find(key); }
 
-		size_t Count(const Key& key) const { return Contains(key) ? 1 : 0; }
+		SizeType Count(const Key& key) const { return Contains(key) ? 1 : 0; }
 
 		Iterator      begin() { return Begin(); }
 		Iterator      end() { return End(); }
@@ -316,13 +329,13 @@ namespace Spark {
 		KeyEqual GetKeyEqual() const { return m_key_equal; }
 
 	  private:
-		size_t GetBucketIndex(const Key& key) const { return m_hasher(key) % m_buckets.Size(); }
+		SizeType GetBucketIndex(const Key& key) const { return m_hasher(key) % m_buckets.Size(); }
 
-		static constexpr size_t DEFAULT_BUCKET_COUNT = 16;
+		static constexpr SizeType DEFAULT_BUCKET_COUNT = 16;
 		static constexpr f32    MAX_LOAD_FACTOR      = 0.75f;
 
 		Vector<Bucket> m_buckets;
-		size_t         m_size;
+		SizeType         m_size;
 		Hash           m_hasher;
 		KeyEqual       m_key_equal;
 		Allocator      m_allocator;

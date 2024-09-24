@@ -2,6 +2,7 @@
 #define SPARK_LOG_HPP
 
 #include <iostream>
+#include <cassert>
 #include "defines.hpp"
 #include "time.hpp"
 #include "types.hpp"

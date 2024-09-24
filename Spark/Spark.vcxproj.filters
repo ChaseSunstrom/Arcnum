@@ -1034,6 +1034,9 @@
     <ClInclude Include="core\util\memory\allocator.hpp" />
     <ClInclude Include="core\util\container\variant.hpp" />
     <ClInclude Include="core\util\classic\traits.hpp" />
+    <ClInclude Include="core\util\memory\memory.hpp" />
+    <ClInclude Include="core\util\memory\optional.hpp" />
+    <ClInclude Include="core\util\assert.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\app\application.cpp">

@@ -2,20 +2,68 @@
 #define SPARK_COMPARE_HPP
 
 namespace Spark {
-	template <typename _Ty> struct Less {
-		bool operator()(const _Ty& a, const _Ty& b) const { return a < b; }
+	/**
+	 * @brief Comparison functors for common operations
+	 */
+
+	/**
+	 * @brief Less-than comparison functor
+	 * @tparam T The type of the elements to compare
+	 */
+	template <typename T>
+	struct Less {
+		/**
+		 * @brief Performs less-than comparison
+		 * @param a First element
+		 * @param b Second element
+		 * @return true if a < b, false otherwise
+		 */
+		bool operator()(const T& a, const T& b) const { return a < b; }
 	};
 
-	template <typename _Ty> struct Greater {
-		bool operator()(const _Ty& a, const _Ty& b) const { return a > b; }
+	/**
+	 * @brief Greater-than comparison functor
+	 * @tparam T The type of the elements to compare
+	 */
+	template <typename T>
+	struct Greater {
+		/**
+		 * @brief Performs greater-than comparison
+		 * @param a First element
+		 * @param b Second element
+		 * @return true if a > b, false otherwise
+		 */
+		bool operator()(const T& a, const T& b) const { return a > b; }
 	};
 
-	template <typename _Ty> struct Equal {
-		bool operator()(const _Ty& a, const _Ty& b) const { return a == b; }
+	/**
+	 * @brief Equality comparison functor
+	 * @tparam T The type of the elements to compare
+	 */
+	template <typename T>
+	struct Equal {
+		/**
+		 * @brief Performs equality comparison
+		 * @param a First element
+		 * @param b Second element
+		 * @return true if a == b, false otherwise
+		 */
+		bool operator()(const T& a, const T& b) const { return a == b; }
 	};
 
-	template <typename _Ty> struct NotEqual {
-		bool operator()(const _Ty& a, const _Ty& b) const { return a != b; }
+	/**
+	 * @brief Inequality comparison functor
+	 * @tparam T The type of the elements to compare
+	 */
+	template <typename T>
+	struct NotEqual {
+		/**
+		 * @brief Performs inequality comparison
+		 * @param a First element
+		 * @param b Second element
+		 * @return true if a != b, false otherwise
+		 */
+		bool operator()(const T& a, const T& b) const { return a != b; }
 	};
 }
 

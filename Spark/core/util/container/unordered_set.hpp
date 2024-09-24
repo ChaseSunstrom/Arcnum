@@ -46,6 +46,14 @@ namespace Spark {
 		
 		class Iterator {
 		  public:
+			using IteratorCategory = std::forward_iterator_tag;
+			using ValueType          = typename AllocatorTraits::ValueType;
+			using PointerType        = typename AllocatorTraits::PointerType;
+			using ReferenceType      = typename AllocatorTraits::ReferenceType;
+			using ConstReferenceType = typename AllocatorTraits::ConstReferenceType;
+			using SizeType           = typename AllocatorTraits::SizeType;
+			using DifferenceType     = typename AllocatorTraits::DifferenceType;
+
 			Iterator(Vector<Bucket>* buckets, size_t bucket_index, typename Bucket::Iterator it)
 				: m_buckets(buckets)
 				, m_bucket_index(bucket_index)

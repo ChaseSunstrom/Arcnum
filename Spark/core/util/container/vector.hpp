@@ -10,6 +10,8 @@
 #include <list>
 #include <vector>
 
+#include "core/util/log.hpp"
+
 namespace Spark {
 	/**
 	 * @brief A custom vector implementation with allocator support.
@@ -34,7 +36,13 @@ namespace Spark {
 		 */
 		class Iterator {
 		  public:
-			using DifferenceType = ptrdiff;
+			using IteratorCategory = std::random_access_iterator_tag;
+			using ValueType          = typename AllocatorTraits::ValueType;
+			using PointerType        = typename AllocatorTraits::PointerType;
+			using ReferenceType      = typename AllocatorTraits::ReferenceType;
+			using ConstReferenceType = typename AllocatorTraits::ConstReferenceType;
+			using SizeType           = typename AllocatorTraits::SizeType;
+			using DifferenceType     = typename AllocatorTraits::DifferenceType;
 
 			/**
 			 * @brief Constructs an Iterator.

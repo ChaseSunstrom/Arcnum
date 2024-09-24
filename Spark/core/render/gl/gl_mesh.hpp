@@ -16,7 +16,7 @@ namespace Spark {
 		u32 GetEBO() const { return m_ebo; }
 
 	  private:
-		GLStaticMesh(const std::vector<Vertex>& vertices, const std::vector<u32>& indices = {})
+		GLStaticMesh(const Vector<Vertex>& vertices, const Vector<u32>& indices = {})
 			: StaticMesh(vertices, indices) {}
 
 
@@ -30,15 +30,15 @@ namespace Spark {
 	  public:
 		friend class Manager<DynamicMesh>;
 		void CreateMesh() override;
-		void Update(const std::vector<Vertex>& vertices, const std::vector<u32>& indices) override;
-		void UpdateMesh(const std::vector<Vertex>& vertices) override;
-		void UpdateIndices(const std::vector<u32>& indices) override;
+		void Update(const Vector<Vertex>& vertices, const Vector<u32>& indices) override;
+		void UpdateMesh(const Vector<Vertex>& vertices) override;
+		void UpdateIndices(const Vector<u32>& indices) override;
 
 		u32 GetVAO() const { return m_vao; }
 		u32 GetVBO() const { return m_vbo; }
 		u32 GetEBO() const { return m_ebo; }
 	  private:
-		GLDynamicMesh(const std::vector<Vertex>& vertices, const std::vector<u32>& indices)
+		GLDynamicMesh(const Vector<Vertex>& vertices, const Vector<u32>& indices)
 			: DynamicMesh(vertices, indices) {}
 
 	  private:

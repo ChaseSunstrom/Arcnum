@@ -7,96 +7,204 @@
 #include <typeinfo>
 
 namespace Spark {
-	struct TypeInfoData {
-		const char* undecorated_name;
-		const char* decorated_name;
+    /**
+     * @brief Struct to hold type information data.
+     */
+    struct TypeInfoData {
+        const char* undecorated_name;
+        const char* decorated_name;
 
-		TypeInfoData(const char* undecorated, const char* decorated)
-			: undecorated_name(undecorated)
-			, decorated_name(decorated) {}
+        TypeInfoData(const char* undecorated, const char* decorated)
+            : undecorated_name(undecorated)
+            , decorated_name(decorated) {}
 
-		TypeInfoData()                               = delete;
-		TypeInfoData(const TypeInfoData&)            = delete;
-		TypeInfoData(TypeInfoData&&)                 = delete;
-		TypeInfoData& operator=(const TypeInfoData&) = delete;
-		TypeInfoData& operator=(TypeInfoData&&)      = delete;
-	};
+        // Disable default constructor and copy/move operations
+        TypeInfoData() = delete;
+        TypeInfoData(const TypeInfoData&) = delete;
+        TypeInfoData(TypeInfoData&&) = delete;
+        TypeInfoData& operator=(const TypeInfoData&) = delete;
+        TypeInfoData& operator=(TypeInfoData&&) = delete;
+    };
 
-	i32    TypeInfoDataCompare(const TypeInfoData& lhs, const TypeInfoData& rhs) noexcept;
-	size_t  TypeInfoDataHash(const TypeInfoData& type_info_data) noexcept;
+    /**
+     * @brief Compare two TypeInfoData objects.
+     * @param lhs Left-hand side TypeInfoData.
+     * @param rhs Right-hand side TypeInfoData.
+     * @return Integer result of comparison.
+     */
+    i32 TypeInfoDataCompare(const TypeInfoData& lhs, const TypeInfoData& rhs) noexcept;
 
-	class TypeInfo {
-	  public:
-		TypeInfo(const std::type_info& info)
-			: m_type_info_data(info.name(), info.raw_name()) {}
+    /**
+     * @brief Hash a TypeInfoData object.
+     * @param type_info_data TypeInfoData to hash.
+     * @return Hash value.
+     */
+    size_t TypeInfoDataHash(const TypeInfoData& type_info_data) noexcept;
 
-		TypeInfo(const TypeInfo& other)
-			: m_type_info_data(other.m_type_info_data.undecorated_name, other.m_type_info_data.decorated_name) {}
+    /**
+     * @brief Class to represent type information.
+     */
+    class TypeInfo {
+    public:
+        /**
+         * @brief Construct a TypeInfo from std::type_info.
+         * @param info Reference to std::type_info.
+         */
+        TypeInfo(const std::type_info& info)
+            : m_type_info_data(info.name(), info.raw_name()) {}
 
-		TypeInfo& operator=(const TypeInfo&) = delete;
+        /**
+         * @brief Copy constructor.
+         * @param other TypeInfo to copy from.
+         */
+        TypeInfo(const TypeInfo& other)
+            : m_type_info_data(other.m_type_info_data.undecorated_name, other.m_type_info_data.decorated_name) {}
 
-		operator const std::type_info&() const noexcept { return *reinterpret_cast<const std::type_info*>(&m_type_info_data); }
-		operator const std::type_info*() const noexcept { return reinterpret_cast<const std::type_info*>(&m_type_info_data); }
+        // Disable copy assignment
+        TypeInfo& operator=(const TypeInfo&) = delete;
 
-		size_t       HashCode() const noexcept { return TypeInfoDataHash(m_type_info_data); }
-		bool        operator==(const TypeInfo& other) const noexcept { return TypeInfoDataCompare(m_type_info_data, other.m_type_info_data) == 0; }
-		bool        operator!=(const TypeInfo& other) const noexcept { return TypeInfoDataCompare(m_type_info_data, other.m_type_info_data) != 0; }
-		bool        Before(const TypeInfo& other) const noexcept { return TypeInfoDataCompare(m_type_info_data, other.m_type_info_data) < 0; }
-		bool        operator<(const TypeInfo& other) const noexcept { return TypeInfoDataCompare(m_type_info_data, other.m_type_info_data) < 0; }
-		bool        operator>(const TypeInfo& other) const noexcept { return TypeInfoDataCompare(m_type_info_data, other.m_type_info_data) > 0; }
-		bool        operator<=(const TypeInfo& other) const noexcept { return TypeInfoDataCompare(m_type_info_data, other.m_type_info_data) <= 0; }
-		bool        operator>=(const TypeInfo& other) const noexcept { return TypeInfoDataCompare(m_type_info_data, other.m_type_info_data) >= 0; }
-		const char* Name() const noexcept { return m_type_info_data.undecorated_name; }
-		const char* RawName() const noexcept { return m_type_info_data.decorated_name; }
-		~TypeInfo() noexcept = default;
+        /**
+         * @brief Convert to std::type_info reference.
+         */
+        operator const std::type_info&() const noexcept { return *reinterpret_cast<const std::type_info*>(&m_type_info_data); }
 
-	  private:
-		const TypeInfoData m_type_info_data;
-	};
+        /**
+         * @brief Convert to std::type_info pointer.
+         */
+        operator const std::type_info*() const noexcept { return reinterpret_cast<const std::type_info*>(&m_type_info_data); }
 
-	class TypeIndex {
-	  public:
-		TypeIndex()
-			: m_type_info(nullptr) {}
-		TypeIndex(const TypeInfo& info)
-			: m_type_info(new TypeInfo(info)) {}
-		TypeIndex(const std::type_info& info)
-			: m_type_info(new TypeInfo(info)) {}
+        /**
+         * @brief Get hash code of the type.
+         * @return Hash code.
+         */
+        size_t HashCode() const noexcept { return TypeInfoDataHash(m_type_info_data); }
 
-		TypeIndex(const TypeIndex& other)
-			: m_type_info(other.m_type_info ? new TypeInfo(*other.m_type_info) : nullptr) {}
-		TypeIndex(TypeIndex&& other) noexcept
-			: m_type_info(other.m_type_info) {
-			other.m_type_info = nullptr;
-		}
+        /**
+         * @brief Comparison operators.
+         */
+        bool operator==(const TypeInfo& other) const noexcept { return TypeInfoDataCompare(m_type_info_data, other.m_type_info_data) == 0; }
+        bool operator!=(const TypeInfo& other) const noexcept { return TypeInfoDataCompare(m_type_info_data, other.m_type_info_data) != 0; }
+        bool Before(const TypeInfo& other) const noexcept { return TypeInfoDataCompare(m_type_info_data, other.m_type_info_data) < 0; }
+        bool operator<(const TypeInfo& other) const noexcept { return TypeInfoDataCompare(m_type_info_data, other.m_type_info_data) < 0; }
+        bool operator>(const TypeInfo& other) const noexcept { return TypeInfoDataCompare(m_type_info_data, other.m_type_info_data) > 0; }
+        bool operator<=(const TypeInfo& other) const noexcept { return TypeInfoDataCompare(m_type_info_data, other.m_type_info_data) <= 0; }
+        bool operator>=(const TypeInfo& other) const noexcept { return TypeInfoDataCompare(m_type_info_data, other.m_type_info_data) >= 0; }
 
-		~TypeIndex() { delete m_type_info; }
+        /**
+         * @brief Get undecorated name of the type.
+         * @return Undecorated name.
+         */
+        const char* Name() const noexcept { return m_type_info_data.undecorated_name; }
 
-		size_t           HashCode() const { return m_type_info ? m_type_info->HashCode() : 0; }
-		const TypeInfo& Info() const { return *m_type_info; }
-		const char*     Name() const { return m_type_info ? m_type_info->Name() : ""; }
+        /**
+         * @brief Get decorated name of the type.
+         * @return Decorated name.
+         */
+        const char* RawName() const noexcept { return m_type_info_data.decorated_name; }
 
-		bool operator==(const TypeIndex& other) const { return (m_type_info == other.m_type_info) || (m_type_info && other.m_type_info && m_type_info->HashCode() == other.m_type_info->HashCode()); }
-		bool operator!=(const TypeIndex& other) const { return !(*this == other); }
-		bool operator<(const TypeIndex& other) const { return (m_type_info && other.m_type_info && m_type_info->HashCode() < other.m_type_info->HashCode()) || (!m_type_info && other.m_type_info); }
-		bool operator>(const TypeIndex& other) const { return other < *this; }
-		bool operator<=(const TypeIndex& other) const { return !(other < *this); }
-		bool operator>=(const TypeIndex& other) const { return !(*this < other); }
+        /**
+         * @brief Default destructor.
+         */
+        ~TypeInfo() noexcept = default;
 
-		TypeIndex& operator=(const TypeIndex& other) {
-			m_type_info = other.m_type_info;
-			return *this;
-		}
+    private:
+        const TypeInfoData m_type_info_data;
+    };
 
-		TypeIndex& operator=(TypeIndex&& other) noexcept {
-			m_type_info       = other.m_type_info;
-			other.m_type_info = nullptr;
-			return *this;
-		}
+    /**
+     * @brief Class to represent a type index.
+     */
+    class TypeIndex {
+    public:
+        /**
+         * @brief Default constructor.
+         */
+        TypeIndex() : m_type_info(nullptr) {}
 
-	  private:
-		const TypeInfo* m_type_info;
-	};
+        /**
+         * @brief Construct from TypeInfo.
+         * @param info Reference to TypeInfo.
+         */
+        TypeIndex(const TypeInfo& info) : m_type_info(new TypeInfo(info)) {}
+
+        /**
+         * @brief Construct from std::type_info.
+         * @param info Reference to std::type_info.
+         */
+        TypeIndex(const std::type_info& info) : m_type_info(new TypeInfo(info)) {}
+
+        /**
+         * @brief Copy constructor.
+         * @param other TypeIndex to copy from.
+         */
+        TypeIndex(const TypeIndex& other)
+            : m_type_info(other.m_type_info ? new TypeInfo(*other.m_type_info) : nullptr) {}
+
+        /**
+         * @brief Move constructor.
+         * @param other TypeIndex to move from.
+         */
+        TypeIndex(TypeIndex&& other) noexcept : m_type_info(other.m_type_info) {
+            other.m_type_info = nullptr;
+        }
+
+        /**
+         * @brief Destructor.
+         */
+        ~TypeIndex() { delete m_type_info; }
+
+        /**
+         * @brief Get hash code of the type.
+         * @return Hash code.
+         */
+        size_t HashCode() const { return m_type_info ? m_type_info->HashCode() : 0; }
+
+        /**
+         * @brief Get TypeInfo.
+         * @return Reference to TypeInfo.
+         */
+        const TypeInfo& Info() const { return *m_type_info; }
+
+        /**
+         * @brief Get name of the type.
+         * @return Name of the type.
+         */
+        const char* Name() const { return m_type_info ? m_type_info->Name() : ""; }
+
+        /**
+         * @brief Comparison operators.
+         */
+        bool operator==(const TypeIndex& other) const { return (m_type_info == other.m_type_info) || (m_type_info && other.m_type_info && m_type_info->HashCode() == other.m_type_info->HashCode()); }
+        bool operator!=(const TypeIndex& other) const { return !(*this == other); }
+        bool operator<(const TypeIndex& other) const { return (m_type_info && other.m_type_info && m_type_info->HashCode() < other.m_type_info->HashCode()) || (!m_type_info && other.m_type_info); }
+        bool operator>(const TypeIndex& other) const { return other < *this; }
+        bool operator<=(const TypeIndex& other) const { return !(other < *this); }
+        bool operator>=(const TypeIndex& other) const { return !(*this < other); }
+
+        /**
+         * @brief Copy assignment operator.
+         * @param other TypeIndex to copy from.
+         * @return Reference to this TypeIndex.
+         */
+        TypeIndex& operator=(const TypeIndex& other) {
+            m_type_info = other.m_type_info;
+            return *this;
+        }
+
+        /**
+         * @brief Move assignment operator.
+         * @param other TypeIndex to move from.
+         * @return Reference to this TypeIndex.
+         */
+        TypeIndex& operator=(TypeIndex&& other) noexcept {
+            m_type_info = other.m_type_info;
+            other.m_type_info = nullptr;
+            return *this;
+        }
+
+    private:
+        const TypeInfo* m_type_info;
+    };
 } // namespace Spark
 
 template<> struct std::hash<_SPARK TypeIndex> {

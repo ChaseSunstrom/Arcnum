@@ -75,7 +75,7 @@ namespace Spark {
 	};
 
 	// Deduction guide
-	template<typename _Fty> Callable(_Fty) -> Callable<typename InvokeResultT<_Fty>>;
+	template<typename _Fty> Callable(_Fty) -> Callable<InvokeResultT<_Fty>>;
 
 	// Swap function
 	template<typename Signature> void Swap(Callable<Signature>& lhs, Callable<Signature>& rhs) noexcept { lhs.Swap(rhs); }

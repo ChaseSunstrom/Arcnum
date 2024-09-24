@@ -70,33 +70,6 @@ namespace Spark {
 		using Type = _Ty;
 	};
 
-	// InvokeResult trait
-	template<typename _Void, typename _Callable, typename... _Args>
-	struct InvokeResultImpl {
-		// Default case: not invocable
-	};
-
-	template<typename _Callable, typename... _Args>
-	struct InvokeResultImpl<
-		EnableIfT<IsSameV<decltype(DeclVal<_Callable>()(DeclVal<_Args>()...)), void>>,
-		_Callable, _Args...
-	> {
-		using Type = void;
-	};
-
-	template<typename _Callable, typename... _Args>
-	struct InvokeResultImpl<
-		EnableIfT<!IsSameV<decltype(DeclVal<_Callable>()(DeclVal<_Args>()...)), void>>,
-		_Callable, _Args...
-	> {
-		using Type = decltype(DeclVal<_Callable>()(DeclVal<_Args>()...));
-	};
-
-	template<typename _Callable, typename... _Args>
-	struct InvokeResult : InvokeResultImpl<void, _Callable, _Args...> {};
-
-	template<typename _Callable, typename... _Args>
-	using InvokeResultT = typename InvokeResult<_Callable, _Args...>::Type;
 
 	// Type aliases for convenience
 	template<typename _Ty> using RemoveRefT      = typename RemoveRef<_Ty>::Type;
@@ -479,6 +452,26 @@ namespace Spark {
 	};
 
 	template<class _Ty> using DecayT = typename Decay<_Ty>::Type;
+
+	// InvokeResult trait
+	template<typename _Void, typename _Callable, typename... _Args> struct InvokeResultImpl {
+		// Default case: not invocable
+	};
+	
+	template<typename _Callable, typename... _Args> struct InvokeResultImpl<EnableIfT<IsSameV<decltype(DeclVal<_Callable>()(DeclVal<_Args>()...)), void>>, _Callable, _Args...> {
+		using Type = void;
+	};
+
+	template<typename _Callable, typename... _Args> struct InvokeResultImpl<EnableIfT<!IsSameV<decltype(DeclVal<_Callable>()(DeclVal<_Args>()...)), void>>, _Callable, _Args...> {
+		using Type = decltype(DeclVal<_Callable>()(DeclVal<_Args>()...));
+	};
+
+
+	template<typename _Callable, typename... _Args>
+	struct InvokeResult : InvokeResultImpl<void, _Callable, _Args...> {};
+
+	template<typename _Callable, typename... _Args>
+	using InvokeResultT = typename InvokeResult<_Callable, _Args...>::Type;
 
 } // namespace Spark
 

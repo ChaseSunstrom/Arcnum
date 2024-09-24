@@ -480,6 +480,7 @@
     <ClCompile Include="include\glm\detail\glm.cpp" />
     <ClCompile Include="lib\windows\glad\glad.c" />
     <ClInclude Include="core\util\memory\memory.hpp" />
+    <ClInclude Include="core\util\memory\optional.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

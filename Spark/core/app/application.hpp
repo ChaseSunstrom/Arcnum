@@ -92,7 +92,7 @@ namespace Spark {
 		};
 
 		template<IsComponent _Ty, typename... EventTypes> struct QueryEventFunctionWrapper : IQueryEventFunctionWrapper {
-			Callable<void(Application&, Query<_Ty>&, const std::conditional_t<sizeof...(EventTypes) == 1, EventPtr<typename std::tuple_element<0, std::tuple<EventTypes...>>::type>, MultiEventPtr<EventTypes...>>&)> fn;
+			Callable<void(Application&, Query<_Ty>&, const std::conditional_t<sizeof...(EventTypes) == 1, EventPtr<typename std::tuple_element_t<0, std::tuple<EventTypes...>>>, MultiEventPtr<EventTypes...>>&)> fn;
 			Ecs& ecs;
 
 			QueryEventFunctionWrapper(Ecs& ecs, const decltype(fn)& fn)
@@ -101,7 +101,7 @@ namespace Spark {
 
 			void Execute(Application& app, const EventPtr<IEvent>& event) override {
 				if constexpr (sizeof...(EventTypes) == 1) {
-					if (auto typed_event = std::dynamic_pointer_cast<typename std::tuple_element<0, std::tuple<EventTypes...>>::type>(event)) {
+					if (auto typed_event = std::dynamic_pointer_cast<typename std::tuple_element_t<0, std::tuple<EventTypes...>>>(event)) {
 						fn(app, ecs.GetComponents<_Ty>(), typed_event);
 					}
 				} else {

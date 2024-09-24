@@ -33,6 +33,8 @@ namespace Spark {
 		Reverse(first, last);
 	}
 
+	
+
 	template<typename _Ty> void RotateLeft(_Ty* first, _Ty* last) {
 		_Ty  tmp = Move(*first);
 		_Ty* i   = first;

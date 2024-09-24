@@ -14,10 +14,10 @@ namespace Spark {
 		StaticMesh& operator=(const StaticMesh&) = delete;
 
 		virtual void               CreateMesh() = 0;
-		const std::vector<Vertex>& GetVertices() const { return m_vertices; }
-		const std::vector<u32>&    GetIndices() const { return m_indices; }
-		size_t                      GetVerticesSize() const { return m_vertices.size(); }
-		size_t                      GetIndicesSize() const { return m_indices.size(); }
+		const Vector<Vertex>& GetVertices() const { return m_vertices; }
+		const Vector<u32>&    GetIndices() const { return m_indices; }
+		size_t                      GetVerticesSize() const { return m_vertices.Size(); }
+		size_t                      GetIndicesSize() const { return m_indices.Size(); }
 
 		// API-specific methods (to be implemented in derived classes)
 		virtual u32 GetVAO() const = 0;
@@ -25,13 +25,13 @@ namespace Spark {
 		virtual u32 GetEBO() const = 0;
 
 	protected:
-		StaticMesh(const std::vector<Vertex>& vertices, const std::vector<u32>& indices)
+		StaticMesh(const Vector<Vertex>& vertices, const Vector<u32>& indices)
 			: m_vertices(vertices)
 			, m_indices(indices) {}
 
 	protected:
-		std::vector<Vertex> m_vertices;
-		std::vector<u32>    m_indices;
+		Vector<Vertex> m_vertices;
+		Vector<u32>    m_indices;
 	};
 
 	class DynamicMesh {
@@ -40,15 +40,15 @@ namespace Spark {
 		friend class DynamicModel;
 		virtual ~DynamicMesh() = default;
 
-		virtual void Update(const std::vector<Vertex>& vertices, const std::vector<u32>& indices) = 0;
+		virtual void Update(const Vector<Vertex>& vertices, const Vector<u32>& indices) = 0;
 		virtual void CreateMesh() = 0;
-		virtual void UpdateMesh(const std::vector<Vertex>& vertices) = 0;
-		virtual void UpdateIndices(const std::vector<u32>& indices) = 0;
+		virtual void UpdateMesh(const Vector<Vertex>& vertices) = 0;
+		virtual void UpdateIndices(const Vector<u32>& indices) = 0;
 
-		const std::vector<Vertex>& GetVertices() const { return m_vertices; }
-		const std::vector<u32>&    GetIndices() const { return m_indices; }
-		size_t                      GetVerticesSize() const { return m_vertices.size(); }
-		size_t                      GetIndicesSize() const { return m_indices.size(); }
+		const Vector<Vertex>& GetVertices() const { return m_vertices; }
+		const Vector<u32>&    GetIndices() const { return m_indices; }
+		size_t                      GetVerticesSize() const { return m_vertices.Size(); }
+		size_t                      GetIndicesSize() const { return m_indices.Size(); }
 
 		// API-specific methods (to be implemented in derived classes)
 		virtual u32 GetVAO() const = 0;
@@ -56,13 +56,13 @@ namespace Spark {
 		virtual u32 GetEBO() const = 0;
 
 	protected:
-		DynamicMesh(const std::vector<Vertex>& vertices, const std::vector<u32>& indices)
+		DynamicMesh(const Vector<Vertex>& vertices, const Vector<u32>& indices)
 			: m_vertices(vertices)
 			, m_indices(indices) {}
 
 	protected:
-		std::vector<Vertex> m_vertices;
-		std::vector<u32>    m_indices;
+		Vector<Vertex> m_vertices;
+		Vector<u32>    m_indices;
 	};
 
 	template<> class Manager<StaticMesh> : public IManager {
@@ -81,7 +81,10 @@ namespace Spark {
 		void                     Remove(const std::string& name) { m_registry->Remove(name); }
 		void                     Remove(const Handle handle) { m_registry->Remove(handle); }
 		size_t                    GetSize() const { return m_registry->GetSize(); }
-		std::vector<std::string> GetKeys() const { return m_registry->GetKeys(); }
+		Vector<std::string> GetKeys() const { 
+			const auto& keys = m_registry->GetKeys();
+			return Vector<std::string>(keys.begin(), keys.end());
+		}
 		void                     SetRegistry(std::unique_ptr<Registry<StaticMesh>> registry) { m_registry = std::move(registry); }
 		Registry<StaticMesh>&    GetRegistry() const { return *m_registry; }
 

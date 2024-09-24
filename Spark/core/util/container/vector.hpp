@@ -280,6 +280,28 @@ namespace Spark {
 		}
 
 		/**
+		 * @brief Constructor from a range of iterators.
+		 * @tparam InputIt The input iterator type.
+		 * @param first Iterator to the first element of the range.
+		 * @param last Iterator to one past the last element of the range.
+		 */
+		template<typename InputIt>
+		Vector(InputIt first, InputIt last)
+			: m_data(nullptr)
+			, m_size(0)
+			, m_capacity(0) {
+			SizeType count = Distance(first, last);
+			if (count > 0) {
+				m_data = static_cast<_Ty*>(AllocatorTraits::Allocate(m_allocator, count * sizeof(_Ty)));
+				m_capacity = count;
+				for (InputIt it = first; it != last; ++it) {
+					AllocatorTraits::Construct(m_allocator, m_data + m_size, *it);
+					++m_size;
+				}
+			}
+		}
+
+		/**
 		 * @brief Move constructor.
 		 * @param other The vector to move from.
 		 */

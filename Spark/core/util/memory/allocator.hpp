@@ -131,6 +131,26 @@ namespace Spark {
 		const_pointer address(const_reference x) const noexcept { return Address(x); }
 	};
 
+	template<typename _Ty>
+	typename Allocator<_Ty>::DifferenceType Distance(typename Allocator<_Ty>::Pointer first, typename Allocator<_Ty>::Pointer last) {
+		typename Allocator<_Ty>::DifferenceType dist = 0;
+		while (first != last) {
+			++first;
+			++dist;
+		}
+		return dist;
+	}
+
+	template<typename _Ty>
+	typename Allocator<_Ty>::Pointer Next(typename Allocator<_Ty>::Pointer ptr, typename Allocator<_Ty>::DifferenceType n = 1) {
+		return ptr + n;
+	}
+
+	template<typename _Ty>
+	typename Allocator<_Ty>::Pointer Prev(typename Allocator<_Ty>::Pointer ptr, typename Allocator<_Ty>::DifferenceType n = 1) {
+		return ptr - n;
+	}
+
 } // namespace Spark
 
 #endif // SPARK_ALLOCATOR_TRAITS_HPP

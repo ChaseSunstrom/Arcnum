@@ -15,9 +15,9 @@ namespace Spark {
 		using AllocatorTraits    = AllocatorTraits<AllocatorType>;
 
 		using ValueType          = typename AllocatorTraits::ValueType;
-		using PointerType        = typename AllocatorTraits::Pointer;
-		using ReferenceType      = typename AllocatorTraits::Reference;
-		using ConstReferenceType = typename AllocatorTraits::ConstReference;
+		using Pointer            = typename AllocatorTraits::Pointer;
+		using Reference          = typename AllocatorTraits::Reference;
+		using ConstReference     = typename AllocatorTraits::ConstReference;
 		using SizeType           = typename AllocatorTraits::SizeType;
 		using DifferenceType     = typename AllocatorTraits::DifferenceType;
 
@@ -25,13 +25,13 @@ namespace Spark {
 		  public:
 			using IteratorCategory   = std::random_access_iterator_tag;
 			using ValueType          = typename AllocatorTraits::ValueType;
-			using PointerType        = typename AllocatorTraits::Pointer;
-			using ReferenceType      = typename AllocatorTraits::Reference;
-			using ConstReferenceType = typename AllocatorTraits::ConstReference;
+			using Pointer            = typename AllocatorTraits::Pointer;
+			using Reference          = typename AllocatorTraits::Reference;
+			using ConstReference     = typename AllocatorTraits::ConstReference;
 			using SizeType           = typename AllocatorTraits::SizeType;
 			using DifferenceType     = typename AllocatorTraits::DifferenceType;
 
-			Iterator(PointerType ptr)
+			Iterator(Pointer ptr)
 				: m_ptr(ptr) {}
 
 			// Prefix increment
@@ -54,56 +54,69 @@ namespace Spark {
 			bool operator!=(const Iterator& other) const { return m_ptr != other.m_ptr; }
 
 		  private:
-			PointerType m_ptr;
+			Pointer m_ptr;
 		};
 		BasicString()
-			: m_data(nullptr) {}
+			: m_data(nullptr), m_size(0), m_capacity(0) {}
 		BasicString(const CharType* data)
-			: m_data(AllocatorTraits::Allocate(strlen(data) + 1))
-			, m_size(strlen(data)) {
+			: m_size(strlen(data)), m_capacity(m_size + 1) {
+			m_data = AllocatorTraits::Allocate(m_allocator, m_capacity);
 			strcpy(m_data, data);
 		}
 		BasicString(const CharType* data, SizeType length)
-			: m_data(AllocatorTraits::Allocate(length + 1))
-			, m_size(length) {
+			: m_size(length), m_capacity(length + 1) {
+			m_data = AllocatorTraits::Allocate(m_allocator, m_capacity);
 			strncpy(m_data, data, length);
 			m_data[length] = '\0';
 		}
 		BasicString(const std::string& data)
-			: m_data(AllocatorTraits::Allocate(data.size() + 1))
-			, m_size(data.size()) {
+			: m_size(data.size()), m_capacity(m_size + 1) {
+			m_data = AllocatorTraits::Allocate(m_allocator, m_capacity);
 			strcpy(m_data, data.c_str());
 		}
 		BasicString(const BasicString& other)
-			: m_data(AllocatorTraits::Allocate(other.m_size + 1))
-			, m_size(other.m_size) {
+			: m_size(other.m_size), m_capacity(other.m_capacity) {
+			m_data = AllocatorTraits::Allocate(m_allocator, m_capacity);
 			strcpy(m_data, other.m_data);
 		}
 
-		~BasicString() { AllocatorTraits::Deallocate(m_data); }
+		~BasicString() {
+			if (m_data) {
+				AllocatorTraits::Deallocate(m_allocator, m_data, m_capacity);
+			}
+		}
 
 		BasicString& operator=(const BasicString& other) {
 			if (this != &other) {
-				AllocatorTraits::Deallocate(m_data);
-				m_data = AllocatorTraits::Allocate(other.m_size + 1);
+				if (m_data) {
+					AllocatorTraits::Deallocate(m_allocator, m_data, m_capacity);
+				}
 				m_size = other.m_size;
+				m_capacity = other.m_capacity;
+				m_data = AllocatorTraits::Allocate(m_allocator, m_capacity);
 				strcpy(m_data, other.m_data);
 			}
 			return *this;
 		}
 
 		BasicString& operator=(const std::string& other) {
-			AllocatorTraits::Deallocate(m_data);
-			m_data = AllocatorTraits::Allocate(other.size() + 1);
+			if (m_data) {
+				AllocatorTraits::Deallocate(m_allocator, m_data, m_capacity);
+			}
 			m_size = other.size();
+			m_capacity = m_size + 1;
+			m_data = AllocatorTraits::Allocate(m_allocator, m_capacity);
 			strcpy(m_data, other.c_str());
 			return *this;
 		}
 
 		BasicString& operator=(const char* other) {
-			AllocatorTraits::Deallocate(m_data);
-			m_data = AllocatorTraits::Allocate(strlen(other) + 1);
+			if (m_data) {
+				AllocatorTraits::Deallocate(m_allocator, m_data, m_capacity);
+			}
 			m_size = strlen(other);
+			m_capacity = m_size + 1;
+			m_data = AllocatorTraits::Allocate(m_allocator, m_capacity);
 			strcpy(m_data, other);
 			return *this;
 		}
@@ -113,131 +126,133 @@ namespace Spark {
 		std::string ToString() const { return std::string(m_data); }
 
 		BasicString& operator+=(const BasicString& other) {
-			CharType* tmp = AllocatorTraits::Allocate(strlen(m_data) + strlen(other.m_data) + 1);
+			SizeType new_size = m_size + other.m_size;
+			SizeType new_capacity = new_size + 1;
+			CharType* tmp = AllocatorTraits::Allocate(m_allocator, new_capacity);
 			strcpy(tmp, m_data);
 			strcat(tmp, other.m_data);
-			AllocatorTraits::Deallocate(m_data);
+			if (m_data) {
+				AllocatorTraits::Deallocate(m_allocator, m_data, m_capacity);
+			}
 			m_data = tmp;
+			m_size = new_size;
+			m_capacity = new_capacity;
 			return *this;
 		}
 
 		BasicString& operator+=(const std::string& other) {
-			CharType* tmp = AllocatorTraits::Allocate(strlen(m_data) + other.size() + 1);
+			SizeType new_size = m_size + other.size();
+			SizeType new_capacity = new_size + 1;
+			CharType* tmp = AllocatorTraits::Allocate(m_allocator, new_capacity);
 			strcpy(tmp, m_data);
 			strcat(tmp, other.c_str());
-			AllocatorTraits::Deallocate(m_data);
+			if (m_data) {
+				AllocatorTraits::Deallocate(m_allocator, m_data, m_capacity);
+			}
 			m_data = tmp;
+			m_size = new_size;
+			m_capacity = new_capacity;
 			return *this;
 		}
 
 		BasicString& operator+=(const char* other) {
-			CharType* tmp = AllocatorTraits::Allocate(strlen(m_data) + strlen(other) + 1);
+			SizeType other_size = strlen(other);
+			SizeType new_size = m_size + other_size;
+			SizeType new_capacity = new_size + 1;
+			CharType* tmp = AllocatorTraits::Allocate(m_allocator, new_capacity);
 			strcpy(tmp, m_data);
 			strcat(tmp, other);
-			AllocatorTraits::Deallocate(m_data);
+			if (m_data) {
+				AllocatorTraits::Deallocate(m_allocator, m_data, m_capacity);
+			}
 			m_data = tmp;
+			m_size = new_size;
+			m_capacity = new_capacity;
 			return *this;
 		}
 
 		BasicString& operator+=(const i8 data) {
-			CharType* tmp = AllocatorTraits::Allocate(strlen(m_data) + 2);
+			SizeType new_size = m_size + 1;
+			SizeType new_capacity = new_size + 1;
+			CharType* tmp = AllocatorTraits::Allocate(m_allocator, new_capacity);
 			strcpy(tmp, m_data);
-			tmp[strlen(m_data)]     = data;
-			tmp[strlen(m_data) + 1] = '\0';
-			AllocatorTraits::Deallocate(m_data);
+			tmp[m_size] = data;
+			tmp[new_size] = '\0';
+			if (m_data) {
+				AllocatorTraits::Deallocate(m_allocator, m_data, m_capacity);
+			}
 			m_data = tmp;
+			m_size = new_size;
+			m_capacity = new_capacity;
 			return *this;
 		}
 
 		BasicString& operator+=(const i16 data) {
-			CharType* tmp = AllocatorTraits::Allocate(strlen(m_data) + 6);
-			strcpy(tmp, m_data);
-			sprintf(tmp + strlen(m_data), "%d", data);
-			AllocatorTraits::Deallocate(m_data);
-			m_data = tmp;
-			return *this;
+			char buffer[7];
+			sprintf(buffer, "%d", data);
+			return *this += buffer;
 		}
 
 		BasicString& operator+=(const i32 data) {
-			CharType* tmp = AllocatorTraits::Allocate(strlen(m_data) + 12);
-			strcpy(tmp, m_data);
-			sprintf(tmp + strlen(m_data), "%d", data);
-			AllocatorTraits::Deallocate(m_data);
-			m_data = tmp;
-			return *this;
+			char buffer[12];
+			sprintf(buffer, "%d", data);
+			return *this += buffer;
 		}
 
 		BasicString& operator+=(const i64 data) {
-			CharType* tmp = AllocatorTraits::Allocate(strlen(m_data) + 21);
-			strcpy(tmp, m_data);
-			sprintf(tmp + strlen(m_data), "%ld", data);
-			AllocatorTraits::Deallocate(m_data);
-			m_data = tmp;
-			return *this;
+			char buffer[21];
+			sprintf(buffer, "%ld", data);
+			return *this += buffer;
 		}
 
 		BasicString& operator+=(const u8 data) {
-			CharType* tmp = AllocatorTraits::Allocate(strlen(m_data) + 2);
+			SizeType new_size = m_size + 1;
+			SizeType new_capacity = new_size + 1;
+			CharType* tmp = AllocatorTraits::Allocate(m_allocator, new_capacity);
 			strcpy(tmp, m_data);
-			tmp[strlen(m_data)]     = data;
-			tmp[strlen(m_data) + 1] = '\0';
-			AllocatorTraits::Deallocate(m_data);
+			tmp[m_size] = data;
+			tmp[new_size] = '\0';
+			if (m_data) {
+				AllocatorTraits::Deallocate(m_allocator, m_data, m_capacity);
+			}
 			m_data = tmp;
+			m_size = new_size;
+			m_capacity = new_capacity;
 			return *this;
 		}
 
 		BasicString& operator+=(const u16 data) {
-			CharType* tmp = AllocatorTraits::Allocate(strlen(m_data) + 6);
-			strcpy(tmp, m_data);
-			sprintf(tmp + strlen(m_data), "%u", data);
-			AllocatorTraits::Deallocate(m_data);
-			m_data = tmp;
-			return *this;
+			char buffer[6];
+			sprintf(buffer, "%u", data);
+			return *this += buffer;
 		}
 
 		BasicString& operator+=(const u32 data) {
-			CharType* tmp = AllocatorTraits::Allocate(strlen(m_data) + 12);
-			strcpy(tmp, m_data);
-			sprintf(tmp + strlen(m_data), "%u", data);
-			AllocatorTraits::Deallocate(m_data);
-			m_data = tmp;
-			return *this;
+			char buffer[11];
+			sprintf(buffer, "%u", data);
+			return *this += buffer;
 		}
 
 		BasicString& operator+=(const u64 data) {
-			CharType* tmp = AllocatorTraits::Allocate(strlen(m_data) + 21);
-			strcpy(tmp, m_data);
-			sprintf(tmp + strlen(m_data), "%lu", data);
-			AllocatorTraits::Deallocate(m_data);
-			m_data = tmp;
-			return *this;
+			char buffer[21];
+			sprintf(buffer, "%lu", data);
+			return *this += buffer;
 		}
 
 		BasicString& operator+=(const f32 data) {
-			CharType* tmp = AllocatorTraits::Allocate(strlen(m_data) + 12);
-			strcpy(tmp, m_data);
-			sprintf(tmp + strlen(m_data), "%f", data);
-			AllocatorTraits::Deallocate(m_data);
-			m_data = tmp;
-			return *this;
+			char buffer[32];
+			sprintf(buffer, "%f", data);
+			return *this += buffer;
 		}
 
 		BasicString& operator+=(const f64 data) {
-			CharType* tmp = AllocatorTraits::Allocate(strlen(m_data) + 21);
-			strcpy(tmp, m_data);
-			sprintf(tmp + strlen(m_data), "%lf", data);
-			AllocatorTraits::Deallocate(m_data);
-			m_data = tmp;
-			return *this;
+			char buffer[32];
+			sprintf(buffer, "%lf", data);
+			return *this += buffer;
 		}
 
 		BasicString& operator+=(const bool data) {
-			CharType* tmp = AllocatorTraits::Allocate(strlen(m_data) + 6);
-			strcpy(tmp, m_data);
-			sprintf(tmp + strlen(m_data), "%s", data ? "true" : "false");
-			AllocatorTraits::Deallocate(m_data);
-			m_data = tmp;
-			return *this;
+			return *this += (data ? "true" : "false");
 		}
 
 		BasicString operator+(const BasicString& other) const {
@@ -334,10 +349,10 @@ namespace Spark {
 			return os;
 		}
 
-		SizeType Length() const { return m_data ? StringLength(m_data) : 0; }
+		SizeType Length() const { return m_size; }
 
 		// Check if the string is empty
-		bool IsEmpty() const { return Length() == 0; }
+		bool IsEmpty() const { return m_size == 0; }
 
 		// Convert to lowercase
 		BasicString ToLower() const {
@@ -362,7 +377,7 @@ namespace Spark {
 			if (!m_data)
 				return *this;
 			const CharType* start = m_data;
-			const CharType* end   = m_data + StringLength(m_data) - 1;
+			const CharType* end   = m_data + m_size - 1;
 			while (start <= end && IsSpace(*start))
 				++start;
 			while (end >= start && IsSpace(*end))
@@ -372,37 +387,37 @@ namespace Spark {
 
 		Iterator begin() { return Iterator(m_data); }
 
-		Iterator end() { return Iterator(m_data + Length()); }
+		Iterator end() { return Iterator(m_data + m_size); }
 
 		const Iterator begin() const { return Iterator(m_data); }
 
-		const Iterator end() const { return Iterator(m_data + Length()); }
+		const Iterator end() const { return Iterator(m_data + m_size); }
 
 		Iterator Begin() { return Iterator(m_data); }
 
-		Iterator End() { return Iterator(m_data + Length()); }
+		Iterator End() { return Iterator(m_data + m_size); }
 
 		const Iterator Begin() const { return Iterator(m_data); }
 
-		const Iterator End() const { return Iterator(m_data + Length()); }
+		const Iterator End() const { return Iterator(m_data + m_size); }
 
 		// Check if the string starts with a given prefix
 		bool StartsWith(const BasicString& prefix) const {
-			if (prefix.Length() > Length())
+			if (prefix.m_size > m_size)
 				return false;
-			return StringCompare(m_data, prefix.m_data, prefix.Length()) == 0;
+			return StringCompare(m_data, prefix.m_data, prefix.m_size) == 0;
 		}
 
 		// Check if the string ends with a given suffix
 		bool EndsWith(const BasicString& suffix) const {
-			if (suffix.Length() > Length())
+			if (suffix.m_size > m_size)
 				return false;
-			return StringCompare(m_data + Length() - suffix.Length(), suffix.m_data) == 0;
+			return StringCompare(m_data + m_size - suffix.m_size, suffix.m_data) == 0;
 		}
 
 		// Find the position of a substring
 		i32 Find(const BasicString& substr, SizeType pos = 0) const {
-			if (pos >= Length())
+			if (pos >= m_size)
 				return -1;
 			const CharType* found = StringFind(m_data + pos, substr.m_data);
 			return found ? static_cast<i32>(found - m_data) : -1;
@@ -414,11 +429,11 @@ namespace Spark {
 			SizeType  start_pos = 0;
 			int32_t find_pos;
 			while ((find_pos = result.Find(from, start_pos)) != -1) {
-				SizeType end_pos = find_pos + from.Length();
+				SizeType end_pos = find_pos + from.m_size;
 				BasicString prefix(result.m_data, find_pos);
 				BasicString suffix(result.m_data + end_pos);
 				result    = prefix + to + suffix;
-				start_pos = find_pos + to.Length();
+				start_pos = find_pos + to.m_size;
 			}
 			return result;
 		}
@@ -430,7 +445,7 @@ namespace Spark {
 			i32            end   = Find(delimiter);
 			while (end != -1) {
 				result.PushBack(BasicString(m_data + start, end - start));
-				start = end + delimiter.Length();
+				start = end + delimiter.m_size;
 				end   = Find(delimiter, start);
 			}
 			result.PushBack(BasicString(m_data + start));
@@ -487,16 +502,16 @@ namespace Spark {
 		// Reverse the string
 		BasicString Reverse() const {
 			BasicString result(*this);
-			_SPARK Reverse(result.m_data, result.m_data + result.Length());
+			_SPARK Reverse(result.m_data, result.m_data + result.m_size);
 			return result;
 		}
 
 		// Get a substring
 		BasicString Substring(SizeType pos, SizeType len = -1) const {
-			if (pos >= Length())
+			if (pos >= m_size)
 				return BasicString();
-			if (len == -1 || pos + len > Length()) {
-				len = Length() - pos;
+			if (len == -1 || pos + len > m_size) {
+				len = m_size - pos;
 			}
 			return BasicString(m_data + pos, len);
 		}
@@ -515,7 +530,7 @@ namespace Spark {
 
 		static bool IsSpace(CharType c) { return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f' || c == '\v'; }
 
-		static i32 StringCompare(const CharType* s1, const CharType* s2, SizeType n) {
+		static i32 StringCompare(const CharType* s1, const CharType* s2, SizeType n = -1) {
 			if (n == -1) {
 				while (*s1 && (*s1 == *s2)) {
 					++s1;
@@ -631,6 +646,7 @@ namespace Spark {
 	  private:
 		CharType* m_data;
 		SizeType  m_size;
+		SizeType  m_capacity;
 		Allocator m_allocator;
 	};
 

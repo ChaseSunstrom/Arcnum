@@ -471,7 +471,6 @@
     <ClCompile Include="core\system\file_serializer.cpp" />
     <ClCompile Include="core\util\classic\file.cpp" />
     <ClCompile Include="core\util\classic\type.cpp" />
-    <ClCompile Include="core\util\container\string.cpp" />
     <ClCompile Include="core\util\log.cpp" />
     <ClCompile Include="core\util\thread_pool.cpp" />
     <ClCompile Include="core\util\time.cpp" />

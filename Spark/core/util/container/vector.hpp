@@ -10,8 +10,6 @@
 #include <list>
 #include <vector>
 
-#include "core/util/log.hpp"
-
 namespace Spark {
 	/**
 	 * @brief A custom vector implementation with allocator support.
@@ -37,12 +35,12 @@ namespace Spark {
 		class Iterator {
 		  public:
 			using IteratorCategory = std::random_access_iterator_tag;
-			using ValueType          = typename AllocatorTraits::ValueType;
-			using PointerType        = typename AllocatorTraits::PointerType;
-			using ReferenceType      = typename AllocatorTraits::ReferenceType;
-			using ConstReferenceType = typename AllocatorTraits::ConstReferenceType;
-			using SizeType           = typename AllocatorTraits::SizeType;
-			using DifferenceType     = typename AllocatorTraits::DifferenceType;
+			using ValueType        = typename AllocatorTraits::ValueType;
+			using Pointer          = typename AllocatorTraits::Pointer;
+			using Reference        = typename AllocatorTraits::Reference;
+			using ConstReference   = typename AllocatorTraits::ConstReference;
+			using SizeType         = typename AllocatorTraits::SizeType;
+			using DifferenceType   = typename AllocatorTraits::DifferenceType;
 
 			/**
 			 * @brief Constructs an Iterator.
@@ -61,7 +59,7 @@ namespace Spark {
 			 * @brief Arrow operator.
 			 * @return Pointer to the element.
 			 */
-			Pointer   operator->() { return m_ptr; }
+			Pointer operator->() { return m_ptr; }
 
 			/**
 			 * @brief Pre-increment operator.
@@ -127,7 +125,7 @@ namespace Spark {
 			 * @param n Index to access.
 			 * @return Reference to the element at the given index.
 			 */
-			Reference      operator[](DifferenceType n) const { return *(m_ptr + n); }
+			Reference operator[](DifferenceType n) const { return *(m_ptr + n); }
 
 			/**
 			 * @brief Equality comparison operator.
@@ -293,14 +291,13 @@ namespace Spark {
 		 * @param first Iterator to the first element of the range.
 		 * @param last Iterator to one past the last element of the range.
 		 */
-		template<typename InputIt>
-		Vector(InputIt first, InputIt last)
+		template<typename InputIt> Vector(InputIt first, InputIt last)
 			: m_data(nullptr)
 			, m_size(0)
 			, m_capacity(0) {
-			SizeType count = Distance(first, last);
+			SizeType count = Distance(*first, *last);
 			if (count > 0) {
-				m_data = static_cast<_Ty*>(AllocatorTraits::Allocate(m_allocator, count * sizeof(_Ty)));
+				m_data     = static_cast<_Ty*>(AllocatorTraits::Allocate(m_allocator, count * sizeof(_Ty)));
 				m_capacity = count;
 				for (InputIt it = first; it != last; ++it) {
 					AllocatorTraits::Construct(m_allocator, m_data + m_size, *it);
@@ -332,8 +329,8 @@ namespace Spark {
 					AllocatorTraits::Destroy(m_allocator, m_data + i);
 				}
 				AllocatorTraits::Deallocate(m_allocator, m_data, m_capacity * sizeof(_Ty));
-				m_data = nullptr;
-				m_size = 0;
+				m_data     = nullptr;
+				m_size     = 0;
 				m_capacity = 0;
 			}
 		}
@@ -863,7 +860,7 @@ namespace Spark {
 		 * @brief Accesses the middle element of the vector.
 		 * @return Reference to the middle element.
 		 */
-		Reference      Middle() { return m_data[m_size / 2]; }
+		Reference Middle() { return m_data[m_size / 2]; }
 
 		/**
 		 * @brief Accesses the middle element of the vector (const version).
@@ -875,7 +872,7 @@ namespace Spark {
 		 * @brief Accesses the last element of the vector.
 		 * @return Reference to the last element.
 		 */
-		Reference      Back() { return m_data[m_size - 1]; }
+		Reference Back() { return m_data[m_size - 1]; }
 
 		/**
 		 * @brief Accesses the last element of the vector (const version).
@@ -888,7 +885,7 @@ namespace Spark {
 		 * @param index The index of the element to access.
 		 * @return Reference to the element at the specified index.
 		 */
-		Reference      Get(SizeType index) { return m_data[index]; }
+		Reference Get(SizeType index) { return m_data[index]; }
 
 		/**
 		 * @brief Accesses an element at a specific index (const version).
@@ -901,7 +898,7 @@ namespace Spark {
 		 * @brief Returns a pointer to the data of the vector.
 		 * @return Pointer to the data of the vector.
 		 */
-		Pointer      Data() { return m_data; }
+		Pointer Data() { return m_data; }
 
 		/**
 		 * @brief Returns a pointer to the data of the vector (const version).
@@ -1012,13 +1009,13 @@ namespace Spark {
 		 * @brief Returns an iterator to the beginning of the vector.
 		 * @return Iterator to the beginning of the vector.
 		 */
-		Iterator      Begin() { return Iterator(m_data); }
+		Iterator Begin() { return Iterator(m_data); }
 
 		/**
 		 * @brief Returns an iterator to the end of the vector.
 		 * @return Iterator to the end of the vector.
 		 */
-		Iterator      End() { return Iterator(m_data + m_size); }
+		Iterator End() { return Iterator(m_data + m_size); }
 
 		/**
 		 * @brief Returns a const iterator to the beginning of the vector.
@@ -1036,13 +1033,13 @@ namespace Spark {
 		 * @brief Returns an iterator to the beginning of the vector.
 		 * @return Iterator to the beginning of the vector.
 		 */
-		Iterator      begin() { return Begin(); }
+		Iterator begin() { return Begin(); }
 
 		/**
 		 * @brief Returns an iterator to the end of the vector.
 		 * @return Iterator to the end of the vector.
 		 */
-		Iterator      end() { return End(); }
+		Iterator end() { return End(); }
 
 		/**
 		 * @brief Returns a const iterator to the beginning of the vector.

@@ -42,7 +42,7 @@ namespace Spark {
 			(RegisterMultiEventHandler<EventTypes>(wrapper, settings), ...);
 		}
 
-		void SubscribeToAllEvents(std::function<void(const EventPtr<IEvent>&)> handler, const FunctionSettings settings = {}) {
+		void SubscribeToAllEvents(Callable<void(const EventPtr<IEvent>&)> handler, const FunctionSettings settings = {}) {
 			std::lock_guard<std::mutex> lock(m_mutex);
 			m_all_event_handlers.PushBack({handler, settings});
 		}

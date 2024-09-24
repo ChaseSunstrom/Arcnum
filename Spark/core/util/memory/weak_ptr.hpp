@@ -11,17 +11,17 @@ namespace Spark {
 	 * @tparam _Ty The type of the object being pointed to.
 	 * @tparam Allocator The allocator type used for memory management.
 	 */
-	template<typename _Ty, typename Allocator = Allocator<_Ty>>
+	template<typename _Ty, typename Allocator = _SPARK Allocator<_Ty>>
 	class WeakPtr {
 	public:
 		using AllocatorType      = Allocator;
 		using AllocatorTraits    = AllocatorTraits<AllocatorType>;
 
 		using ValueType          = typename AllocatorTraits::ValueType;
-		using PointerType        = typename AllocatorTraits::PointerType;
-		using ReferenceType      = typename AllocatorTraits::ReferenceType;
-		using ConstReferenceType = typename AllocatorTraits::ConstReferenceType;
-		using ConstPointerType   = typename AllocatorTraits::ConstPointerType;
+		using Pointer        = typename AllocatorTraits::Pointer;
+		using Reference      = typename AllocatorTraits::Reference;
+		using ConstReference = typename AllocatorTraits::ConstReference;
+		using ConstPointer   = typename AllocatorTraits::ConstPointer;
 		using DifferenceType     = typename AllocatorTraits::DifferenceType;
 		using SizeType           = typename AllocatorTraits::SizeType;
 
@@ -247,12 +247,12 @@ namespace Spark {
 		AllocatorType GetAllocator() const { return m_allocator; }
 
 	private:
-		PointerType        m_ptr;
+		Pointer        m_ptr;
 		std::atomic<i32>*  m_ref_count;
 		std::atomic<i32>*  m_weak_count;
 		AllocatorType      m_allocator;
 
-		friend class SharedPtr < _Ty, AllocatorType> ;
+		friend class SharedPtr< _Ty, AllocatorType>;
 	};
 } // namespace Spark
 

@@ -1,11 +1,11 @@
 #ifndef SPARK_TIME_HPP
 #define SPARK_TIME_HPP
 
-#include <core/util/container/string.hpp>
 #include <chrono>
+#include <core/util/memory/allocator.hpp>
+#include <core/util/container/string.hpp>
 
 namespace Spark {
-
 	/**
 	 * @brief A templated timer class for measuring elapsed time.
 	 * @tparam TimeUnit The time unit to use for measurements (default: std::chrono::milliseconds).

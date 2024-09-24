@@ -10,7 +10,7 @@ namespace Spark {
 
 	class Material {
 	  public:
-		Material(const std::string& name)
+		Material(const String& name)
 			: m_name(name)
 			, m_custom_shader(nullptr)
 			, m_albedo(1.0f)
@@ -33,20 +33,20 @@ namespace Spark {
 		f32              GetRoughness() const { return m_roughness; }
 
 		// Custom properties
-		template<typename _Ty> void SetProperty(const std::string& name, const _Ty& value) { m_custom_properties[name] = value; }
+		template<typename _Ty> void SetProperty(const String& name, const _Ty& value) { m_custom_properties[name] = value; }
 
-		template<typename _Ty> _Ty GetProperty(const std::string& name) const {
-			auto it = m_custom_properties.find(name);
-			if (it != m_custom_properties.end()) {
+		template<typename _Ty> _Ty GetProperty(const String& name) const {
+			auto it = m_custom_properties.Find(name);
+			if (it != m_custom_properties.End()) {
 				return std::any_cast<_Ty>(it->second);
 			}
-			throw std::runtime_error("Property not found: " + name);
+			LOG_FATAL("Property not found: " << name);
 		}
 
 		virtual void ApplyToShader(RenderShader* shader) const = 0;
 
 	  protected:
-		std::string   m_name;
+		String   m_name;
 		RenderShader* m_custom_shader;
 
 		// Common material properties
@@ -55,33 +55,33 @@ namespace Spark {
 		f32       m_roughness;
 
 		// Custom properties
-		std::unordered_map<std::string, std::any> m_custom_properties;
+		UnorderedMap<String, std::any> m_custom_properties;
 	};
 
 	template<> class Manager<Material> : public IManager {
 	  public:
 		Manager()
-			: m_registry(std::make_unique<Registry<Material>>()) {}
+			: m_registry(MakeUnique<Registry<Material>>()) {}
 		~Manager() = default;
 
-		template<typename DerivedMaterial, typename... Args> RefPtr<DerivedMaterial> Create(const std::string& name, Args&&... args) {
-			auto object = std::make_unique<DerivedMaterial>(name, std::forward<Args>(args)...);
-			return RefCast<DerivedMaterial>(Register(name, std::move(object)));
+		template<typename DerivedMaterial, typename... Args> RefPtr<DerivedMaterial> Create(const String& name, Args&&... args) {
+			auto object = MakeUnique<DerivedMaterial>(name, Forward<Args>(args)...);
+			return RefCast<DerivedMaterial>(Register(name, Move(object)));
 		}
 
-		RefPtr<Material> Register(const std::string& name, std::unique_ptr<Material> object) { return m_registry->Register(name, std::move(object)); }
+		RefPtr<Material> Register(const String& name, UniquePtr<Material> object) { return m_registry->Register(name, Move(object)); }
 
-		RefPtr<Material>                Get(const std::string& name) const { return m_registry->Get(name); }
+		RefPtr<Material>                Get(const String& name) const { return m_registry->Get(name); }
 		RefPtr<Material>                Get(const Handle handle) const { return m_registry->Get(handle); }
-		void                     Remove(const std::string& name) { m_registry->Remove(name); }
+		void                     Remove(const String& name) { m_registry->Remove(name); }
 		void                     Remove(const Handle handle) { m_registry->Remove(handle); }
 		size_t                    GetSize() const { return m_registry->GetSize(); }
-		std::vector<std::string> GetKeys() const { return m_registry->GetKeys(); }
-		void                     SetRegistry(std::unique_ptr<Registry<Material>> registry) { m_registry = std::move(registry); }
+		Vector<String> GetKeys() const { return m_registry->GetKeys(); }
+		void                     SetRegistry(UniquePtr<Registry<Material>> registry) { m_registry = Move(registry); }
 		Registry<Material>&      GetRegistry() const { return *m_registry; }
 
 	  private:
-		std::unique_ptr<Registry<Material>> m_registry;
+		UniquePtr<Registry<Material>> m_registry;
 	};
 
 } // namespace Spark

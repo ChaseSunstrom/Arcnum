@@ -21,23 +21,22 @@ namespace Spark {
 		using AllocatorTraits    = AllocatorTraits<AllocatorType>;
 
 		using ValueType          = typename AllocatorTraits::ValueType;
-		using PointerType        = typename AllocatorTraits::Pointer;
-		using ReferenceType      = typename AllocatorTraits::Reference;
-		using ConstReferenceType = typename AllocatorTraits::ConstReference;
-		using ConstPointerType   = typename AllocatorTraits::ConstPointer;
+		using Pointer        = typename AllocatorTraits::Pointer;
+		using Reference      = typename AllocatorTraits::Reference;
+		using ConstReference = typename AllocatorTraits::ConstReference;
+		using ConstPointer   = typename AllocatorTraits::ConstPointer;
 		using DifferenceType     = typename AllocatorTraits::DifferenceType;
 		using SizeType           = typename AllocatorTraits::SizeType;
 
-		/**
-		 * @brief Constructs a UniquePtr that owns nothing.
-		 */
-		UniquePtr() : m_ptr(nullptr), m_allocator() {}
+		// Constructor with allocator
+		explicit UniquePtr(AllocatorType allocator = AllocatorType())
+			: m_ptr(nullptr)
+			, m_allocator(Move(allocator)) {}
 
-		/**
-		 * @brief Constructs a UniquePtr with the given pointer.
-		 * @param ptr Pointer to the object to manage.
-		 */
-		explicit UniquePtr(PointerType ptr) : m_ptr(ptr), m_allocator() {}
+		// Constructor with pointer and allocator
+		UniquePtr(Pointer ptr, AllocatorType allocator = AllocatorType())
+			: m_ptr(ptr)
+			, m_allocator(Move(allocator)) {}
 
 		/**
 		 * @brief Copy constructor (deleted).
@@ -102,25 +101,21 @@ namespace Spark {
 		/**
 		 * @brief Destructor. Deletes the managed object.
 		 */
-		~UniquePtr() {
-			if (m_ptr) {
-				AllocatorTraits::Destroy(m_allocator, m_ptr);
-				AllocatorTraits::Deallocate(m_allocator, m_ptr, 1);
-			}
+		~UniquePtr() { Reset();
 		}
 
 		/**
 		 * @brief Returns a pointer to the managed object.
 		 * @return Pointer to the managed object.
 		 */
-		PointerType Get() const { return m_ptr; }
+		Pointer Get() const { return m_ptr; }
 
 		/**
 		 * @brief Releases ownership of the managed object.
 		 * @return Pointer to the managed object.
 		 */
-		PointerType Release() {
-			PointerType ptr = m_ptr;
+		Pointer Release() {
+			Pointer ptr = m_ptr;
 			m_ptr = nullptr;
 			return ptr;
 		}
@@ -129,7 +124,7 @@ namespace Spark {
 		 * @brief Replaces the managed object.
 		 * @param ptr Pointer to the object to manage.
 		 */
-		void Reset(PointerType ptr = nullptr) {
+		void Reset(Pointer ptr = nullptr) {
 			if (m_ptr != ptr) {
 				if (m_ptr) {
 					AllocatorTraits::Destroy(m_allocator, m_ptr);
@@ -143,13 +138,13 @@ namespace Spark {
 		 * @brief Dereference operator.
 		 * @return Reference to the managed object.
 		 */
-		ReferenceType operator*() const { return *m_ptr; }
+		Reference operator*() const { return *m_ptr; }
 
 		/**
 		 * @brief Member access operator.
 		 * @return Pointer to the managed object.
 		 */
-		PointerType operator->() const { return m_ptr; }
+		Pointer operator->() const { return m_ptr; }
 
 		/**
 		 * @brief Boolean conversion operator.
@@ -164,7 +159,7 @@ namespace Spark {
 		AllocatorType GetAllocator() const { return m_allocator; }
 
 	private:
-		PointerType m_ptr;
+		Pointer m_ptr;
 		AllocatorType m_allocator;
 	};
 
@@ -174,7 +169,23 @@ namespace Spark {
 	 * @param args The arguments to pass to the constructor of the managed object.
 	 * @return A UniquePtr to the newly created object.
 	 */
-	template<typename _Ty, typename... Args> UniquePtr<_Ty> MakeUnique(Args&&... args) { return UniquePtr<_Ty>(new _Ty(Forward<Args>(args)...)); }
+	template<typename _Ty, typename Allocator = Allocator<_Ty>, typename... Args> UniquePtr<_Ty, Allocator> MakeUnique(Allocator allocator, Args&&... args) {
+		using AllocTraits               = AllocatorTraits<Allocator>;
+		typename AllocTraits::Pointer p = AllocTraits::Allocate(allocator, 1);
+		try {
+			AllocTraits::Construct(allocator, p, Forward<Args>(args)...);
+			return UniquePtr<_Ty, Allocator>(p, Move1(allocator));
+		} catch (...) {
+			AllocTraits::Deallocate(allocator, p, 1);
+			throw;
+		}
+	}
+
+	// Overload without allocator parameter
+	template<typename _Ty, typename... Args> UniquePtr<_Ty> MakeUnique(Args&&... args) {
+		Allocator<_Ty> allocator;
+		return MakeUnique<_Ty, Allocator<_Ty>>(allocator, Forward<Args>(args)...);
+	}
 
 	/**
 	 * @brief Perform a static pointer cast on the managed object.

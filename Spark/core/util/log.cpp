@@ -1,12 +1,21 @@
 #include "log.hpp"
 
+#include <core/util/time.hpp>
+
 #ifdef _WIN32
 #	include <windows.h>
 
-void set_console_color(u32 color) { SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color); }
+void SetConsoleColor(u32 color) { SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color); }
 
 #else
 
-void set_console_color(uint32_t color) {}
+void SetConsoleColor(u32 color) {}
 
 #endif
+
+#ifdef _WIN32
+// Annoying macro windows uses
+#	undef GetCurrentTime
+#endif
+
+void LogTime() { std::cout << _SPARK GetCurrentTime() << " "; }

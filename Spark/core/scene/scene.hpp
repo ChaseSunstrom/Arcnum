@@ -19,36 +19,36 @@ namespace Spark {
 		Octree& GetOctree() { return *m_octree; }
 
 		// New methods for managing model instances
-		void AddModelInstance(Entity& entity, const std::string& model_name, const _MATH Mat4& transform);
-		void UpdateModelInstance(const std::string& model_name, size_t  index, const _MATH Mat4& transform);
-		void RemoveModelInstance(const std::string& model_name, size_t  index);
+		void AddModelInstance(Entity& entity, const String& model_name, const _MATH Mat4& transform);
+		void UpdateModelInstance(const String& model_name, size_t  index, const _MATH Mat4& transform);
+		void RemoveModelInstance(const String& model_name, size_t  index);
 
 		// Method to get all model instances
-		const std::unordered_map<std::string, std::vector<_MATH Mat4>>& GetModelInstances() const { return m_model_instances; }
+		const UnorderedMap<String, Vector<_MATH Mat4>>& GetModelInstances() const { return m_model_instances; }
 
 	private:
 		Scene(const _MATH Vec3& center = _MATH Vec3(0), f32 width = 100) : m_octree(std::make_unique<Octree>(center, width)) {}
 
 	private:
-		std::unique_ptr<Octree>                                  m_octree;
-		std::unordered_map<std::string, std::vector<_MATH Mat4>> m_model_instances;
-		std::unordered_map<i64, std::pair<std::string, size_t >>  m_entity_to_instance_map;
+		UniquePtr<Octree>                                  m_octree;
+		UnorderedMap<String, Vector<_MATH Mat4>> m_model_instances;
+		UnorderedMap<i64, Pair<String, size_t >>  m_entity_to_instance_map;
 	};
 
 	// Deleted Copy functions
 	template<> class Manager<Scene> : public IManager {
 	public:
 		Manager()
-			: m_registry(std::make_unique<Registry<Scene>>()) {
+			: m_registry(MakeUnique<Registry<Scene>>()) {
 			// Default scene
 			Create("Default Scene");
 		}
 
 		~Manager() = default;
 
-		template<typename... Args> RefPtr<Scene> Create(const std::string& name, Args&&... args) {
-			Scene* object = new Scene(std::forward<Args>(args)...);
-			Register(name, std::unique_ptr<Scene>(object));
+		template<typename... Args> RefPtr<Scene> Create(const String& name, Args&&... args) {
+			Scene* object = new Scene(Forward<Args>(args)...);
+			Register(name, UniquePtr<Scene>(object));
 
 			if (GetSize() == 1)
 				m_current_scene = Get(name);
@@ -58,31 +58,31 @@ namespace Spark {
 
 		void OnEvent(const SharedPtr<ComponentEvent<TransformComponent>> event) { m_current_scene->OnEvent(event); }
 
-		RefPtr<Scene> Register(const std::string& name, std::unique_ptr<Scene> object) { return m_registry->Register(name, std::move(object)); }
-		RefPtr<Scene> Get(const std::string& name) const { return m_registry->Get(name); }
+		RefPtr<Scene> Register(const String& name, UniquePtr<Scene> object) { return m_registry->Register(name, std::move(object)); }
+		RefPtr<Scene> Get(const String& name) const { return m_registry->Get(name); }
 		RefPtr<Scene> Get(const Handle handle) const { return m_registry->Get(handle); }
 		RefPtr<Scene> GetCurrentScene() const { return m_current_scene; }
 
-		RefPtr<Scene> SetCurrentScene(const std::string& name) {
+		RefPtr<Scene> SetCurrentScene(const String& name) {
 			m_current_scene = m_registry->Get(name);
 			return m_current_scene;
 		}
 
-		void Remove(const std::string& name) { m_registry->Remove(name); }
+		void Remove(const String& name) { m_registry->Remove(name); }
 
 		void Remove(const Handle handle) { m_registry->Remove(handle); }
 
 		size_t  GetSize() const { return m_registry->GetSize(); }
 
-		std::vector<std::string> GetKeys() const { return m_registry->GetKeys(); }
+		Vector<String> GetKeys() const { return m_registry->GetKeys(); }
 
-		void SetRegistry(std::unique_ptr<Registry<Scene>> registry) { m_registry = std::move(registry); }
+		void SetRegistry(UniquePtr<Registry<Scene>> registry) { m_registry = std::move(registry); }
 
 		Registry<Scene>& GetRegistry() const { return *m_registry; }
 
 	private:
 		RefPtr<Scene>                    m_current_scene;
-		std::unique_ptr<Registry<Scene>> m_registry;
+		UniquePtr<Registry<Scene>> m_registry;
 	};
 } // namespace Spark
 

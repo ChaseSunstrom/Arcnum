@@ -78,7 +78,7 @@ namespace Spark {
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f); // Dark gray background
 
 		m_geometry_pass_shader->Use();
-		SetCommonUniforms(m_geometry_pass_shader.get());
+		SetCommonUniforms(m_geometry_pass_shader.Get());
 
 		const auto& model_instances = scene->GetModelInstances();
 		const auto& model_manager   = m_resource_manager.GetManager<StaticModel>();
@@ -90,7 +90,7 @@ namespace Spark {
 			ConstPtr<GLStaticMesh> mesh     = ConstCast<GLStaticMesh>(model->GetMesh());
 			ConstPtr<GLMaterial>   material = ConstCast<GLMaterial>(RefPtr(model->GetMaterial()));
 
-			GLRenderShader* shader = material && material->HasCustomShader() ? static_cast<GLRenderShader*>(material->GetCustomShader()) : m_geometry_pass_shader.get();
+			GLRenderShader* shader = material && material->HasCustomShader() ? static_cast<GLRenderShader*>(material->GetCustomShader()) : m_geometry_pass_shader.Get();
 
 			shader->Use();
 			SetCommonUniforms(shader);
@@ -101,13 +101,13 @@ namespace Spark {
 			glBindVertexArray(mesh->GetVAO());
 
 			// Set up instanced rendering
-			SetupInstancedRendering(mesh, transforms.size());
+			SetupInstancedRendering(mesh, transforms.Size());
 
 			// Update instance buffer with transforms
 			UpdateInstanceBuffer(transforms);
 
-			if (mesh->GetIndicesSize() == 0) { glDrawArraysInstanced(GL_TRIANGLES, 0, mesh->GetVerticesSize(), transforms.size()); } else {
-				glDrawElementsInstanced(GL_TRIANGLES, mesh->GetIndicesSize(), GL_UNSIGNED_INT, 0, transforms.size());
+			if (mesh->GetIndicesSize() == 0) { glDrawArraysInstanced(GL_TRIANGLES, 0, mesh->GetVerticesSize(), transforms.Size()); } else {
+				glDrawElementsInstanced(GL_TRIANGLES, mesh->GetIndicesSize(), GL_UNSIGNED_INT, 0, transforms.Size());
 			}
 		}
 
@@ -187,25 +187,25 @@ namespace Spark {
 		if (error != GL_NO_ERROR) { LOG_ERROR("OpenGL error occurred while setting uniforms: " << error); }
 	}
 
-	void GLRenderer::UpdateInstanceBuffer(const std::vector<glm::mat4>& transforms) {
+	void GLRenderer::UpdateInstanceBuffer(const Vector<_MATH Mat4>& transforms) {
 		// Assuming we're using the last bound VAO's instance VBO
 		u32 vao;
 		glGetIntegerv(GL_VERTEX_ARRAY_BINDING, (GLint*) &vao);
 
-		auto it = m_instance_vbos.find(vao);
-		if (it == m_instance_vbos.end()) {
+		auto it = m_instance_vbos.Find(vao);
+		if (it == m_instance_vbos.End()) {
 			LOG_ERROR("No instance VBO found for VAO: " << vao);
 			return;
 		}
 
 		u32 instance_vbo = it->second;
 		glBindBuffer(GL_ARRAY_BUFFER, instance_vbo);
-		glBufferData(GL_ARRAY_BUFFER, transforms.size() * sizeof(glm::mat4), transforms.data(), GL_DYNAMIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, transforms.Size() * sizeof(glm::mat4), transforms.Data(), GL_DYNAMIC_DRAW);
 	}
 
 	void GLRenderer::SetupInstancedRendering(const GLStaticMesh& mesh, size_t  instance_count) {
 		u32 vao = mesh.GetVAO();
-		if (m_instance_vbos.find(vao) == m_instance_vbos.end()) {
+		if (m_instance_vbos.Find(vao) == m_instance_vbos.end()) {
 			u32 instance_vbo;
 			glGenBuffers(1, &instance_vbo);
 			glBindVertexArray(vao);
@@ -214,7 +214,7 @@ namespace Spark {
 			// Set up attribute pointers for the instance matrix
 			for (u32 i = 0; i < 4; ++i) {
 				glEnableVertexAttribArray(3 + i);
-				glVertexAttribPointer(3 + i, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*) (sizeof(glm::vec4) * i));
+				glVertexAttribPointer(3 + i, 4, GL_FLOAT, GL_FALSE, sizeof(_MATH Mat4), (void*) (sizeof(_MATH Vec4) * i));
 				glVertexAttribDivisor(3 + i, 1);
 			}
 

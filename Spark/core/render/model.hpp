@@ -43,12 +43,12 @@ namespace Spark {
 		void SetMaterial(RefPtr<Material> material) { m_material = material; }
 
 	private:
-		DynamicModel(std::unique_ptr<DynamicMesh> mesh, RefPtr<Material> material = nullptr)
-			: m_mesh(std::move(mesh))
+		DynamicModel(UniquePtr<DynamicMesh> mesh, RefPtr<Material> material = nullptr)
+			: m_mesh(Move(mesh))
 			, m_material(material) {}
 
 	private:
-		std::unique_ptr<DynamicMesh> m_mesh;
+		UniquePtr<DynamicMesh> m_mesh;
 		RefPtr<Material>             m_material;
 	};
 } // namespace Spark

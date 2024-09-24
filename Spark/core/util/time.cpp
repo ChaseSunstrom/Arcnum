@@ -9,6 +9,6 @@ namespace Spark {
 
 		std::ostringstream oss;
 		oss << std::put_time(time, "%Y-%m-%d %H:%M:%S");
-		return oss.str();
+		return String(oss.str());
 	}
 } // namespace Spark

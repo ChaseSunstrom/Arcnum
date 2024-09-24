@@ -48,9 +48,9 @@ namespace Spark {
 		  public:
 			using IteratorCategory = std::forward_iterator_tag;
 			using ValueType          = typename AllocatorTraits::ValueType;
-			using PointerType        = typename AllocatorTraits::PointerType;
-			using ReferenceType      = typename AllocatorTraits::ReferenceType;
-			using ConstReferenceType = typename AllocatorTraits::ConstReferenceType;
+			using Pointer        = typename AllocatorTraits::Pointer;
+			using Reference      = typename AllocatorTraits::Reference;
+			using ConstReference = typename AllocatorTraits::ConstReference;
 			using SizeType           = typename AllocatorTraits::SizeType;
 			using DifferenceType     = typename AllocatorTraits::DifferenceType;
 
@@ -202,6 +202,19 @@ namespace Spark {
 				}
 			}
 			return false;
+		}
+
+		bool Erase(Iterator it) {
+			if (it.m_bucket_index >= m_buckets.Size()) {
+				return false;
+			}
+			auto& bucket = m_buckets[it.m_bucket_index];
+			if (it.m_it == bucket.End()) {
+				return false;
+			}
+			bucket.Erase(it.m_it);
+			--m_size;
+			return true;
 		}
 
 		bool Contains(ConstReference value) const {

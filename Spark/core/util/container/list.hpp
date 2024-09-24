@@ -238,6 +238,53 @@ namespace Spark {
 			}
 		}
 
+		bool Erase(ConstIterator it) {
+			Node** current = &m_head;
+			while (*current) {
+				if (*current == it.m_node) {
+					Node* temp = *current;
+					*current   = (*current)->next;
+					if (m_tail == temp) {
+						m_tail = (current == &m_head) ? nullptr : m_head;
+						while (m_tail && m_tail->next) {
+							m_tail = m_tail->next;
+						}
+					}
+					m_allocator.destroy(temp);
+					m_allocator.deallocate(temp, 1);
+					m_size--;
+					return true;
+				}
+				current = &((*current)->next);
+			}
+			return false;
+		}
+
+		bool Erase(ConstIterator first, ConstIterator last) {
+			Node** current = &m_head;
+			while (*current) {
+				if (*current == first.m_node) {
+					while (*current != last.m_node) {
+						Node* temp = *current;
+						*current   = (*current)->next;
+						if (m_tail == temp) {
+							m_tail = (current == &m_head) ? nullptr : m_head;
+							while (m_tail && m_tail->next) {
+								m_tail = m_tail->next;
+							}
+						}
+						m_allocator.destroy(temp);
+						m_allocator.deallocate(temp, 1);
+						m_size--;
+					}
+					return true;
+				}
+				current = &((*current)->next);
+			}
+			return false;
+		}
+
+
 		Reference At(size_t index) {
 			if (index >= m_size) {
 				LOG_FATAL("List Index out of bounds");

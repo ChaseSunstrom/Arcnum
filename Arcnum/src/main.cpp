@@ -15,13 +15,13 @@ void MouseEvents(Spark::Application& app, const Spark::MultiEventPtr<Spark::Mous
 void CreateTriangleMesh(Spark::Application& app) {
 	auto& mesh_manager                  = app.GetManager<Spark::StaticMesh>();
 
-	std::vector<Spark::Vertex> vertices = {
+	Spark::Vector<Spark::Vertex> vertices = {
 		{{-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},
 		{ {0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},
 		{  {0.0f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.5f, 1.0f}}
     };
 
-	std::vector<u32> indices = {0, 1, 2, 2, 1, 0};
+	Spark::Vector<u32> indices = {0, 1, 2, 2, 1, 0};
 	mesh_manager.Create<Spark::GLStaticMesh>("triangle", vertices, indices)->CreateMesh();
 }
 

@@ -31,13 +31,13 @@ namespace Spark {
 			} else {
 				handle.index      = m_handle_values.Size();
 				handle.generation = 0;
-				m_handle_values.EmplaceBack(std::nullopt);
+				m_handle_values.EmplaceBack(nullptr);
 				m_generations.PushBack(0);
 			}
 
 			_Ty& ref                        = *object;
-			m_handle_values[handle.index] = std::ref(ref);
-			m_registry[name]              = Pair<Handle, UniquePtr<_Ty>>(handle, std::move(object));
+			m_handle_values[handle.index] = RefPtr(ref);
+			m_registry[name]              = Pair<Handle, UniquePtr<_Ty>>(handle, Move(object));
 			return ref;
 		}
 
@@ -46,16 +46,16 @@ namespace Spark {
 			if (it != m_registry.End()) {
 				Handle handle = it->second.first;
 				m_free_indices.PushBack(handle.index);
-				m_handle_values[handle.index] = std::nullopt;
+				m_handle_values[handle.index] = nullptr;
 				m_generations[handle.index]++; // Invalidate existing handles
 				m_registry.Erase(it);
 			}
 		}
 
 		void Remove(const Handle handle) {
-			if (handle.index < m_handle_values.Size() && handle.generation == m_generations[handle.index] && m_handle_values[handle.index].has_value()) {
+			if (handle.index < m_handle_values.Size() && handle.generation == m_generations[handle.index] && m_handle_values[handle.index]) {
 				m_free_indices.PushBack(handle.index);
-				m_handle_values[handle.index] = std::nullopt;
+				m_handle_values[handle.index] = nullptr;
 				m_generations[handle.index]++; // Invalidate existing handles
 				for (auto& [key, value] : m_registry) {
 					if (value.first == handle) {
@@ -77,14 +77,14 @@ namespace Spark {
 		size_t GetSize() const { return m_registry.Size(); }
 
 		RefPtr<_Ty> Get(const Handle handle) const {
-			if (handle.index < m_handle_values.Size() && handle.generation == m_generations[handle.index] && m_handle_values[handle.index].has_value()) {
-				return m_handle_values[handle.index].value().get();
+			if (handle.index < m_handle_values.Size() && handle.generation == m_generations[handle.index] && m_handle_values[handle.index]) {
+				return m_handle_values[handle.index].Get();
 			}
 			LOG_FATAL("Invalid handle: index " << handle.index << ", generation " << handle.generation);
 		}
 
 		bool IsHandleValid(const Handle& handle) const {
-			return handle.index < m_handle_values.Size() && handle.generation == m_generations[handle.index] && m_handle_values[handle.index].has_value();
+			return handle.index < m_handle_values.Size() && handle.generation == m_generations[handle.index] && m_handle_values[handle.index];
 		}
 
 		_Ty GetCopy(const String& name) const {
@@ -95,8 +95,8 @@ namespace Spark {
 		}
 
 		_Ty GetCopy(const Handle handle) const {
-			if (handle.index < m_handle_values.Size() && handle.generation == m_generations[handle.index] && m_handle_values[handle.index].has_value()) {
-				return m_handle_values[handle.index].value().get();
+			if (handle.index < m_handle_values.Size() && handle.generation == m_generations[handle.index] && m_handle_values[handle.index]) {
+				return m_handle_values[handle.index].Get();
 			}
 			LOG_FATAL("Invalid handle: index " << handle.index << ", generation " << handle.generation);
 		}
@@ -108,11 +108,11 @@ namespace Spark {
 			return keys;
 		}
 
-		Vector<std::reference_wrapper<_Ty>>& GetValues() const { return m_handle_values; }
+		Vector<RefPtr<_Ty>>& GetValues() const { return m_handle_values; }
 
 		bool Contains(const String& name) const { return m_registry.Find(name) != m_registry.End(); }
 
-		bool Contains(const Handle handle) const { return handle.index < m_handle_values.Size() && handle.generation == m_generations[handle.index] && m_handle_values[handle.index].has_value(); }
+		bool Contains(const Handle handle) const { return handle.index < m_handle_values.Size() && handle.generation == m_generations[handle.index] && m_handle_values[handle.index]; }
 
 		void Clear() { m_registry.Clear(); }
 
@@ -120,7 +120,7 @@ namespace Spark {
 
 	private:
 		UnorderedMap<String, Pair<Handle, UniquePtr<_Ty>>> m_registry;
-		Vector<std::optional<std::reference_wrapper<_Ty>>> m_handle_values;
+		Vector<RefPtr<_Ty>> m_handle_values;
 		Vector<u32>                                        m_generations;
 		Vector<u32>                                        m_free_indices;
 	};

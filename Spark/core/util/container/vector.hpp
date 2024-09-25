@@ -295,7 +295,7 @@ namespace Spark {
 			: m_data(nullptr)
 			, m_size(0)
 			, m_capacity(0) {
-			SizeType count = Distance(*first, *last);
+			SizeType count = std::distance(first, last);
 			if (count > 0) {
 				m_data     = static_cast<_Ty*>(AllocatorTraits::Allocate(m_allocator, count * sizeof(_Ty)));
 				m_capacity = count;
@@ -344,7 +344,7 @@ namespace Spark {
 			if (this != &other) {
 				Clear();
 				if (m_capacity < other.m_size) {
-					AllocatorTraits::Deallocate(m_allocator, static_cast<void*>(m_data));
+					AllocatorTraits::Deallocate(m_allocator, m_data, m_capacity * sizeof(_Ty));
 					m_data     = static_cast<_Ty*>(AllocatorTraits::Allocate(m_allocator, other.m_size * sizeof(_Ty)));
 					m_capacity = other.m_size;
 				}

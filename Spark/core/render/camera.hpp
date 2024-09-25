@@ -114,16 +114,16 @@ namespace Spark {
 	template<> class Manager<Camera> : public IManager {
 	public:
 		Manager()
-			: m_registry(std::make_unique<Registry<Camera>>()) {
+			: m_registry(MakeUnique<Registry<Camera>>()) {
 			// Default camera
 			Create("Default Camera");
 		}
 
 		~Manager() = default;
 
-		template<typename... Args> RefPtr<Camera> Create(const std::string& name, Args&&... args) {
-			Camera* object = new Camera(std::forward<Args>(args)...);
-			Register(name, std::unique_ptr<Camera>(object));
+		template<typename... Args> RefPtr<Camera> Create(const String& name, Args&&... args) {
+			Camera* object = new Camera(Forward<Args>(args)...);
+			Register(name, UniquePtr<Camera>(object));
 
 			if (GetSize() == 1)
 				m_current_camera = Get(name);
@@ -135,22 +135,22 @@ namespace Spark {
 
 		void OnEvent(const EventPtr<WindowResizedEvent> event) { m_current_camera->SetAspectRatio(static_cast<f32>(event->width) / static_cast<f32>(event->height)); }
 
-		RefPtr<Camera> Register(const std::string& name, std::unique_ptr<Camera> object) { return m_registry->Register(name, std::move(object)); }
+		RefPtr<Camera> Register(const String& name, UniquePtr<Camera> object) { return m_registry->Register(name, std::move(object)); }
 
-		RefPtr<Camera> Get(const std::string& name) const { return m_registry->Get(name); }
+		RefPtr<Camera> Get(const String& name) const { return m_registry->Get(name); }
 
 		RefPtr<Camera> Get(const Handle handle) const { return m_registry->Get(handle); }
 
 		RefPtr<Camera> GetCurrentCamera() const { return m_current_camera; }
 
-		RefPtr<Camera> SetCurrentCamera(const std::string& name) {
+		RefPtr<Camera> SetCurrentCamera(const String& name) {
 			m_current_camera = m_registry->Get(name);
 			return m_current_camera;
 		}
 
 	private:
 		RefPtr<Camera>                    m_current_camera;
-		std::unique_ptr<Registry<Camera>> m_registry;
+		UniquePtr<Registry<Camera>> m_registry;
 	};
 } // namespace Spark
 

@@ -9,21 +9,15 @@ namespace Spark {
 	 * @brief A weak pointer class that doesn't own the object it points to.
 	 * 
 	 * @tparam _Ty The type of the object being pointed to.
-	 * @tparam Allocator The allocator type used for memory management.
 	 */
-	template<typename _Ty, typename Allocator = _SPARK Allocator<_Ty>>
+	template<typename _Ty>
 	class WeakPtr {
 	public:
-		using AllocatorType      = Allocator;
-		using AllocatorTraits    = AllocatorTraits<AllocatorType>;
-
-		using ValueType          = typename AllocatorTraits::ValueType;
-		using Pointer        = typename AllocatorTraits::Pointer;
-		using Reference      = typename AllocatorTraits::Reference;
-		using ConstReference = typename AllocatorTraits::ConstReference;
-		using ConstPointer   = typename AllocatorTraits::ConstPointer;
-		using DifferenceType     = typename AllocatorTraits::DifferenceType;
-		using SizeType           = typename AllocatorTraits::SizeType;
+		using ValueType      = _Ty;
+		using Pointer        = _Ty*;
+		using Reference      = _Ty&;
+		using ConstReference = const _Ty&;
+		using ConstPointer   = const _Ty*;
 
 		/**
 		 * @brief Default constructor.
@@ -31,18 +25,16 @@ namespace Spark {
 		WeakPtr()
 			: m_ptr(nullptr)
 			, m_ref_count(nullptr)
-			, m_weak_count(nullptr)
-			, m_allocator() {}
+			, m_weak_count(nullptr) {}
 
 		/**
 		 * @brief Constructor from SharedPtr.
 		 * @param shared_ptr The SharedPtr to create a weak reference from.
 		 */
-		WeakPtr(const SharedPtr<_Ty, Allocator>& shared_ptr)
+		WeakPtr(const SharedPtr<_Ty>& shared_ptr)
 			: m_ptr(shared_ptr.m_ptr)
 			, m_ref_count(shared_ptr.m_ref_count)
-			, m_weak_count(shared_ptr.m_weak_count)
-			, m_allocator(shared_ptr.GetAllocator()) {
+			, m_weak_count(shared_ptr.m_weak_count) {
 			if (m_weak_count) {
 				m_weak_count->fetch_add(1);
 			}
@@ -53,14 +45,14 @@ namespace Spark {
 		 * @param shared_ptr The std::shared_ptr to create a weak reference from.
 		 */
 		WeakPtr(const std::shared_ptr<_Ty>& shared_ptr)
-			: WeakPtr(SharedPtr<_Ty, Allocator>(shared_ptr)) {}
+			: WeakPtr(SharedPtr<_Ty>(shared_ptr)) {}
 
 		/**
 		 * @brief Constructor from std::weak_ptr.
 		 * @param weak_ptr The std::weak_ptr to create a weak reference from.
 		 */
 		WeakPtr(const std::weak_ptr<_Ty>& weak_ptr)
-			: WeakPtr(SharedPtr<_Ty, Allocator>(weak_ptr)) {}
+			: WeakPtr(SharedPtr<_Ty>(weak_ptr.lock())) {}
 
 		/**
 		 * @brief Constructor from nullptr.
@@ -68,8 +60,7 @@ namespace Spark {
 		WeakPtr(nullptr_t)
 			: m_ptr(nullptr)
 			, m_ref_count(nullptr)
-			, m_weak_count(nullptr)
-			, m_allocator() {}
+			, m_weak_count(nullptr) {}
 
 		/**
 		 * @brief Copy constructor.
@@ -78,8 +69,7 @@ namespace Spark {
 		WeakPtr(const WeakPtr& other)
 			: m_ptr(other.m_ptr)
 			, m_ref_count(other.m_ref_count)
-			, m_weak_count(other.m_weak_count)
-			, m_allocator(other.m_allocator) {
+			, m_weak_count(other.m_weak_count) {
 			if (m_weak_count) {
 				m_weak_count->fetch_add(1);
 			}
@@ -96,7 +86,6 @@ namespace Spark {
 				m_ptr        = other.m_ptr;
 				m_ref_count  = other.m_ref_count;
 				m_weak_count = other.m_weak_count;
-				m_allocator  = other.m_allocator;
 				if (m_weak_count) {
 					m_weak_count->fetch_add(1);
 				}
@@ -111,8 +100,7 @@ namespace Spark {
 		WeakPtr(WeakPtr&& other) noexcept
 			: m_ptr(other.m_ptr)
 			, m_ref_count(other.m_ref_count)
-			, m_weak_count(other.m_weak_count)
-			, m_allocator(Move(other.m_allocator)) {
+			, m_weak_count(other.m_weak_count) {
 			other.m_ptr        = nullptr;
 			other.m_ref_count  = nullptr;
 			other.m_weak_count = nullptr;
@@ -129,7 +117,6 @@ namespace Spark {
 				m_ptr              = other.m_ptr;
 				m_ref_count        = other.m_ref_count;
 				m_weak_count       = other.m_weak_count;
-				m_allocator        = Move(other.m_allocator);
 				other.m_ptr        = nullptr;
 				other.m_ref_count  = nullptr;
 				other.m_weak_count = nullptr;
@@ -142,12 +129,11 @@ namespace Spark {
 		 * @param other The SharedPtr to assign from.
 		 * @return Reference to this WeakPtr.
 		 */
-		WeakPtr& operator=(const SharedPtr<_Ty, Allocator>& other) {
+		WeakPtr& operator=(const SharedPtr<_Ty>& other) {
 			Reset();
 			m_ptr = other.Get();
 			m_ref_count = other.m_ref_count;
 			m_weak_count = other.m_weak_count;
-			m_allocator = other.GetAllocator();
 			if (m_weak_count) {
 				m_weak_count->fetch_add(1);
 			}
@@ -163,10 +149,8 @@ namespace Spark {
 			Reset();
 			m_ptr = other.get();
 			if (m_ptr) {
-				m_ref_count = AllocatorTraits::Allocate(m_allocator, 1);
-				m_weak_count = AllocatorTraits::Allocate(m_allocator, 1);
-				AllocatorTraits::Construct(m_allocator, m_ref_count, other.use_count());
-				AllocatorTraits::Construct(m_allocator, m_weak_count, 1);
+				m_ref_count = new std::atomic<i32>(other.use_count());
+				m_weak_count = new std::atomic<i32>(1);
 			}
 			return *this;
 		}
@@ -181,10 +165,8 @@ namespace Spark {
 			if (!other.expired()) {
 				auto shared = other.lock();
 				m_ptr = shared.get();
-				m_ref_count = AllocatorTraits::Allocate(m_allocator, 1);
-				m_weak_count = AllocatorTraits::Allocate(m_allocator, 1);
-				AllocatorTraits::Construct(m_allocator, m_ref_count, shared.use_count());
-				AllocatorTraits::Construct(m_allocator, m_weak_count, other.use_count());
+				m_ref_count = new std::atomic<i32>(shared.use_count());
+				m_weak_count = new std::atomic<i32>(other.use_count());
 			}
 			return *this;
 		}
@@ -201,8 +183,8 @@ namespace Spark {
 			if (m_weak_count) {
 				if (m_weak_count->fetch_sub(1) == 1) {
 					if (m_ref_count->load() == 0) {
-						AllocatorTraits::Deallocate(m_allocator, m_ref_count, 1);
-						AllocatorTraits::Deallocate(m_allocator, m_weak_count, 1);
+						delete m_ref_count;
+						delete m_weak_count;
 					}
 				}
 				m_ptr        = nullptr;
@@ -215,11 +197,11 @@ namespace Spark {
 		 * @brief Attempts to create a SharedPtr from this WeakPtr.
 		 * @return A SharedPtr if the object still exists, otherwise a null SharedPtr.
 		 */
-		SharedPtr<_Ty, AllocatorType> Lock() const {
+		SharedPtr<_Ty> Lock() const {
 			if (m_ref_count && m_ref_count->load() > 0) {
-				return SharedPtr<_Ty, AllocatorType>(m_ptr, m_ref_count, m_weak_count, m_allocator);
+				return SharedPtr<_Ty>(m_ptr, m_ref_count, m_weak_count);
 			}
-			return SharedPtr<_Ty, AllocatorType>(nullptr);
+			return SharedPtr<_Ty>(nullptr);
 		}
 
 		/**
@@ -240,19 +222,12 @@ namespace Spark {
 		 */
 		i32 WeakCount() const { return m_weak_count ? m_weak_count->load() : 0; }
 
-		/**
-		 * @brief Gets the allocator associated with this WeakPtr.
-		 * @return The allocator.
-		 */
-		AllocatorType GetAllocator() const { return m_allocator; }
-
 	private:
-		Pointer        m_ptr;
-		std::atomic<i32>*  m_ref_count;
-		std::atomic<i32>*  m_weak_count;
-		AllocatorType      m_allocator;
+		Pointer             m_ptr;
+		std::atomic<i32>*   m_ref_count;
+		std::atomic<i32>*   m_weak_count;
 
-		friend class SharedPtr< _Ty, AllocatorType>;
+		friend class SharedPtr<_Ty>;
 	};
 } // namespace Spark
 

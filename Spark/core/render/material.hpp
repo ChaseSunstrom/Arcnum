@@ -65,8 +65,8 @@ namespace Spark {
 		~Manager() = default;
 
 		template<typename DerivedMaterial, typename... Args> RefPtr<DerivedMaterial> Create(const String& name, Args&&... args) {
-			auto object = MakeUnique<DerivedMaterial>(name, Forward<Args>(args)...);
-			return RefCast<DerivedMaterial>(Register(name, Move(object)));
+			auto* object = new DerivedMaterial(name, Forward<Args>(args)...);
+			return RefCast<DerivedMaterial>(Register(name, UniquePtr(object)));
 		}
 
 		RefPtr<Material> Register(const String& name, UniquePtr<Material> object) { return m_registry->Register(name, Move(object)); }

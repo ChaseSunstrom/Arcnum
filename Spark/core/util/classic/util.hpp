@@ -22,7 +22,7 @@ namespace Spark {
      */
     template<typename _Ty>
     void Swap(_Ty& a, _Ty& b) {
-        _Ty tmp = Move(a);
+        _Ty&& tmp = Move(a);
         a = Move(b);
         b = Move(tmp);
     }
@@ -34,7 +34,7 @@ namespace Spark {
      */
     template<typename _Ty>
     void Swap(_Ty* a, _Ty* b) {
-        _Ty tmp = Move(*a);
+        _Ty&& tmp = Move(*a);
         *a = Move(*b);
         *b = Move(tmp);
     }

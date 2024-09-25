@@ -9,7 +9,7 @@ namespace Spark {
 
 	class GLMaterial : public Material {
 	  public:
-		GLMaterial(const std::string& name)
+		GLMaterial(const String& name)
 			: Material(name) {}
 
 		void SetAlbedoTexture(u32 texture_id) { m_albedo_texture = texture_id; }

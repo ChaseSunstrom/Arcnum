@@ -20,7 +20,7 @@ namespace Spark {
 			return Register(name, UniquePtr<_Ty>(object));
 		}
 
-		RefPtr<_Ty> Register(const String& name, UniquePtr<_Ty> object) { return m_registry->Register(name, std::move(object)); }
+		RefPtr<_Ty> Register(const String& name, UniquePtr<_Ty> object) { return m_registry->Register(name, Move(object)); }
 
 		RefPtr<_Ty> Get(const String& name) const { return m_registry->Get(name); }
 
@@ -36,7 +36,7 @@ namespace Spark {
 
 		size_t  GetSize() const { return m_registry->GetSize(); }
 
-		std::vector<String> GetKeys() const { return m_registry->GetKeys(); }
+		Vector<String> GetKeys() const { return m_registry->GetKeys(); }
 
 		void SetRegistry(UniquePtr<Registry<_Ty>> registry) { m_registry = Move(registry); }
 

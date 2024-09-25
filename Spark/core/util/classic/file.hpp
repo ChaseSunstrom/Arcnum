@@ -1,9 +1,8 @@
 #ifndef SPARK_FILE_HPP
 #define SPARK_FILE_HPP
 
-#include <core/pch.hpp>
 #include <core/util/container/string.hpp>
-
+#include <filesystem>
 namespace Spark {
 	/**
 	 * @brief Reads the contents of a file and returns them as a string

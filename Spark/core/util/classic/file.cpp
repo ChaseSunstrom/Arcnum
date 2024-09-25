@@ -1,4 +1,6 @@
 #include "file.hpp"
+#include <fstream>
+
 
 namespace Spark {
 	String ReadFile(const std::filesystem::path& path) {

@@ -229,7 +229,6 @@ namespace Spark {
 		Value& operator[](const Key& key) {
 			size_t index = GetBucketIndex(key);
 			for (auto& node : m_buckets[index]) {
-				LOG_INFO("Size: " << m_buckets[index].Size());
 				if (m_key_equal(node.m_pair.first, key)) {
 					return node.m_pair.second;
 				}

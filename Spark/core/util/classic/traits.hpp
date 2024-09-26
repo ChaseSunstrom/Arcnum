@@ -586,6 +586,52 @@ namespace Spark {
     template<typename _Callable, typename... _Args>
     using InvokeResultT = typename InvokeResult<_Callable, _Args...>::Type;
 
+    /**
+     * @brief Determines the common type among multiple types.
+     */
+    template<typename... _Types>
+    struct CommonType;
+
+    // Base case: empty or single type
+    template<>
+    struct CommonType<> {};
+
+    template<typename _Ty>
+    struct CommonType<_Ty> {
+        using Type = DecayT<_Ty>;
+    };
+
+    // Recursive case: two or more types
+    template<typename _Ty1, typename _Ty2, typename... _Rest>
+    struct CommonType<_Ty1, _Ty2, _Rest...> {
+    private:
+        using Type1 = typename CommonType<_Ty1, _Ty2>::Type;
+        using Type2 = typename CommonType<_Rest...>::Type;
+    public:
+        using Type = typename CommonType<Type1, Type2>::Type;
+    };
+
+    // Specialization for two types
+    template<typename _Ty1, typename _Ty2>
+    struct CommonType<_Ty1, _Ty2> {
+    private:
+        using Decay1 = DecayT<_Ty1>;
+        using Decay2 = DecayT<_Ty2>;
+        
+        template<typename T1, typename T2>
+        static auto test(i32) -> decltype(true ? DeclVal<T1>() : DeclVal<T2>());
+        
+        template<typename, typename>
+        static auto test(...) -> void;
+
+        using ResultType = decltype(test<Decay1, Decay2>(0));
+    public:
+        using Type = typename Select<!IsSameV<ResultType, void>>::template Apply<DecayT<ResultType>, void>;
+    };
+
+    template<typename... _Types>
+    using CommonTypeT = typename CommonType<_Types...>::Type;
+
 } // namespace Spark
 
 #endif // SPARK_TRAITS_HPP

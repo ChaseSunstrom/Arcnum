@@ -1037,6 +1037,7 @@
     <ClInclude Include="core\util\memory\memory.hpp" />
     <ClInclude Include="core\util\memory\optional.hpp" />
     <ClInclude Include="core\util\assert.hpp" />
+    <ClInclude Include="core\util\memory\memory_util.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\app\application.cpp">
@@ -1072,9 +1073,6 @@
     <ClCompile Include="core\util\classic\file.cpp">
       <Filter>core\util\classic</Filter>
     </ClCompile>
-    <ClCompile Include="core\util\container\string.cpp">
-      <Filter>core\util\container</Filter>
-    </ClCompile>
     <ClCompile Include="core\util\log.cpp">
       <Filter>core\util</Filter>
     </ClCompile>
@@ -1097,5 +1095,6 @@
       <Filter>lib\windows\glad</Filter>
     </ClCompile>
     <ClCompile Include="core\util\classic\type.cpp" />
+    <ClCompile Include="core\util\memory\memory_util.cpp" />
   </ItemGroup>
 </Project>

@@ -4,6 +4,7 @@
 #include <core/util/classic/util.hpp>
 #include <core/util/memory/allocator.hpp>
 #include <core/util/types.hpp>
+#include <core/util/memory/memory_util.hpp>
 #include <iostream>
 #include <string>
 #include "vector.hpp"
@@ -609,7 +610,7 @@ namespace Spark {
 				m_capacity = new_capacity;
 			} else {
 				if (len != str.m_size) {
-					std::memmove(m_data + pos + str.m_size, m_data + pos + len, m_size - pos - len);
+					MemMove(m_data + pos + str.m_size, m_data + pos + len, m_size - pos - len);
 				}
 				StringCopyN(m_data + pos, str.m_data, str.m_size);
 			}

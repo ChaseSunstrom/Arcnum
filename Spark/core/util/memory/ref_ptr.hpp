@@ -329,7 +329,7 @@ namespace Spark {
 	 * @param args The arguments to construct the RefPtr.
 	 * @return A RefPtr constructed from the arguments.
 	 */
-	template<typename... Args> RefPtr(Args... args) -> RefPtr<std::common_type_t<Args...>>;
+	template<typename... Args> RefPtr(Args... args) -> RefPtr<CommonTypeT<Args...>>;
 
 	/**
 	 * @brief Make a RefPtr from a variadic list of arguments.

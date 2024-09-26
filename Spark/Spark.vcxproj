@@ -210,6 +210,7 @@
     <ClInclude Include="core\util\log.hpp" />
     <ClInclude Include="core\util\memory\allocator.hpp" />
     <ClInclude Include="core\util\memory\const_ptr.hpp" />
+    <ClInclude Include="core\util\memory\memory_util.hpp" />
     <ClInclude Include="core\util\memory\ref_ptr.hpp" />
     <ClInclude Include="core\util\memory\shared_ptr.hpp" />
     <ClInclude Include="core\util\memory\unique_ptr.hpp" />
@@ -472,6 +473,7 @@
     <ClCompile Include="core\util\classic\file.cpp" />
     <ClCompile Include="core\util\classic\type.cpp" />
     <ClCompile Include="core\util\log.cpp" />
+    <ClCompile Include="core\util\memory\memory_util.cpp" />
     <ClCompile Include="core\util\thread_pool.cpp" />
     <ClCompile Include="core\util\time.cpp" />
     <ClCompile Include="core\window\gl\gl_framebuffer.cpp" />

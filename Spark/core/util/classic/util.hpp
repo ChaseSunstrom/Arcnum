@@ -1,5 +1,5 @@
-﻿#ifndef SPARK_UTIL_HPP
-#define SPARK_UTIL_HPP
+﻿#ifndef SPARK_CLASSIC_UTIL_HPP
+#define SPARK_CLASSIC_UTIL_HPP
 
 #include <core/math/math.hpp>
 #include <core/util/types.hpp>

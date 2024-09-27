@@ -88,7 +88,7 @@ void TestVector(Spark::Application& app) {
 }
 
 void TestString(Spark::Application& app) {
-	Spark::BasicString str  = "Hello, World! ";
+	Spark::String str  = "Hello, World! ";
 	bool          test = true;
 	f32           x    = 1.019981;
 	str += test;

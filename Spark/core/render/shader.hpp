@@ -10,8 +10,8 @@ namespace Spark {
 
 	class IShader {
 	  public:
-		virtual void Compile()                                                          = 0;
-		virtual void Use()                                                              = 0;
+		virtual void Compile()                                                     = 0;
+		virtual void Use()                                                         = 0;
 		// Convenience methods for specific types
 		virtual void SetVec2(const String& name, const glm::vec2& value)           = 0;
 		virtual void SetVec3(const String& name, const glm::vec3& value)           = 0;
@@ -35,13 +35,13 @@ namespace Spark {
 		virtual void AddShaderStage(ShaderStage stage, const std::filesystem::path& path) { m_shader_paths[stage] = path; }
 
 	  protected:
-		RenderShader(std::vector<std::pair<ShaderStage, const std::filesystem::path>> stage_paths) {
+		RenderShader(Vector<Pair<ShaderStage, const std::filesystem::path>> stage_paths) {
 			for (const auto& [stage, path] : stage_paths)
 				AddShaderStage(stage, path);
 		}
 
 	  protected:
-		std::map<ShaderStage, std::filesystem::path> m_shader_paths;
+		UnorderedMap<ShaderStage, std::filesystem::path> m_shader_paths;
 	};
 } // namespace Spark
 

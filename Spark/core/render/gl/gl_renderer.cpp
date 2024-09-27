@@ -20,26 +20,26 @@ namespace Spark {
 		std::filesystem::path current_directory = current_file.parent_path();
 
 		// Initialize shaders
-		m_geometry_pass_shader = std::make_unique<GLRenderShader>(std::vector<std::pair<ShaderStage, const std::filesystem::path>>{
+		m_geometry_pass_shader = MakeUnique<GLRenderShader>(Vector<Pair<ShaderStage, const std::filesystem::path>>{
 			{ShaderStage::VERTEX, current_directory / "shaders/geometry_pass.vert"},
 			{ShaderStage::FRAGMENT, current_directory / "shaders/geometry_pass.frag"}
 		});
 
 		m_geometry_pass_shader->Compile();
 
-		m_lighting_pass_shader = std::make_unique<GLRenderShader>(std::vector<std::pair<ShaderStage, const std::filesystem::path>>{
+		m_lighting_pass_shader = MakeUnique<GLRenderShader>(Vector<Pair<ShaderStage, const std::filesystem::path>>{
 			{ShaderStage::VERTEX, current_directory / "shaders/lighting_pass.vert"},
 			{ShaderStage::FRAGMENT, current_directory / "shaders/lighting_pass.frag"}
 		});
 		m_lighting_pass_shader->Compile();
 
-		m_post_process_shader = std::make_unique<GLRenderShader>(std::vector<std::pair<ShaderStage, const std::filesystem::path>>{
+		m_post_process_shader = MakeUnique<GLRenderShader>(Vector<Pair<ShaderStage, const std::filesystem::path>>{
 			{ShaderStage::VERTEX, current_directory / "shaders/post_process.vert"},
 			{ShaderStage::FRAGMENT, current_directory / "shaders/post_process.frag"}
 		});
 		m_post_process_shader->Compile();
 
-		m_screen_shader = std::make_unique<GLRenderShader>(std::vector<std::pair<ShaderStage, const std::filesystem::path>>{
+		m_screen_shader = MakeUnique<GLRenderShader>(Vector<Pair<ShaderStage, const std::filesystem::path>>{
 			{ShaderStage::VERTEX, current_directory / "shaders/screen.vert"},
 			{ShaderStage::FRAGMENT, current_directory / "shaders/screen.frag"}
 		});
@@ -55,7 +55,7 @@ namespace Spark {
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(f32), (void*) 0);
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(f32), (void*) (2 * sizeof(f32)));
+		glVertexAttribPointer(1, -2, GL_FLOAT, GL_FALSE, 4 * sizeof(f32), (void*) (2 * sizeof(f32)));
 	}
 
 	GLRenderer::~GLRenderer() {

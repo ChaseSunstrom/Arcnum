@@ -27,7 +27,7 @@ namespace Spark {
 	};
 
 	template<typename _Ty>
-	concept IsRenderer = std::derived_from<_Ty, Renderer>;
+	concept IsRenderer = DerivedFrom<_Ty, Renderer>;
 } // namespace Spark
 
 #endif

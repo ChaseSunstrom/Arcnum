@@ -27,18 +27,7 @@ namespace Spark {
         b = Move(tmp);
     }
 
-    /**
-     * @brief Swaps two objects of type _Ty pointed to by pointers.
-     * @param a Pointer to first object to swap.
-     * @param b Pointer to second object to swap.
-     */
-    template<typename _Ty>
-    void Swap(_Ty* a, _Ty* b) {
-        _Ty&& tmp = Move(*a);
-        *a = Move(*b);
-        *b = Move(tmp);
-    }
-
+  
     /**
      * @brief Reverses the order of elements in the range [first, last).
      * @param first Pointer to the first element of the range.

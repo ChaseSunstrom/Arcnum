@@ -27,22 +27,21 @@ namespace Spark {
 		void RenderPostProcessPass();
 		void RenderFramebufferToScreen();
 
-		void SetupInstancedRendering(const GLStaticMesh& mesh, size_t  instance_count);
+		void SetupInstancedRendering(const GLStaticMesh& mesh, size_t instance_count);
 		void UpdateInstanceBuffer(const Vector<_MATH Mat4>& transforms);
 
 		void SetCommonUniforms(GLRenderShader* shader);
 
 	  private:
-		GLFramebuffer&                  m_g_framebuffer;
+		GLFramebuffer&            m_g_framebuffer;
 		UniquePtr<GLRenderShader> m_geometry_pass_shader;
 		UniquePtr<GLRenderShader> m_lighting_pass_shader;
 		UniquePtr<GLRenderShader> m_post_process_shader;
 		UniquePtr<GLRenderShader> m_screen_shader;
-		u32                             m_quad_vao, m_quad_vbo;
+		u32                       m_quad_vao, m_quad_vbo;
 		UnorderedMap<u32, u32>    m_instance_vbos; // VAO to instance VBO mapping
-		i32                             m_window_width, m_window_height;
+		i32                       m_window_width, m_window_height;
 	};
-
 } // namespace Spark
 
 #endif // SPARK_GL_RENDERER_HPP

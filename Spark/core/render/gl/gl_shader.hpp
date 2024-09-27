@@ -57,7 +57,7 @@ namespace Spark {
 		, private GLShaderCommon {
 	  public:
 		friend class Manager<GLRenderShader>;
-		GLRenderShader(const std::vector<std::pair<ShaderStage, const std::filesystem::path>>& stage_paths)
+		GLRenderShader(const Vector<Pair<ShaderStage, const std::filesystem::path>>& stage_paths)
 			: RenderShader(stage_paths) {}
 		~GLRenderShader();
 		u32  GetId() const { return m_id; }

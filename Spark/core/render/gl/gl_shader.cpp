@@ -14,7 +14,7 @@ namespace Spark {
 
 	void GLRenderShader::Compile() {
 		m_id = glCreateProgram();
-		std::vector<u32> shader_ids;
+		Vector<u32> shader_ids;
 
 		for (const auto& [stage, path] : m_shader_paths) {
 			GLenum gl_shader_type;
@@ -41,7 +41,7 @@ namespace Spark {
 
 			u32 shader_id = GLShaderCommon::CompileGLShaderInternal(path, gl_shader_type);
 			glAttachShader(m_id, shader_id);
-			shader_ids.push_back(shader_id);
+			shader_ids.PushBack(shader_id);
 		}
 
 		glLinkProgram(m_id);

@@ -6,17 +6,16 @@
 
 namespace Spark {
 	struct Handle {
-		size_t  index;
+		size_t index;
 		u32    generation;
 		bool   operator==(const Handle& other) const { return index == other.index && generation == other.generation; }
 	};
-
 
 	// Basically just a wrapper around a std::unordered_map<std::string,
 	// std::unique_ptr<_Ty>> so we can name the elements put into this (very useful
 	// for keeping track of meshes, materials, shaders, etc.)
 	template<typename _Ty> class Registry {
-	public:
+	  public:
 		Registry()                           = default;
 		~Registry()                          = default;
 		Registry(const Registry&)            = delete;
@@ -35,7 +34,7 @@ namespace Spark {
 				m_generations.PushBack(0);
 			}
 
-			_Ty& ref                        = *object;
+			_Ty& ref                      = *object;
 			m_handle_values[handle.index] = RefPtr(ref);
 			m_registry[name]              = Pair<Handle, UniquePtr<_Ty>>(handle, Move(object));
 			return ref;
@@ -83,9 +82,7 @@ namespace Spark {
 			LOG_FATAL("Invalid handle: index " << handle.index << ", generation " << handle.generation);
 		}
 
-		bool IsHandleValid(const Handle& handle) const {
-			return handle.index < m_handle_values.Size() && handle.generation == m_generations[handle.index] && m_handle_values[handle.index];
-		}
+		bool IsHandleValid(const Handle& handle) const { return handle.index < m_handle_values.Size() && handle.generation == m_generations[handle.index] && m_handle_values[handle.index]; }
 
 		_Ty GetCopy(const String& name) const {
 			auto it = m_registry.Find(name);
@@ -118,9 +115,9 @@ namespace Spark {
 
 		u32 Size() const { return m_registry.Size(); }
 
-	private:
+	  private:
 		UnorderedMap<String, Pair<Handle, UniquePtr<_Ty>>> m_registry;
-		Vector<RefPtr<_Ty>> m_handle_values;
+		Vector<RefPtr<_Ty>>                                m_handle_values;
 		Vector<u32>                                        m_generations;
 		Vector<u32>                                        m_free_indices;
 	};

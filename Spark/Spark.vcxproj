@@ -194,6 +194,7 @@
     <ClInclude Include="core\util\classic\util.hpp" />
     <ClInclude Include="core\util\container\array.hpp" />
     <ClInclude Include="core\util\container\callable.hpp" />
+    <ClInclude Include="core\util\container\iterator.hpp" />
     <ClInclude Include="core\util\container\list.hpp" />
     <ClInclude Include="core\util\container\map.hpp" />
     <ClInclude Include="core\util\container\pair.hpp" />

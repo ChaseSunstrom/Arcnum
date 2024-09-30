@@ -5,12 +5,81 @@
 #include <core/util/classic/util.hpp>
 #include <core/util/log.hpp>
 #include <core/util/memory/allocator.hpp>
+#include "iterator.hpp"
 #include <initializer_list>
 #include <iostream>
 #include <list>
 #include <vector>
 
 namespace Spark {
+	template<typename _Ty> class VectorIterator : public Iterator<RandomAccessIteratorTag, _Ty> {
+	  public:
+		using IteratorCategory = RandomAccessIteratorTag;
+		using ValueType        = _Ty;
+		using DifferenceType   = ptrdiff_t;
+		using Pointer          = ValueType*;
+		using Reference        = ValueType&;
+
+		// Constructor
+		VectorIterator(Pointer ptr = nullptr)
+			: m_ptr(ptr) {}
+
+		// Dereference operator
+		Reference operator*() const { return *m_ptr; }
+
+		// Arrow operator
+		Pointer operator->() const { return m_ptr; }
+
+		// Pre-increment
+		VectorIterator& operator++() {
+			++m_ptr;
+			return *this;
+		}
+
+		// Post-increment
+		VectorIterator operator++(int) {
+			VectorIterator tmp = *this;
+			++(*this);
+			return tmp;
+		}
+
+		// Pre-decrement
+		VectorIterator& operator--() {
+			--m_ptr;
+			return *this;
+		}
+
+		// Post-decrement
+		VectorIterator operator--(int) {
+			VectorIterator tmp = *this;
+			--(*this);
+			return tmp;
+		}
+
+		// Addition
+		VectorIterator operator+(DifferenceType n) const { return VectorIterator(m_ptr + n); }
+
+		// Subtraction
+		VectorIterator operator-(DifferenceType n) const { return VectorIterator(m_ptr - n); }
+
+		// Difference between iterators
+		DifferenceType operator-(const VectorIterator& other) const { return m_ptr - other.m_ptr; }
+
+		// Subscript operator
+		Reference operator[](DifferenceType n) const { return *(m_ptr + n); }
+
+		// Comparison operators
+		bool operator==(const VectorIterator& other) const { return m_ptr == other.m_ptr; }
+		bool operator!=(const VectorIterator& other) const { return m_ptr != other.m_ptr; }
+		bool operator<(const VectorIterator& other) const { return m_ptr < other.m_ptr; }
+		bool operator>(const VectorIterator& other) const { return m_ptr > other.m_ptr; }
+		bool operator<=(const VectorIterator& other) const { return m_ptr <= other.m_ptr; }
+		bool operator>=(const VectorIterator& other) const { return m_ptr >= other.m_ptr; }
+
+	  private:
+		Pointer m_ptr;
+	};
+
 	/**
 	 * @brief A custom vector implementation with allocator support.
 	 * @tparam _Ty The type of elements stored in the vector.
@@ -29,151 +98,8 @@ namespace Spark {
 		using SizeType        = typename AllocatorTraits::SizeType;
 		using DifferenceType  = typename AllocatorTraits::DifferenceType;
 
-		/**
-		 * @brief Iterator class for the Vector.
-		 */
-		class Iterator {
-		  public:
-			using IteratorCategory = std::random_access_iterator_tag;
-			using ValueType        = typename AllocatorTraits::ValueType;
-			using Pointer          = typename AllocatorTraits::Pointer;
-			using Reference        = typename AllocatorTraits::Reference;
-			using ConstReference   = typename AllocatorTraits::ConstReference;
-			using SizeType         = typename AllocatorTraits::SizeType;
-			using DifferenceType   = typename AllocatorTraits::DifferenceType;
-
-			/**
-			 * @brief Constructs an Iterator.
-			 * @param ptr Pointer to the element.
-			 */
-			Iterator(Pointer ptr)
-				: m_ptr(ptr) {}
-
-			/**
-			 * @brief Dereference operator.
-			 * @return Reference to the element.
-			 */
-			Reference operator*() const { return *m_ptr; }
-
-			/**
-			 * @brief Arrow operator.
-			 * @return Pointer to the element.
-			 */
-			Pointer operator->() { return m_ptr; }
-
-			/**
-			 * @brief Pre-increment operator.
-			 * @return Reference to the incremented iterator.
-			 */
-			Iterator& operator++() {
-				m_ptr++;
-				return *this;
-			}
-
-			/**
-			 * @brief Post-increment operator.
-			 * @return Copy of the iterator before increment.
-			 */
-			Iterator operator++(i32) {
-				Iterator tmp = *this;
-				++(*this);
-				return tmp;
-			}
-
-			/**
-			 * @brief Pre-decrement operator.
-			 * @return Reference to the decremented iterator.
-			 */
-			Iterator& operator--() {
-				m_ptr--;
-				return *this;
-			}
-
-			/**
-			 * @brief Post-decrement operator.
-			 * @return Copy of the iterator before decrement.
-			 */
-			Iterator operator--(i32) {
-				Iterator tmp = *this;
-				--(*this);
-				return tmp;
-			}
-
-			/**
-			 * @brief Addition operator.
-			 * @param n Number of positions to move forward.
-			 * @return New iterator at the new position.
-			 */
-			Iterator operator+(DifferenceType n) const { return Iterator(m_ptr + n); }
-
-			/**
-			 * @brief Subtraction operator.
-			 * @param n Number of positions to move backward.
-			 * @return New iterator at the new position.
-			 */
-			Iterator operator-(DifferenceType n) const { return Iterator(m_ptr - n); }
-
-			/**
-			 * @brief Difference operator.
-			 * @param other Another iterator to compare with.
-			 * @return The distance between the two iterators.
-			 */
-			DifferenceType operator-(const Iterator& other) const { return m_ptr - other.m_ptr; }
-
-			/**
-			 * @brief Subscript operator.
-			 * @param n Index to access.
-			 * @return Reference to the element at the given index.
-			 */
-			Reference operator[](DifferenceType n) const { return *(m_ptr + n); }
-
-			/**
-			 * @brief Equality comparison operator.
-			 * @param other Another iterator to compare with.
-			 * @return True if the iterators point to the same element, false otherwise.
-			 */
-			bool operator==(const Iterator& other) const { return m_ptr == other.m_ptr; }
-
-			/**
-			 * @brief Inequality comparison operator.
-			 * @param other Another iterator to compare with.
-			 * @return True if the iterators point to different elements, false otherwise.
-			 */
-			bool operator!=(const Iterator& other) const { return m_ptr != other.m_ptr; }
-
-			/**
-			 * @brief Less than comparison operator.
-			 * @param other Another iterator to compare with.
-			 * @return True if this iterator points to an element before the other, false otherwise.
-			 */
-			bool operator<(const Iterator& other) const { return m_ptr < other.m_ptr; }
-
-			/**
-			 * @brief Greater than comparison operator.
-			 * @param other Another iterator to compare with.
-			 * @return True if this iterator points to an element after the other, false otherwise.
-			 */
-			bool operator>(const Iterator& other) const { return m_ptr > other.m_ptr; }
-
-			/**
-			 * @brief Less than or equal to comparison operator.
-			 * @param other Another iterator to compare with.
-			 * @return True if this iterator points to an element before or at the same position as the other, false otherwise.
-			 */
-			bool operator<=(const Iterator& other) const { return m_ptr <= other.m_ptr; }
-
-			/**
-			 * @brief Greater than or equal to comparison operator.
-			 * @param other Another iterator to compare with.
-			 * @return True if this iterator points to an element after or at the same position as the other, false otherwise.
-			 */
-			bool operator>=(const Iterator& other) const { return m_ptr >= other.m_ptr; }
-
-		  private:
-			Pointer m_ptr;
-		};
-
-		using ConstIterator = const Iterator;
+		using Iterator        = VectorIterator<_Ty>;
+		using ConstIterator   = const VectorIterator<_Ty>;
 
 		/**
 		 * @brief Default constructor.
@@ -227,6 +153,17 @@ namespace Spark {
 				AllocatorTraits::Construct(m_allocator, m_data + i, item);
 				++i;
 			}
+		}
+
+		template<typename... Args>
+		Vector(const Args&... args, AllocatorType allocator = AllocatorType())
+			: m_allocator(allocator)
+			, m_data(sizeof...(args) > 0 ? static_cast<_Ty*>(AllocatorTraits::Allocate(m_allocator, sizeof...(args) * sizeof(_Ty))) : nullptr)
+			, m_size(sizeof...(args))
+			, m_capacity(sizeof...(args))
+		{
+			SizeType i = 0;
+			(AllocatorTraits::Construct(m_allocator, m_data + i++, args), ...);
 		}
 
 		/**
@@ -295,7 +232,7 @@ namespace Spark {
 			: m_data(nullptr)
 			, m_size(0)
 			, m_capacity(0) {
-			SizeType count = std::distance(first, last);
+			SizeType count = Distance(first, last);
 			if (count > 0) {
 				m_data     = static_cast<_Ty*>(AllocatorTraits::Allocate(m_allocator, count * sizeof(_Ty)));
 				m_capacity = count;
@@ -1021,13 +958,13 @@ namespace Spark {
 		 * @brief Returns a const iterator to the beginning of the vector.
 		 * @return Const iterator to the beginning of the vector.
 		 */
-		ConstIterator Begin() const { return Iterator(m_data); }
+		ConstIterator Begin() const { return ConstIterator(m_data); }
 
 		/**
 		 * @brief Returns a const iterator to the end of the vector.
 		 * @return Const iterator to the end of the vector.
 		 */
-		ConstIterator End() const { return Iterator(m_data + m_size); }
+		ConstIterator End() const { return ConstIterator(m_data + m_size); }
 
 		/**
 		 * @brief Returns an iterator to the beginning of the vector.

@@ -17,8 +17,8 @@ void CreateTriangleMesh(Spark::Application& app) {
 
 	Spark::Vector<Spark::Vertex> vertices = {
 		{{-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},
-		{ {0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},
-		{  {0.0f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.5f, 1.0f}}
+		{{0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},
+		{{0.0f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.5f, 1.0f}}
     };
 
 	Spark::Vector<u32> indices = {0, 1, 2, 2, 1, 0};
@@ -27,7 +27,7 @@ void CreateTriangleMesh(Spark::Application& app) {
 
 void CreateSimpleMaterial(Spark::Application& app) {
 	auto& material_manager = app.GetManager<Spark::Material>();
-	material_manager.Create<Spark::GLMaterial>("simple_material")->SetAlbedo(Spark::Math::Vec4(0.0f, 1.0f, 0.0f, 1.0f));
+	material_manager.Create<Spark::GLMaterial>("simple_material")->SetAlbedo(_MATH Vec4(0.0f, 1.0f, 0.0f, 1.0f));
 }
 
 void CreateTriangleModel(Spark::Application& app) {
@@ -47,7 +47,7 @@ void AddTriangleToScene(Spark::Application& app) {
 
 	// Add multiple instances to ensure instanced rendering is triggered
 	for (i32 i = 0; i < 10; ++i) {
-		Spark::Math::Mat4 transform = Spark::Math::Translate(Spark::Math::Mat4(1.0f), Spark::Math::Vec3(i * 0.5f, 0.0f, 0.0f));
+		_MATH Mat4 transform = _MATH Translate(_MATH Mat4(1.0f), _MATH Vec3(i * 0.5f, 0.0f, 0.0f));
 		current_scene->AddModelInstance(app.GetEcs().MakeEntity(), "triangle_model", transform);
 	}
 }
@@ -66,8 +66,19 @@ void UpdateCamera(Spark::Application& app) {
 	//cam->Rotate(Spark::Math::Vec3(45.0f, 1.0f, 45.0f));
 }
 
+template <typename _Ty>
+struct TestAllocator : Spark::Allocator<_Ty> {
+	using Base = Spark::Allocator<_Ty>;
+
+	TestAllocator() = default;
+	
+	Base::Pointer Allocate(Base::SizeType n) { return static_cast<Base::Pointer>(::operator new(n * sizeof(Base::ValueType))); }
+
+	void Deallocate(Base::Pointer p, Base::SizeType /*n*/) { ::operator delete(p); }
+};
+
 void TestVector(Spark::Application& app) {
-	Spark::Vector vec = {1, 2, 3, 4, 5};
+	Spark::Vector vec{1, 2, 3, 4, 5};
 
 	vec += 6;
 	vec += {7, 8, 9};
@@ -77,7 +88,9 @@ void TestVector(Spark::Application& app) {
 
 	LOG_WARN(vec);
 
-	std::vector<i32, Spark::Allocator<i32>> test_vec;
+	TestAllocator<i32> alloc;
+
+	std::vector<i32, TestAllocator<i32>> test_vec(alloc);
 
 	test_vec.push_back(1);
 	test_vec.push_back(2);

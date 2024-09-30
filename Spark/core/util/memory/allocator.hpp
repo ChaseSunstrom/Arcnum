@@ -4,6 +4,7 @@
 #include <core/util/classic/util.hpp>
 #include <core/util/types.hpp>
 #include <core/util/classic/traits.hpp>
+#include <core/util/container/iterator.hpp>
 #include <memory>
 
 namespace Spark {
@@ -174,6 +175,24 @@ namespace Spark {
 	typename Allocator<_Ty>::Pointer Prev(typename Allocator<_Ty>::Pointer ptr, typename Allocator<_Ty>::DifferenceType n = 1) {
 		return ptr - n;
 	}
+
+	
+    /**
+     * @brief Calculates the distance between two iterators.
+     * @param first Iterator to the first element.
+     * @param last Iterator to one past the last element.
+     * @return The number of elements between first and last.
+     */
+    template<typename _Iterator>
+    typename IteratorTraits<_Iterator>::DifferenceType Distance(_Iterator first, _Iterator last) {
+        typename IteratorTraits<_Iterator>::DifferenceType result = 0;
+        while (first != last) {
+            ++first;
+            ++result;
+        }
+        return result;
+    }
+
 
 } // namespace Spark
 

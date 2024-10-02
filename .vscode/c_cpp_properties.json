@@ -1,27 +1,19 @@
 {
   "configurations": [
     {
-      "name": "Windows MSVC",
+      "name": "windows-gcc-x64",
       "includePath": [
-        "${workspaceFolder}/**",
-        "C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/ucrt",
-        "C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/shared",
-        "C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/um",
-        "C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/winrt",
-        "C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/cppwinrt",
-        "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.41.34120/include",
-        "${workspaceFolder}/Spark/include",
-        "${workspaceFolder}/Spark/core"
+        "${workspaceFolder}/**"
       ],
       "defines": [
         "_DEBUG",
         "UNICODE",
         "_UNICODE"
       ],
-      "compilerPath": "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/<version>/bin/Hostx64/x64/cl.exe",
-      "cStandard": "c17",
-      "cppStandard": "c++20",
-      "intelliSenseMode": "windows-msvc-x64",
+      "compilerPath": "gcc",
+      "cStandard": "${default}",
+      "cppStandard": "${default}",
+      "intelliSenseMode": "windows-gcc-x64",
       "compilerArgs": [
         "/std:c++20"
       ]

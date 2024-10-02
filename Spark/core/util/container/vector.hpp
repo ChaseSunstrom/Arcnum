@@ -301,7 +301,7 @@ namespace Spark {
 		Vector& operator=(Vector&& other) noexcept {
 			if (this != &other) {
 				Clear();
-				AllocatorTraits::Deallocate(m_allocator, static_cast<void*>(m_data));
+				AllocatorTraits::Deallocate(m_allocator, m_data, m_capacity * sizeof(_Ty));
 				m_data           = other.m_data;
 				m_size           = other.m_size;
 				m_capacity       = other.m_capacity;

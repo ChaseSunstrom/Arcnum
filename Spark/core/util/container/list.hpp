@@ -9,36 +9,38 @@ namespace Spark {
 
 	template<typename _Ty> class ListIterator;
 
-	template<typename _Ty, typename Allocator = _SPARK Allocator<_Ty>> class List {
+	template<typename _Ty, typename _Allocator = Allocator<_Ty>> class List {
 	  private:
 		struct Node {
 			_Ty   data;
 			Node* next;
+			Node* prev;
 			Node(const _Ty& value)
 				: data(value)
-				, next(nullptr) {}
-			Node(_Ty&& value)
+				, next(nullptr)
+				, prev(nullptr) {}
+			Node(_Ty&& value) noexcept
 				: data(Move(value))
-				, next(nullptr) {}
+				, next(nullptr)
+				, prev(nullptr) {}
 		};
 
-
 	  public:
-		using AllocatorType       = Allocator;
-		using AllocatorTraits     = _SPARK AllocatorTraits<AllocatorType>;
-		using NodeAllocatorType   = typename AllocatorType::template Rebind<Node>::Other;
-		using NodeAllocatorTraits = _SPARK AllocatorTraits<NodeAllocatorType>;
+		using NodeAllocatorType   = typename AllocatorTraits<_Allocator>::template RebindAlloc<Node>;
+		using NodeAllocatorTraits = AllocatorTraits<NodeAllocatorType>;
 
-		using ValueType           = AllocatorTraits::ValueType;
-		using Pointer             = AllocatorTraits::Pointer;
-		using ConstPointer        = AllocatorTraits::ConstPointer;
-		using Reference           = AllocatorTraits::Reference;
-		using ConstReference      = AllocatorTraits::ConstReference;
+		using ValueType           = _Ty;
+		using Pointer             = typename NodeAllocatorTraits::Pointer;
+		using ConstPointer        = typename NodeAllocatorTraits::ConstPointer;
+		using Reference           = ValueType&;
+		using ConstReference      = const ValueType&;
+		using SizeType            = typename NodeAllocatorTraits::SizeType;
+		using DifferenceType      = typename NodeAllocatorTraits::DifferenceType;
 
 		using Iterator            = ListIterator<_Ty>;
-		using ConstIterator       = const Iterator;
+		using ConstIterator       = ListIterator<_Ty>;
 
-		explicit List(const Allocator& alloc = Allocator())
+		explicit List(const _Allocator& alloc = _Allocator())
 			: m_head(nullptr)
 			, m_tail(nullptr)
 			, m_size(0)
@@ -48,7 +50,7 @@ namespace Spark {
 			: m_head(nullptr)
 			, m_tail(nullptr)
 			, m_size(0)
-			, m_allocator(other.m_allocator) {
+			, m_allocator(NodeAllocatorTraits::SelectOnContainerCopyConstruction(other.m_allocator)) {
 			for (const auto& value : other) {
 				PushBack(value);
 			}
@@ -64,7 +66,7 @@ namespace Spark {
 			other.m_size = 0;
 		}
 
-		List(const std::initializer_list<_Ty>& values, const Allocator& alloc = Allocator())
+		List(const std::initializer_list<_Ty>& values, const _Allocator& alloc = _Allocator())
 			: m_head(nullptr)
 			, m_tail(nullptr)
 			, m_size(0)
@@ -79,7 +81,9 @@ namespace Spark {
 		List& operator=(const List& other) {
 			if (this != &other) {
 				Clear();
-				m_allocator = other.m_allocator;
+				if (NodeAllocatorTraits::PropagateOnContainerCopyAssignment) {
+					m_allocator = other.m_allocator;
+				}
 				for (const auto& value : other) {
 					PushBack(value);
 				}
@@ -93,7 +97,9 @@ namespace Spark {
 				m_head       = other.m_head;
 				m_tail       = other.m_tail;
 				m_size       = other.m_size;
-				m_allocator  = Move(other.m_allocator);
+				if (NodeAllocatorTraits::PropagateOnContainerMoveAssignment) {
+					m_allocator  = Move(other.m_allocator);
+				}
 				other.m_head = nullptr;
 				other.m_tail = nullptr;
 				other.m_size = 0;
@@ -102,192 +108,154 @@ namespace Spark {
 		}
 
 		void PushFront(const _Ty& value) {
-			Node* new_node = m_allocator.allocate(1);
-			m_allocator.construct(new_node, value);
+			Node* new_node = CreateNode(value);
 			new_node->next = m_head;
-			m_head         = new_node;
+			if (m_head) {
+				m_head->prev = new_node;
+			}
+			m_head = new_node;
 			if (!m_tail) {
 				m_tail = m_head;
 			}
-			m_size++;
+			++m_size;
 		}
 
 		void PushFront(_Ty&& value) {
-			Node* new_node = m_allocator.allocate(1);
-			m_allocator.construct(new_node, Move(value));
+			Node* new_node = CreateNode(Move(value));
 			new_node->next = m_head;
-			m_head         = new_node;
+			if (m_head) {
+				m_head->prev = new_node;
+			}
+			m_head = new_node;
 			if (!m_tail) {
 				m_tail = m_head;
 			}
-			m_size++;
+			++m_size;
 		}
 
 		void PopFront() {
-			if (m_size == 0)
-				return;
+			if (Empty()) return;
 			Node* temp = m_head;
-			m_head     = m_head->next;
-			m_allocator.destroy(temp);
-			m_allocator.deallocate(temp, 1);
-			m_size--;
-			if (m_size == 0) {
+			m_head = m_head->next;
+			if (m_head) {
+				m_head->prev = nullptr;
+			} else {
 				m_tail = nullptr;
 			}
+			DestroyNode(temp);
+			--m_size;
 		}
 
 		void PushBack(const _Ty& value) {
-			Node* new_node = m_allocator.allocate(1);
-			m_allocator.construct(new_node, value);
+			Node* new_node = CreateNode(value);
 			if (m_tail) {
 				m_tail->next = new_node;
-				m_tail       = new_node;
+				new_node->prev = m_tail;
+				m_tail = new_node;
 			} else {
 				m_head = m_tail = new_node;
 			}
-			m_size++;
+			++m_size;
 		}
 
 		void PushBack(_Ty&& value) {
-			Node* new_node = m_allocator.allocate(1);
-			m_allocator.construct(new_node, Move(value));
+			Node* new_node = CreateNode(Move(value));
 			if (m_tail) {
 				m_tail->next = new_node;
-				m_tail       = new_node;
+				new_node->prev = m_tail;
+				m_tail = new_node;
 			} else {
 				m_head = m_tail = new_node;
 			}
-			m_size++;
+			++m_size;
 		}
 
 		void PopBack() {
-			if (m_size == 0)
-				return;
-			if (m_size == 1) {
-				m_allocator.destroy(m_head);
-				m_allocator.deallocate(m_head, 1);
-				m_head = m_tail = nullptr;
-				m_size          = 0;
-				return;
+			if (Empty()) return;
+			Node* temp = m_tail;
+			m_tail = m_tail->prev;
+			if (m_tail) {
+				m_tail->next = nullptr;
+			} else {
+				m_head = nullptr;
 			}
-			Node* current = m_head;
-			while (current->next != m_tail) {
-				current = current->next;
-			}
-			m_allocator.destroy(m_tail);
-			m_allocator.deallocate(m_tail, 1);
-			m_tail       = current;
-			m_tail->next = nullptr;
-			m_size--;
+			DestroyNode(temp);
+			--m_size;
 		}
 
 		void Clear() {
 			while (m_head) {
 				Node* temp = m_head;
-				m_head     = m_head->next;
-				m_allocator.destroy(temp);
-				m_allocator.deallocate(temp, 1);
+				m_head = m_head->next;
+				DestroyNode(temp);
 			}
 			m_tail = nullptr;
 			m_size = 0;
 		}
 
-		void Swap(List& other) {
+		void Swap(List& other) noexcept {
 			_SPARK Swap(m_head, other.m_head);
 			_SPARK Swap(m_tail, other.m_tail);
 			_SPARK Swap(m_size, other.m_size);
-			_SPARK Swap(m_allocator, other.m_allocator);
+			if (NodeAllocatorTraits::PropagateOnContainerSwap) {
+				_SPARK Swap(m_allocator, other.m_allocator);
+			}
 		}
 
 		void Remove(const _Ty& value) {
-			Node** current = &m_head;
-			while (*current) {
-				if ((*current)->data == value) {
-					Node* temp = *current;
-					*current   = (*current)->next;
-					if (m_tail == temp) {
-						m_tail = (current == &m_head) ? nullptr : m_head;
-						while (m_tail && m_tail->next) {
-							m_tail = m_tail->next;
-						}
-					}
-					m_allocator.destroy(temp);
-					m_allocator.deallocate(temp, 1);
-					m_size--;
-					return;
+			for (Node* current = m_head; current != nullptr; ) {
+				if (current->data == value) {
+					Node* temp = current;
+					current = current->next;
+					EraseNode(temp);
+				} else {
+					current = current->next;
 				}
-				current = &((*current)->next);
 			}
 		}
 
-		bool Erase(ConstIterator it) {
-			Node** current = &m_head;
-			while (*current) {
-				if (*current == it.m_node) {
-					Node* temp = *current;
-					*current   = (*current)->next;
-					if (m_tail == temp) {
-						m_tail = (current == &m_head) ? nullptr : m_head;
-						while (m_tail && m_tail->next) {
-							m_tail = m_tail->next;
-						}
-					}
-					m_allocator.destroy(temp);
-					m_allocator.deallocate(temp, 1);
-					m_size--;
-					return true;
-				}
-				current = &((*current)->next);
-			}
-			return false;
+		Iterator Erase(Iterator pos) {
+			if (pos == End()) return End();
+			Node* node = pos.m_node;
+			Node* next = node->next;
+			EraseNode(node);
+			return Iterator(next);
 		}
 
-		bool Erase(ConstIterator first, ConstIterator last) {
-			Node** current = &m_head;
-			while (*current) {
-				if (*current == first.m_node) {
-					while (*current != last.m_node) {
-						Node* temp = *current;
-						*current   = (*current)->next;
-						if (m_tail == temp) {
-							m_tail = (current == &m_head) ? nullptr : m_head;
-							while (m_tail && m_tail->next) {
-								m_tail = m_tail->next;
-							}
-						}
-						m_allocator.destroy(temp);
-						m_allocator.deallocate(temp, 1);
-						m_size--;
-					}
-					return true;
-				}
-				current = &((*current)->next);
+		Iterator Erase(Iterator first, Iterator last) {
+			while (first != last) {
+				first = Erase(first);
 			}
-			return false;
+			return Iterator(last.m_node);
 		}
 
-		Reference At(size_t index) {
+		Reference At(SizeType index) {
 			if (index >= m_size) {
-				LOG_FATAL("List Index out of bounds");
+				LOG_FATAL("List index out of range");
 			}
-			Node* current = m_head;
-			for (size_t i = 0; i < index; ++i) {
-				current = current->next;
-			}
-			return current->data;
+			return *_SPARK Next(Begin(), index);
 		}
 
-		ConstReference At(size_t index) const { return const_cast<List*>(this)->At(index); }
+		ConstReference At(SizeType index) const {
+			if (index >= m_size) {
+				throw LOG_FATAL("List index out of range");
+			}
+			return *_SPARK Next(Begin(), index);
+		}
 
 		Iterator      Begin() { return Iterator(m_head); }
 		Iterator      End() { return Iterator(nullptr); }
 		ConstIterator Begin() const { return ConstIterator(m_head); }
 		ConstIterator End() const { return ConstIterator(nullptr); }
+		ConstIterator CBegin() const { return ConstIterator(m_head); }
+		ConstIterator CEnd() const { return ConstIterator(nullptr); }
 
 		Iterator      begin() { return Begin(); }
 		Iterator      end() { return End(); }
 		ConstIterator begin() const { return Begin(); }
 		ConstIterator end() const { return End(); }
+		ConstIterator cbegin() const { return CBegin(); }
+		ConstIterator cend() const { return CEnd(); }
 
 		Reference      Front() { return m_head->data; }
 		ConstReference Front() const { return m_head->data; }
@@ -295,21 +263,11 @@ namespace Spark {
 		Reference      Back() { return m_tail->data; }
 		ConstReference Back() const { return m_tail->data; }
 
-		bool   Empty() const { return m_size == 0; }
-		size_t Size() const { return m_size; }
+		bool     Empty() const { return m_size == 0; }
+		SizeType Size() const { return m_size; }
 
 		bool operator==(const List& other) const {
-			if (m_size != other.m_size)
-				return false;
-			Node* it1 = m_head;
-			Node* it2 = other.m_head;
-			while (it1) {
-				if (it1->data != it2->data)
-					return false;
-				it1 = it1->next;
-				it2 = it2->next;
-			}
-			return true;
+			return Size() == other.Size() && _SPARK Equal(Begin(), End(), other.Begin());
 		}
 
 		bool operator!=(const List& other) const { return !(*this == other); }
@@ -317,12 +275,55 @@ namespace Spark {
 		NodeAllocatorType GetAllocator() const { return m_allocator; }
 
 	  private:
-		Node*         m_head;
-		Node*         m_tail;
-		size_t        m_size;
+		Node*             m_head;
+		Node*             m_tail;
+		SizeType          m_size;
 		NodeAllocatorType m_allocator;
 
+		Node* CreateNode(const _Ty& value) {
+			Node* node = NodeAllocatorTraits::Allocate(m_allocator, 1);
+			try {
+				NodeAllocatorTraits::Construct(m_allocator, node, value);
+			} catch (...) {
+				NodeAllocatorTraits::Deallocate(m_allocator, node, 1);
+				throw;
+			}
+			return node;
+		}
+
+		Node* CreateNode(_Ty&& value) {
+			Node* node = NodeAllocatorTraits::Allocate(m_allocator, 1);
+			try {
+				NodeAllocatorTraits::Construct(m_allocator, node, Move(value));
+			} catch (...) {
+				NodeAllocatorTraits::Deallocate(m_allocator, node, 1);
+				throw;
+			}
+			return node;
+		}
+
+		void DestroyNode(Node* node) {
+			NodeAllocatorTraits::Destroy(m_allocator, node);
+			NodeAllocatorTraits::Deallocate(m_allocator, node, 1);
+		}
+
+		void EraseNode(Node* node) {
+			if (node->prev) {
+				node->prev->next = node->next;
+			} else {
+				m_head = node->next;
+			}
+			if (node->next) {
+				node->next->prev = node->prev;
+			} else {
+				m_tail = node->prev;
+			}
+			DestroyNode(node);
+			--m_size;
+		}
+
 		friend class ListIterator<_Ty>;
+		friend class ListIterator<const _Ty>;
 	};
 
 	template<typename _Ty> class ListIterator : public Iterator<ForwardIteratorTag, _Ty> {
@@ -332,13 +333,24 @@ namespace Spark {
 		using ValueType        = _Ty;
 		using Pointer          = ValueType*;
 		using Reference        = ValueType&;
+		using ConstPointer     = const ValueType*;
+		using ConstReference   = const ValueType&;
 		using Node             = typename List<_Ty>::Node;
 
 		ListIterator(Node* node)
 			: m_node(node) {}
 
-		Reference operator*() const { return m_node->data; }
-		Pointer   operator->() { return &(m_node->data); }
+		// Non-const operator*
+		Reference operator*() { return m_node->data; }
+
+		// Const operator*
+		ConstReference operator*() const { return m_node->data; }
+
+		// Non-const operator->
+		Pointer operator->() { return &(m_node->data); }
+
+		// Const operator->
+		ConstPointer operator->() const { return &(m_node->data); }
 
 		ListIterator& operator++() {
 			m_node = m_node->next;

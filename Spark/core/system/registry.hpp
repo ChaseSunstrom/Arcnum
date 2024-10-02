@@ -36,7 +36,7 @@ namespace Spark {
 
 			_Ty& ref                      = *object;
 			m_handle_values[handle.index] = RefPtr(ref);
-			m_registry[name]              = Pair<Handle, UniquePtr<_Ty>>(handle, Move(object));
+			m_registry.Emplace(name, handle, Move(object));
 			return ref;
 		}
 

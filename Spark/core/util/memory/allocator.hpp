@@ -52,7 +52,7 @@ namespace Spark {
 
 		SizeType MaxSize() const noexcept { return static_cast<SizeType>(-1) / sizeof(ValueType); }
 
-		Pointer Address(Reference x) const noexcept { return AddressOf(x); }
+		Pointer Address(Reference x) noexcept { return AddressOf(x); }
 
 		ConstPointer Address(ConstReference x) const noexcept { return AddressOf(x); }
 
@@ -75,7 +75,7 @@ namespace Spark {
 
 		size_type max_size() const noexcept { return MaxSize(); }
 
-		pointer address(reference x) const noexcept { return Address(x); }
+		pointer address(reference x) noexcept { return Address(x); }
 
 		const_pointer address(const_reference x) const noexcept { return Address(x); }
 	};
@@ -115,6 +115,10 @@ namespace Spark {
 		static SizeType MaxSize(const AllocatorType& alloc) noexcept { return alloc.MaxSize(); }
 
 		static AllocatorType SelectOnContainerCopyConstruction(const AllocatorType& alloc) { return AllocatorType(alloc); }
+
+		using PropagateOnContainerCopyAssignment = FalseType;
+		using PropagateOnContainerMoveAssignment = FalseType;
+		using PropagateOnContainerSwap = FalseType;
 	};
 
 	/**
@@ -154,6 +158,10 @@ namespace Spark {
 		static AllocatorType SelectOnContainerCopyConstruction(const AllocatorType& alloc) {
 			return std::allocator_traits<AllocatorType>::select_on_container_copy_construction(alloc);
 		}
+
+		using PropagateOnContainerCopyAssignment = typename std::allocator_traits<AllocatorType>::propagate_on_container_copy_assignment;
+		using PropagateOnContainerMoveAssignment = typename std::allocator_traits<AllocatorType>::propagate_on_container_move_assignment;
+		using PropagateOnContainerSwap = typename std::allocator_traits<AllocatorType>::propagate_on_container_swap;
 	};
 
 	template<typename _Ty>

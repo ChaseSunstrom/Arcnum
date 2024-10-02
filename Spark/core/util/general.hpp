@@ -1,7 +1,6 @@
 #ifndef SPARK_GENERAL_HPP
 #define SPARK_GENERAL_HPP
 
-#include <core/pch.hpp>
 #include <core/util/container/pair.hpp>
 
 namespace Spark {

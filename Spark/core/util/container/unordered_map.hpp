@@ -7,10 +7,11 @@
 #include <core/util/memory/allocator.hpp>
 #include <core/util/types.hpp>
 #include <initializer_list>
+#include <core/util/general.hpp>
+#include "iterator.hpp"
 #include "list.hpp"
 #include "pair.hpp"
 #include "vector.hpp"
-#include "iterator.hpp"
 
 namespace Spark {
 
@@ -27,29 +28,19 @@ namespace Spark {
 	 */
 	template<typename Key, typename Value, typename Hash = std::hash<Key>, typename KeyEqual = Equal<Key>, typename Allocator = _SPARK Allocator<Pair<const Key, Value>>> class UnorderedMap {
 	  public:
-		struct Node {
-			Pair<const Key, Value> m_pair;
-			Node(const Key& key, const Value& value)
-				: m_pair(key, value) {}
-			Node(const Key& key, Value&& value)
-				: m_pair(key, Move(value)) {}
-			Node(Key&& key, Value&& value)
-				: m_pair(Move(key), Move(value)) {}
-		};
-
 		using AllocatorType   = Allocator;
 		using AllocatorTraits = AllocatorTraits<AllocatorType>;
 
-		using Bucket          = List<Node, Allocator>;
 		using ValueType       = Pair<const Key, Value>;
 		using Pointer         = ValueType*;
 		using Reference       = ValueType&;
 		using ConstReference  = const ValueType&;
 		using SizeType        = AllocatorTraits::SizeType;
 		using DifferenceType  = AllocatorTraits::DifferenceType;
+		using Bucket = List<ValueType, Allocator>;
 
-		using Iterator = UnorderedMapIterator<Key, Value>;
-        using ConstIterator = const Iterator;
+		using Iterator        = UnorderedMapIterator<Key, Value>;
+		using ConstIterator   = const Iterator;
 
 		explicit UnorderedMap(SizeType bucket_count = DEFAULT_BUCKET_COUNT, const Hash& hasher = Hash(), const KeyEqual& key_equal = KeyEqual(), const Allocator& allocator = Allocator())
 			: m_buckets(bucket_count)
@@ -126,14 +117,48 @@ namespace Spark {
 			}
 
 			SizeType index = GetBucketIndex(key);
-			for (auto& node : m_buckets[index]) {
-				if (m_key_equal(node.m_pair.first, key)) {
-					node.m_pair.second = value;
+			for (auto& pair : m_buckets[index]) {
+				if (m_key_equal(pair.first, key)) {
+					pair.second = value;
 					return;
 				}
 			}
 
-			m_buckets[index].PushBack(Node(key, value));
+			m_buckets[index].PushBack(ValueType(key, value));
+			++m_size;
+		}
+
+		void Insert(const Key& key, Value&& value) {
+			if (LoadFactor() > MAX_LOAD_FACTOR) {
+				Rehash(m_buckets.Size() * 2);
+			}
+
+			SizeType index = GetBucketIndex(key);
+			for (auto& pair : m_buckets[index]) {
+				if (m_key_equal(pair.first, key)) {
+					pair.second = Move(value);
+					return;
+				}
+			}
+
+			m_buckets[index].PushBack(ValueType(key, Move(value)));
+			++m_size;
+		}
+
+		template<typename... Args> void Emplace(const Key& key, Args&&... args) {
+			if (LoadFactor() > MAX_LOAD_FACTOR) {
+				Rehash(m_buckets.Size() * 2);
+			}
+
+			SizeType index = GetBucketIndex(key);
+			for (auto& pair : m_buckets[index]) {
+				if (m_key_equal(pair.first, key)) {
+					pair.second = Value(Forward<Args>(args)...);
+					return;
+				}
+			}
+
+			m_buckets[index].PushBack(ValueType(key, Value(Forward<Args>(args)...)));
 			++m_size;
 		}
 
@@ -141,7 +166,7 @@ namespace Spark {
 			SizeType index  = GetBucketIndex(key);
 			auto&    bucket = m_buckets[index];
 			for (auto it = bucket.Begin(); it != bucket.End(); ++it) {
-				if (m_key_equal((*it).m_pair.first, key)) {
+				if (m_key_equal((*it).first, key)) {
 					bucket.Erase(it);
 					--m_size;
 					return true;
@@ -164,9 +189,9 @@ namespace Spark {
 
 		Value& At(const Key& key) {
 			SizeType index = GetBucketIndex(key);
-			for (auto& node : m_buckets[index]) {
-				if (m_key_equal(node.m_pair.first, key)) {
-					return node.m_pair.second;
+			for (auto& pair : m_buckets[index]) {
+				if (m_key_equal(pair.first, key)) {
+					return pair.second;
 				}
 			}
 			LOG_FATAL("Key not found");
@@ -175,21 +200,21 @@ namespace Spark {
 		const Value& At(const Key& key) const { return const_cast<UnorderedMap*>(this)->At(key); }
 
 		Value& operator[](const Key& key) {
-			size_t index = GetBucketIndex(key);
+			SizeType index = GetBucketIndex(key);
 			for (auto& node : m_buckets[index]) {
-				if (m_key_equal(node.m_pair.first, key)) {
-					return node.m_pair.second;
+				if (m_key_equal(node.first, key)) {
+					return node.second;
 				}
 			}
-			m_buckets[index].PushBack(Node(key, Value()));
+			m_buckets[index].PushBack(PairOf<const Key, Value>(key, Value()));
 			++m_size;
-			return m_buckets[index].Back().m_pair.second;
+			return m_buckets[index].Back().second;
 		}
 
 		bool Contains(const Key& key) const {
-			size_t index = GetBucketIndex(key);
+			SizeType index = GetBucketIndex(key);
 			for (const auto& node : m_buckets[index]) {
-				if (m_key_equal(node.m_pair.first, key)) {
+				if (m_key_equal(node.first, key)) {
 					return true;
 				}
 			}
@@ -220,7 +245,6 @@ namespace Spark {
 		ConstIterator Begin() const { return const_cast<UnorderedMap*>(this)->Begin(); }
 		ConstIterator End() const { return const_cast<UnorderedMap*>(this)->End(); }
 
-
 		void Swap(UnorderedMap& other) {
 			m_buckets.Swap(other.m_buckets);
 			_SPARK Swap(m_size, other.m_size);
@@ -244,7 +268,7 @@ namespace Spark {
 			Vector<Bucket> new_buckets(new_bucket_count);
 			for (const auto& bucket : m_buckets) {
 				for (const auto& node : bucket) {
-					SizeType new_index = m_hasher(node.m_pair.first) % new_bucket_count;
+					SizeType new_index = m_hasher(node.first) % new_bucket_count;
 					new_buckets[new_index].PushBack(node);
 				}
 			}
@@ -268,7 +292,7 @@ namespace Spark {
 			SizeType index = GetBucketIndex(key);
 			auto     it    = m_buckets[index].Begin();
 			for (; it != m_buckets[index].End(); ++it) {
-				if (m_key_equal(it->m_pair.first, key)) {
+				if (m_key_equal(it->first, key)) {
 					return Iterator(&m_buckets, index, it);
 				}
 			}
@@ -276,7 +300,6 @@ namespace Spark {
 		}
 
 		ConstIterator Find(const Key& key) const { return const_cast<UnorderedMap*>(this)->Find(key); }
-
 
 		SizeType Count(const Key& key) const { return Contains(key) ? 1 : 0; }
 
@@ -311,6 +334,8 @@ namespace Spark {
 		using DifferenceType   = ptrdiff_t;
 		using Pointer          = ValueType*;
 		using Reference        = ValueType&;
+		using ConstPointer     = const ValueType*;
+		using ConstReference   = const ValueType&;
 		using Bucket           = UnorderedMap<Key, Value>::Bucket;
 
 		// Constructor
@@ -323,11 +348,18 @@ namespace Spark {
 			}
 		}
 
-		// Dereference operator
-		Reference operator*() const { return (*m_it).m_pair; }
+		// Non-const operator*
+		Reference operator*() { return *m_it; }
 
-		// Arrow operator
-		Pointer operator->() const { return &((*m_it).m_pair); }
+		// Const operator*
+		ConstReference operator*() const { return *m_it; }
+
+		// Non-const operator->
+		Pointer operator->() { return &(*m_it); }
+
+		// Const operator->
+		ConstPointer operator->() const { return &(*m_it); }
+
 
 		// Pre-increment
 		UnorderedMapIterator& operator++() {
@@ -345,7 +377,7 @@ namespace Spark {
 		}
 
 		// Post-increment
-		UnorderedMapIterator operator++(int) {
+		UnorderedMapIterator operator++(i32) {
 			Iterator tmp = *this;
 			++(*this);
 			return tmp;
@@ -365,7 +397,6 @@ namespace Spark {
 		typename Bucket::Iterator m_it;
 
 		friend class UnorderedMap<Key, Value>;
-
 	};
 
 	template<typename Key, typename Value, typename Hash = std::hash<Key>, typename KeyEqual = Equal<Key>, typename Allocator = _SPARK Allocator<Pair<const Key, Value>>>

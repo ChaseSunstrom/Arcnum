@@ -540,6 +540,28 @@ namespace Spark {
     _Ty* AddressOf(const _Ty& value) {
         return reinterpret_cast<_Ty*>(const_cast<char*>(&reinterpret_cast<const volatile char&>(value)));
     }
+
+    /**
+     * @brief Calculates the distance between two pointers.
+     * @param first Pointer to the first element.
+     * @param last Pointer to one past the last element.
+     * @return The number of elements between first and last.
+     */
+    template<typename _Ty>
+    ptrdiff_t Distance(_Ty* first, _Ty* last) {
+        return last - first;
+    }
+
+    /**
+     * @brief Calculates the distance between two const pointers.
+     * @param first Pointer to the first element.
+     * @param last Pointer to one past the last element.
+     * @return The number of elements between first and last.
+     */
+    template<typename _Ty>
+    ptrdiff_t Distance(const _Ty* first, const _Ty* last) {
+        return last - first;
+    }
 } // namespace Spark
 
 #endif

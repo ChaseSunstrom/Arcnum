@@ -15,12 +15,9 @@ namespace Spark {
 			_Ty   data;
 			Node* next;
 			Node* prev;
-			Node(const _Ty& value)
-				: data(value)
-				, next(nullptr)
-				, prev(nullptr) {}
-			Node(_Ty&& value) noexcept
-				: data(Move(value))
+
+			template<typename... Args> Node(Args&&... args)
+				: data(Forward<Args>(args)...)
 				, next(nullptr)
 				, prev(nullptr) {}
 		};
@@ -107,21 +104,9 @@ namespace Spark {
 			return *this;
 		}
 
-		void PushFront(const _Ty& value) {
-			Node* new_node = CreateNode(value);
-			new_node->next = m_head;
-			if (m_head) {
-				m_head->prev = new_node;
-			}
-			m_head = new_node;
-			if (!m_tail) {
-				m_tail = m_head;
-			}
-			++m_size;
-		}
-
-		void PushFront(_Ty&& value) {
-			Node* new_node = CreateNode(Move(value));
+		template <typename... Args>
+		void PushFront(Args&&... args) {
+			Node* new_node = CreateNode(Forward<Args>(args)...);
 			new_node->next = m_head;
 			if (m_head) {
 				m_head->prev = new_node;
@@ -146,8 +131,9 @@ namespace Spark {
 			--m_size;
 		}
 
-		void PushBack(const _Ty& value) {
-			Node* new_node = CreateNode(value);
+		template <typename... Args>
+		void PushBack(Args&&... args) {
+			Node* new_node = CreateNode(Forward<Args>(args)...);
 			if (m_tail) {
 				m_tail->next = new_node;
 				new_node->prev = m_tail;
@@ -158,17 +144,6 @@ namespace Spark {
 			++m_size;
 		}
 
-		void PushBack(_Ty&& value) {
-			Node* new_node = CreateNode(Move(value));
-			if (m_tail) {
-				m_tail->next = new_node;
-				new_node->prev = m_tail;
-				m_tail = new_node;
-			} else {
-				m_head = m_tail = new_node;
-			}
-			++m_size;
-		}
 
 		void PopBack() {
 			if (Empty()) return;
@@ -280,21 +255,10 @@ namespace Spark {
 		SizeType          m_size;
 		NodeAllocatorType m_allocator;
 
-		Node* CreateNode(const _Ty& value) {
+		template<typename... Args> Node* CreateNode(Args&&... args) {
 			Node* node = NodeAllocatorTraits::Allocate(m_allocator, 1);
 			try {
-				NodeAllocatorTraits::Construct(m_allocator, node, value);
-			} catch (...) {
-				NodeAllocatorTraits::Deallocate(m_allocator, node, 1);
-				throw;
-			}
-			return node;
-		}
-
-		Node* CreateNode(_Ty&& value) {
-			Node* node = NodeAllocatorTraits::Allocate(m_allocator, 1);
-			try {
-				NodeAllocatorTraits::Construct(m_allocator, node, Move(value));
+				NodeAllocatorTraits::Construct(m_allocator, node, Forward<Args>(args)...);
 			} catch (...) {
 				NodeAllocatorTraits::Deallocate(m_allocator, node, 1);
 				throw;

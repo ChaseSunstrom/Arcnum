@@ -37,7 +37,7 @@ namespace Spark {
 		}
 
 		// Post-increment
-		VectorIterator operator++(int) {
+		VectorIterator operator++(i32) {
 			VectorIterator tmp = *this;
 			++(*this);
 			return tmp;
@@ -50,7 +50,7 @@ namespace Spark {
 		}
 
 		// Post-decrement
-		VectorIterator operator--(int) {
+		VectorIterator operator--(i32) {
 			VectorIterator tmp = *this;
 			--(*this);
 			return tmp;

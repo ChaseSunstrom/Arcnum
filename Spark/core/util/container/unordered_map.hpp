@@ -266,14 +266,16 @@ namespace Spark {
 
 		void Rehash(SizeType new_bucket_count) {
 			Vector<Bucket> new_buckets(new_bucket_count);
-			for (const auto& bucket : m_buckets) {
-				for (const auto& node : bucket) {
-					SizeType new_index = m_hasher(node.first) % new_bucket_count;
-					new_buckets[new_index].PushBack(node);
+			for (auto& bucket : m_buckets) {
+				for (auto it = bucket.Begin(); it != bucket.End();) {
+					SizeType new_index = m_hasher(it->first) % new_bucket_count;
+					new_buckets[new_index].PushBack(Move(*it));
+					it = bucket.Erase(it);
 				}
 			}
 			m_buckets = Move(new_buckets);
 		}
+
 
 		bool operator==(const UnorderedMap& other) const {
 			if (m_size != other.m_size)

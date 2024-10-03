@@ -3,6 +3,7 @@
 
 #include <core/math/math.hpp>
 #include <core/util/types.hpp>
+#include "traits.hpp"
 
 namespace Spark {
     /**
@@ -231,7 +232,7 @@ namespace Spark {
      * @return An rvalue reference to the forwarded object.
      */
     template<typename _Ty>
-    constexpr _Ty&& Forward(std::remove_reference_t<_Ty>& t) noexcept {
+    constexpr _Ty&& Forward(RemoveRefT<_Ty>& t) noexcept {
         return static_cast<_Ty&&>(t);
     }
 
@@ -241,7 +242,7 @@ namespace Spark {
      * @return An rvalue reference to the forwarded object.
      */
     template<typename _Ty>
-    constexpr _Ty&& Forward(std::remove_reference_t<_Ty>&& t) noexcept {
+    constexpr _Ty&& Forward(RemoveRefT<_Ty>&& t) noexcept {
         return static_cast<_Ty&&>(t);
     }
 

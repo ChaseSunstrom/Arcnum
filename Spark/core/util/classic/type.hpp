@@ -5,6 +5,7 @@
 #include <core/util/defines.hpp>
 #include <core/util/types.hpp>
 #include <typeinfo>
+#include "hash.hpp"
 
 namespace Spark {
     /**
@@ -205,10 +206,16 @@ namespace Spark {
     private:
         const TypeInfo* m_type_info;
     };
+
+    template <> struct Hash<TypeIndex> {
+		usize operator()(const TypeIndex& type_index) const { return type_index.HashCode(); }
+    };
 } // namespace Spark
 
-template<> struct std::hash<_SPARK TypeIndex> {
-	size_t  operator()(const _SPARK TypeIndex& type_index) const { return type_index.HashCode(); }
-};
+namespace std {
+	template<> struct hash<_SPARK TypeIndex> {
+		size_t operator()(const _SPARK TypeIndex& type_index) const { return type_index.HashCode(); }
+	};
+} // namespace std
 
 #endif

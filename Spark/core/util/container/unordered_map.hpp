@@ -5,6 +5,7 @@
 #include <core/util/classic/compare.hpp>
 #include <core/util/classic/type.hpp>
 #include <core/util/memory/allocator.hpp>
+#include <core/util/classic/hash.hpp>
 #include <core/util/types.hpp>
 #include <initializer_list>
 #include <core/util/general.hpp>
@@ -26,7 +27,7 @@ namespace Spark {
 	 * @tparam KeyEqual The key comparison function type, defaults to Equal<Key>.
 	 * @tparam Allocator The allocator type, defaults to Spark Allocator<Pair<const Key, Value>>.
 	 */
-	template<typename Key, typename Value, typename Hash = std::hash<Key>, typename KeyEqual = Equal<Key>, typename Allocator = _SPARK Allocator<Pair<const Key, Value>>> class UnorderedMap {
+	template<typename Key, typename Value, typename Hash = _SPARK Hash<Key>, typename KeyEqual = _SPARK Equal<Key>, typename Allocator = _SPARK Allocator<Pair<const Key, Value>>> class UnorderedMap {
 	  public:
 		using AllocatorType   = Allocator;
 		using AllocatorTraits = AllocatorTraits<AllocatorType>;
@@ -206,7 +207,7 @@ namespace Spark {
 					return node.second;
 				}
 			}
-			m_buckets[index].PushBack(PairOf<const Key, Value>(key, Value()));
+			m_buckets[index].PushBack(Pair<const Key, Value>(key, Value()));
 			++m_size;
 			return m_buckets[index].Back().second;
 		}
@@ -401,7 +402,7 @@ namespace Spark {
 		friend class UnorderedMap<Key, Value>;
 	};
 
-	template<typename Key, typename Value, typename Hash = std::hash<Key>, typename KeyEqual = Equal<Key>, typename Allocator = _SPARK Allocator<Pair<const Key, Value>>>
+	template<typename Key, typename Value, typename Hash = _SPARK Hash<Key>, typename KeyEqual = _SPARK Equal<Key>, typename Allocator = _SPARK Allocator<Pair<const Key, Value>>>
 	void Swap(UnorderedMap<Key, Value, Hash, KeyEqual, Allocator>& lhs, UnorderedMap<Key, Value, Hash, KeyEqual, Allocator>& rhs) {
 		lhs.Swap(rhs);
 	}

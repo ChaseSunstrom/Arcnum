@@ -4,20 +4,22 @@
 #include <core/util/classic/compare.hpp>
 #include <core/util/types.hpp>
 #include <unordered_set>
-#include <xhash>
+#include <core/util/classic/hash.hpp>
 #include "list.hpp"
 #include "vector.hpp"
 
 namespace Spark {
+
+	template<typename _Ty> class UnorderedSetIterator;
+
 	/**
-	 * @brief An unordered set implementation using hash table.
+	 * @brief An unordered set implementation using a hash table.
 	 *
 	 * @tparam _Ty The type of elements in the set.
 	 * @tparam Hash The hash function type, defaults to std::hash<_Ty>.
-	 * @tparam KeyEqual The key equality comparison function type, defaults to Equal<_Ty>.
 	 * @tparam Allocator The allocator type, defaults to _SPARK Allocator<_Ty>.
 	 */
-	template<typename _Ty, typename Hash = std::hash<_Ty>, typename Allocator = _SPARK Allocator<_Ty>> class UnorderedSet {
+	template<typename _Ty, typename Hash = _SPARK Hash<_Ty>, typename Allocator = _SPARK Allocator<_Ty>> class UnorderedSet {
 	  public:
 		/**
 		 * @brief Node structure for the unordered set.
@@ -34,94 +36,39 @@ namespace Spark {
 		using AllocatorTraits = AllocatorTraits<AllocatorType>;
 
 		using Bucket          = List<Node, Allocator>;
-		using ValueType       = typename AllocatorTraits::ValueType;
-		using Pointer         = typename AllocatorTraits::Pointer;
-		using ConstPointer    = typename AllocatorTraits::ConstPointer;
-		using Reference       = typename AllocatorTraits::Reference;
-		using ConstReference  = typename AllocatorTraits::ConstReference;
+		using ValueType       = _Ty;
+		using Pointer         = ValueType*;
+		using ConstPointer    = const ValueType*;
+		using Reference       = ValueType&;
+		using ConstReference  = const ValueType&;
 		using SizeType        = typename AllocatorTraits::SizeType;
 		using DifferenceType  = typename AllocatorTraits::DifferenceType;
 
-		class Iterator {
-		  public:
-			using IteratorCategory = std::forward_iterator_tag;
-			using ValueType        = typename AllocatorTraits::ValueType;
-			using Pointer          = typename AllocatorTraits::Pointer;
-			using Reference        = typename AllocatorTraits::Reference;
-			using ConstReference   = typename AllocatorTraits::ConstReference;
-			using SizeType         = typename AllocatorTraits::SizeType;
-			using DifferenceType   = typename AllocatorTraits::DifferenceType;
+		using Iterator        = UnorderedSetIterator<_Ty, Hash, Allocator>;
+		using ConstIterator   = const Iterator;
 
-			Iterator(Vector<Bucket>* buckets, size_t bucket_index, typename Bucket::Iterator it)
-				: m_buckets(buckets)
-				, m_bucket_index(bucket_index)
-				, m_it(it) {
-				if (m_bucket_index < m_buckets->Size() && m_it == (*m_buckets)[m_bucket_index].End()) {
-					operator++();
-				}
-			}
-
-			ConstReference operator*() const { return (*m_it).value; }
-			
-			ConstPointer  operator->() const { return &((*m_it).value); }
-			
-			Iterator&      operator++() {
-                if (m_bucket_index >= m_buckets->Size())
-                    return *this;
-                ++m_it;
-                while (m_bucket_index < m_buckets->Size() && m_it == (*m_buckets)[m_bucket_index].End()) {
-                    ++m_bucket_index;
-                    if (m_bucket_index < m_buckets->Size()) {
-                        m_it = (*m_buckets)[m_bucket_index].Begin();
-                    }
-                }
-                return *this;
-			}
-			Iterator operator++(int) {
-				Iterator tmp = *this;
-				++(*this);
-				return tmp;
-			}
-
-			bool operator==(const Iterator& other) const {
-				return m_buckets == other.m_buckets && m_bucket_index == other.m_bucket_index && (m_bucket_index == m_buckets->Size() || m_it == other.m_it);
-			}
-			bool operator!=(const Iterator& other) const { return !(*this == other); }
-
-		  private:
-			Vector<Bucket>*           m_buckets;
-			size_t                    m_bucket_index;
-			typename Bucket::Iterator m_it;
-			friend class UnorderedSet;
-		};
-
-		using ConstIterator = Iterator;
-
-		explicit UnorderedSet(size_t bucket_count = DEFAULT_BUCKET_COUNT, const Hash& hash = Hash(), const KeyEqual& equal = KeyEqual(), const Allocator& alloc = Allocator())
+		explicit UnorderedSet(size_t bucket_count = DEFAULT_BUCKET_COUNT, const Hash& hash = Hash(), const Allocator& alloc = Allocator())
 			: m_buckets(bucket_count)
 			, m_size(0)
 			, m_hasher(hash)
-			, m_key_equal(equal)
 			, m_allocator(alloc) {}
 
 		UnorderedSet(const UnorderedSet& other)
 			: m_buckets(other.m_buckets)
 			, m_size(other.m_size)
 			, m_hasher(other.m_hasher)
-			, m_key_equal(other.m_key_equal)
 			, m_allocator(other.m_allocator) {}
 
 		UnorderedSet(UnorderedSet&& other) noexcept
 			: m_buckets(Move(other.m_buckets))
 			, m_size(other.m_size)
 			, m_hasher(Move(other.m_hasher))
-			, m_key_equal(Move(other.m_key_equal))
 			, m_allocator(Move(other.m_allocator)) {
 			other.m_size = 0;
 		}
 
-		UnorderedSet(std::initializer_list<_Ty> init, size_t bucket_count = DEFAULT_BUCKET_COUNT, const Hash& hash = Hash(), const KeyEqual& equal = KeyEqual(), const Allocator& alloc = Allocator())
-			: UnorderedSet(bucket_count, hash, equal, alloc) {
+		UnorderedSet(std::initializer_list<_Ty> init, size_t bucket_count = DEFAULT_BUCKET_COUNT, const Hash& hash = Hash(), const Allocator& alloc = Allocator())
+			: UnorderedSet(bucket_count, hash, alloc) {
 			for (const auto& value : init) {
 				Insert(value);
 			}
@@ -133,7 +80,6 @@ namespace Spark {
 				m_buckets   = other.m_buckets;
 				m_size      = other.m_size;
 				m_hasher    = other.m_hasher;
-				m_key_equal = other.m_key_equal;
 				m_allocator = other.m_allocator;
 			}
 			return *this;
@@ -145,7 +91,6 @@ namespace Spark {
 				m_buckets    = Move(other.m_buckets);
 				m_size       = other.m_size;
 				m_hasher     = Move(other.m_hasher);
-				m_key_equal  = Move(other.m_key_equal);
 				m_allocator  = Move(other.m_allocator);
 				other.m_size = 0;
 			}
@@ -168,11 +113,11 @@ namespace Spark {
 
 			size_t index = GetBucketIndex(value);
 			for (const auto& item : m_buckets[index]) {
-				if (m_key_equal(item.value, value)) {
+				if (item.value == value) {
 					return;
 				}
 			}
-			m_buckets[index].PushBack(value);
+			m_buckets[index].PushBack(Node(value));
 			++m_size;
 		}
 
@@ -183,11 +128,11 @@ namespace Spark {
 
 			size_t index = GetBucketIndex(value);
 			for (const auto& item : m_buckets[index]) {
-				if (m_key_equal(item, value)) {
+				if (item.value == value) {
 					return;
 				}
 			}
-			m_buckets[index].PushBack(Move(value));
+			m_buckets[index].PushBack(Node(Move(value)));
 			++m_size;
 		}
 
@@ -195,7 +140,7 @@ namespace Spark {
 			size_t index  = GetBucketIndex(value);
 			auto&  bucket = m_buckets[index];
 			for (auto it = bucket.Begin(); it != bucket.End(); ++it) {
-				if (m_key_equal(*it, value)) {
+				if ((*it).value == value) {
 					bucket.Erase(it);
 					--m_size;
 					return true;
@@ -220,7 +165,7 @@ namespace Spark {
 		bool Contains(ConstReference value) const {
 			size_t index = GetBucketIndex(value);
 			for (const auto& item : m_buckets[index]) {
-				if (m_key_equal(item, value)) {
+				if (item.value == value) {
 					return true;
 				}
 			}
@@ -237,79 +182,19 @@ namespace Spark {
 		void Rehash(size_t new_bucket_count) {
 			Vector<Bucket> new_buckets(new_bucket_count);
 			for (const auto& bucket : m_buckets) {
-				for (const auto& value : bucket) {
-					size_t new_index = m_hasher(value) % new_bucket_count;
-					new_buckets[new_index].PushBack(value);
+				for (const auto& node : bucket) {
+					size_t new_index = m_hasher(node.value) % new_bucket_count;
+					new_buckets[new_index].PushBack(node);
 				}
 			}
 			m_buckets = Move(new_buckets);
-		}
-
-		UnorderedSet& operator+=(const UnorderedSet& other) {
-			for (const auto& value : other) {
-				Insert(value);
-			}
-			return *this;
-		}
-
-		UnorderedSet operator+(const UnorderedSet& other) const {
-			UnorderedSet result = *this;
-			result += other;
-			return result;
-		}
-
-		UnorderedSet& operator-=(const UnorderedSet& other) {
-			for (const auto& value : other) {
-				Erase(value);
-			}
-			return *this;
-		}
-
-		UnorderedSet operator-(const UnorderedSet& other) const {
-			UnorderedSet result = *this;
-			result -= other;
-			return result;
-		}
-
-		UnorderedSet operator+(ConstReference value) const {
-			UnorderedSet result = *this;
-			result.Insert(value);
-			return result;
-		}
-
-		UnorderedSet operator+(_Ty&& value) const {
-			UnorderedSet result = *this;
-			result.Insert(Move(value));
-			return result;
-		}
-
-		UnorderedSet& operator+=(UnorderedSet&& other) {
-			for (const auto& value : other) {
-				Insert(value);
-			}
-			return *this;
-		}
-
-		UnorderedSet& operator+=(ConstReference value) {
-			Insert(value);
-			return *this;
-		}
-
-		UnorderedSet& operator+=(_Ty&& value) {
-			Insert(Move(value));
-			return *this;
-		}
-
-		UnorderedSet& operator-=(ConstReference value) {
-			Erase(value);
-			return *this;
 		}
 
 		Iterator Find(const _Ty& value) {
 			size_t index = GetBucketIndex(value);
 			auto   it    = m_buckets[index].Begin();
 			for (; it != m_buckets[index].End(); ++it) {
-				if (m_key_equal(*it, value)) {
+				if ((*it).value == value) {
 					return Iterator(&m_buckets, index, it);
 				}
 			}
@@ -324,7 +209,6 @@ namespace Spark {
 			m_buckets.Swap(other.m_buckets);
 			_SPARK Swap(m_size, other.m_size);
 			_SPARK Swap(m_hasher, other.m_hasher);
-			_SPARK Swap(m_key_equal, other.m_key_equal);
 			_SPARK Swap(m_allocator, other.m_allocator);
 		}
 
@@ -393,7 +277,78 @@ namespace Spark {
 		size_t         m_size;
 		Hash           m_hasher;
 		Allocator      m_allocator;
+
+		friend class UnorderedSetIterator<_Ty>;
 	};
+
+	template<typename _Ty> class UnorderedSetIterator : public _SPARK Iterator<ForwardIteratorTag, _Ty, ptrdiff_t, _Ty*, _Ty&> {
+	  public:
+		using IteratorCategory = ForwardIteratorTag;
+		using ValueType        = _Ty;
+		using DifferenceType   = ptrdiff_t;
+		using Pointer          = ValueType*;
+		using Reference        = ValueType&;
+		using ConstPointer     = const ValueType*;
+		using ConstReference   = const ValueType&;
+		using Bucket           = typename UnorderedSet<_Ty>::Bucket;
+
+		// Constructor
+		UnorderedSetIterator(Vector<Bucket>* buckets, size_t bucket_index, typename Bucket::Iterator it)
+			: m_buckets(buckets)
+			, m_bucket_index(bucket_index)
+			, m_it(it) {
+			if (m_bucket_index < m_buckets->Size() && m_it == (*m_buckets)[m_bucket_index].End()) {
+				operator++();
+			}
+		}
+
+		// Non-const operator*
+		ConstReference operator*() const { return m_it->value; }
+
+		// Non-const operator->
+		ConstPointer operator->() const { return &(m_it->value); }
+
+		// Pre-increment
+		UnorderedSetIterator& operator++() {
+			if (m_bucket_index >= m_buckets->Size())
+				return *this;
+			++m_it;
+			while (m_bucket_index < m_buckets->Size() && m_it == (*m_buckets)[m_bucket_index].End()) {
+				++m_bucket_index;
+				if (m_bucket_index < m_buckets->Size()) {
+					m_it = (*m_buckets)[m_bucket_index].Begin();
+				}
+			}
+			return *this;
+		}
+
+		// Post-increment
+		UnorderedSetIterator operator++(int) {
+			UnorderedSetIterator tmp = *this;
+			++(*this);
+			return tmp;
+		}
+
+		// Equality comparison
+		bool operator==(const UnorderedSetIterator& other) const {
+			return m_buckets == other.m_buckets && m_bucket_index == other.m_bucket_index && (m_bucket_index == m_buckets->Size() || m_it == other.m_it);
+		}
+
+		// Inequality comparison
+		bool operator!=(const UnorderedSetIterator& other) const { return !(*this == other); }
+
+	  private:
+		Vector<Bucket>*           m_buckets;
+		size_t                    m_bucket_index;
+		typename Bucket::Iterator m_it;
+
+		friend class UnorderedSet<_Ty>;
+	};
+
+	template<typename _Ty, typename Hash = _SPARK Hash<_Ty>, typename Allocator = _SPARK Allocator<_Ty>> void Swap(UnorderedSet<_Ty, Hash, Allocator>& lhs, UnorderedSet<_Ty, Hash, Allocator>& rhs) {
+		lhs.Swap(rhs);
+	}
+
 } // namespace Spark
 
-#endif
+#endif // SPARK_UNORDERED_SET_HPP

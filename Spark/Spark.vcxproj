@@ -189,6 +189,7 @@
     <ClInclude Include="core\ui\ui.hpp" />
     <ClInclude Include="core\util\classic\compare.hpp" />
     <ClInclude Include="core\util\classic\file.hpp" />
+    <ClInclude Include="core\util\classic\hash.hpp" />
     <ClInclude Include="core\util\classic\traits.hpp" />
     <ClInclude Include="core\util\classic\type.hpp" />
     <ClInclude Include="core\util\classic\util.hpp" />

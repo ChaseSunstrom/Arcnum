@@ -6,10 +6,105 @@
 #include <core/util/memory/memory_util.hpp>
 #include <core/util/types.hpp>
 #include <iostream>
+#include <core/util/classic/hash.hpp>
 #include <string>
 #include "vector.hpp"
 
 namespace Spark {
+
+	// Forward declaration of BasicString
+	template<typename CharType, typename Allocator> class BasicString;
+
+	// Iterator class definition
+	template<typename CharType, bool IsConst> class BasicStringIterator {
+	  public:
+		using IteratorCategory = std::random_access_iterator_tag;
+		using ValueType        = CharType;
+		using DifferenceType   = ptrdiff_t;
+		using Pointer          = ConditionalT<IsConst, const CharType*, CharType*>;
+		using Reference        = ConditionalT<IsConst, const CharType&, CharType&>;
+
+		BasicStringIterator(Pointer ptr)
+			: m_ptr(ptr) {}
+
+		// Prefix increment
+		BasicStringIterator& operator++() {
+			++m_ptr;
+			return *this;
+		}
+
+		// Postfix increment
+		BasicStringIterator operator++(int) {
+			BasicStringIterator tmp = *this;
+			++(*this);
+			return tmp;
+		}
+
+		// Prefix decrement
+		BasicStringIterator& operator--() {
+			--m_ptr;
+			return *this;
+		}
+
+		// Postfix decrement
+		BasicStringIterator operator--(int) {
+			BasicStringIterator tmp = *this;
+			--(*this);
+			return tmp;
+		}
+
+		// Addition operator
+		BasicStringIterator operator+(DifferenceType n) const { return BasicStringIterator(m_ptr + n); }
+
+		// Addition assignment
+		BasicStringIterator& operator+=(DifferenceType n) {
+			m_ptr += n;
+			return *this;
+		}
+
+		// Subtraction operator
+		BasicStringIterator operator-(DifferenceType n) const { return BasicStringIterator(m_ptr - n); }
+
+		// Subtraction assignment
+		BasicStringIterator& operator-=(DifferenceType n) {
+			m_ptr -= n;
+			return *this;
+		}
+
+		// Difference between iterators
+		DifferenceType operator-(const BasicStringIterator& other) const { return m_ptr - other.m_ptr; }
+
+		// Dereference operator
+		Reference operator*() const { return *m_ptr; }
+
+		// Arrow operator
+		Pointer operator->() const { return m_ptr; }
+
+		// Subscript operator
+		Reference operator[](DifferenceType n) const { return *(m_ptr + n); }
+
+		// Equality comparison
+		bool operator==(const BasicStringIterator& other) const { return m_ptr == other.m_ptr; }
+
+		// Inequality comparison
+		bool operator!=(const BasicStringIterator& other) const { return m_ptr != other.m_ptr; }
+
+		// Less than comparison
+		bool operator<(const BasicStringIterator& other) const { return m_ptr < other.m_ptr; }
+
+		// Greater than comparison
+		bool operator>(const BasicStringIterator& other) const { return m_ptr > other.m_ptr; }
+
+		// Less than or equal comparison
+		bool operator<=(const BasicStringIterator& other) const { return m_ptr <= other.m_ptr; }
+
+		// Greater than or equal comparison
+		bool operator>=(const BasicStringIterator& other) const { return m_ptr >= other.m_ptr; }
+
+	  private:
+		Pointer m_ptr;
+	};
+
 	template<typename CharType = char, typename Allocator = _SPARK Allocator<CharType>> class BasicString {
 	  public:
 		using AllocatorType   = Allocator;
@@ -22,80 +117,8 @@ namespace Spark {
 		using SizeType        = typename AllocatorTraits::SizeType;
 		using DifferenceType  = typename AllocatorTraits::DifferenceType;
 
-		class Iterator {
-		  public:
-			using IteratorCategory = std::random_access_iterator_tag;
-			using ValueType        = typename AllocatorTraits::ValueType;
-			using Pointer          = typename AllocatorTraits::Pointer;
-			using Reference        = typename AllocatorTraits::Reference;
-			using ConstReference   = typename AllocatorTraits::ConstReference;
-			using SizeType         = typename AllocatorTraits::SizeType;
-			using DifferenceType   = typename AllocatorTraits::DifferenceType;
-
-			Iterator(Pointer ptr)
-				: m_ptr(ptr) {}
-
-			// Prefix increment
-			Iterator& operator++() {
-				++m_ptr;
-				return *this;
-			}
-
-			// Postfix increment
-			Iterator operator++(i32) {
-				Iterator tmp = *this;
-				++(*this);
-				return tmp;
-			}
-
-			Reference operator*() const { return *m_ptr; }
-			Pointer   operator->() const { return m_ptr; }
-
-			Iterator& operator--() {
-				--m_ptr;
-				return *this;
-			}
-
-			Iterator operator--(i32) {
-				Iterator tmp = *this;
-				--(*this);
-				return tmp;
-			}
-
-			Iterator& operator+=(DifferenceType n) {
-				m_ptr += n;
-				return *this;
-			}
-
-			Iterator operator+(DifferenceType n) const {
-				Iterator tmp = *this;
-				return tmp += n;
-			}
-
-			Iterator& operator-=(DifferenceType n) {
-				m_ptr -= n;
-				return *this;
-			}
-
-			Iterator operator-(DifferenceType n) const {
-				Iterator tmp = *this;
-				return tmp -= n;
-			}
-
-			DifferenceType operator-(const Iterator& other) const { return m_ptr - other.m_ptr; }
-
-			Reference operator[](DifferenceType n) const { return *(m_ptr + n); }
-
-			bool operator==(const Iterator& other) const { return m_ptr == other.m_ptr; }
-			bool operator!=(const Iterator& other) const { return m_ptr != other.m_ptr; }
-			bool operator<(const Iterator& other) const { return m_ptr < other.m_ptr; }
-			bool operator>(const Iterator& other) const { return m_ptr > other.m_ptr; }
-			bool operator<=(const Iterator& other) const { return m_ptr <= other.m_ptr; }
-			bool operator>=(const Iterator& other) const { return m_ptr >= other.m_ptr; }
-
-		  private:
-			Pointer m_ptr;
-		};
+		using Iterator        = BasicStringIterator<CharType, false>;
+		using ConstIterator   = BasicStringIterator<CharType, true>;
 
 		BasicString()
 			: m_data(nullptr)
@@ -307,14 +330,14 @@ namespace Spark {
 			return BasicString(start, end - start + 1);
 		}
 
-		Iterator       begin() { return Iterator(m_data); }
-		Iterator       end() { return Iterator(m_data + m_size); }
-		const Iterator begin() const { return Iterator(m_data); }
-		const Iterator end() const { return Iterator(m_data + m_size); }
-		Iterator       Begin() { return begin(); }
-		Iterator       End() { return end(); }
-		const Iterator Begin() const { return begin(); }
-		const Iterator End() const { return end(); }
+		Iterator      begin() { return Iterator(m_data); }
+		Iterator      end() { return Iterator(m_data + m_size); }
+		ConstIterator begin() const { return ConstIterator(m_data); }
+		ConstIterator end() const { return ConstIterator(m_data + m_size); }
+		Iterator      Begin() { return begin(); }
+		Iterator      End() { return end(); }
+		ConstIterator Begin() const { return begin(); }
+		ConstIterator End() const { return end(); }
 
 		bool StartsWith(const BasicString& prefix) const {
 			if (prefix.m_size > m_size)
@@ -410,14 +433,13 @@ namespace Spark {
 		}
 
 		BasicString Substring(SizeType pos, SizeType len = npos) const {
-    if (pos >= m_size)
-        return BasicString();
-    if (len == npos || pos + len > m_size) {
-        len = m_size - pos;
-    }
-    return BasicString(m_data + pos, len);
-}
-
+			if (pos >= m_size)
+				return BasicString();
+			if (len == npos || pos + len > m_size) {
+				len = m_size - pos;
+			}
+			return BasicString(m_data + pos, len);
+		}
 
 		void Reserve(SizeType new_capacity) {
 			if (new_capacity > m_capacity) {
@@ -480,7 +502,6 @@ namespace Spark {
 			}
 		}
 
-
 		static const CharType* StringFind(const CharType* str, const CharType* substr) {
 			while (*str) {
 				const CharType* s1 = str;
@@ -501,8 +522,7 @@ namespace Spark {
 				;
 		}
 
-		static void StringCopyN(CharType* dest, const CharType* src, SizeType n) { MemCpy(dest, src, n * sizeof(CharType));
-		}
+		static void StringCopyN(CharType* dest, const CharType* src, SizeType n) { MemCpy(dest, src, n * sizeof(CharType)); }
 
 		static i64 StringToInt64(const CharType* str) {
 			i64 result = 0;
@@ -597,7 +617,6 @@ namespace Spark {
 			m_capacity = new_capacity;
 		}
 
-
 		void Append(const CharType* str, SizeType len) {
 			SizeType new_size = m_size + len;
 			if (new_size >= m_capacity) {
@@ -608,7 +627,6 @@ namespace Spark {
 			m_size         = new_size;
 			m_data[m_size] = '\0'; // Ensure null-termination
 		}
-
 
 		void ReplaceInternal(SizeType pos, SizeType len, const BasicString& str) {
 			SizeType new_size = m_size - len + str.m_size;
@@ -623,7 +641,7 @@ namespace Spark {
 				m_capacity = new_capacity;
 			} else {
 				if (len != str.m_size) {
-					MemMove(m_data + pos + str.m_size, m_data + pos + len, m_size - pos - len);
+					MemMove(m_data + pos + str.m_size, m_data + pos + len, (m_size - pos - len) * sizeof(CharType));
 				}
 				StringCopyN(m_data + pos, str.m_data, str.m_size);
 			}
@@ -647,9 +665,14 @@ namespace Spark {
 	using String = BasicString<char, Allocator<char>>;
 
 	inline void Swap(String& lhs, String& rhs) { lhs.Swap(rhs); }
+
+	template<> struct Hash<String> {
+		usize operator()(const String& str) const noexcept { return Hash<const char*>()(str.CStr()); }
+	};
 } // namespace Spark
 
 namespace std {
+	// STD overload for String
 	template<> struct hash<_SPARK String> {
 		size_t operator()(const _SPARK String& str) const noexcept { return hash<const char*>()(str.CStr()); }
 	};

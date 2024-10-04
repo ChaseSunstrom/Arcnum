@@ -1039,6 +1039,7 @@
     <ClInclude Include="core\util\assert.hpp" />
     <ClInclude Include="core\util\memory\memory_util.hpp" />
     <ClInclude Include="core\util\container\iterator.hpp" />
+    <ClInclude Include="core\util\classic\hash.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\app\application.cpp">

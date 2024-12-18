@@ -21,6 +21,8 @@ namespace Spark {
 
 		template<typename T> void SetVertexData(const Vector<T>& vertices, const VertexLayout& layout) { SetVertexData(vertices.Data(), vertices.Size() * sizeof(T), layout); }
 
+		// TODO: FIX LEAKS HERE
+		// {
 		void SetVertexData(const void* data, size_t size, const VertexLayout& layout) override {
 			auto vbo           = new GLVertexBuffer(m_vertex_usage);
 			auto vertex_buffer = MakeRefPtr<GLVertexBuffer>(vbo); // Create RefPtr correctly
@@ -44,6 +46,9 @@ namespace Spark {
 			instance_buffer->SetData(data, size);
 			m_vertex_array->AddVertexBuffer(instance_buffer);
 		}
+		// }
+
+		template<typename T> void SetInstanceData(const Vector<T>& instances, const VertexLayout& layout) { SetInstanceData(instances.Data(), instances.Size() * sizeof(T), layout); }
 
 		void Draw() const override {
 			Bind();

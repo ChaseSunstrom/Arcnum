@@ -1,46 +1,57 @@
 #ifndef SPARK_GL_RENDERER_HPP
 #define SPARK_GL_RENDERER_HPP
 
-#include <core/api.hpp>
-#include <core/pch.hpp>
-#include <core/render/gl/gl_material.hpp>
-#include <core/render/gl/gl_shader.hpp>
-#include <core/render/model.hpp>
 #include <core/render/renderer.hpp>
-#include <core/resource/resource.hpp>
-#include <core/scene/scene.hpp>
-#include <core/window/gl/gl_framebuffer.hpp>
-#include "gl_mesh.hpp"
 
 namespace Spark {
-
 	class GLRenderer : public Renderer {
 	  public:
-		GLRenderer(GraphicsAPI gapi, Framebuffer& framebuffer, Manager<Resource>& resource_manager);
-		~GLRenderer();
+		GLRenderer(GraphicsAPI gapi, Framebuffer& framebuffer, Manager<Resource>& resource_manager)
+			: Renderer(gapi, framebuffer, resource_manager) {}
 
-		void Render(ConstPtr<Scene> scene) override;
+		void BeginFrame() override {
+			glViewport(0, 0, m_window_width, m_window_height);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		}
+
+		void Submit(const RenderCommand& command) override {
+			switch (command.type) {
+				case RenderCommandType::Draw:
+					if (command.material && command.mesh) {
+						command.material->Apply();
+						command.mesh->Bind();
+						command.mesh->Draw();
+						command.mesh->Unbind();
+					}
+					break;
+
+				case RenderCommandType::DrawInstanced:
+					if (command.material && command.mesh) {
+						command.material->Apply();
+						command.mesh->Bind();
+						command.mesh->DrawInstanced(command.instance_count);
+						command.mesh->Unbind();
+					}
+					break;
+
+				case RenderCommandType::SetState:
+					ApplyRenderState(command.state);
+					break;
+			}
+		}
 
 	  private:
-		void RenderGeometryPass(ConstPtr<Scene> scene);
-		void RenderLightingPass();
-		void RenderPostProcessPass();
-		void RenderFramebufferToScreen();
-
-		void SetupInstancedRendering(const GLStaticMesh& mesh, size_t instance_count);
-		void UpdateInstanceBuffer(const Vector<_MATH Mat4>& transforms);
-
-		void SetCommonUniforms(GLRenderShader* shader);
-
-	  private:
-		GLFramebuffer&            m_g_framebuffer;
-		UniquePtr<GLRenderShader> m_geometry_pass_shader;
-		UniquePtr<GLRenderShader> m_lighting_pass_shader;
-		UniquePtr<GLRenderShader> m_post_process_shader;
-		UniquePtr<GLRenderShader> m_screen_shader;
-		u32                       m_quad_vao, m_quad_vbo;
-		UnorderedMap<u32, u32>    m_instance_vbos; // VAO to instance VBO mapping
-		i32                       m_window_width, m_window_height;
+		void ApplyRenderState(const RenderState& state) {
+			state.depth_test ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
+			state.blend ? glEnable(GL_BLEND) : glDisable(GL_BLEND);
+			if (state.blend) {
+				glBlendFunc(state.blend_src, state.blend_dst);
+			}
+			state.cull_face ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
+			if (state.cull_face) {
+				glCullFace(state.cull_mode);
+			}
+		}
 	};
 } // namespace Spark
 

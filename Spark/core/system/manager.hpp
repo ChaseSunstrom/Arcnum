@@ -15,9 +15,10 @@ namespace Spark {
 			: m_registry(MakeUnique<Registry<_Ty>>()) {}
 		~Manager() = default;
 
-		template<typename... Args> RefPtr<_Ty> Create(const String& name, Args&&... args) {
-			_Ty* object = new _Ty(Forward<Args>(args)...);
-			return Register(name, UniquePtr<_Ty>(object));
+		template<typename DerivedType, typename... Args> RefPtr<DerivedType> Create(const String& name, Args&&... args) {
+			static_assert(IsBaseOfV<_Ty, DerivedType>, "DerivedType must inherit from the manager's base type");
+			auto* object = new DerivedType(name, Forward<Args>(args)...);
+			return RefCast<DerivedType>(Register(name, UniquePtr<_Ty>(object)));
 		}
 
 		RefPtr<_Ty> Register(const String& name, UniquePtr<_Ty> object) { return m_registry->Register(name, Move(object)); }

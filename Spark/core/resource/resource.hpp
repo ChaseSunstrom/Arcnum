@@ -4,7 +4,6 @@
 #include <core/pch.hpp>
 #include <core/render/material.hpp>
 #include <core/render/mesh.hpp>
-#include <core/render/model.hpp>
 #include <core/render/shader.hpp>
 #include <core/scene/scene.hpp>
 #include <core/render/camera.hpp>
@@ -26,12 +25,9 @@ namespace Spark {
 	  public:
 		friend class Application;
 		Manager() {
-			m_managers[typeid(StaticMesh)]   = MakeUnique<Manager<StaticMesh>>();
-			m_managers[typeid(DynamicMesh)]  = MakeUnique<Manager<DynamicMesh>>();
+			m_managers[typeid(GenericMesh)]  = MakeUnique<Manager<GenericMesh>>();
 			m_managers[typeid(Material)]     = MakeUnique<Manager<Material>>();
-			m_managers[typeid(StaticModel)]  = MakeUnique<Manager<StaticModel>>();
-			m_managers[typeid(DynamicModel)] = MakeUnique<Manager<DynamicModel>>();
-			m_managers[typeid(RenderShader)] = MakeUnique<Manager<RenderShader>>();
+			m_managers[typeid(Shader)]       = MakeUnique<Manager<Shader>>();
 			m_managers[typeid(Scene)]        = MakeUnique<Manager<Scene>>();
 			m_managers[typeid(Camera)]       = MakeUnique<Manager<Camera>>();
 		}

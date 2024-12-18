@@ -192,9 +192,6 @@
     <ClInclude Include="core\render\mesh.hpp">
       <Filter>core\render</Filter>
     </ClInclude>
-    <ClInclude Include="core\render\model.hpp">
-      <Filter>core\render</Filter>
-    </ClInclude>
     <ClInclude Include="core\render\renderer.hpp">
       <Filter>core\render</Filter>
     </ClInclude>
@@ -1040,6 +1037,9 @@
     <ClInclude Include="core\util\memory\memory_util.hpp" />
     <ClInclude Include="core\util\container\iterator.hpp" />
     <ClInclude Include="core\util\classic\hash.hpp" />
+    <ClInclude Include="core\render\buffer.hpp" />
+    <ClInclude Include="core\render\gl\gl_buffer.hpp" />
+    <ClInclude Include="core\render\render_types.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\app\application.cpp">
@@ -1053,15 +1053,6 @@
     </ClCompile>
     <ClCompile Include="core\physics\rigid_body.cpp">
       <Filter>core\physics</Filter>
-    </ClCompile>
-    <ClCompile Include="core\render\gl\gl_mesh.cpp">
-      <Filter>core\render\gl</Filter>
-    </ClCompile>
-    <ClCompile Include="core\render\gl\gl_renderer.cpp">
-      <Filter>core\render\gl</Filter>
-    </ClCompile>
-    <ClCompile Include="core\render\gl\gl_shader.cpp">
-      <Filter>core\render\gl</Filter>
     </ClCompile>
     <ClCompile Include="core\scene\octree.cpp">
       <Filter>core\scene</Filter>

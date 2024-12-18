@@ -17,7 +17,6 @@
 #include "physics/rigid_body.hpp"
 #include "render/material.hpp"
 #include "render/mesh.hpp"
-#include "render/model.hpp"
 #include "render/renderer.hpp"
 #include "render/shader.hpp"
 #include "render/vertex.hpp"

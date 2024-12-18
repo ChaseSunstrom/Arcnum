@@ -49,10 +49,6 @@ namespace Spark {
 		RunUpdateFunctions();
 		m_ecs->Update(m_delta_time);
 		m_window->Update();
-
-		auto cur_scene = m_resource_manager->GetManager<Scene>().GetCurrentScene();
-
-		m_renderer->Render(cur_scene);
 	}
 
 	Application& Application::AddStartupFunction(const ApplicationFunction& fn, const FunctionSettings settings) {

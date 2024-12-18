@@ -2,7 +2,6 @@
 #define SPARK_SCENE_HPP
 
 #include <core/pch.hpp>
-#include <core/render/model.hpp>
 #include <core/system/manager.hpp>
 #include "octree.hpp"
 

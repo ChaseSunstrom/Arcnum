@@ -3,48 +3,73 @@
 
 #include <core/pch.hpp>
 #include <core/render/mesh.hpp>
-#include <core/system/manager.hpp>
+#include "gl_buffer.hpp"
 
 namespace Spark {
-	class GLStaticMesh : public StaticMesh {
+	class GLGenericMesh : public GenericMesh {
 	  public:
-		friend class Manager<StaticMesh>;
-		void CreateMesh() override;
+		GLGenericMesh(const String& name, BufferUsage usage = BufferUsage::STATIC_DRAW)
+			: m_name(name)
+			, m_vertex_array(MakeUnique<GLVertexArray>())
+			, m_vertex_usage(usage) {}
 
-		u32 GetVAO() const { return m_vao; }
-		u32 GetVBO() const { return m_vbo; }
-		u32 GetEBO() const { return m_ebo; }
+		virtual ~GLGenericMesh() = default;
+
+		void Bind() const override { m_vertex_array->Bind(); }
+
+		void Unbind() const override { m_vertex_array->Unbind(); }
+
+		template<typename T> void SetVertexData(const Vector<T>& vertices, const VertexLayout& layout) { SetVertexData(vertices.Data(), vertices.Size() * sizeof(T), layout); }
+
+		void SetVertexData(const void* data, size_t size, const VertexLayout& layout) override {
+			auto vbo           = new GLVertexBuffer(m_vertex_usage);
+			auto vertex_buffer = MakeRefPtr<GLVertexBuffer>(vbo); // Create RefPtr correctly
+			vertex_buffer->SetLayout(layout);
+			vertex_buffer->SetData(data, size);
+			m_vertex_array->AddVertexBuffer(vertex_buffer);
+			m_vertex_count = size / layout.GetStride();
+		}
+
+		void SetIndexData(const Vector<u32>& indices) override {
+			auto ibo          = new GLIndexBuffer(m_vertex_usage);
+			auto index_buffer = MakeRefPtr<GLIndexBuffer>(ibo); // Create RefPtr correctly
+			index_buffer->SetData(indices.Data(), indices.Size() * sizeof(u32));
+			m_vertex_array->SetIndexBuffer(index_buffer);
+		}
+
+		void SetInstanceData(const void* data, size_t size, const VertexLayout& layout) override {
+			auto vbo             = new GLVertexBuffer(BufferUsage::INSTANCE);
+			auto instance_buffer = MakeRefPtr<GLVertexBuffer>(vbo); // Create RefPtr correctly
+			instance_buffer->SetLayout(layout);
+			instance_buffer->SetData(data, size);
+			m_vertex_array->AddVertexBuffer(instance_buffer);
+		}
+
+		void Draw() const override {
+			Bind();
+			if (m_vertex_array->GetIndexBuffer()) {
+				glDrawElements(GL_TRIANGLES, m_vertex_array->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+			} else {
+				glDrawArrays(GL_TRIANGLES, 0, m_vertex_count);
+			}
+			Unbind();
+		}
+
+		void DrawInstanced(u32 instance_count) const override {
+			Bind();
+			if (m_vertex_array->GetIndexBuffer()) {
+				glDrawElementsInstanced(GL_TRIANGLES, m_vertex_array->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr, instance_count);
+			} else {
+				glDrawArraysInstanced(GL_TRIANGLES, 0, m_vertex_count, instance_count);
+			}
+			Unbind();
+		}
 
 	  private:
-		GLStaticMesh(const Vector<Vertex>& vertices, const Vector<u32>& indices = {})
-			: StaticMesh(vertices, indices) {}
-
-
-	  private:
-		u32 m_vao = 0;
-		u32 m_vbo = 0;
-		u32 m_ebo = 0;
-	};
-
-	class GLDynamicMesh : public DynamicMesh {
-	  public:
-		friend class Manager<DynamicMesh>;
-		void CreateMesh() override;
-		void Update(const Vector<Vertex>& vertices, const Vector<u32>& indices) override;
-		void UpdateMesh(const Vector<Vertex>& vertices) override;
-		void UpdateIndices(const Vector<u32>& indices) override;
-
-		u32 GetVAO() const { return m_vao; }
-		u32 GetVBO() const { return m_vbo; }
-		u32 GetEBO() const { return m_ebo; }
-	  private:
-		GLDynamicMesh(const Vector<Vertex>& vertices, const Vector<u32>& indices)
-			: DynamicMesh(vertices, indices) {}
-
-	  private:
-		u32 m_vao = 0;
-		u32 m_vbo = 0;
-		u32 m_ebo = 0;
+		String                   m_name;
+		UniquePtr<GLVertexArray> m_vertex_array;
+		BufferUsage              m_vertex_usage;
+		size_t                   m_vertex_count = 0;
 	};
 } // namespace Spark
 

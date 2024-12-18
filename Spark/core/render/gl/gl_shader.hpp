@@ -1,3 +1,4 @@
+// gl_shader.hpp
 #ifndef SPARK_GL_SHADER_HPP
 #define SPARK_GL_SHADER_HPP
 
@@ -7,79 +8,144 @@
 #include <core/util/gl.hpp>
 
 namespace Spark {
-	class GLShaderCommon {
-	  protected:
-		static void Use(u32 id) { glUseProgram(id); }
-		static void SetVec2(u32 id, const String& name, const glm::vec2& value) { glUniform2fv(glGetUniformLocation(id, name.CStr()), 1, &value[0]); }
-		static void SetVec3(u32 id, const String& name, const glm::vec3& value) { glUniform3fv(glGetUniformLocation(id, name.CStr()), 1, &value[0]); }
-		static void SetVec4(u32 id, const String& name, const glm::vec4& value) { glUniform4fv(glGetUniformLocation(id, name.CStr()), 1, &value[0]); }
-		static void SetMat2(u32 id, const String& name, const glm::mat2& value) { glUniformMatrix2fv(glGetUniformLocation(id, name.CStr()), 1, GL_FALSE, &value[0][0]); }
-		static void SetMat3(u32 id, const String& name, const glm::mat3& value) { glUniformMatrix3fv(glGetUniformLocation(id, name.CStr()), 1, GL_FALSE, &value[0][0]); }
-		static void SetMat4(u32 id, const String& name, const glm::mat4& value) { glUniformMatrix4fv(glGetUniformLocation(id, name.CStr()), 1, GL_FALSE, &value[0][0]); }
-		static void SetI32(u32 id, const String& name, const i32 value) { glUniform1i(glGetUniformLocation(id, name.CStr()), value); }
-		static void SetI64(u32 id, const String& name, const i64 value) { glUniform1i(glGetUniformLocation(id, name.CStr()), static_cast<GLint>(value)); }
-		static void SetF32(u32 id, const String& name, const f32 value) { glUniform1f(glGetUniformLocation(id, name.CStr()), value); }
-		static void SetF64(u32 id, const String& name, const f64 value) { glUniform1f(glGetUniformLocation(id, name.CStr()), static_cast<GLfloat>(value)); }
-		static void SetBool(u32 id, const String& name, const bool value) { glUniform1i(glGetUniformLocation(id, name.CStr()), static_cast<GLint>(value)); }
-		static void BindUniformBlock(u32 id, const String& block_name, u32 binding_point) {
-			u32 block_index = glGetUniformBlockIndex(id, block_name.CStr());
-			if (block_index != GL_INVALID_INDEX) {
-				glUniformBlockBinding(id, block_index, binding_point);
-			}
-		}
-		static u32  GetUniformBlockIndex(u32 id, const String& block_name) { return glGetUniformBlockIndex(id, block_name.CStr()); }
-		static void CheckShaderSuccess(u32 shader) {
-			i32  success;
-			char info[1024];
-			glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-
-			if (!success) {
-				glGetShaderInfoLog(shader, sizeof(info), nullptr, info);
-				glDeleteShader(shader);
-				LOG_FATAL("Failed to compile vertex shader: " << info);
-			}
-		}
-		static u32 CompileGLShaderInternal(const std::filesystem::path& path, u32 type) {
-			String code   = ReadFile(path);
-			u32         shader = glCreateShader(type);
-			const char* c_str  = code.CStr();
-			glShaderSource(shader, 1, &c_str, nullptr);
-			glCompileShader(shader);
-
-			CheckShaderSuccess(shader);
-
-			return shader;
-		}
-	};
-
-	class GLRenderShader
-		: public RenderShader
-		, private GLShaderCommon {
+	class GLShader : public Shader {
 	  public:
-		friend class Manager<GLRenderShader>;
-		GLRenderShader(const Vector<Pair<ShaderStage, const std::filesystem::path>>& stage_paths)
-			: RenderShader(stage_paths) {}
-		~GLRenderShader();
-		u32  GetId() const { return m_id; }
-		void Compile() override;
-		void Use() override { GLShaderCommon::Use(m_id); }
-		void SetVec2(const String& name, const glm::vec2& value) override { GLShaderCommon::SetVec2(m_id, name, value); }
-		void SetVec3(const String& name, const glm::vec3& value) override { GLShaderCommon::SetVec3(m_id, name, value); }
-		void SetVec4(const String& name, const glm::vec4& value) override { GLShaderCommon::SetVec4(m_id, name, value); }
-		void SetMat2(const String& name, const glm::mat2& value) override { GLShaderCommon::SetMat2(m_id, name, value); }
-		void SetMat3(const String& name, const glm::mat3& value) override { GLShaderCommon::SetMat3(m_id, name, value); }
-		void SetMat4(const String& name, const glm::mat4& value) override { GLShaderCommon::SetMat4(m_id, name, value); }
-		void SetI32(const String& name, const i32 value) override { GLShaderCommon::SetI32(m_id, name, value); }
-		void SetI64(const String& name, const i64 value) override { GLShaderCommon::SetI64(m_id, name, value); }
-		void SetF32(const String& name, const f32 value) override { GLShaderCommon::SetF32(m_id, name, value); }
-		void SetF64(const String& name, const f64 value) override { GLShaderCommon::SetF64(m_id, name, value); }
-		void SetBool(const String& name, const bool value) override { GLShaderCommon::SetBool(m_id, name, value); }
-		void BindUniformBlock(const String& block_name, u32 binding_point) override { GLShaderCommon::BindUniformBlock(m_id, block_name, binding_point); }
-		u32  GetUniformBlockIndex(const String& block_name) override { return GLShaderCommon::GetUniformBlockIndex(m_id, block_name); }
-		void AddShaderStage(ShaderStage stage, const std::filesystem::path& path) override;
+		GLShader(const String& name)
+			: m_name(name) {}
+
+		~GLShader() override {
+			if (m_program_id) {
+				glDeleteProgram(m_program_id);
+			}
+			for (auto [stage, id] : m_stage_ids) {
+				glDeleteShader(id);
+			}
+		}
+
+		void Bind() override { glUseProgram(m_program_id); }
+
+		void Unbind() override { glUseProgram(0); }
+
+		void AddStage(ShaderStage stage, const String& source) override {
+			GLuint shader_id = CompileShaderStage(stage, source);
+			if (shader_id) {
+				m_stage_ids[stage] = shader_id;
+				m_sources[stage]   = source;
+			}
+		}
+
+		void Compile() override {
+			m_program_id = glCreateProgram();
+
+			// Attach all shader stages
+			for (const auto& [stage, shader_id] : m_stage_ids) {
+				glAttachShader(m_program_id, shader_id);
+			}
+
+			// Link program
+			glLinkProgram(m_program_id);
+
+			// Check linking status
+			GLint success;
+			glGetProgramiv(m_program_id, GL_LINK_STATUS, &success);
+			if (!success) {
+				GLchar info_log[512];
+				glGetProgramInfoLog(m_program_id, sizeof(info_log), nullptr, info_log);
+				LOG_ERROR("Shader program linking failed: " << info_log);
+				return;
+			}
+
+			// Detach and delete shader stages after successful linking
+			for (const auto& [stage, shader_id] : m_stage_ids) {
+				glDetachShader(m_program_id, shader_id);
+				glDeleteShader(shader_id);
+			}
+			m_stage_ids.Clear();
+		}
+
+		void SetParameters(const ShaderParameters& params) override {
+			for (const auto& [name, value] : params.GetParams()) {
+				SetUniform(name, value);
+			}
+		}
 
 	  private:
-		u32 m_id = 0;
+		GLuint CompileShaderStage(ShaderStage stage, const String& source) {
+			GLenum gl_stage = GetGLShaderStage(stage);
+			if (gl_stage == 0) {
+				LOG_ERROR("Invalid shader stage");
+				return 0;
+			}
+
+			GLuint      shader_id  = glCreateShader(gl_stage);
+			const char* source_str = source.CStr();
+			glShaderSource(shader_id, 1, &source_str, nullptr);
+			glCompileShader(shader_id);
+
+			// Check compilation status
+			GLint success;
+			glGetShaderiv(shader_id, GL_COMPILE_STATUS, &success);
+			if (!success) {
+				GLchar info_log[512];
+				glGetShaderInfoLog(shader_id, sizeof(info_log), nullptr, info_log);
+				LOG_ERROR("Shader compilation failed: " << info_log);
+				glDeleteShader(shader_id);
+				return 0;
+			}
+
+			return shader_id;
+		}
+
+		static GLenum GetGLShaderStage(ShaderStage stage) {
+			switch (stage) {
+				case ShaderStage::VERTEX:
+					return GL_VERTEX_SHADER;
+				case ShaderStage::FRAGMENT:
+					return GL_FRAGMENT_SHADER;
+				case ShaderStage::COMPUTE:
+					return GL_COMPUTE_SHADER;
+				case ShaderStage::GEOMETRY:
+					return GL_GEOMETRY_SHADER;
+				case ShaderStage::TESSELLATION:
+					return GL_TESS_CONTROL_SHADER;
+				default:
+					return 0;
+			}
+		}
+
+		void SetUniform(const String& name, const std::any& value) {
+			GLint location = glGetUniformLocation(m_program_id, name.CStr());
+			if (location == -1)
+				return;
+
+			try {
+				if (value.type() == typeid(f32)) {
+					glUniform1f(location, std::any_cast<f32>(value));
+				} else if (value.type() == typeid(i32)) {
+					glUniform1i(location, std::any_cast<i32>(value));
+				} else if (value.type() == typeid(glm::vec2)) {
+					const auto& v = std::any_cast<glm::vec2>(value);
+					glUniform2f(location, v.x, v.y);
+				} else if (value.type() == typeid(glm::vec3)) {
+					const auto& v = std::any_cast<glm::vec3>(value);
+					glUniform3f(location, v.x, v.y, v.z);
+				} else if (value.type() == typeid(glm::vec4)) {
+					const auto& v = std::any_cast<glm::vec4>(value);
+					glUniform4f(location, v.x, v.y, v.z, v.w);
+				} else if (value.type() == typeid(glm::mat4)) {
+					const auto& m = std::any_cast<glm::mat4>(value);
+					glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(m));
+				}
+			} catch (const std::bad_any_cast&) {
+				LOG_ERROR("Invalid uniform type for: " << name);
+			}
+		}
+
+	  private:
+		String                            m_name;
+		u32                               m_program_id = 0;
+		UnorderedMap<ShaderStage, u32>    m_stage_ids;
+		UnorderedMap<ShaderStage, String> m_sources;
 	};
 } // namespace Spark
 

@@ -5,6 +5,8 @@
 #include <core/system/manager.hpp>
 #include <include/glm/glm.hpp>
 
+#include "core/resource/asset.hpp"
+
 namespace Spark {
 	enum class ShaderStage { VERTEX, FRAGMENT, COMPUTE, GEOMETRY, TESSELLATION };
 
@@ -40,8 +42,10 @@ namespace Spark {
 	};
 
 	// Generic shader interface
-	class Shader {
+	class Shader : public Asset<Shader> {
 	  public:
+		Shader(const String& name)
+			: Asset(name) {}
 		virtual ~Shader()                                              = default;
 		virtual void Bind()                                            = 0;
 		virtual void Unbind()                                          = 0;

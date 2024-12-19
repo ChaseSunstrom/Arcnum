@@ -28,7 +28,7 @@ namespace Spark {
 			for (const auto& [name, binding] : m_textures) {
 				glActiveTexture(GL_TEXTURE0 + binding.slot);
 
-				glBindTexture(GL_TEXTURE_2D, binding.textureId);
+				glBindTexture(GL_TEXTURE_2D, binding.texture_id);
 
 				SetParameter(name, binding.slot); // Set the sampler uniform to the texture slot
 			}

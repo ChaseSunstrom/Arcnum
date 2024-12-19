@@ -61,11 +61,14 @@ namespace Spark {
 		using Type = _Ty;
 	};
 
+
+
 	// Type aliases for convenience
 	template<typename _Ty> using RemoveRefT      = typename RemoveRef<_Ty>::Type;
 	template<typename _Ty> using RemoveConstT    = typename RemoveConst<_Ty>::Type;
 	template<typename _Ty> using RemoveVolatileT = typename RemoveVolatile<_Ty>::Type;
 	template<typename _Ty> using RemoveCVT       = typename RemoveCV<_Ty>::Type;
+	template<typename _Ty> using RemoveCVRefT    = typename RemoveCV<RemoveRefT<_Ty>>::Type;
 	template<typename _Ty> using RemovePointerT  = typename RemovePointer<_Ty>::Type;
 	template<typename _Ty> using RemoveExtentT   = typename RemoveExtent<_Ty>::Type;
 
@@ -253,6 +256,27 @@ namespace Spark {
 	};
 
 	template<bool B, typename _Ty = void> using EnableIfT = typename EnableIf<B, _Ty>::Type;
+
+	template<bool _FirstValue, class _First, class... _Rest> struct _Conjunction {
+		using Type = _First;
+	};
+
+	template<class _True, class _Next, class... _Rest> struct _Conjunction<true, _True, _Next, _Rest...> {
+		using Type = typename _Conjunction<_Next::Value, _Next, _Rest...>::Type;
+	};
+
+	template<class... _Traits> struct Conjunction : TrueType {}; // Empty case is true
+
+	template<class _First, class... _Rest> struct Conjunction<_First, _Rest...> : _Conjunction<_First::Value, _First, _Rest...>::Type {
+		// First false trait, or last trait if none are false
+	};
+
+	template<class _Trait> struct Negation : BoolConstant<!static_cast<bool>(_Trait::Value)> {};
+
+	template<class... _Traits> constexpr bool ConjunctionV = Conjunction<_Traits...>::Value;
+
+	template<class _Trait> constexpr bool NegationV        = Negation<_Trait>::Value;
+
 
 	template<typename From, typename To> struct IsConvertible {
 	  private:

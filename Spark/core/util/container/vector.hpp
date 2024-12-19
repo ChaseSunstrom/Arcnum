@@ -14,6 +14,11 @@
 namespace Spark {
 	template<typename _Ty> class VectorIterator : public Iterator<RandomAccessIteratorTag, _Ty> {
 	  public:
+		using iterator_category = std::random_access_iterator_tag;
+	    using value_type = _Ty;
+	    using difference_type = std::ptrdiff_t;
+	    using pointer = _Ty*;
+	    using reference = _Ty&;
 		using IteratorCategory = RandomAccessIteratorTag;
 		using ValueType        = _Ty;
 		using DifferenceType   = ptrdiff_t;

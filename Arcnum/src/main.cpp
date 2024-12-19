@@ -1,11 +1,13 @@
-#include <core/render/gl/gl_renderer.hpp>
-#include <core/spark.hpp>
-#include <core/window/gl/gl_window.hpp>
-#include <core/render/gl/gl_shader.hpp>
-#include <core/render/gl/gl_mesh.hpp>
 #include <core/render/gl/gl_material.hpp>
+#include <core/render/gl/gl_mesh.hpp>
+#include <core/render/gl/gl_renderer.hpp>
+#include <core/render/gl/gl_shader.hpp>
+#include <core/spark.hpp>
+#include <core/render/camera.hpp>
+#include <core/window/gl/gl_window.hpp>
 
-void MouseEvents(Spark::Application& app, const Spark::MultiEventPtr<Spark::MouseButtonPressedEvent, Spark::MouseButtonReleasedEvent>& event) {
+// Mouse input system
+auto MouseSystem = [](Spark::Application& app, const Spark::MultiEventPtr<Spark::MouseButtonPressedEvent, Spark::MouseButtonReleasedEvent>& event) {
 	if (event->Is<Spark::MouseButtonPressedEvent>()) {
 		auto pressed_event = event->Get<Spark::MouseButtonPressedEvent>();
 		LOG_INFO("Mouse Pressed: " << pressed_event->button);
@@ -13,15 +15,17 @@ void MouseEvents(Spark::Application& app, const Spark::MultiEventPtr<Spark::Mous
 		auto released_event = event->Get<Spark::MouseButtonReleasedEvent>();
 		LOG_INFO("Mouse Released: " << released_event->button);
 	}
-}
+};
 
-void CreateShader(Spark::Application& app) {
+// Scene setup system
+void SetupScene(Spark::Application& app) {
+	// Create shader
 	const char* vertexSrc   = R"(
         #version 450 core
         layout(location = 0) in vec3 a_Position;
         layout(location = 1) in vec3 a_Normal;
         layout(location = 2) in vec2 a_TexCoord;
-        layout(location = 3) in mat4 a_Transform; // Instance transform
+        layout(location = 3) in mat4 a_Transform;
 
         uniform mat4 u_ViewProjection;
 
@@ -40,17 +44,12 @@ void CreateShader(Spark::Application& app) {
         }
     )";
 
-	auto& shader_manager    = app.GetManager<Spark::Shader>();
-	auto  shader            = shader_manager.Create<Spark::GLShader>("basic");
-	shader->AddStage(Spark::ShaderStage::VERTEX, vertexSrc);
-	shader->AddStage(Spark::ShaderStage::FRAGMENT, fragmentSrc);
-	shader->Compile();
-}
+	auto& shader            = app.CreateAsset<Spark::GLShader>("basic");
+	shader.AddStage(Spark::ShaderStage::VERTEX, vertexSrc);
+	shader.AddStage(Spark::ShaderStage::FRAGMENT, fragmentSrc);
+	shader.Compile();
 
-void CreateTriangleMesh(Spark::Application& app) {
-	auto& mesh_manager = app.GetManager<Spark::GenericMesh>();
-
-	// Define vertex layout
+	// Create mesh
 	Spark::VertexLayout layout;
 	layout.AddAttribute<glm::vec3>("a_Position", Spark::AttributeType::VEC3);
 	layout.AddAttribute<glm::vec3>("a_Normal", Spark::AttributeType::VEC3);
@@ -70,28 +69,16 @@ void CreateTriangleMesh(Spark::Application& app) {
 
 	Spark::Vector<u32> indices = {0, 1, 2};
 
-	auto mesh                  = mesh_manager.Create<Spark::GLGenericMesh>("triangle", Spark::BufferUsage::STATIC_DRAW);
-	mesh->SetVertexData(vertices, layout);
-	mesh->SetIndexData(indices);
-}
+	auto& mesh                 = app.CreateAsset<Spark::GLGenericMesh>("triangle", Spark::BufferUsage::STATIC_DRAW);
+	mesh.SetVertexData(vertices, layout);
+	mesh.SetIndexData(indices);
 
-void CreateMaterial(Spark::Application& app) {
-	auto& material_manager = app.GetManager<Spark::Material>();
-	auto  shader           = app.GetManager<Spark::Shader>().Get("basic");
-
-	auto material          = material_manager.Create<Spark::GLMaterial>("triangle_material");
-	material->SetShader(shader);
-	material->SetParameter("u_Color", glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-}
-
-void SetupTestScene(Spark::Application& app) {
-	CreateShader(app);
-	CreateTriangleMesh(app);
-	CreateMaterial(app);
+	// Create material
+	auto& material = app.CreateAsset<Spark::GLMaterial>("triangle_material");
+	material.SetShader(app.GetAsset<Spark::GLShader>("basic"));
+	material.SetParameter("u_Color", glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 
 	// Set up instance data
-	auto mesh = app.GetManager<Spark::GenericMesh>().Get("triangle");
-
 	Spark::VertexLayout instance_layout;
 	instance_layout.AddAttribute<glm::mat4>("a_Transform", Spark::AttributeType::MAT4);
 
@@ -101,36 +88,61 @@ void SetupTestScene(Spark::Application& app) {
 		transforms.PushBack(transform);
 	}
 
-	mesh->SetInstanceData(transforms, instance_layout);
+	mesh.SetInstanceData(transforms, instance_layout);
+
+	app.CreateAsset<Spark::Camera>("main");
 }
 
-void RenderScene(Spark::Application& app) {
-	auto renderer = static_cast<Spark::GLRenderer*>(&app.GetRenderer());
-	auto mesh     = app.GetManager<Spark::GenericMesh>().Get("triangle");
-	auto material = app.GetManager<Spark::Material>().Get("triangle_material");
+// Render system
+void RenderSystem(Spark::Application& app) {
 
-	// Update view-projection matrix
-	auto camera   = app.GetManager<Spark::Camera>().GetCurrentCamera();
-	material->SetParameter("u_ViewProjection", camera->GetProjectionMatrix() * camera->GetViewMatrix());
+	auto& material = app.GetAsset<Spark::GLMaterial>("triangle_material");
+	auto& camera   = app.GetAsset<Spark::Camera>("main");
+	auto& mesh     = app.GetAsset<Spark::GLGenericMesh>("triangle");
+	auto& renderer = app.GetRenderer();
 
-	// Draw
-	auto cmd = Spark::Renderer::CreateInstancedDrawCommand(mesh, material, 5);
-	renderer->Submit(cmd);
-}
+	material.SetParameter("u_ViewProjection", camera.GetProjectionMatrix() * camera.GetViewMatrix());
 
-void UpdateCamera(Spark::Application& app) {
-	auto cam = app.GetManager<Spark::Camera>().GetCurrentCamera();
-	cam->SetFar(100000.0f);
-}
+	auto cmd = Spark::Renderer::CreateInstancedDrawCommand(&mesh, &material, 5);
+	renderer.Submit(cmd);
+};
 
 int main() {
 	Spark::Application app(Spark::GraphicsAPI::OPENGL);
-	app.CreateWindow<Spark::GLWindow>("Generic Renderer Demo", 1920 / 2, 1080 / 2)
-		.CreateRenderer<Spark::GLRenderer>()
-		.AddSystem<Spark::FPSSystem>()
-		.AddStartupFunction(SetupTestScene)
-		.AddUpdateFunction(RenderScene) // Add render function to update loop
-		.AddUpdateFunction(UpdateCamera)
-		.AddEventFunction<Spark::MouseButtonPressedEvent, Spark::MouseButtonReleasedEvent>(MouseEvents)
-		.Start();
+
+	// Setup window and renderer
+	app.CreateWindow<Spark::GLWindow>("Generic Renderer Demo", 1920 / 2, 1080 / 2).CreateRenderer<Spark::GLRenderer>();
+
+	// Add scene setup system
+	app.AddSystem([](Spark::Application& app) { SetupScene(app); }, Spark::SystemInfo{.stage = Spark::SystemStage::First});
+
+	// Add render system
+	app.AddSystem([](Spark::Application& app) { RenderSystem(app); }, Spark::SystemInfo{.stage = Spark::SystemStage::Render});
+
+	// Add input system (without explicit template parameter)
+	app.AddSystem(
+		[](Spark::Application& app, const Spark::MultiEventPtr<Spark::MouseButtonPressedEvent, Spark::MouseButtonReleasedEvent>& event) {
+			if (event->Is<Spark::MouseButtonPressedEvent>()) {
+				auto pressed_event = event->Get<Spark::MouseButtonPressedEvent>();
+				LOG_INFO("Mouse Pressed: " << pressed_event->button);
+			} else if (event->Is<Spark::MouseButtonReleasedEvent>()) {
+				auto released_event = event->Get<Spark::MouseButtonReleasedEvent>();
+				LOG_INFO("Mouse Released: " << released_event->button);
+			}
+		},
+		Spark::SystemInfo{.stage = Spark::SystemStage::PreUpdate});
+
+	// Add resource
+	app.AddResource(Spark::FPSResource{});
+
+	// Add FPS system (without explicit template parameter)
+	app.AddSystem(
+		[](Spark::Application& app, Spark::ResMut<Spark::FPSResource> fps) {
+			// Assuming there's an Update method in FPSResource
+			fps->calculator.Update();
+		},
+		Spark::SystemInfo{.stage = Spark::SystemStage::PostUpdate});
+
+	app.Start();
+	return 0;
 }

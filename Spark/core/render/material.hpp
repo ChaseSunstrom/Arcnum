@@ -2,12 +2,13 @@
 #define SPARK_MATERIAL_HPP
 
 #include "shader.hpp"
+#include "core/resource/asset.hpp"
 
 namespace Spark {
-	class Material {
+	class Material : public Asset<Material> {
 	  public:
 		Material(const String& name)
-			: m_name(name) {}
+			: Asset(name) {}
 
 		virtual ~Material() = default;
 
@@ -19,18 +20,17 @@ namespace Spark {
 		template<typename T> void SetParameter(const String& name, const T& value) { m_parameters.Set(name, value); }
 
 		// Add texture binding
-		void BindTexture(const String& name, u32 slot, u32 textureId) { m_textures[name] = {slot, textureId}; }
+		void BindTexture(const String& name, u32 slot, u32 texture_id) { m_textures[name] = {slot, texture_id}; }
 
 		virtual void Apply() = 0;
 
 	  protected:
-		String           m_name;
 		RefPtr<Shader>   m_shader;
 		ShaderParameters m_parameters;
 
 		struct TextureBinding {
 			u32 slot;
-			u32 textureId;
+			u32 texture_id;
 		};
 		UnorderedMap<String, TextureBinding> m_textures;
 	};

@@ -105,7 +105,7 @@ namespace Spark {
 				}
 
 				if (!m_tasks_queues[index].empty()) {
-					task = std::move(m_tasks_queues[index].front().second);
+					task = Move(m_tasks_queues[index].front().second);
 					m_tasks_queues[index].pop_front();
 				} else {
 					task = StealTask();
@@ -131,7 +131,7 @@ namespace Spark {
 		std::function<void()> task;
 		for (auto& queue : m_tasks_queues) {
 			if (!queue.empty()) {
-				task = std::move(queue.front().second);
+				task = Move(queue.front().second);
 				queue.pop_front();
 				break;
 			}

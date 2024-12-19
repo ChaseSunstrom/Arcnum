@@ -2,26 +2,9 @@
 #define SPARK_ENTITY_HPP
 
 #include <core/pch.hpp>
-#include "query.hpp"
+#include "component.hpp"
 
 namespace Spark {
-
-	struct ComponentKey {
-		TypeIndex type;
-		String    name;
-		bool      operator==(const ComponentKey& other) const = default;
-	};
-
-} // namespace Spark
-
-namespace std {
-	template<> struct hash<_SPARK ComponentKey> {
-		size_t operator()(const _SPARK ComponentKey& key) const noexcept { return (hash<_SPARK String>()(key.name) ^ (hash<_SPARK TypeIndex>()(key.type) << 1)) >> 1; }
-	};
-} // namespace std
-
-namespace Spark {
-
 	class Entity {
 	  public:
 		friend class Ecs;
@@ -29,47 +12,25 @@ namespace Spark {
 		operator u32() { return m_id; }
 		u32 GetId() const { return m_id; }
 
-		template<IsComponent _Ty> bool HasComponent(const std::string& name) const {
-			ComponentKey key = {typeid(_Ty), name};
-			return m_components.find(key) != m_components.end();
-		}
+		const ComponentMask& GetComponentMask() const { return m_component_mask; }
+
+		template<IsComponent T> bool HasComponent() const { return m_component_mask.test(GetComponentId<T>()); }
 
 		template<IsComponent... Ts> bool HasComponents() const { return (HasComponent<Ts>() && ...); }
 
 	  private:
 		Entity(u32 id)
 			: m_id(id) {}
-		void SetId(u32 id) { m_id = id; }
 
-		template<IsComponent _Ty> void AddComponent(const std::string& name) {
-			ComponentKey key = {typeid(_Ty), name};
-			m_components.insert(key);
-		}
+		template<IsComponent T> void AddComponent() { m_component_mask.set(GetComponentId<T>()); }
 
-		template<IsComponent _Ty> void RemoveComponent(const std::string& name) {
-			ComponentKey key = {typeid(_Ty), name};
-			m_components.erase(key);
-		}
+		template<IsComponent T> void RemoveComponent() { m_component_mask.reset(GetComponentId<T>()); }
 
-		template<IsComponent _Ty> void RemoveComponents() {
-			std::vector<ComponentKey> keys_to_remove;
-			for (const auto& key : m_components) {
-				if (key.type == typeid(_Ty)) {
-					keys_to_remove.push_back(key);
-				}
-			}
-			for (const auto& key : keys_to_remove) {
-				m_components.erase(key);
-			}
-		}
+		void RemoveAllComponents() { m_component_mask.reset(); }
 
-		void RemoveAllComponents() { m_components.clear(); }
-
-	  private:
-		u32                              m_id;
-		std::unordered_set<ComponentKey> m_components;
+		u32           m_id;
+		ComponentMask m_component_mask;
 	};
-
 } // namespace Spark
 
 #endif

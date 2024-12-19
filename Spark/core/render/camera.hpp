@@ -3,9 +3,8 @@
 
 #include <core/math/math.hpp>
 #include <core/pch.hpp>
+#include <core/resource/asset.hpp>
 #include <core/scene/transform.hpp>
-#include <core/system/manager.hpp>
-#include <core/event/event.hpp>
 
 namespace Spark {
 	struct Frustum {
@@ -21,20 +20,53 @@ namespace Spark {
 		}
 
 		bool IsPointInside(const _MATH Vec3& point) const {
-			for (i32 i = 0; i < 6; ++i) { if (_MATH Dot(_MATH Vec3(planes[i]), point) + planes[i].w < 0) { return false; } }
+			for (i32 i = 0; i < 6; ++i) {
+				if (_MATH Dot(_MATH Vec3(planes[i]), point) + planes[i].w < 0) {
+					return false;
+				}
+			}
 			return true;
 		}
 
 		bool IsSphereInside(const _MATH Vec3& center, f32 radius) const {
-			for (i32 i = 0; i < 6; ++i) { if (_MATH Dot(_MATH Vec3(planes[i]), center) + planes[i].w < -radius) { return false; } }
+			for (i32 i = 0; i < 6; ++i) {
+				if (_MATH Dot(_MATH Vec3(planes[i]), center) + planes[i].w < -radius) {
+					return false;
+				}
+			}
 			return true;
 		}
 	};
 
-	class Camera {
-	public:
-		friend class Manager<Camera>;
-		~Camera() = default;
+	class Camera : public Asset<Camera> {
+	  public:
+		Camera(const String&     name,
+		       const _MATH Vec3& position                = _MATH Vec3(0.0f, 0.0f, 5.0f),
+		       const _MATH Vec3& target                  = _MATH Vec3(0.0f, 0.0f, 0.0f),
+		       const _MATH Vec3& up                      = _MATH Vec3(0.0f, 1.0f, 0.0f),
+		       f32                          fov          = 45.0f,
+		       f32                          aspect_ratio = 16.0f / 9.0f,
+		       f32                          near         = 0.1f,
+		       f32                          far          = 100.0f)
+			: Asset(name)
+			, m_fov(fov)
+			, m_aspect_ratio(aspect_ratio)
+			, m_near(near)
+			, m_far(far) {
+			// Set the position
+			m_transform.SetPosition(position);
+
+			// Set rotation to identity (looking down the negative z-axis)
+			m_transform.SetRotation(_MATH Quat(1, 0, 0, 0));
+
+			// If you want the camera to look at the target:
+			if (position != target) {
+				LookAt(target);
+			}
+
+			UpdateFrustum();
+		}
+		virtual ~Camera() = default;
 		void             SetTransform(const Transform& transform) { m_transform = transform; }
 		void             SetPosition(const _MATH Vec3& position) { m_transform.SetPosition(position); }
 		void             SetPosition(f32 x, f32 y, f32 z) { m_transform.SetPosition(_MATH Vec3(x, y, z)); }
@@ -78,79 +110,13 @@ namespace Spark {
 		bool IsPointVisible(const _MATH Vec3& point) const { return m_frustum.IsPointInside(point); }
 		bool IsSphereVisible(const _MATH Vec3& center, f32 radius) const { return m_frustum.IsSphereInside(center, radius); }
 
-	private:
-		Camera(const _MATH Vec3& position     = _MATH Vec3(0.0f, 0.0f, 5.0f),
-		       const _MATH Vec3& target       = _MATH Vec3(0.0f, 0.0f, 0.0f),
-		       const _MATH Vec3& up           = _MATH Vec3(0.0f, 1.0f, 0.0f),
-		       f32               fov          = 45.0f,
-		       f32               aspect_ratio = 16.0f / 9.0f,
-		       f32               near         = 0.1f,
-		       f32               far          = 100.0f)
-			: m_fov(fov)
-			, m_aspect_ratio(aspect_ratio)
-			, m_near(near)
-			, m_far(far) {
-			// Set the position
-			m_transform.SetPosition(position);
-
-			// Set rotation to identity (looking down the negative z-axis)
-			m_transform.SetRotation(_MATH Quat(1, 0, 0, 0));
-
-			// If you want the camera to look at the target:
-			if (position != target) { LookAt(target); }
-
-			UpdateFrustum();
-		}
-
-	private:
+	  private:
 		Transform m_transform;
 		Frustum   m_frustum;
 		f32       m_fov;
 		f32       m_aspect_ratio;
 		f32       m_near;
 		f32       m_far;
-	};
-
-	template<> class Manager<Camera> : public IManager {
-	public:
-		Manager()
-			: m_registry(MakeUnique<Registry<Camera>>()) {
-			// Default camera
-			Create("Default Camera");
-		}
-
-		~Manager() = default;
-
-		template<typename... Args> RefPtr<Camera> Create(const String& name, Args&&... args) {
-			Camera* object = new Camera(Forward<Args>(args)...);
-			Register(name, UniquePtr<Camera>(object));
-
-			if (GetSize() == 1)
-				m_current_camera = Get(name);
-
-			return m_current_camera;
-		}
-
-		u32 GetSize() const { return m_registry->GetSize(); }
-
-		void OnEvent(const EventPtr<WindowResizedEvent> event) { m_current_camera->SetAspectRatio(static_cast<f32>(event->width) / static_cast<f32>(event->height)); }
-
-		RefPtr<Camera> Register(const String& name, UniquePtr<Camera> object) { return m_registry->Register(name, std::move(object)); }
-
-		RefPtr<Camera> Get(const String& name) const { return m_registry->Get(name); }
-
-		RefPtr<Camera> Get(const Handle handle) const { return m_registry->Get(handle); }
-
-		RefPtr<Camera> GetCurrentCamera() const { return m_current_camera; }
-
-		RefPtr<Camera> SetCurrentCamera(const String& name) {
-			m_current_camera = m_registry->Get(name);
-			return m_current_camera;
-		}
-
-	private:
-		RefPtr<Camera>                    m_current_camera;
-		UniquePtr<Registry<Camera>> m_registry;
 	};
 } // namespace Spark
 

@@ -166,7 +166,7 @@ namespace Spark {
 		template<typename _Uty> friend class SharedPtr;
 	};
 
-	template<typename _Ty, typename... Args> SharedPtr<_Ty> MakeShared(Args&&... args) { return SharedPtr<_Ty>(new _Ty(std::forward<Args>(args)...)); }
+	template<typename _Ty, typename... Args> SharedPtr<_Ty> MakeShared(Args&&... args) { return SharedPtr<_Ty>(new _Ty(Forward<Args>(args)...)); }
 
 	template<typename _Ty> SharedPtr<_Ty> MakeShared(const _Ty* ptr) { return SharedPtr<_Ty>(ptr); }
 

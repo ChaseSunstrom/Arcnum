@@ -102,7 +102,7 @@ namespace Spark {
 
 		~GenericVertex() { delete[] m_data; }
 
-		template<typename T> T GetAttribute(size_t offset) const { return *rei32erpret_cast<const T*>(m_data + offset); }
+		template<typename T> T GetAttribute(size_t offset) const { return *reinterpret_cast<const T*>(m_data + offset); }
 
 		const void* GetData() const { return m_data; }
 		size_t      GetSize() const { return m_size; }

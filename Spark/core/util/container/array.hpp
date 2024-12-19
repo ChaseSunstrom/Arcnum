@@ -2,12 +2,12 @@
 #define SPARK_ARRAY_HPP
 
 #include <array>
-#include <initializer_list>
 #include <core/util/classic/util.hpp>
+#include <initializer_list>
 
 namespace Spark {
 	template<typename _Ty, i32 N> class Array {
-	public:
+	  public:
 		using ValueType      = _Ty;
 		using SizeType       = i32;
 		using Reference      = _Ty&;
@@ -20,108 +20,137 @@ namespace Spark {
 		// Default constructor
 		Array() {
 			for (i32 i = 0; i < N; ++i) {
-				new (m_data + i) _Ty();
+				new (reinterpret_cast<_Ty*>(m_data) + i) _Ty();
 			}
 		}
 
 		// Fill constructor
 		explicit Array(const _Ty& value) { Fill(value); }
 
-		Array(const _Ty& value, i32 count) { for (i32 i = 0; i < count; ++i) { m_data[i] = value; } }
+		Array(const _Ty& value, i32 count) {
+			for (i32 i = 0; i < Min(count, N); ++i) {
+				reinterpret_cast<_Ty*>(m_data)[i] = value;
+			}
+		}
 
-		Array(const std::array<_Ty, N>& other) { for (i32 i = 0; i < N; ++i) { m_data[i] = other[i]; } }
+		Array(const std::array<_Ty, N>& other) {
+			for (i32 i = 0; i < N; ++i) {
+				reinterpret_cast<_Ty*>(m_data)[i] = other[i];
+			}
+		}
 
-		Array(const std::initializer_list<_Ty>& init) { Copy(init.begin(), init.end(), m_data); }
+		Array(const std::initializer_list<_Ty>& init) {
+			auto it = init.begin();
+			for (i32 i = 0; i < N && it != init.end(); ++i, ++it) {
+				reinterpret_cast<_Ty*>(m_data)[i] = *it;
+			}
+		}
 
-		Array(const Array& other) { Copy(other.Begin(), other.End(), m_data); }
+		Array(const Array& other) {
+			for (i32 i = 0; i < N; ++i) {
+				reinterpret_cast<_Ty*>(m_data)[i] = other[i];
+			}
+		}
 
 		~Array() {
 			for (i32 i = 0; i < N; ++i) {
-				m_data[i].~_Ty();
+				reinterpret_cast<_Ty*>(m_data)[i].~_Ty();
 			}
 		}
 
 		Array& operator=(const Array& other) {
-			if (this != &other) { Copy(other.begin(), other.end(), m_data); }
+			if (this != &other) {
+				for (i32 i = 0; i < N; ++i) {
+					reinterpret_cast<_Ty*>(m_data)[i] = other[i];
+				}
+			}
 			return *this;
 		}
 
-		Reference operator[](SizeType index) { return m_data[index]; }
+		Reference operator[](SizeType index) { return reinterpret_cast<_Ty*>(m_data)[index]; }
 
-		ConstReference operator[](SizeType index) const { return m_data[index]; }
+		ConstReference operator[](SizeType index) const { return reinterpret_cast<const _Ty*>(m_data)[index]; }
 
 		Reference At(SizeType index) {
-			if (index >= N) { LOG_FATAL("Array index out of bounds"); }
-			return m_data[index];
+			if (index >= N) {
+				LOG_FATAL("Array index out of bounds");
+			}
+			return reinterpret_cast<_Ty*>(m_data)[index];
 		}
 
 		ConstReference At(SizeType index) const {
-			if (index >= N) { LOG_FATAL("Array index out of bounds"); }
-			return m_data[index];
+			if (index >= N) {
+				LOG_FATAL("Array index out of bounds");
+			}
+			return reinterpret_cast<const _Ty*>(m_data)[index];
 		}
 
 		friend std::ostream& operator<<(std::ostream& os, const Array& array) {
 			os << "[";
 			for (i32 i = 0; i < N; ++i) {
-				os << array.m_data[i];
-				if (i < N - 1) { os << ", "; }
-				if (i == 10) { os << "..."; break; }
+				os << array[i];
+				if (i < N - 1) {
+					os << ", ";
+				}
+				if (i == 10) {
+					os << "...";
+					break;
+				}
 			}
 			os << "]";
 			return os;
 		}
-		
-		Reference Front() { return m_data[0]; }
 
-		ConstReference Front() const { return m_data[0]; }
+		Reference      Front() { return reinterpret_cast<_Ty*>(m_data)[0]; }
+		ConstReference Front() const { return reinterpret_cast<const _Ty*>(m_data)[0]; }
+		Reference      Back() { return reinterpret_cast<_Ty*>(m_data)[N - 1]; }
+		ConstReference Back() const { return reinterpret_cast<const _Ty*>(m_data)[N - 1]; }
 
-		Reference Back() { return m_data[N - 1]; }
+		Pointer      Data() { return reinterpret_cast<_Ty*>(m_data); }
+		ConstPointer Data() const { return reinterpret_cast<const _Ty*>(m_data); }
 
-		ConstReference Back() const { return m_data[N - 1]; }
+		Iterator      Begin() { return reinterpret_cast<_Ty*>(m_data); }
+		ConstIterator Begin() const { return reinterpret_cast<const _Ty*>(m_data); }
+		Iterator      End() { return reinterpret_cast<_Ty*>(m_data) + N; }
+		ConstIterator End() const { return reinterpret_cast<const _Ty*>(m_data) + N; }
 
-		Pointer Data() { return m_data; }
-
-		ConstPointer Data() const { return m_data; }
-
-		Iterator Begin() { return m_data; }
-
-		ConstIterator Begin() const { return m_data; }
-
-		Iterator End() { return m_data + N; }
-
-		ConstIterator End() const { return m_data + N; }
-
-		Iterator begin() { return Begin(); }
-
+		Iterator      begin() { return Begin(); }
 		ConstIterator begin() const { return Begin(); }
-
-		Iterator end() { return End(); }
-
+		Iterator      end() { return End(); }
 		ConstIterator end() const { return End(); }
 
-		constexpr bool Empty() const { return N == 0; }
-
+		constexpr bool     Empty() const { return N == 0; }
 		constexpr SizeType Size() const { return N; }
-
 		constexpr SizeType MaxSize() const { return N; }
 
-		void Fill(const _Ty& value) { for (SizeType i = 0; i < N; ++i) { m_data[i] = value; } }
+		void Fill(const _Ty& value) {
+			for (SizeType i = 0; i < N; ++i) {
+				reinterpret_cast<_Ty*>(m_data)[i] = value;
+			}
+		}
 
-		void Swap(Array& other) { for (SizeType i = 0; i < N; ++i) { _SPARK Swap(m_data[i], other.m_data[i]); } }
+		void Swap(Array& other) {
+			for (SizeType i = 0; i < N; ++i) {
+				Spark::Swap(reinterpret_cast<_Ty*>(m_data)[i], reinterpret_cast<_Ty*>(other.m_data)[i]);
+			}
+		}
 
 		bool operator==(const Array& other) const {
-			for (i32 i = 0; i < N; ++i) { if (m_data[i] != other.m_data[i]) { return false; } }
-
+			for (i32 i = 0; i < N; ++i) {
+				if (reinterpret_cast<const _Ty*>(m_data)[i] != other[i]) {
+					return false;
+				}
+			}
 			return true;
 		}
 
 		bool operator!=(const Array& other) const { return !(*this == other); }
 
-	private:
+	  private:
 		alignas(_Ty) u8 m_data[N * sizeof(_Ty)];
 	};
 
 	template<typename _Ty, i32 N> void Swap(Array<_Ty, N>& lhs, Array<_Ty, N>& rhs) { lhs.Swap(rhs); }
-}
+} // namespace Spark
 
 #endif // SPARK_ARRAY_HPP

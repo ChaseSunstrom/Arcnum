@@ -2,225 +2,245 @@
 #define SPARK_APPLICATION_HPP
 
 #include <core/api.hpp>
-#include <core/ecs/component.hpp>
 #include <core/ecs/ecs.hpp>
-#include <core/ecs/query.hpp>
 #include <core/event/event_handler.hpp>
 #include <core/pch.hpp>
 #include <core/render/renderer.hpp>
-#include <core/resource/resource.hpp>
+#include <core/ecs/resource.hpp>
 #include <core/system/manager.hpp>
 #include <core/util/thread_pool.hpp>
 #include <core/window/window.hpp>
+#include <ranges>
+
+#include "core/resource/asset.hpp"
 
 namespace Spark {
-	class Application {
-	  public:
-		using ApplicationFunction                                                             = Callable<void(Application&)>;
-		template<typename _Ty> using ApplicationEventFunction                                 = Callable<void(Application&, const EventPtr<_Ty>&)>;
-		template<typename... EventTypes> using ApplicationMultiEventFunction                  = Callable<void(Application&, const MultiEventPtr<EventTypes...>&)>;
-		using ApplicationFunctionList                                                         = Vector<Pair<ApplicationFunction, FunctionSettings>>;
-		template<IsComponent _Ty> using ApplicationQueryFunction                              = Callable<void(Application&, Query<_Ty>&)>;
-		template<IsComponent _Ty, typename... EventTypes> using ApplicationQueryEventFunction = Callable<void(Application&, Query<_Ty>&, const MultiEventPtr<EventTypes...>&)>;
+	enum class SystemStage { First, PreUpdate, Update, PostUpdate, PreRender, Render, PostRender, Last, Count };
 
-		Application(GraphicsAPI gapi, f32 delta_time = 60, UniquePtr<ThreadPool> tp = MakeUnique<ThreadPool>(std::thread::hardware_concurrency()));
-		~Application();
-
-		void         Start();
-		const bool   Running() const;
-		Application& AddStartupFunction(const ApplicationFunction& fn, const FunctionSettings settings = {});
-		Application& AddUpdateFunction(const ApplicationFunction& fn, const FunctionSettings settings = {});
-		Application& AddShutdownFunction(const ApplicationFunction& fn, const FunctionSettings settings = {});
-
-		template<IsSystem _Ty, typename... Args> Application& AddSystem(Args&&... args);
-
-		template<IsSystem _Ty> Application& AddSystem(_Ty* t);
-
-		template<IsSystem _Ty> Application& AddSystem(UniquePtr<_Ty> t);
-
-		template<IsEvent EventType> Application& AddEventFunction(const ApplicationEventFunction<EventType>& fn, const FunctionSettings settings = {});
-
-		template<IsEvent... EventTypes> Application& AddEventFunction(const ApplicationMultiEventFunction<EventTypes...>& fn, const FunctionSettings settings = {});
-
-		Application& AddAllEventsFunction(const ApplicationEventFunction<IEvent>& fn, const FunctionSettings settings = {});
-
-		template<IsComponent _Ty> Application& AddQueryFunction(const ApplicationQueryFunction<_Ty>& fn, const FunctionSettings settings = {});
-
-		// Single event query function
-		template<IsComponent _Ty, IsEvent EventType> Application& AddQueryEventFunction(const Callable<void(Application&, Query<_Ty>&, const EventPtr<EventType>&)>& fn, const FunctionSettings settings = {});
-
-		// Multiple events query function
-		template<IsComponent _Ty, IsEvent... EventTypes>
-		Application& AddQueryEventFunction(const Callable<void(Application&, Query<_Ty>&, const MultiEventPtr<EventTypes...>&)>& fn, const FunctionSettings settings = {});
-
-		template<IsWindow _Ty> Application&   CreateWindow(const String& title, i32 width, i32 height);
-		template<IsRenderer _Ty> Application& CreateRenderer();
-		template<typename _Ty> Manager<_Ty>&  GetManager() const;
-		Ecs&                                  GetEcs() const;
-		Window&                               GetWindow() const;
-		Renderer&                             GetRenderer() const;
-		EventHandler&                         GetEventHandler() const;
-		ThreadPool&                           GetThreadPool() const;
-
-		void SetDeltaTime(f32 delta_time);
-
-	  private:
-		void RunStartupFunctions();
-		void RunUpdateFunctions();
-		void RunShutdownFunctions();
-		void Update();
-
-		struct IUpdateFunctionWrapper {
-			virtual ~IUpdateFunctionWrapper()      = default;
-			virtual void Execute(Application& app) = 0;
-		};
-
-		struct IQueryEventFunctionWrapper {
-			virtual ~IQueryEventFunctionWrapper()                                 = default;
-			virtual void Execute(Application& app, const EventPtr<IEvent>& event) = 0;
-		};
-
-		template<IsComponent _Ty> struct UpdateFunctionWrapper : IUpdateFunctionWrapper {
-			ApplicationQueryFunction<_Ty> fn;
-			Ecs&                          ecs;
-
-			UpdateFunctionWrapper(Ecs& ecs, ApplicationQueryFunction<_Ty> fn)
-				: ecs(ecs)
-				, fn(fn) {}
-
-			void Execute(Application& app) override { fn(app, ecs.GetComponents<_Ty>()); }
-		};
-
-		template<IsComponent _Ty, typename... EventTypes> struct QueryEventFunctionWrapper : IQueryEventFunctionWrapper {
-			Callable<void(Application&, Query<_Ty>&, const std::conditional_t<sizeof...(EventTypes) == 1, EventPtr<typename std::tuple_element_t<0, std::tuple<EventTypes...>>>, MultiEventPtr<EventTypes...>>&)> fn;
-			Ecs& ecs;
-
-			QueryEventFunctionWrapper(Ecs& ecs, const decltype(fn)& fn)
-				: ecs(ecs)
-				, fn(fn) {}
-
-			void Execute(Application& app, const EventPtr<IEvent>& event) override {
-				if constexpr (sizeof...(EventTypes) == 1) {
-					if (auto typed_event = std::dynamic_pointer_cast<typename std::tuple_element_t<0, std::tuple<EventTypes...>>>(event)) {
-						fn(app, ecs.GetComponents<_Ty>(), typed_event);
-					}
-				} else {
-					if (auto multi_event = std::dynamic_pointer_cast<MultiEvent<EventTypes...>>(event)) {
-						fn(app, ecs.GetComponents<_Ty>(), multi_event);
-					}
-				}
-			}
-		};
-
-		UniquePtr<ThreadPool>                                             m_thread_pool;
-		UniquePtr<EventHandler>                                           m_event_handler;
-		UniquePtr<Ecs>                                                    m_ecs;
-		UniquePtr<Window>                                                 m_window;
-		UniquePtr<Renderer>                                               m_renderer;
-		UniquePtr<Manager<Resource>>                                      m_resource_manager;
-		ApplicationFunctionList                                           m_startup_functions;
-		ApplicationFunctionList                                           m_update_functions;
-		ApplicationFunctionList                                           m_shutdown_functions;
-		Vector<Pair<UniquePtr<IUpdateFunctionWrapper>, FunctionSettings>> m_query_functions;
-		Vector<UniquePtr<IQueryEventFunctionWrapper>>                     m_query_event_functions;
-		GraphicsAPI                                                       m_gapi;
-		f32                                                               m_delta_time;
-		std::mutex                                                        m_mutex;
+	struct SystemInfo {
+		bool        threaded = false;
+		bool        wait     = false;
+		SystemStage stage    = SystemStage::Update;
 	};
 
-	// Implementation of template methods
+	class Application {
+	  public:
+		Application(GraphicsAPI gapi, f32 delta_time = 60.0f)
+			: m_gapi(gapi)
+			, m_delta_time(delta_time)
+			, m_thread_pool(MakeUnique<ThreadPool>())
+			, m_event_handler(MakeUnique<EventHandler>(*m_thread_pool))
+			, m_ecs(MakeUnique<Ecs>(m_event_handler))
+			, m_asset_manager(MakeUnique<AssetManager>())
+			, m_running(false) {
+			InitializeEventHandlers();
+		}
 
-	template<IsEvent EventType> Application& Application::AddEventFunction(const ApplicationEventFunction<EventType>& fn, const FunctionSettings settings) {
-		m_event_handler->SubscribeToEvent<EventType>(
-			[this, fn, settings](const EventPtr<EventType>& event) {
-				std::unique_lock<std::mutex> lock;
-				if (settings.threaded)
-					lock = std::unique_lock(m_mutex);
-				fn(*this, event);
-			},
-			settings);
-		return *this;
-	}
+		// System Management
+		template<typename Func> Application& AddSystem(Func&& func, const SystemInfo& info = {}) {
+			auto system = MakeUnique<System<std::decay_t<Func>>>(std::forward<Func>(func));
+			m_systems[static_cast<size_t>(info.stage)].PushBack(Move(system));
+			return *this;
+		}
 
-	template<IsEvent... EventTypes> Application& Application::AddEventFunction(const ApplicationMultiEventFunction<EventTypes...>& fn, const FunctionSettings settings) {
-		m_event_handler->SubscribeToMultipleEvents<EventTypes...>(
-			[this, fn, settings](const MultiEventPtr<EventTypes...>& event) {
-				std::unique_lock<std::mutex> lock;
-				if (settings.threaded)
-					lock = std::unique_lock(m_mutex);
-				fn(*this, event);
-			},
-			settings);
-		return *this;
-	}
+		// Asset Management
+		template<typename T, typename... Args> T& CreateAsset(const String& name, Args&&... args) { return m_asset_manager->CreateAsset<T>(name, Forward<Args>(args)...); }
 
-	template<IsComponent _Ty, IsEvent EventType> Application& Application::AddQueryEventFunction(const Callable<void(Application&, Query<_Ty>&, const EventPtr<EventType>&)>& fn, const FunctionSettings settings) {
-		auto  query_event_wrapper     = MakeUnique<QueryEventFunctionWrapper<_Ty, EventType>>(*m_ecs, fn);
-		auto& query_event_wrapper_ref = *query_event_wrapper;
-		m_query_event_functions.PushBack(Move(query_event_wrapper));
+		template<typename T> T& GetAsset(const String& name) { return m_asset_manager->GetAsset<T>(name); }
 
-		m_event_handler->SubscribeToEvent<EventType>(
-			[this, &query_event_wrapper_ref, settings](const EventPtr<EventType>& event) {
-				std::unique_lock<std::mutex> lock;
-				if (settings.threaded)
-					lock = std::unique_lock(m_mutex);
-				query_event_wrapper_ref.Execute(*this, event);
-			},
-			settings);
+		// Resource/Component access
+		template<typename T> T& GetComponent(RefPtr<Entity> entity) { return m_ecs->GetComponent<T>(entity); }
 
-		return *this;
-	}
+		
+        // Resource Management
+		template<typename T> T& AddResource(T&& resource) {
+			auto it = m_resources.Find(typeid(T));
+			if (it == m_resources.End()) {
+				auto container = MakeUnique<ResourceContainer<T>>();
+				container->Set(Forward<T>(resource));
+				auto& ref              = container->Get();
+				m_resources[typeid(T)] = Move(container);
+				return ref;
+			}
+			auto& container = static_cast<ResourceContainer<T>&>(*it->second);
+			container.Set(Forward<T>(resource));
+			return container.Get();
+		}
 
-	template<IsComponent _Ty, IsEvent... EventTypes>
-	Application& Application::AddQueryEventFunction(const Callable<void(Application&, Query<_Ty>&, const MultiEventPtr<EventTypes...>&)>& fn, const FunctionSettings settings) {
-		auto  query_event_wrapper     = MakeUnique<QueryEventFunctionWrapper<_Ty, EventTypes...>>(*m_ecs, fn);
-		auto& query_event_wrapper_ref = *query_event_wrapper;
-		m_query_event_functions.PushBack(Move(query_event_wrapper));
+		template<typename T> T& GetResource() {
+			auto it = m_resources.Find(typeid(T));
+			if (it == m_resources.End()) {
+				LOG_FATAL("Resource not found: " + String(typeid(T).name()));
+			}
+			return static_cast<ResourceContainer<T>&>(*it->second).Get();
+		}
 
-		m_event_handler->SubscribeToMultipleEvents<EventTypes...>(
-			[this, &query_event_wrapper_ref, settings](const MultiEventPtr<EventTypes...>& event) {
-				std::unique_lock<std::mutex> lock;
-				if (settings.threaded)
-					lock = std::unique_lock(m_mutex);
-				query_event_wrapper_ref.Execute(*this, event);
-			},
-			settings);
+		template<typename T> const T& GetResource() const {
+			auto it = m_resources.Find(typeid(T));
+			if (it == m_resources.End()) {
+				LOG_FATAL("Resource not found: " + String(typeid(T).name()));
+			}
+			return static_cast<const ResourceContainer<T>&>(*it->second).Get();
+		}
 
-		return *this;
-	}
+		// Window/Renderer setup
+		template<IsWindow _Ty> Application& CreateWindow(const String& title, i32 width, i32 height) {
+			m_window = MakeUnique<_Ty>(title, width, height, *m_event_handler);
+			return *this;
+		}
 
-	template<IsSystem _Ty, typename... Args> Application& Application::AddSystem(Args&&... args) {
-		m_ecs->AddSystem(MakeUnique<_Ty>(*m_event_handler, std::forward<Args>(args)...));
-		return *this;
-	}
+		template<IsRenderer _Ty> Application& CreateRenderer() {
+			m_renderer = MakeUnique<_Ty>(m_gapi, m_window->GetFrameBuffer());
+			return *this;
+		}
 
-	template<IsSystem _Ty> Application& Application::AddSystem(_Ty* t) {
-		m_ecs->AddSystem(UniquePtr<_Ty>(t));
-		return *this;
-	}
+		void Start() {
+			if (!m_window || !m_renderer) {
+				LOG_FATAL("Window and Renderer must be created before starting!");
+			}
 
-	template<IsSystem _Ty> Application& Application::AddSystem(UniquePtr<_Ty> t) {
-		m_ecs->AddSystem(Move(t));
-		return *this;
-	}
+			m_running = true;
 
-	template<IsWindow _Ty> Application& Application::CreateWindow(const String& title, i32 width, i32 height) {
-		m_window = MakeUnique<_Ty>(title, width, height, *m_event_handler);
-		return *this;
-	}
+			// Start all systems
+			for (auto& stage_systems : m_systems) {
+				for (auto& system : stage_systems) {
+					system->Start();
+				}
+			}
 
-	template<IsRenderer _Ty> Application& Application::CreateRenderer() {
-		m_renderer = MakeUnique<_Ty>(m_gapi, m_window->GetFrameBuffer(), *m_resource_manager);
-		return *this;
-	}
+			MainLoop();
+		}
 
-	template<IsComponent _Ty> Application& Application::AddQueryFunction(const ApplicationQueryFunction<_Ty>& fn, const FunctionSettings settings) {
-		m_query_functions.PushBack({MakeUnique<UpdateFunctionWrapper<_Ty>>(*m_ecs, fn), settings});
-		return *this;
-	}
+		void Stop() { m_running = false; }
+		bool IsRunning() const { return m_running; }
 
-	template<typename _Ty> Manager<_Ty>& Application::GetManager() const { return m_resource_manager->GetManager<_Ty>(); }
+		// Core system access
+		Ecs&          GetEcs() const { return *m_ecs; }
+		Window&       GetWindow() const { return *m_window; }
+		Renderer&     GetRenderer() const { return *m_renderer; }
+		EventHandler& GetEventHandler() const { return *m_event_handler; }
+		ThreadPool&   GetThreadPool() const { return *m_thread_pool; }
 
+		f32  GetDeltaTime() const { return m_delta_time; }
+		void SetDeltaTime(f32 delta_time) { m_delta_time = delta_time; }
+
+	  private:
+		// System management implementation
+		template<typename Func> void AddRegularSystem(Func&& func, const SystemInfo& info) {
+			auto system = MakeSystem([this, func = std::forward<Func>(func), info](Application& app, auto&&... args) {
+				if (info.threaded) {
+					m_thread_pool->Enqueue(TaskPriority::NORMAL, info.wait, [this, &func, &app, &args...] {
+						std::unique_lock<std::mutex> lock(m_mutex);
+						func(app, std::forward<decltype(args)>(args)...);
+					});
+				} else {
+					func(app, std::forward<decltype(args)>(args)...);
+				}
+			});
+			m_systems[static_cast<size_t>(info.stage)].PushBack(Move(system));
+		}
+
+		template<typename Func> void AddEventSystem(Func&& func, const SystemInfo& info) {
+			auto wrapped_func = [this, func = std::forward<Func>(func), info](auto&&... events) {
+				if (info.threaded) {
+					m_thread_pool->Enqueue(TaskPriority::HIGH, info.wait, [this, &func, &events...] {
+						std::unique_lock<std::mutex> lock(m_mutex);
+						func(*this, std::forward<decltype(events)>(events)...);
+					});
+				} else {
+					func(*this, std::forward<decltype(events)>(events)...);
+				}
+			};
+
+			auto system = MakeEventSystem(*this, wrapped_func, m_event_handler);
+			m_systems[static_cast<size_t>(info.stage)].PushBack(Move(system));
+		}
+
+		void MainLoop() {
+			while (m_running && m_window->Running()) {
+				for (size_t i = 0; i < static_cast<size_t>(SystemStage::Count); ++i) {
+					RunSystemStage(static_cast<SystemStage>(i));
+				}
+
+				m_window->Update();
+				m_thread_pool->SyncRegisteredTasks();
+				m_ecs->ClearChangeTracker();
+			}
+
+			Cleanup();
+		}
+
+		void RunSystemStage(SystemStage stage) {
+			auto& stage_systems = m_systems[static_cast<size_t>(stage)];
+			for (auto& system : stage_systems) {
+				system->Execute(*this);
+			}
+		}
+
+		void Cleanup() {
+			for (auto& stage_systems : m_systems | std::views::reverse) {
+				for (auto& system : stage_systems) {
+					system->Shutdown();
+				}
+			}
+		}
+
+		void InitializeEventHandlers() {
+			m_event_handler->SubscribeToEvent<WindowClosedEvent>([this](const EventPtr<WindowClosedEvent>&) { Stop(); });
+		}
+
+		// Core systems
+		UniquePtr<ThreadPool>   m_thread_pool;
+		UniquePtr<EventHandler> m_event_handler;
+		UniquePtr<Ecs>          m_ecs;
+		UniquePtr<Window>       m_window;
+		UniquePtr<Renderer>     m_renderer;
+		UniquePtr<AssetManager> m_asset_manager;
+
+		UnorderedMap<TypeIndex, UniquePtr<IResourceContainer>>                     m_resources;
+		Array<Vector<UniquePtr<ISystem>>, static_cast<size_t>(SystemStage::Count)> m_systems;
+
+		GraphicsAPI m_gapi;
+		f32         m_delta_time;
+		bool        m_running = false;
+		std::mutex  m_mutex;
+	};
+
+	// Query parameter
+	template<typename... Components> struct SystemParamTrait<Query<Components...>> {
+		using Type = Query<Components...>;
+		static Type Extract(Application& app) { return app.GetEcs().CreateQuery<Components...>(); }
+	};
+
+	// Asset parameter
+	template<typename T>
+		requires IsBaseOfV<Asset<T>, T>
+	struct SystemParamTrait<T> {
+		using Type = T&;
+		static Type Extract(Application& app, const String& name) { return app.GetAsset<T>(name); }
+	};
+
+	// Parameter trait for asset access in systems
+	template<typename T> struct SystemParamTrait<Asset<T>> {
+		static_assert(IsBaseOfV<Asset<T>, T>, "Type must derive from Asset");
+		using Type = const T&;
+		static Type Extract(Application& app, const String& name) { return app.GetAsset<T>(name); }
+	};
+
+	 template<typename T> struct SystemParamTrait<ResMut<T>> {
+		using Type = ResMut<T>;                   
+		static Type Extract(Application& app) {
+			return ResMut<T>(app.GetResource<T>());
+		}
+	};
+
+	// And similarly for Res
+	template<typename T> struct SystemParamTrait<Res<T>> {
+		using Type = Res<T>;                  
+		static Type Extract(Application& app) {
+			return Res<T>(app.GetResource<T>());
+		}
+	};
 } // namespace Spark
 
 #endif

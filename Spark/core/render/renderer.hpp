@@ -3,7 +3,6 @@
 
 #include <core/pch.hpp>
 #include <core/window/framebuffer.hpp>
-#include <core/resource/resource.hpp>
 #include <core/api.hpp>
 #include "mesh.hpp"
 #include "material.hpp"
@@ -12,10 +11,9 @@
 namespace Spark {
 	class Renderer {
 	  public:
-		Renderer(GraphicsAPI gapi, Framebuffer& framebuffer, Manager<Resource>& resource_manager)
+		Renderer(GraphicsAPI gapi, Framebuffer& framebuffer)
 			: m_gapi(gapi)
 			, m_framebuffer(framebuffer)
-			, m_resource_manager(resource_manager)
 			, m_window_width(framebuffer.GetWidth())
 			, m_window_height(framebuffer.GetHeight()) {}
 
@@ -60,7 +58,6 @@ namespace Spark {
 	  protected:
 		GraphicsAPI        m_gapi;
 		Framebuffer&       m_framebuffer;
-		Manager<Resource>& m_resource_manager;
 		i32                m_window_width;
 		i32                m_window_height;
 	};

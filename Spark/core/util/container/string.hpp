@@ -1,14 +1,14 @@
 #ifndef SPARK_STRING_HPP
 #define SPARK_STRING_HPP
 
+#include "vector.hpp"
+#include <core/util/classic/hash.hpp>
 #include <core/util/classic/util.hpp>
 #include <core/util/memory/allocator.hpp>
 #include <core/util/memory/memory_util.hpp>
 #include <core/util/types.hpp>
 #include <iostream>
-#include <core/util/classic/hash.hpp>
 #include <string>
-#include "vector.hpp"
 
 namespace Spark {
 
@@ -18,7 +18,7 @@ namespace Spark {
 	// Iterator class definition
 	template<typename CharType, bool IsConst> class BasicStringIterator {
 	  public:
-		using IteratorCategory = std::random_access_iterator_tag;
+		using IteratorCategory = RandomAccessIteratorTag;
 		using ValueType        = CharType;
 		using DifferenceType   = ptrdiff_t;
 		using Pointer          = ConditionalT<IsConst, const CharType*, CharType*>;
@@ -165,7 +165,7 @@ namespace Spark {
 			: m_data(other.m_data)
 			, m_size(other.m_size)
 			, m_capacity(other.m_capacity)
-			, m_allocator(std::move(other.m_allocator)) {
+			, m_allocator(Move(other.m_allocator)) {
 			other.m_data     = nullptr;
 			other.m_size     = 0;
 			other.m_capacity = 0;
@@ -187,7 +187,21 @@ namespace Spark {
 
 		BasicString& operator=(BasicString&& other) noexcept {
 			if (this != &other) {
-				Swap(other);
+				// First deallocate our existing memory
+				if (m_data) {
+					AllocatorTraits::Deallocate(m_allocator, m_data, m_capacity);
+				}
+        
+				// Then take ownership of other's resources
+				m_data = other.m_data;
+				m_size = other.m_size;
+				m_capacity = other.m_capacity;
+				m_allocator = Move(other.m_allocator);
+        
+				// Reset other to empty state
+				other.m_data = nullptr;
+				other.m_size = 0;
+				other.m_capacity = 0;
 			}
 			return *this;
 		}
@@ -661,6 +675,25 @@ namespace Spark {
 		SizeType  m_capacity;
 		Allocator m_allocator;
 	};
+
+	// Global operator+ overloads for String concatenation
+	template<typename CharType, typename Allocator> BasicString<CharType, Allocator> operator+(const CharType* lhs, const BasicString<CharType, Allocator>& rhs) {
+		BasicString<CharType, Allocator> result(lhs);
+		result += rhs;
+		return result;
+	}
+
+	template<typename CharType, typename Allocator> BasicString<CharType, Allocator> operator+(const std::string& lhs, const BasicString<CharType, Allocator>& rhs) {
+		BasicString<CharType, Allocator> result(lhs);
+		result += rhs;
+		return result;
+	}
+
+	template<typename CharType, typename Allocator> BasicString<CharType, Allocator> operator+(CharType lhs, const BasicString<CharType, Allocator>& rhs) {
+		BasicString<CharType, Allocator> result(&lhs, 1);
+		result += rhs;
+		return result;
+	}
 
 	using String = BasicString<char, Allocator<char>>;
 

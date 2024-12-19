@@ -101,12 +101,21 @@ namespace Spark {
 
 		UnorderedMap& operator=(UnorderedMap&& other) noexcept {
 			if (this != &other) {
+				// First move the allocator if propagation is enabled
+				if constexpr (AllocatorTraits::PropagateOnContainerMoveAssignment) {
+					m_allocator = Move(other.m_allocator);
+				}
+
+				// Then safely clear existing elements with the correct allocator
 				Clear();
+
+				// Move remaining members
 				m_buckets    = Move(other.m_buckets);
 				m_size       = other.m_size;
 				m_hasher     = Move(other.m_hasher);
 				m_key_equal  = Move(other.m_key_equal);
-				m_allocator  = Move(other.m_allocator);
+
+				// Reset other
 				other.m_size = 0;
 			}
 			return *this;

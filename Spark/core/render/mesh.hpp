@@ -2,12 +2,14 @@
 #define SPARK_MESH_HPP
 
 #include <core/pch.hpp>
-#include <core/system/manager.hpp>
+#include <core/resource/asset.hpp>
 #include "vertex.hpp"
 
 namespace Spark {
-	class GenericMesh {
+	class GenericMesh : public Asset<GenericMesh> {
 	  public:
+		GenericMesh(const String& name)
+			: Asset(name) {}
 		virtual ~GenericMesh()                               = default;
 
 		virtual void Bind() const                            = 0;

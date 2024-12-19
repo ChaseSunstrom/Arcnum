@@ -6,8 +6,8 @@
 namespace Spark {
 	class GLRenderer : public Renderer {
 	  public:
-		GLRenderer(GraphicsAPI gapi, Framebuffer& framebuffer, Manager<Resource>& resource_manager)
-			: Renderer(gapi, framebuffer, resource_manager) {}
+		GLRenderer(GraphicsAPI gapi, Framebuffer& framebuffer)
+			: Renderer(gapi, framebuffer) {}
 
 		void BeginFrame() override {
 			glViewport(0, 0, m_window_width, m_window_height);

@@ -9,7 +9,7 @@ namespace Spark {
 	class GLGenericMesh : public GenericMesh {
 	  public:
 		GLGenericMesh(const String& name, BufferUsage usage = BufferUsage::STATIC_DRAW)
-			: m_name(name)
+			: GenericMesh(name)
 			, m_vertex_array(MakeUnique<GLVertexArray>())
 			, m_vertex_usage(usage) {}
 
@@ -71,7 +71,6 @@ namespace Spark {
 		}
 
 	  private:
-		String                   m_name;
 		UniquePtr<GLVertexArray> m_vertex_array;
 		BufferUsage              m_vertex_usage;
 		size_t                   m_vertex_count = 0;

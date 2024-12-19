@@ -157,6 +157,7 @@
     <ClInclude Include="core\ecs\ecs.hpp" />
     <ClInclude Include="core\ecs\entity.hpp" />
     <ClInclude Include="core\ecs\query.hpp" />
+    <ClInclude Include="core\ecs\resource.hpp" />
     <ClInclude Include="core\ecs\system.hpp" />
     <ClInclude Include="core\event\event.hpp" />
     <ClInclude Include="core\event\event_handler.hpp" />
@@ -179,9 +180,7 @@
     <ClInclude Include="core\render\render_types.hpp" />
     <ClInclude Include="core\render\shader.hpp" />
     <ClInclude Include="core\render\vertex.hpp" />
-    <ClInclude Include="core\resource\resource.hpp" />
-    <ClInclude Include="core\scene\octree.hpp" />
-    <ClInclude Include="core\scene\scene.hpp" />
+    <ClInclude Include="core\resource\asset.hpp" />
     <ClInclude Include="core\scene\transform.hpp" />
     <ClInclude Include="core\spark.hpp" />
     <ClInclude Include="core\system\file_serializer.hpp" />
@@ -191,6 +190,7 @@
     <ClInclude Include="core\ui\ui.hpp" />
     <ClInclude Include="core\util\classic\compare.hpp" />
     <ClInclude Include="core\util\classic\file.hpp" />
+    <ClInclude Include="core\util\classic\function_traits.hpp" />
     <ClInclude Include="core\util\classic\hash.hpp" />
     <ClInclude Include="core\util\classic\traits.hpp" />
     <ClInclude Include="core\util\classic\type.hpp" />
@@ -464,12 +464,8 @@
     <ClInclude Include="include\glm\vector_relational.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="core\app\application.cpp" />
-    <ClCompile Include="core\ecs\ecs.cpp" />
     <ClCompile Include="core\pch.cpp" />
     <ClCompile Include="core\physics\rigid_body.cpp" />
-    <ClCompile Include="core\scene\octree.cpp" />
-    <ClCompile Include="core\scene\scene.cpp" />
     <ClCompile Include="core\system\file_serializer.cpp" />
     <ClCompile Include="core\util\classic\file.cpp" />
     <ClCompile Include="core\util\classic\type.cpp" />

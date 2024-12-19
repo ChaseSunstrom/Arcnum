@@ -44,7 +44,7 @@ namespace Spark {
 		using SizeType        = typename AllocatorTraits::SizeType;
 		using DifferenceType  = typename AllocatorTraits::DifferenceType;
 
-		using Iterator        = UnorderedSetIterator<_Ty, Hash, Allocator>;
+		using Iterator        = UnorderedSetIterator<_Ty>;
 		using ConstIterator   = const Iterator;
 
 		explicit UnorderedSet(size_t bucket_count = DEFAULT_BUCKET_COUNT, const Hash& hash = Hash(), const Allocator& alloc = Allocator())

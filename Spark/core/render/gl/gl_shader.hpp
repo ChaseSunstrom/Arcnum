@@ -11,7 +11,7 @@ namespace Spark {
 	class GLShader : public Shader {
 	  public:
 		GLShader(const String& name)
-			: m_name(name) {}
+			: Shader(name) {}
 
 		~GLShader() override {
 			if (m_program_id) {
@@ -142,7 +142,6 @@ namespace Spark {
 		}
 
 	  private:
-		String                            m_name;
 		u32                               m_program_id = 0;
 		UnorderedMap<ShaderStage, u32>    m_stage_ids;
 		UnorderedMap<ShaderStage, String> m_sources;

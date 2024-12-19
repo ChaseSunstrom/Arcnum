@@ -201,15 +201,6 @@
     <ClInclude Include="core\render\vertex.hpp">
       <Filter>core\render</Filter>
     </ClInclude>
-    <ClInclude Include="core\resource\resource.hpp">
-      <Filter>core\resource</Filter>
-    </ClInclude>
-    <ClInclude Include="core\scene\octree.hpp">
-      <Filter>core\scene</Filter>
-    </ClInclude>
-    <ClInclude Include="core\scene\scene.hpp">
-      <Filter>core\scene</Filter>
-    </ClInclude>
     <ClInclude Include="core\scene\transform.hpp">
       <Filter>core\scene</Filter>
     </ClInclude>
@@ -1040,25 +1031,16 @@
     <ClInclude Include="core\render\buffer.hpp" />
     <ClInclude Include="core\render\gl\gl_buffer.hpp" />
     <ClInclude Include="core\render\render_types.hpp" />
+    <ClInclude Include="core\resource\asset.hpp" />
+    <ClInclude Include="core\ecs\resource.hpp" />
+    <ClInclude Include="core\util\classic\function_traits.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="core\app\application.cpp">
-      <Filter>core\app</Filter>
-    </ClCompile>
-    <ClCompile Include="core\ecs\ecs.cpp">
-      <Filter>core\ecs</Filter>
-    </ClCompile>
     <ClCompile Include="core\pch.cpp">
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="core\physics\rigid_body.cpp">
       <Filter>core\physics</Filter>
-    </ClCompile>
-    <ClCompile Include="core\scene\octree.cpp">
-      <Filter>core\scene</Filter>
-    </ClCompile>
-    <ClCompile Include="core\scene\scene.cpp">
-      <Filter>core\scene</Filter>
     </ClCompile>
     <ClCompile Include="core\system\file_serializer.cpp">
       <Filter>core\system</Filter>

@@ -47,6 +47,22 @@ namespace Spark {
 
 	template<typename... EventTypes> using MultiEventPtr = SharedPtr<MultiEvent<EventTypes...>>;
 
+	template<typename T> struct IsEventPtr : FalseType {};
+
+	// EventPtr detection
+	template<typename T> struct IsEventPtr<EventPtr<T>> : IsBaseOf<IEvent, T> {};
+
+	template<typename T> struct IsEventPtr<const EventPtr<T>&> : IsBaseOf<IEvent, T> {};
+
+	// MultiEventPtr detection
+	template<typename... T> struct IsEventPtr<MultiEventPtr<T...>> : Conjunction<IsBaseOf<IEvent, T>...> {};
+
+	template<typename... T> struct IsEventPtr<const MultiEventPtr<T...>&> : Conjunction<IsBaseOf<IEvent, T>...> {};
+
+	// Concept form
+	template<typename T>
+	concept EventPointer = IsEventPtr<RemoveCVRefT<T>>::value;
+
 	// ECS Events
 	struct EntityCreatedEvent : public Event<EntityCreatedEvent> {
 		EntityCreatedEvent(const Entity& entity)

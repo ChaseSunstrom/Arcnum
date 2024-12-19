@@ -51,7 +51,7 @@ namespace Spark {
 	template<class _Fty, class... Args> std::future<typename std::invoke_result<_Fty, Args...>::type> ThreadPool::Enqueue(TaskPriority priority, bool synchronize, _Fty&& f, Args&&... args) {
 		using return_type            = typename std::invoke_result<_Fty, Args...>::type;
 
-		auto task                    = std::make_shared<std::packaged_task<return_type()>>(std::bind(std::forward<_Fty>(f), std::forward<Args>(args)...));
+		auto task                    = std::make_shared<std::packaged_task<return_type()>>(std::bind(Forward<_Fty>(f), Forward<Args>(args)...));
 
 		std::future<return_type> res = task->get_future();
 		{

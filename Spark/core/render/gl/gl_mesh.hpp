@@ -21,32 +21,26 @@ namespace Spark {
 
 		template<typename T> void SetVertexData(const Vector<T>& vertices, const VertexLayout& layout) { SetVertexData(vertices.Data(), vertices.Size() * sizeof(T), layout); }
 
-		// TODO: FIX LEAKS HERE
-		// {
 		void SetVertexData(const void* data, size_t size, const VertexLayout& layout) override {
-			auto vbo           = new GLVertexBuffer(m_vertex_usage);
-			auto vertex_buffer = MakeRefPtr<GLVertexBuffer>(vbo); // Create RefPtr correctly
+			auto vertex_buffer = MakeUnique<GLVertexBuffer>(m_vertex_usage);
 			vertex_buffer->SetLayout(layout);
 			vertex_buffer->SetData(data, size);
-			m_vertex_array->AddVertexBuffer(vertex_buffer);
+			m_vertex_array->AddVertexBuffer(Move(vertex_buffer));
 			m_vertex_count = size / layout.GetStride();
 		}
 
 		void SetIndexData(const Vector<u32>& indices) override {
-			auto ibo          = new GLIndexBuffer(m_vertex_usage);
-			auto index_buffer = MakeRefPtr<GLIndexBuffer>(ibo); // Create RefPtr correctly
+			auto index_buffer = MakeUnique<GLIndexBuffer>(m_vertex_usage);
 			index_buffer->SetData(indices.Data(), indices.Size() * sizeof(u32));
-			m_vertex_array->SetIndexBuffer(index_buffer);
+			m_vertex_array->SetIndexBuffer(Move(index_buffer));
 		}
 
 		void SetInstanceData(const void* data, size_t size, const VertexLayout& layout) override {
-			auto vbo             = new GLVertexBuffer(BufferUsage::INSTANCE);
-			auto instance_buffer = MakeRefPtr<GLVertexBuffer>(vbo); // Create RefPtr correctly
+			auto instance_buffer = MakeUnique<GLVertexBuffer>(BufferUsage::INSTANCE);
 			instance_buffer->SetLayout(layout);
 			instance_buffer->SetData(data, size);
-			m_vertex_array->AddVertexBuffer(instance_buffer);
+			m_vertex_array->AddVertexBuffer(Move(instance_buffer));
 		}
-		// }
 
 		template<typename T> void SetInstanceData(const Vector<T>& instances, const VertexLayout& layout) { SetInstanceData(instances.Data(), instances.Size() * sizeof(T), layout); }
 

@@ -125,7 +125,7 @@ namespace Spark {
 
 		void Unbind() const { glBindVertexArray(0); }
 
-		void AddVertexBuffer(RefPtr<GLVertexBuffer> vertex_buffer) {
+		void AddVertexBuffer(UniquePtr<GLVertexBuffer> vertex_buffer) {
 			Bind();
 			vertex_buffer->Bind();
 
@@ -143,18 +143,18 @@ namespace Spark {
 				}
 			}
 
-			m_vertex_buffers.PushBack(vertex_buffer);
+			m_vertex_buffers.PushBack(Move(vertex_buffer));
 		}
 
-		void SetIndexBuffer(RefPtr<GLIndexBuffer> index_buffer) {
+		void SetIndexBuffer(UniquePtr<GLIndexBuffer> index_buffer) {
 			Bind();
 			index_buffer->Bind();
-			m_index_buffer = index_buffer;
+			m_index_buffer = Move(index_buffer);
 		}
 
 		RefPtr<GLIndexBuffer> GetIndexBuffer() const { return m_index_buffer; }
 
-		const Vector<RefPtr<GLVertexBuffer>>& GetVertexBuffers() const { return m_vertex_buffers; }
+		const Vector<UniquePtr<GLVertexBuffer>>& GetVertexBuffers() const { return m_vertex_buffers; }
 
 		u32 GetID() const { return m_id; }
 
@@ -207,8 +207,8 @@ namespace Spark {
 	  private:
 		u32                            m_id              = 0;
 		u32                            m_attribute_index = 0;
-		Vector<RefPtr<GLVertexBuffer>> m_vertex_buffers;
-		RefPtr<GLIndexBuffer>          m_index_buffer;
+		Vector<UniquePtr<GLVertexBuffer>> m_vertex_buffers;
+		UniquePtr<GLIndexBuffer>          m_index_buffer;
 	};
 
 } // namespace Spark

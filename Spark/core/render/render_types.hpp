@@ -17,7 +17,7 @@ namespace Spark {
 		GLenum    cull_mode   = GL_BACK;
 		GLenum    blend_src   = GL_SRC_ALPHA;
 		GLenum    blend_dst   = GL_ONE_MINUS_SRC_ALPHA;
-		glm::vec4 clear_color = {0.1f, 0.1f, 0.1f, 1.0f};
+		Vec4 clear_color = {0.2f, 0.3f, 0.4f, 1.0f};
 	};
 
 	struct RenderCommand {

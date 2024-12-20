@@ -2,6 +2,7 @@
 #define SPARK_ALLOCATOR_TRAITS_HPP
 
 #include <core/util/classic/util.hpp>
+#include <core/util/defines.hpp>
 #include <core/util/types.hpp>
 #include <core/util/classic/traits.hpp>
 #include <core/util/container/iterator.hpp>

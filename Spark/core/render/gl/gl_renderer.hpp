@@ -15,6 +15,8 @@ namespace Spark {
 		}
 
 		void Submit(const RenderCommand& command) override {
+			const Vec4& color = command.state.clear_color;
+			glClearColor(color.R(), color.G(), color.B(), color.A());
 			switch (command.type) {
 				case RenderCommandType::Draw:
 					if (command.material && command.mesh) {

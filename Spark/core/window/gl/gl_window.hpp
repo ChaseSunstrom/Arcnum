@@ -28,7 +28,7 @@ namespace Spark {
 
 	  private:
 		GLFWwindow*                    m_window;
-		std::unique_ptr<GLFramebuffer> m_framebuffer;
+		UniquePtr<GLFramebuffer> m_framebuffer;
 	};
 } // namespace Spark
 

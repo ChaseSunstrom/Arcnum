@@ -15,8 +15,7 @@
 #include "core/resource/asset.hpp"
 
 namespace Spark {
-	enum class SystemStage { First, PreUpdate, Update, PostUpdate, PreRender, Render, PostRender, Last, Count };
-
+	
 	struct SystemInfo {
 		bool        threaded = false;
 		bool        wait     = false;
@@ -38,9 +37,35 @@ namespace Spark {
 
 		// System Management
 		template<typename Func> Application& AddSystem(Func&& func, const SystemInfo& info = {}) {
-			auto system = MakeUnique<System<std::decay_t<Func>>>(std::forward<Func>(func));
+			auto system = MakeUnique<System<std::decay_t<Func>>>(Forward<Func>(func), info.stage);
 			m_systems[static_cast<size_t>(info.stage)].PushBack(Move(system));
 			return *this;
+		}
+
+		void Start() {
+			if (!m_window || !m_renderer) {
+				LOG_FATAL("Window and Renderer must be created before starting!");
+			}
+
+			m_running = true;
+
+			// Run Start systems once
+			RunSystemStage(SystemStage::Start);
+
+			// Run First systems once
+			RunSystemStage(SystemStage::First);
+
+			MainLoop();
+		}
+
+		void Stop() {
+			// Run Stop systems once
+			RunSystemStage(SystemStage::Stop);
+
+			// Run Last systems once
+			RunSystemStage(SystemStage::Last);
+
+			m_running = false;
 		}
 
 		// Asset Management
@@ -51,7 +76,6 @@ namespace Spark {
 		// Resource/Component access
 		template<typename T> T& GetComponent(RefPtr<Entity> entity) { return m_ecs->GetComponent<T>(entity); }
 
-		
         // Resource Management
 		template<typename T> T& AddResource(T&& resource) {
 			auto it = m_resources.Find(typeid(T));
@@ -94,24 +118,6 @@ namespace Spark {
 			return *this;
 		}
 
-		void Start() {
-			if (!m_window || !m_renderer) {
-				LOG_FATAL("Window and Renderer must be created before starting!");
-			}
-
-			m_running = true;
-
-			// Start all systems
-			for (auto& stage_systems : m_systems) {
-				for (auto& system : stage_systems) {
-					system->Start();
-				}
-			}
-
-			MainLoop();
-		}
-
-		void Stop() { m_running = false; }
 		bool IsRunning() const { return m_running; }
 
 		// Core system access
@@ -127,28 +133,28 @@ namespace Spark {
 	  private:
 		// System management implementation
 		template<typename Func> void AddRegularSystem(Func&& func, const SystemInfo& info) {
-			auto system = MakeSystem([this, func = std::forward<Func>(func), info](Application& app, auto&&... args) {
+			auto system = MakeSystem([this, func = Forward<Func>(func), info](Application& app, auto&&... args) {
 				if (info.threaded) {
 					m_thread_pool->Enqueue(TaskPriority::NORMAL, info.wait, [this, &func, &app, &args...] {
 						std::unique_lock<std::mutex> lock(m_mutex);
-						func(app, std::forward<decltype(args)>(args)...);
+						func(app, Forward<decltype(args)>(args)...);
 					});
 				} else {
-					func(app, std::forward<decltype(args)>(args)...);
+					func(app, Forward<decltype(args)>(args)...);
 				}
 			});
 			m_systems[static_cast<size_t>(info.stage)].PushBack(Move(system));
 		}
 
 		template<typename Func> void AddEventSystem(Func&& func, const SystemInfo& info) {
-			auto wrapped_func = [this, func = std::forward<Func>(func), info](auto&&... events) {
+			auto wrapped_func = [this, func = Forward<Func>(func), info](auto&&... events) {
 				if (info.threaded) {
 					m_thread_pool->Enqueue(TaskPriority::HIGH, info.wait, [this, &func, &events...] {
 						std::unique_lock<std::mutex> lock(m_mutex);
-						func(*this, std::forward<decltype(events)>(events)...);
+						func(*this, Forward<decltype(events)>(events)...);
 					});
 				} else {
-					func(*this, std::forward<decltype(events)>(events)...);
+					func(*this, Forward<decltype(events)>(events)...);
 				}
 			};
 
@@ -158,7 +164,7 @@ namespace Spark {
 
 		void MainLoop() {
 			while (m_running && m_window->Running()) {
-				for (size_t i = 0; i < static_cast<size_t>(SystemStage::Count); ++i) {
+				for (size_t i = 2; i < static_cast<size_t>(SystemStage::Count); ++i) {
 					RunSystemStage(static_cast<SystemStage>(i));
 				}
 
@@ -206,13 +212,11 @@ namespace Spark {
 		std::mutex  m_mutex;
 	};
 
-	// Query parameter
 	template<typename... Components> struct SystemParamTrait<Query<Components...>> {
 		using Type = Query<Components...>;
 		static Type Extract(Application& app) { return app.GetEcs().CreateQuery<Components...>(); }
 	};
 
-	// Asset parameter
 	template<typename T>
 		requires IsBaseOfV<Asset<T>, T>
 	struct SystemParamTrait<T> {
@@ -220,27 +224,17 @@ namespace Spark {
 		static Type Extract(Application& app, const String& name) { return app.GetAsset<T>(name); }
 	};
 
-	// Parameter trait for asset access in systems
 	template<typename T> struct SystemParamTrait<Asset<T>> {
 		static_assert(IsBaseOfV<Asset<T>, T>, "Type must derive from Asset");
 		using Type = const T&;
 		static Type Extract(Application& app, const String& name) { return app.GetAsset<T>(name); }
 	};
 
-	 template<typename T> struct SystemParamTrait<ResMut<T>> {
-		using Type = ResMut<T>;                   
-		static Type Extract(Application& app) {
-			return ResMut<T>(app.GetResource<T>());
-		}
+	template<typename T> struct SystemParamTrait<ResMut<T>> {
+		using Type = ResMut<T>;
+		static Type Extract(Application& app) { return ResMut<T>(app.GetResource<T>()); }
 	};
 
-	// And similarly for Res
-	template<typename T> struct SystemParamTrait<Res<T>> {
-		using Type = Res<T>;                  
-		static Type Extract(Application& app) {
-			return Res<T>(app.GetResource<T>());
-		}
-	};
 } // namespace Spark
 
 #endif

@@ -1,410 +1,1679 @@
-#ifndef SPARK_MATH_HPP
+﻿#ifndef SPARK_MATH_HPP
 #define SPARK_MATH_HPP
 
 #include <cmath>
-#include <core/util/types.hpp>
-#include <include/glm/geometric.hpp>
-#include <include/glm/gtc/random.hpp>
-#include <include/glm/gtx/norm.hpp>
-#include <include/glm/common.hpp>
-#include <include/glm/glm.hpp>
-#include <include/glm/gtc/matrix_transform.hpp>
-#include <include/glm/gtc/noise.hpp>
-#include <include/glm/vector_relational.hpp>
-#include <include/glm/gtc/quaternion.hpp>
-#include <include/glm/gtc/type_ptr.hpp>
-#include <include/glm/gtx/matrix_interpolation.hpp>
-#include <include/glm/gtx/euler_angles.hpp>
-#include <include/glm/gtx/vector_angle.hpp>
-#include <include/glm/gtx/color_space.hpp>
-#include <include/glm/gtx/compatibility.hpp>
-#include <include/glm/gtx/euler_angles.hpp>
-#include <include/glm/gtx/matrix_decompose.hpp>
-#include <include/glm/gtx/norm.hpp>
-#include <include/glm/gtx/projection.hpp>
-#include <include/glm/gtx/quaternion.hpp>
-#include <include/glm/gtx/rotate_vector.hpp>
-#include <include/glm/gtx/spline.hpp>
-#include <include/glm/gtx/vector_angle.hpp>
-#include <core/util/defines.hpp>
+#include <random>
+#include "math_types.hpp"
 
 namespace Spark::Math {
-	using Vec2            = glm::vec2;
-	using Vec3            = glm::vec3;
-	using Vec4            = glm::vec4;
-	using Mat2            = glm::mat2;
-	using Mat3            = glm::mat3;
-	using Mat4            = glm::mat4;
-	using Quat            = glm::quat;
-
 	// Constants
-	constexpr f32 PI      = glm::pi<f32>();
-	constexpr f32 EPSILON = glm::epsilon<f32>();
-	constexpr f32 TWO_PI  = 2.0f * PI;
-	constexpr f32 HALF_PI = 0.5f * PI;
-	constexpr f32 E       = 2.71828182845904523536f;
-	constexpr f32 LOG2E   = 1.44269504088896340736f;
-	constexpr f32 LOG10E  = 0.434294481903251827651f;
-	constexpr f32 LN2     = 0.693147180559945309417f;
-	constexpr f32 LN10    = 2.30258509299404568402f;
-	constexpr f32 SQRT2   = 1.41421356237309504880f;
-	constexpr f32 SQRT1_2 = 0.707106781186547524401f;
+	constexpr f32 k_pi      = 3.14159265358979323846f;
+	constexpr f32 k_epsilon = 1e-6f;
+	constexpr f32 k_two_pi  = 2.0f * k_pi;
+	constexpr f32 k_half_pi = 0.5f * k_pi;
+	constexpr f32 k_e       = 2.71828182845904523536f;
+	constexpr f32 k_log2e   = 1.44269504088896340736f;
+	constexpr f32 k_log10e  = 0.434294481903251827651f;
+	constexpr f32 k_ln2     = 0.693147180559945309417f;
+	constexpr f32 k_ln10    = 2.30258509299404568402f;
+	constexpr f32 k_sqrt2   = 1.41421356237309504880f;
+	constexpr f32 k_sqrt1_2 = 0.707106781186547524401f;
 
-	// Basic arithmetic
-	template<typename _Ty> inline _Ty Add(_Ty a, _Ty b) { return a + b; }
+	template<typename T> inline T         Sin(T x) { return std::sin(x); }
+	template<typename T> inline Vec<T, 2> Sin(const Vec<T, 2>& v) { return Vec<T, 2>(Sin(v.X()), Sin(v.Y())); }
+	template<typename T> inline Vec<T, 3> Sin(const Vec<T, 3>& v) { return Vec<T, 3>(Sin(v.X()), Sin(v.Y()), Sin(v.Z())); }
+	template<typename T> inline Vec<T, 4> Sin(const Vec<T, 4>& v) { return Vec<T, 4>(Sin(v.X()), Sin(v.Y()), Sin(v.Z()), Sin(v.W())); }
 
-	template<typename _Ty> inline _Ty Subtract(_Ty a, _Ty b) { return a - b; }
+	template<typename T> inline T         Cos(T x) { return std::cos(x); }
+	template<typename T> inline Vec<T, 2> Cos(const Vec<T, 2>& v) { return Vec<T, 2>(Cos(v.X()), Cos(v.Y())); }
+	template<typename T> inline Vec<T, 3> Cos(const Vec<T, 3>& v) { return Vec<T, 3>(Cos(v.X()), Cos(v.Y()), Cos(v.Z())); }
+	template<typename T> inline Vec<T, 4> Cos(const Vec<T, 4>& v) { return Vec<T, 4>(Cos(v.X()), Cos(v.Y()), Cos(v.Z()), Cos(v.W())); }
 
-	template<typename _Ty> inline _Ty Multiply(_Ty a, _Ty b) { return a * b; }
+	template<typename T> inline T         Tan(T x) { return std::tan(x); }
+	template<typename T> inline Vec<T, 2> Tan(const Vec<T, 2>& v) { return Vec<T, 2>(Tan(v.X()), Tan(v.Y())); }
+	template<typename T> inline Vec<T, 3> Tan(const Vec<T, 3>& v) { return Vec<T, 3>(Tan(v.X()), Tan(v.Y()), Tan(v.Z())); }
+	template<typename T> inline Vec<T, 4> Tan(const Vec<T, 4>& v) { return Vec<T, 4>(Tan(v.X()), Tan(v.Y()), Tan(v.Z()), Tan(v.W())); }
 
-	template<typename _Ty> inline _Ty Divide(_Ty a, _Ty b) { return a / b; }
+	// Arc trigonometric functions
+	template<typename T> inline T         Asin(T x) { return std::asin(x); }
+	template<typename T> inline Vec<T, 2> Asin(const Vec<T, 2>& v) { return Vec<T, 2>(Asin(v.X()), Asin(v.Y())); }
+	template<typename T> inline Vec<T, 3> Asin(const Vec<T, 3>& v) { return Vec<T, 3>(Asin(v.X()), Asin(v.Y()), Asin(v.Z())); }
+	template<typename T> inline Vec<T, 4> Asin(const Vec<T, 4>& v) { return Vec<T, 4>(Asin(v.X()), Asin(v.Y()), Asin(v.Z()), Asin(v.W())); }
 
-	// Power and root functions
-	inline f32 Pow(f32 base, f32 exponent) { return std::pow(base, exponent); }
-	inline f32 Sqrt(f32 x) { return std::sqrt(x); }
-	inline f32 CubeRoot(f32 x) { return std::cbrt(x); }
+	template<typename T> inline T         Acos(T x) { return std::acos(x); }
+	template<typename T> inline Vec<T, 2> Acos(const Vec<T, 2>& v) { return Vec<T, 2>(Acos(v.X()), Acos(v.Y())); }
+	template<typename T> inline Vec<T, 3> Acos(const Vec<T, 3>& v) { return Vec<T, 3>(Acos(v.X()), Acos(v.Y()), Acos(v.Z())); }
+	template<typename T> inline Vec<T, 4> Acos(const Vec<T, 4>& v) { return Vec<T, 4>(Acos(v.X()), Acos(v.Y()), Acos(v.Z()), Acos(v.W())); }
 
-	// Exponential and logarithmic functions
-	inline f32 Exp(f32 x) { return std::exp(x); }
-	inline f32 Log(f32 x) { return std::log(x); }
-	inline f32 Log2(f32 x) { return std::log2(x); }
-	inline f32 Log10(f32 x) { return std::log10(x); }
+	template<typename T> inline T         Atan(T x) { return std::atan(x); }
+	template<typename T> inline Vec<T, 2> Atan(const Vec<T, 2>& v) { return Vec<T, 2>(Atan(v.X()), Atan(v.Y())); }
+	template<typename T> inline Vec<T, 3> Atan(const Vec<T, 3>& v) { return Vec<T, 3>(Atan(v.X()), Atan(v.Y()), Atan(v.Z())); }
+	template<typename T> inline Vec<T, 4> Atan(const Vec<T, 4>& v) { return Vec<T, 4>(Atan(v.X()), Atan(v.Y()), Atan(v.Z()), Atan(v.W())); }
 
-	// Trigonometric functions (in radians)
-	inline f32 Sin(f32 x) { return std::sin(x); }
-	inline f32 Cos(f32 x) { return std::cos(x); }
-	inline f32 Tan(f32 x) { return std::tan(x); }
-	inline f32 Asin(f32 x) { return std::asin(x); }
-	inline f32 Acos(f32 x) { return std::acos(x); }
-	inline f32 Atan(f32 x) { return std::atan(x); }
-	inline f32 Atan2(f32 y, f32 x) { return std::atan2(y, x); }
+	template<typename T> inline T         Atan2(T y, T x) { return std::atan2(y, x); }
+	template<typename T> inline Vec<T, 2> Atan2(const Vec<T, 2>& y, const Vec<T, 2>& x) { return Vec<T, 2>(Atan2(y.X(), x.X()), Atan2(y.Y(), x.Y())); }
+	template<typename T> inline Vec<T, 3> Atan2(const Vec<T, 3>& y, const Vec<T, 3>& x) { return Vec<T, 3>(Atan2(y.X(), x.X()), Atan2(y.Y(), x.Y()), Atan2(y.Z(), x.Z())); }
+	template<typename T> inline Vec<T, 4> Atan2(const Vec<T, 4>& y, const Vec<T, 4>& x) { return Vec<T, 4>(Atan2(y.X(), x.X()), Atan2(y.Y(), x.Y()), Atan2(y.Z(), x.Z()), Atan2(y.W(), x.W())); }
 
 	// Hyperbolic functions
-	inline f32 Sinh(f32 x) { return std::sinh(x); }
-	inline f32 Cosh(f32 x) { return std::cosh(x); }
-	inline f32 Tanh(f32 x) { return std::tanh(x); }
-	inline f32 Asinh(f32 x) { return std::asinh(x); }
-	inline f32 Acosh(f32 x) { return std::acosh(x); }
-	inline f32 Atanh(f32 x) { return std::atanh(x); }
+	template<typename T> inline T         Sinh(T x) { return std::sinh(x); }
+	template<typename T> inline Vec<T, 2> Sinh(const Vec<T, 2>& v) { return Vec<T, 2>(Sinh(v.X()), Sinh(v.Y())); }
+	template<typename T> inline Vec<T, 3> Sinh(const Vec<T, 3>& v) { return Vec<T, 3>(Sinh(v.X()), Sinh(v.Y()), Sinh(v.Z())); }
+	template<typename T> inline Vec<T, 4> Sinh(const Vec<T, 4>& v) { return Vec<T, 4>(Sinh(v.X()), Sinh(v.Y()), Sinh(v.Z()), Sinh(v.W())); }
 
-	// Rounding and remainder functions
-	inline f32 Ceil(f32 x) { return std::ceil(x); }
-	inline f32 Floor(f32 x) { return std::floor(x); }
-	inline f32 Round(f32 x) { return std::round(x); }
-	inline f32 Trunc(f32 x) { return std::trunc(x); }
-	inline f32 Fmod(f32 x, f32 y) { return std::fmod(x, y); }
+	template<typename T> inline T         Cosh(T x) { return std::cosh(x); }
+	template<typename T> inline Vec<T, 2> Cosh(const Vec<T, 2>& v) { return Vec<T, 2>(Cosh(v.X()), Cosh(v.Y())); }
+	template<typename T> inline Vec<T, 3> Cosh(const Vec<T, 3>& v) { return Vec<T, 3>(Cosh(v.X()), Cosh(v.Y()), Cosh(v.Z())); }
+	template<typename T> inline Vec<T, 4> Cosh(const Vec<T, 4>& v) { return Vec<T, 4>(Cosh(v.X()), Cosh(v.Y()), Cosh(v.Z()), Cosh(v.W())); }
 
-	// Absolute value and sign
-	template<typename _Ty> inline _Ty Abs(_Ty x) { return std::abs(x); }
-	template<typename _Ty> inline _Ty Sign(_Ty x) { return (_Ty(0) < x) - (x < _Ty(0)); }
+	template<typename T> inline T         Tanh(T x) { return std::tanh(x); }
+	template<typename T> inline Vec<T, 2> Tanh(const Vec<T, 2>& v) { return Vec<T, 2>(Tanh(v.X()), Tanh(v.Y())); }
+	template<typename T> inline Vec<T, 3> Tanh(const Vec<T, 3>& v) { return Vec<T, 3>(Tanh(v.X()), Tanh(v.Y()), Tanh(v.Z())); }
+	template<typename T> inline Vec<T, 4> Tanh(const Vec<T, 4>& v) { return Vec<T, 4>(Tanh(v.X()), Tanh(v.Y()), Tanh(v.Z()), Tanh(v.W())); }
 
-	// Min and Max
-	template<typename _Ty> inline _Ty Min(_Ty a, _Ty b) { return (a < b) ? a : b; }
-	template<typename _Ty> inline _Ty Max(_Ty a, _Ty b) { return (a > b) ? a : b; }
+	// Inverse hyperbolic functions
+	template<typename T> inline T         Asinh(T x) { return std::asinh(x); }
+	template<typename T> inline Vec<T, 2> Asinh(const Vec<T, 2>& v) { return Vec<T, 2>(Asinh(v.X()), Asinh(v.Y())); }
+	template<typename T> inline Vec<T, 3> Asinh(const Vec<T, 3>& v) { return Vec<T, 3>(Asinh(v.X()), Asinh(v.Y()), Asinh(v.Z())); }
+	template<typename T> inline Vec<T, 4> Asinh(const Vec<T, 4>& v) { return Vec<T, 4>(Asinh(v.X()), Asinh(v.Y()), Asinh(v.Z()), Asinh(v.W())); }
 
-	// Clamping
-	template<typename _Ty> inline _Ty Clamp(_Ty x, _Ty min, _Ty max) { return Min(Max(x, min), max); }
+	template<typename T> inline T         Acosh(T x) { return std::acosh(x); }
+	template<typename T> inline Vec<T, 2> Acosh(const Vec<T, 2>& v) { return Vec<T, 2>(Acosh(v.X()), Acosh(v.Y())); }
+	template<typename T> inline Vec<T, 3> Acosh(const Vec<T, 3>& v) { return Vec<T, 3>(Acosh(v.X()), Acosh(v.Y()), Acosh(v.Z())); }
+	template<typename T> inline Vec<T, 4> Acosh(const Vec<T, 4>& v) { return Vec<T, 4>(Acosh(v.X()), Acosh(v.Y()), Acosh(v.Z()), Acosh(v.W())); }
 
-	// Interpolation
-	template<typename _Ty> inline _Ty Lerp(_Ty a, _Ty b, f32 t) { return a + t * (b - a); }
+	template<typename T> inline T         Atanh(T x) { return std::atanh(x); }
+	template<typename T> inline Vec<T, 2> Atanh(const Vec<T, 2>& v) { return Vec<T, 2>(Atanh(v.X()), Atanh(v.Y())); }
+	template<typename T> inline Vec<T, 3> Atanh(const Vec<T, 3>& v) { return Vec<T, 3>(Atanh(v.X()), Atanh(v.Y()), Atanh(v.Z())); }
+	template<typename T> inline Vec<T, 4> Atanh(const Vec<T, 4>& v) { return Vec<T, 4>(Atanh(v.X()), Atanh(v.Y()), Atanh(v.Z()), Atanh(v.W())); }
 
-	// Factorial (for integers)
-	inline i32 Factorial(i32 n) {
-		if (n <= 1)
-			return 1;
-		return n * Factorial(n - 1);
+	// Additional trigonometric utilities
+	template<typename T> inline void SinCos(T x, T& sin_x, T& cos_x) {
+		sin_x = Sin(x);
+		cos_x = Cos(x);
 	}
 
-	// Permutations and Combinations
-	inline i32 Permutations(i32 n, i32 r) { return Factorial(n) / Factorial(n - r); }
-	inline i32 Combinations(i32 n, i32 r) { return Permutations(n, r) / Factorial(r); }
+	template<typename T> inline Vec<T, 2> SinCos(T x) { return Vec<T, 2>(Sin(x), Cos(x)); }
 
-	// Greatest Common Divisor (GCD) using Euclidean algorithm
-	inline i32 GCD(i32 a, i32 b) {
-		while (b != 0) {
-			i32 temp = b;
-			b        = a % b;
-			a        = temp;
+	// Degrees and Radians conversion for vectors
+	template<typename T> inline Vec<T, 2> Degrees(const Vec<T, 2>& radians) { return Vec<T, 2>(RadiansToDegrees(radians.X()), RadiansToDegrees(radians.Y())); }
+	template<typename T> inline Vec<T, 3> Degrees(const Vec<T, 3>& radians) { return Vec<T, 3>(RadiansToDegrees(radians.X()), RadiansToDegrees(radians.Y()), RadiansToDegrees(radians.Z())); }
+	template<typename T> inline Vec<T, 4> Degrees(const Vec<T, 4>& radians) {
+		return Vec<T, 4>(RadiansToDegrees(radians.X()), RadiansToDegrees(radians.Y()), RadiansToDegrees(radians.Z()), RadiansToDegrees(radians.W()));
+	}
+
+	template<typename T> inline Vec<T, 2> Radians(const Vec<T, 2>& degrees) { return Vec<T, 2>(DegreesToRadians(degrees.X()), DegreesToRadians(degrees.Y())); }
+	template<typename T> inline Vec<T, 3> Radians(const Vec<T, 3>& degrees) { return Vec<T, 3>(DegreesToRadians(degrees.X()), DegreesToRadians(degrees.Y()), DegreesToRadians(degrees.Z())); }
+	template<typename T> inline Vec<T, 4> Radians(const Vec<T, 4>& degrees) {
+		return Vec<T, 4>(DegreesToRadians(degrees.X()), DegreesToRadians(degrees.Y()), DegreesToRadians(degrees.Z()), DegreesToRadians(degrees.W()));
+	}
+	// Basic math functions
+	template<typename T> inline T         Floor(T x) { return std::floor(x); }
+	template<typename T> inline Vec<T, 2> Floor(const Vec<T, 2>& v) { return Vec<T, 2>(Floor(v.X()), Floor(v.Y())); }
+	template<typename T> inline Vec<T, 3> Floor(const Vec<T, 3>& v) { return Vec<T, 3>(Floor(v.X()), Floor(v.Y()), Floor(v.Z())); }
+	template<typename T> inline Vec<T, 4> Floor(const Vec<T, 4>& v) { return Vec<T, 4>(Floor(v.X()), Floor(v.Y()), Floor(v.Z()), Floor(v.W())); }
+
+	template<typename T> inline T         Ceil(T x) { return std::ceil(x); }
+	template<typename T> inline Vec<T, 2> Ceil(const Vec<T, 2>& v) { return Vec<T, 2>(Ceil(v.X()), Ceil(v.Y())); }
+	template<typename T> inline Vec<T, 3> Ceil(const Vec<T, 3>& v) { return Vec<T, 3>(Ceil(v.X()), Ceil(v.Y()), Ceil(v.Z())); }
+	template<typename T> inline Vec<T, 4> Ceil(const Vec<T, 4>& v) { return Vec<T, 4>(Ceil(v.X()), Ceil(v.Y()), Ceil(v.Z()), Ceil(v.W())); }
+
+	template<typename T> inline T         Round(T x) { return std::round(x); }
+	template<typename T> inline Vec<T, 2> Round(const Vec<T, 2>& v) { return Vec<T, 2>(Round(v.X()), Round(v.Y())); }
+	template<typename T> inline Vec<T, 3> Round(const Vec<T, 3>& v) { return Vec<T, 3>(Round(v.X()), Round(v.Y()), Round(v.Z())); }
+	template<typename T> inline Vec<T, 4> Round(const Vec<T, 4>& v) { return Vec<T, 4>(Round(v.X()), Round(v.Y()), Round(v.Z()), Round(v.W())); }
+
+	template<typename T> inline T         Trunc(T x) { return std::trunc(x); }
+	template<typename T> inline Vec<T, 2> Trunc(const Vec<T, 2>& v) { return Vec<T, 2>(Trunc(v.X()), Trunc(v.Y())); }
+	template<typename T> inline Vec<T, 3> Trunc(const Vec<T, 3>& v) { return Vec<T, 3>(Trunc(v.X()), Trunc(v.Y()), Trunc(v.Z())); }
+	template<typename T> inline Vec<T, 4> Trunc(const Vec<T, 4>& v) { return Vec<T, 4>(Trunc(v.X()), Trunc(v.Y()), Trunc(v.Z()), Trunc(v.W())); }
+
+	template<typename T> inline T         Fract(T x) { return x - Floor(x); }
+	template<typename T> inline Vec<T, 2> Fract(const Vec<T, 2>& v) { return Vec<T, 2>(Fract(v.X()), Fract(v.Y())); }
+	template<typename T> inline Vec<T, 3> Fract(const Vec<T, 3>& v) { return Vec<T, 3>(Fract(v.X()), Fract(v.Y()), Fract(v.Z())); }
+	template<typename T> inline Vec<T, 4> Fract(const Vec<T, 4>& v) { return Vec<T, 4>(Fract(v.X()), Fract(v.Y()), Fract(v.Z()), Fract(v.W())); }
+
+	template<typename T> inline T         Mod(T x, T y) { return x - y * Floor(x / y); }
+	template<typename T> inline Vec<T, 2> Mod(const Vec<T, 2>& x, const Vec<T, 2>& y) { return Vec<T, 2>(Mod(x.X(), y.X()), Mod(x.Y(), y.Y())); }
+	template<typename T> inline Vec<T, 3> Mod(const Vec<T, 3>& x, const Vec<T, 3>& y) { return Vec<T, 3>(Mod(x.X(), y.X()), Mod(x.Y(), y.Y()), Mod(x.Z(), y.Z())); }
+	template<typename T> inline Vec<T, 4> Mod(const Vec<T, 4>& x, const Vec<T, 4>& y) { return Vec<T, 4>(Mod(x.X(), y.X()), Mod(x.Y(), y.Y()), Mod(x.Z(), y.Z()), Mod(x.W(), y.W())); }
+
+	template<typename T> inline T         Abs(T x) { return std::abs(x); }
+	template<typename T> inline Vec<T, 2> Abs(const Vec<T, 2>& v) { return Vec<T, 2>(Abs(v.X()), Abs(v.Y())); }
+	template<typename T> inline Vec<T, 3> Abs(const Vec<T, 3>& v) { return Vec<T, 3>(Abs(v.X()), Abs(v.Y()), Abs(v.Z())); }
+	template<typename T> inline Vec<T, 4> Abs(const Vec<T, 4>& v) { return Vec<T, 4>(Abs(v.X()), Abs(v.Y()), Abs(v.Z()), Abs(v.W())); }
+
+	// Exponential functions
+	template<typename T> inline T         Exp(T x) { return std::exp(x); }
+	template<typename T> inline Vec<T, 2> Exp(const Vec<T, 2>& v) { return Vec<T, 2>(Exp(v.X()), Exp(v.Y())); }
+	template<typename T> inline Vec<T, 3> Exp(const Vec<T, 3>& v) { return Vec<T, 3>(Exp(v.X()), Exp(v.Y()), Exp(v.Z())); }
+	template<typename T> inline Vec<T, 4> Exp(const Vec<T, 4>& v) { return Vec<T, 4>(Exp(v.X()), Exp(v.Y()), Exp(v.Z()), Exp(v.W())); }
+
+	template<typename T> inline T         Log(T x) { return std::log(x); }
+	template<typename T> inline Vec<T, 2> Log(const Vec<T, 2>& v) { return Vec<T, 2>(Log(v.X()), Log(v.Y())); }
+	template<typename T> inline Vec<T, 3> Log(const Vec<T, 3>& v) { return Vec<T, 3>(Log(v.X()), Log(v.Y()), Log(v.Z())); }
+	template<typename T> inline Vec<T, 4> Log(const Vec<T, 4>& v) { return Vec<T, 4>(Log(v.X()), Log(v.Y()), Log(v.Z()), Log(v.W())); }
+
+	template<typename T> inline T         Exp2(T x) { return std::exp2(x); }
+	template<typename T> inline Vec<T, 2> Exp2(const Vec<T, 2>& v) { return Vec<T, 2>(Exp2(v.X()), Exp2(v.Y())); }
+	template<typename T> inline Vec<T, 3> Exp2(const Vec<T, 3>& v) { return Vec<T, 3>(Exp2(v.X()), Exp2(v.Y()), Exp2(v.Z())); }
+	template<typename T> inline Vec<T, 4> Exp2(const Vec<T, 4>& v) { return Vec<T, 4>(Exp2(v.X()), Exp2(v.Y()), Exp2(v.Z()), Exp2(v.W())); }
+
+	template<typename T> inline T         Log2(T x) { return std::log2(x); }
+	template<typename T> inline Vec<T, 2> Log2(const Vec<T, 2>& v) { return Vec<T, 2>(Log2(v.X()), Log2(v.Y())); }
+	template<typename T> inline Vec<T, 3> Log2(const Vec<T, 3>& v) { return Vec<T, 3>(Log2(v.X()), Log2(v.Y()), Log2(v.Z())); }
+	template<typename T> inline Vec<T, 4> Log2(const Vec<T, 4>& v) { return Vec<T, 4>(Log2(v.X()), Log2(v.Y()), Log2(v.Z()), Log2(v.W())); }
+
+	// Power functions
+	template<typename T> inline T         Sqrt(T x) { return std::sqrt(x); }
+	template<typename T> inline Vec<T, 2> Sqrt(const Vec<T, 2>& v) { return Vec<T, 2>(Sqrt(v.X()), Sqrt(v.Y())); }
+	template<typename T> inline Vec<T, 3> Sqrt(const Vec<T, 3>& v) { return Vec<T, 3>(Sqrt(v.X()), Sqrt(v.Y()), Sqrt(v.Z())); }
+	template<typename T> inline Vec<T, 4> Sqrt(const Vec<T, 4>& v) { return Vec<T, 4>(Sqrt(v.X()), Sqrt(v.Y()), Sqrt(v.Z()), Sqrt(v.W())); }
+
+	template<typename T> inline T         InverseSqrt(T x) { return T{1} / Sqrt(x); }
+	template<typename T> inline Vec<T, 2> InverseSqrt(const Vec<T, 2>& v) { return Vec<T, 2>(InverseSqrt(v.X()), InverseSqrt(v.Y())); }
+	template<typename T> inline Vec<T, 3> InverseSqrt(const Vec<T, 3>& v) { return Vec<T, 3>(InverseSqrt(v.X()), InverseSqrt(v.Y()), InverseSqrt(v.Z())); }
+	template<typename T> inline Vec<T, 4> InverseSqrt(const Vec<T, 4>& v) { return Vec<T, 4>(InverseSqrt(v.X()), InverseSqrt(v.Y()), InverseSqrt(v.Z()), InverseSqrt(v.W())); }
+
+	// Additional utility functions
+	template<typename T> inline T         Sign(T x) { return (T{0} < x) - (x < T{0}); }
+	template<typename T> inline Vec<T, 2> Sign(const Vec<T, 2>& v) { return Vec<T, 2>(Sign(v.X()), Sign(v.Y())); }
+	template<typename T> inline Vec<T, 3> Sign(const Vec<T, 3>& v) { return Vec<T, 3>(Sign(v.X()), Sign(v.Y()), Sign(v.Z())); }
+	template<typename T> inline Vec<T, 4> Sign(const Vec<T, 4>& v) { return Vec<T, 4>(Sign(v.X()), Sign(v.Y()), Sign(v.Z()), Sign(v.W())); }
+
+	template<typename T> inline T         Step(T edge, T x) { return x < edge ? T{0} : T{1}; }
+	template<typename T> inline Vec<T, 2> Step(const Vec<T, 2>& edge, const Vec<T, 2>& x) { return Vec<T, 2>(Step(edge.X(), x.X()), Step(edge.Y(), x.Y())); }
+	template<typename T> inline Vec<T, 3> Step(const Vec<T, 3>& edge, const Vec<T, 3>& x) { return Vec<T, 3>(Step(edge.X(), x.X()), Step(edge.Y(), x.Y()), Step(edge.Z(), x.Z())); }
+	template<typename T> inline Vec<T, 4> Step(const Vec<T, 4>& edge, const Vec<T, 4>& x) {
+		return Vec<T, 4>(Step(edge.X(), x.X()), Step(edge.Y(), x.Y()), Step(edge.Z(), x.Z()), Step(edge.W(), x.W()));
+	}
+
+
+	template<typename T> inline T* ValuePtr(Vec<T, 2>& v) { return &(v[0]); }
+
+	template<typename T> inline const T* ValuePtr(const Vec<T, 2>& v) { return &(v[0]); }
+
+	template<typename T> inline T* ValuePtr(Vec<T, 3>& v) { return &(v[0]); }
+
+	template<typename T> inline const T* ValuePtr(const Vec<T, 3>& v) { return &(v[0]); }
+
+	template<typename T> inline T* ValuePtr(Vec<T, 4>& v) { return &(v[0]); }
+
+	template<typename T> inline const T* ValuePtr(const Vec<T, 4>& v) { return &(v[0]); }
+
+	template<typename T> inline T* ValuePtr(Quaternion<T>& q) { return &(q.X()); }
+
+	template<typename T> inline const T* ValuePtr(const Quaternion<T>& q) { return &(q.X()); }
+
+	template<typename T, usize R, usize C> inline T* ValuePtr(Mat<T, R, C>& m) { return &(m(0, 0)); }
+
+	template<typename T, usize R, usize C> inline const T* ValuePtr(const Mat<T, R, C>& m) { return &(m(0, 0)); }
+
+	// Make functions for creating vectors/matrices from raw poi32ers
+	template<typename T> inline Vec<T, 2> MakeVec2(const T* ptr) { return Vec<T, 2>(ptr[0], ptr[1]); }
+
+	template<typename T> inline Vec<T, 3> MakeVec3(const T* ptr) { return Vec<T, 3>(ptr[0], ptr[1], ptr[2]); }
+
+	template<typename T> inline Vec<T, 4> MakeVec4(const T* ptr) { return Vec<T, 4>(ptr[0], ptr[1], ptr[2], ptr[3]); }
+
+	template<typename T> inline Quaternion<T> MakeQuat(const T* ptr) { return Quaternion<T>(ptr[0], ptr[1], ptr[2], ptr[3]); }
+
+	template<typename T> inline Mat<T, 2, 2> MakeMat2(const T* ptr) {
+		Mat<T, 2, 2> result;
+		for (usize i = 0; i < 4; ++i) {
+			result(i / 2, i % 2) = ptr[i];
 		}
-		return a;
-	}
-
-	// Least Common Multiple (LCM)
-	inline i32 LCM(i32 a, i32 b) { return (a * b) / GCD(a, b); }
-
-	// Prime number check
-	inline bool IsPrime(i32 n) {
-		if (n <= 1)
-			return false;
-		for (i32 i = 2; i * i <= n; i++) {
-			if (n % i == 0)
-				return false;
-		}
-		return true;
-	}
-
-	// Matrix functions
-	inline Mat4 Perspective(f32 fov, f32 aspect, f32 near, f32 far) { return glm::perspective(fov, aspect, near, far); }
-	inline Mat4 Orthographic(f32 left, f32 right, f32 bottom, f32 top, f32 near, f32 far) { return glm::ortho(left, right, bottom, top, near, far); }
-	inline Mat4 LookAt(const Vec3& eye, const Vec3& center, const Vec3& up) { return glm::lookAt(eye, center, up); }
-	inline Mat4 Translate(const Mat4& matrix, const Vec3& translation) { return glm::translate(matrix, translation); }
-	inline Mat4 Rotate(const Mat4& matrix, const Vec3& rotation) {
-		Mat4 result = matrix;
-		result      = glm::rotate(result, rotation.x, Vec3(1, 0, 0));
-		result      = glm::rotate(result, rotation.y, Vec3(0, 1, 0));
-		result      = glm::rotate(result, rotation.z, Vec3(0, 0, 1));
 		return result;
 	}
-	inline Mat4 Rotate(const Mat4& matrix, f32 angle, const Vec3& axis) { return glm::rotate(matrix, angle, axis); }
-	inline Mat4 Scale(const Mat4& matrix, const Vec3& scale) { return glm::scale(matrix, scale); }
-	inline Mat4 Inverse(const Mat4& matrix) { return glm::inverse(matrix); }
-	inline Mat4 Transpose(const Mat4& matrix) { return glm::transpose(matrix); }
-	inline Mat4 Identity() { return glm::mat4(1.0f); }
-	inline Mat4 ScaleFromVector(const Vec3& scale) { return glm::scale(Mat4(1.0f), scale); }
-	inline Mat4 TranslationFromVector(const Vec3& translation) { return glm::translate(Mat4(1.0f), translation); }
 
-	// Vector functions
-	inline f32  Dot(const Vec2& a, const Vec2& b) { return glm::dot(a, b); }
-	inline f32  Dot(const Vec3& a, const Vec3& b) { return glm::dot(a, b); }
-	inline f32  Dot(const Vec4& a, const Vec4& b) { return glm::dot(a, b); }
-	inline Vec3 Cross(const Vec3& a, const Vec3& b) { return glm::cross(a, b); }
-	inline f32  Length(const Vec2& v) { return glm::length(v); }
-	inline f32  Length(const Vec3& v) { return glm::length(v); }
-	inline f32  Length(const Vec4& v) { return glm::length(v); }
-	inline Vec2 Normalize(const Vec2& v) { return glm::normalize(v); }
-	inline Vec3 Normalize(const Vec3& v) { return glm::normalize(v); }
-	inline Vec4 Normalize(const Vec4& v) { return glm::normalize(v); }
-	inline Vec3 Reflect(const Vec3& incident, const Vec3& normal) { return glm::reflect(incident, normal); }
-	inline Vec3 Refract(const Vec3& incident, const Vec3& normal, f32 eta) { return glm::refract(incident, normal, eta); }
-	inline Vec3 Transform(const Vec3& v, const Mat4& matrix) { return glm::vec3(matrix * glm::vec4(v, 1.0f)); }
-	inline Vec4 Transform(const Vec4& v, const Mat4& matrix) { return matrix * v; }
-	inline Vec3 TransformDirection(const Vec3& v, const Mat4& matrix) { return glm::normalize(glm::vec3(matrix * glm::vec4(v, 0.0f))); }
-	inline Vec3 TransformNormal(const Vec3& v, const Mat4& matrix) { return glm::normalize(glm::vec3(glm::transpose(glm::inverse(matrix)) * glm::vec4(v, 0.0f))); }
-	inline Vec3 Lerp(const Vec3& a, const Vec3& b, f32 t) { return glm::lerp(a, b, t); }
-	inline Vec3 Nlerp(const Vec3& a, const Vec3& b, f32 t) { return glm::normalize(glm::lerp(a, b, t)); }
-	inline Vec3 Clamp(const Vec3& v, f32 min, f32 max) { return glm::clamp(v, min, max); }
-	inline Vec3 Clamp(const Vec3& v, const Vec3& min, const Vec3& max) { return glm::clamp(v, min, max); }
-	inline Vec3 Pow(const Vec3& v, f32 exponent) { return glm::pow(v, Vec3(exponent)); }
-	inline Vec3 Max(const Vec3& a, const Vec3& b) { return glm::max(a, b); }
-	inline Vec3 Min(const Vec3& a, const Vec3& b) { return glm::min(a, b); }
-	inline Vec3 Abs(const Vec3& v) { return glm::abs(v); }
-	inline Vec3 Round(const Vec3& v) { return glm::round(v); }
-	inline Vec3 Ceil(const Vec3& v) { return glm::ceil(v); }
-	inline Vec3 Floor(const Vec3& v) { return glm::floor(v); }
-	inline Vec3 Fract(const Vec3& v) { return glm::fract(v); }
-	inline Vec3 Mix(const Vec3& a, const Vec3& b, f32 t) { return glm::mix(a, b, t); }
-	inline Vec3 Step(const Vec3& edge, const Vec3& x) { return glm::step(edge, x); }
-	inline Vec3 SmoothStep(const Vec3& edge0, const Vec3& edge1, const Vec3& x) { return glm::smoothstep(edge0, edge1, x); }
-	inline Vec3 Sign(const Vec3& v) { return glm::sign(v); }
-	inline Vec3 Mod(const Vec3& x, f32 y) { return glm::mod(x, y); }
-	inline Vec3 Mod(const Vec3& x, const Vec3& y) { return glm::mod(x, y); }
-	inline Vec3 Exp(const Vec3& v) { return glm::exp(v); }
-	inline Vec3 Log(const Vec3& v) { return glm::log(v); }
-	inline Vec3 Sqrt(const Vec3& v) { return glm::sqrt(v); }
-	inline Vec3 InverseSqrt(const Vec3& v) { return glm::inversesqrt(v); }
-	inline Vec3 Sin(const Vec3& v) { return glm::sin(v); }
-	inline Vec3 Cos(const Vec3& v) { return glm::cos(v); }
-	inline Vec3 Tan(const Vec3& v) { return glm::tan(v); }
-	inline Vec3 Asin(const Vec3& v) { return glm::asin(v); }
-	inline Vec3 Acos(const Vec3& v) { return glm::acos(v); }
-	inline Vec3 Atan(const Vec3& v) { return glm::atan(v); }
-	inline Vec3 Atan2(const Vec3& y, const Vec3& x) { return glm::atan(y, x); }
-	inline Vec3 Degrees(const Vec3& v) { return glm::degrees(v); }
-	inline Vec3 Radians(const Vec3& v) { return glm::radians(v); }
-	inline Vec3 Project(const Vec3& v, const Vec3& normal) { return glm::proj(v, glm::normalize(normal)); }
-	inline Vec3 Reject(const Vec3& v, const Vec3& normal) { return v - Project(v, normal); }
-	inline Vec3 Rotate(const Quat& q, const Vec3& v) { return glm::rotate(q, v); }
-	inline Vec3 QuaternionToEuler(const Quat& q) { return glm::degrees(glm::eulerAngles(q)); }
-	inline Vec3 EulerAngles(const Quat& q) { return glm::eulerAngles(q); }
-	inline Vec3 RotateVector(const Vec3& v, const Quat& q) { return glm::rotate(q, v); }
-	inline f32  Distance(const Vec3& a, const Vec3& b) { return glm::distance(a, b); }
-	inline f32  DistanceSquared(const Vec3& a, const Vec3& b) { return glm::distance2(a, b); }
-	inline Vec3 ProjectOnPlane(const Vec3& v, const Vec3& plane_normal) { return v - Project(v, plane_normal); }
-	inline f32  AngleBetween(const Vec3& a, const Vec3& b) { return _MATH Acos(Dot(Normalize(a), Normalize(b))); }
+	template<typename T> inline Mat<T, 3, 3> MakeMat3(const T* ptr) {
+		Mat<T, 3, 3> result;
+		for (usize i = 0; i < 9; ++i) {
+			result(i / 3, i % 3) = ptr[i];
+		}
+		return result;
+	}
 
-	// Quat functions
-	inline Quat EulerToQuaternion(const Vec3& euler) { return Quat(Vec3(glm::radians(euler.x), glm::radians(euler.y), glm::radians(euler.z))); }
-	inline Quat MatrixToQuaternion(const Mat4& matrix) { return glm::quat_cast(matrix); }
-	inline Quat Slerp(const Quat& a, const Quat& b, f32 t) { return glm::slerp(a, b, t); }
-	inline Quat LookAtQuaternion(const Vec3& direction, const Vec3& up = Vec3(0, 1, 0)) { return glm::quatLookAt(direction, up); }
-	inline Quat RotationBetweenVectors(const Vec3& start, const Vec3& dest) { return glm::rotation(Normalize(start), Normalize(dest)); }
-	inline Quat Normalize(const Quat& q) { return glm::normalize(q); }
-	inline Quat Conjugate(const Quat& q) { return glm::conjugate(q); }
+	template<typename T> inline Mat<T, 4, 4> MakeMat4(const T* ptr) {
+		Mat<T, 4, 4> result;
+		for (usize i = 0; i < 16; ++i) {
+			result(i / 4, i % 4) = ptr[i];
+		}
+		return result;
+	}
+	
+	// Matrix casting functions
+	template<typename T> inline Mat<T, 4, 4> Mat4Cast(const Mat<T, 3, 3>& m) {
+		Mat<T, 4, 4> result = Mat<T, 4, 4>::Identity();
+		for (usize i = 0; i < 3; ++i)
+			for (usize j = 0; j < 3; ++j)
+				result(i, j) = m(i, j);
+		return result;
+	}
 
-	// Angle functions
-	inline f32 Angle(const Vec3& a, const Vec3& b) { return glm::angle(a, b); }
-	inline f32 OrientedAngle(const Vec3& a, const Vec3& b, const Vec3& ref) { return glm::orientedAngle(a, b, ref); }
-	inline f32 Radians(f32 degrees) { return glm::radians(degrees); }
-	inline f32 Degrees(f32 radians) { return glm::degrees(radians); }
+	template<typename T> inline Mat<T, 3, 3> Mat3Cast(const Mat<T, 4, 4>& m) {
+		Mat<T, 3, 3> result;
+		for (usize i = 0; i < 3; ++i)
+			for (usize j = 0; j < 3; ++j)
+				result(i, j) = m(i, j);
+		return result;
+	}
+
+	// Quaternion to Matrix conversions
+	template<typename T> inline Mat<T, 3, 3> Mat3Cast(const Quaternion<T>& q) {
+		Mat<T, 3, 3> result;
+		T            xx = q.X() * q.X();
+		T            yy = q.Y() * q.Y();
+		T            zz = q.Z() * q.Z();
+		T            xy = q.X() * q.Y();
+		T            xz = q.X() * q.Z();
+		T            yz = q.Y() * q.Z();
+		T            wx = q.W() * q.X();
+		T            wy = q.W() * q.Y();
+		T            wz = q.W() * q.Z();
+
+		result(0, 0)    = T{1} - T{2} * (yy + zz);
+		result(0, 1)    = T{2} * (xy - wz);
+		result(0, 2)    = T{2} * (xz + wy);
+
+		result(1, 0)    = T{2} * (xy + wz);
+		result(1, 1)    = T{1} - T{2} * (xx + zz);
+		result(1, 2)    = T{2} * (yz - wx);
+
+		result(2, 0)    = T{2} * (xz - wy);
+		result(2, 1)    = T{2} * (yz + wx);
+		result(2, 2)    = T{1} - T{2} * (xx + yy);
+
+		return result;
+	}
+
+	template<typename T> inline Mat<T, 4, 4> Mat4Cast(const Quaternion<T>& q) { return Mat4Cast(Mat3Cast(q)); }
+
+	// Matrix to Quaternion conversion
+	template<typename T> inline Quaternion<T> QuatCast(const Mat<T, 3, 3>& m) {
+		T four_x_squared_minus1        = m(0, 0) - m(1, 1) - m(2, 2);
+		T four_y_squared_minus1        = m(1, 1) - m(0, 0) - m(2, 2);
+		T for_z_squared_minus1         = m(2, 2) - m(0, 0) - m(1, 1);
+		T for_w_squared_minus1         = m(0, 0) + m(1, 1) + m(2, 2);
+
+		i32 biggest_index              = 0;
+		T   for_biggest_squared_minus1 = for_w_squared_minus1;
+		if (four_x_squared_minus1 > for_biggest_squared_minus1) {
+			for_biggest_squared_minus1 = four_x_squared_minus1;
+			biggest_index              = 1;
+		}
+		if (four_y_squared_minus1 > for_biggest_squared_minus1) {
+			for_biggest_squared_minus1 = four_y_squared_minus1;
+			biggest_index              = 2;
+		}
+		if (for_z_squared_minus1 > for_biggest_squared_minus1) {
+			for_biggest_squared_minus1 = for_z_squared_minus1;
+			biggest_index              = 3;
+		}
+
+		T biggest_val = Sqrt(for_biggest_squared_minus1 + T{1}) * T{0.5};
+		T mult        = T{0.25} / biggest_val;
+
+		Quaternion<T> result;
+		switch (biggest_index) {
+			case 0:
+				result.W() = biggest_val;
+				result.X() = (m(2, 1) - m(1, 2)) * mult;
+				result.Y() = (m(0, 2) - m(2, 0)) * mult;
+				result.Z() = (m(1, 0) - m(0, 1)) * mult;
+				break;
+			case 1:
+				result.W() = (m(2, 1) - m(1, 2)) * mult;
+				result.X() = biggest_val;
+				result.Y() = (m(1, 0) + m(0, 1)) * mult;
+				result.Z() = (m(0, 2) + m(2, 0)) * mult;
+				break;
+			case 2:
+				result.W() = (m(0, 2) - m(2, 0)) * mult;
+				result.X() = (m(1, 0) + m(0, 1)) * mult;
+				result.Y() = biggest_val;
+				result.Z() = (m(2, 1) + m(1, 2)) * mult;
+				break;
+			case 3:
+				result.W() = (m(1, 0) - m(0, 1)) * mult;
+				result.X() = (m(0, 2) + m(2, 0)) * mult;
+				result.Y() = (m(2, 1) + m(1, 2)) * mult;
+				result.Z() = biggest_val;
+				break;
+		}
+		return result;
+	}
+
+	template<typename T> inline Quaternion<T> QuatCast(const Mat<T, 4, 4>& m) { return QuatCast(Mat3Cast(m)); }
+
+	// Vector casting functions
+	template<typename T> inline Vec<T, 2> Vec2Cast(const Vec<T, 3>& v) { return Vec<T, 2>(v.X(), v.Y()); }
+
+	template<typename T> inline Vec<T, 2> Vec2Cast(const Vec<T, 4>& v) { return Vec<T, 2>(v.X(), v.Y()); }
+
+	template<typename T> inline Vec<T, 3> Vec3Cast(const Vec<T, 2>& v, T z = T{0}) { return Vec<T, 3>(v.X(), v.Y(), z); }
+
+	template<typename T> inline Vec<T, 3> Vec3Cast(const Vec<T, 4>& v) { return Vec<T, 3>(v.X(), v.Y(), v.Z()); }
+
+	template<typename T> inline Vec<T, 4> Vec4Cast(const Vec<T, 2>& v, T z = T{0}, T w = T{1}) { return Vec<T, 4>(v.X(), v.Y(), z, w); }
+
+	template<typename T> inline Vec<T, 4> Vec4Cast(const Vec<T, 3>& v, T w = T{1}) { return Vec<T, 4>(v.X(), v.Y(), v.Z(), w); }
+
+
+	// Helper functions for copying to poi32er
+	template<typename T> inline void CopyTo(const Vec<T, 2>& v, T* ptr) {
+		ptr[0] = v.X();
+		ptr[1] = v.Y();
+	}
+
+	template<typename T> inline void CopyTo(const Vec<T, 3>& v, T* ptr) {
+		ptr[0] = v.X();
+		ptr[1] = v.Y();
+		ptr[2] = v.Z();
+	}
+
+	template<typename T> inline void CopyTo(const Vec<T, 4>& v, T* ptr) {
+		ptr[0] = v.X();
+		ptr[1] = v.Y();
+		ptr[2] = v.Z();
+		ptr[3] = v.W();
+	}
+
+	template<typename T> inline void CopyTo(const Quaternion<T>& q, T* ptr) {
+		ptr[0] = q.X();
+		ptr[1] = q.Y();
+		ptr[2] = q.Z();
+		ptr[3] = q.W();
+	}
+
+	template<typename T> inline void CopyTo(const Mat<T, 2, 2>& m, T* ptr) {
+		for (usize i = 0; i < 4; ++i) {
+			ptr[i] = m(i / 2, i % 2);
+		}
+	}
+
+	template<typename T> inline void CopyTo(const Mat<T, 3, 3>& m, T* ptr) {
+		for (usize i = 0; i < 9; ++i) {
+			ptr[i] = m(i / 3, i % 3);
+		}
+	}
+
+	template<typename T> inline void CopyTo(const Mat<T, 4, 4>& m, T* ptr) {
+		for (usize i = 0; i < 16; ++i) {
+			ptr[i] = m(i / 4, i % 4);
+		}
+	}
+
+	// Basic trigonometric functions
+	
+	template<typename T> inline T Mix(T x, T y, T a) { return x * (T{1} - a) + y * a; }
+
+	template<typename T> inline Vec<T, 2> Mix(const Vec<T, 2>& x, const Vec<T, 2>& y, T a) { return x * (T{1} - a) + y * a; }
+
+	template<typename T> inline Vec<T, 3> Mix(const Vec<T, 3>& x, const Vec<T, 3>& y, T a) { return x * (T{1} - a) + y * a; }
+
+	template<typename T> inline Vec<T, 4> Mix(const Vec<T, 4>& x, const Vec<T, 4>& y, T a) { return x * (T{1} - a) + y * a; }
+
+	template<typename T, usize N> inline T Length(const Vec<T, N>& v) { return v.Length(); }
+
+	// Get the squared length of a vector (faster than Length() when only comparing distances)
+	template<typename T, usize N> inline T LengthSquared(const Vec<T, N>& v) { return v.LengthSquared(); }
+
+	// Get the Euclidean distance between two points
+	template<typename T, usize N> inline T Distance(const Vec<T, N>& a, const Vec<T, N>& b) { return Length(b - a); }
+
+	// Get the squared distance between two points (faster than Distance())
+	template<typename T, usize N> inline T DistanceSquared(const Vec<T, N>& a, const Vec<T, N>& b) { return LengthSquared(b - a); }
+
+	// Get the Manhattan (L1) distance between two points
+	template<typename T, usize N> inline T ManhattanDistance(const Vec<T, N>& a, const Vec<T, N>& b) {
+		T sum = T{0};
+		for (usize i = 0; i < N; ++i) {
+			sum += Abs(b[i] - a[i]);
+		}
+		return sum;
+	}
+
+	// Get the Chebyshev (L∞) distance between two points
+	template<typename T, usize N> inline T ChebyshevDistance(const Vec<T, N>& a, const Vec<T, N>& b) {
+		T max_diff = T{0};
+		for (usize i = 0; i < N; ++i) {
+			max_diff = Max(max_diff, Abs(b[i] - a[i]));
+		}
+		return max_diff;
+	}
+
+	// Normalize a vector (returns a vector in the same direction with length 1)
+	template<typename T, usize N> inline Vec<T, N> Normalize(const Vec<T, N>& v) { return v.Normalized(); }
+
+	// Check if a vector has (approximately) unit length
+	template<typename T, usize N> inline bool IsNormalized(const Vec<T, N>& v, T epsilon = T{1e-6}) { return Abs(LengthSquared(v) - T{1}) < epsilon; }
+
+	// Get the projection length of vector a onto vector b
+	template<typename T, usize N> inline T ProjectionLength(const Vec<T, N>& a, const Vec<T, N>& b) { return Dot(a, Normalize(b)); }
+
+	// Get the perpendicular distance from point p to line defined by points a and b
+	template<typename T, usize N> inline T PointLineDistance(const Vec<T, N>& p, const Vec<T, N>& a, const Vec<T, N>& b) {
+		Vec<T, N> ab          = b - a;
+		Vec<T, N> ap          = p - a;
+		T         proj_length = ProjectionLength(ap, ab);
+		return Sqrt(LengthSquared(ap) - proj_length * proj_length);
+	}
+
+	// Integer functions
+	template<typename T> inline T IsPowerOfTwo(T x) { return x > 0 && (x & (x - 1)) == 0; }
+
+	template<typename T> inline T NextPowerOfTwo(T x) {
+		x--;
+		x |= x >> 1;
+		x |= x >> 2;
+		x |= x >> 4;
+		x |= x >> 8;
+		x |= x >> 16;
+		return x + 1;
+	}
+
+	template<typename T> inline T PrevPowerOfTwo(T x) {
+		x |= x >> 1;
+		x |= x >> 2;
+		x |= x >> 4;
+		x |= x >> 8;
+		x |= x >> 16;
+		return x - (x >> 1);
+	}
 
 	// Random number generation
-	inline f32  Random() { return glm::linearRand(0.0f, 1.0f); }
-	inline f32  RandomRange(f32 min, f32 max) { return glm::linearRand(min, max); }
-	inline Vec3 RandomVec3() { return glm::sphericalRand(1.0f); }
-	inline Vec3 RandomVec3InCube() { return glm::linearRand(Vec3(-1), Vec3(1)); }
+	inline f32 Random() {
+		static std::random_device                  rd;
+		static std::mt19937                        gen(rd());
+		static std::uniform_real_distribution<f32> dis(0.0f, 1.0f);
+		return dis(gen);
+	}
 
-	// Intersection tests
-	inline bool RayPlaneIntersection(const Vec3& ray_origin, const Vec3& ray_dir, const Vec3& plane_normal, const Vec3& plane_point, f32& t) {
-		f32 denom = Dot(plane_normal, ray_dir);
-		if (Abs(denom) > EPSILON) {
-			Vec3 p0l0 = plane_point - ray_origin;
-			t         = Dot(p0l0, plane_normal) / denom;
-			return (t >= 0);
+	template<typename T> inline T RandomRange(T min_val, T max_val) { return min_val + (max_val - min_val) * Random(); }
+
+	template<typename T> inline Vec<T, 3> RandomUnitVector() {
+		T z     = RandomRange(T{-1}, T{1});
+		T theta = RandomRange(T{0}, T{k_two_pi});
+		T r     = Sqrt(T{1} - z * z);
+		return Vec<T, 3>(r * Cos(theta), r * Sin(theta), z);
+	}
+
+	// Basic arithmetic functions
+	template<typename T> inline T Min(T a, T b) { return (a < b) ? a : b; }
+
+	template<typename T> inline T Max(T a, T b) { return (a > b) ? a : b; }
+
+	template<typename T> inline T Clamp(T value, T min_val, T max_val) { return Min(Max(value, min_val), max_val); }
+
+	// Angle conversion
+	template<typename T> inline T DegreesToRadians(T degrees) { return degrees * (T{k_pi} / T{180}); }
+
+	template<typename T> inline T RadiansToDegrees(T radians) { return radians * (T{180} / T{k_pi}); }
+
+	// Vector operations
+	template<typename T, usize N> inline T Dot(const Vec<T, N>& a, const Vec<T, N>& b) { return a.Dot(b); }
+
+	template<typename T> inline Vec<T, 3> Cross(const Vec<T, 3>& a, const Vec<T, 3>& b) { return a.Cross(b); }
+
+	// Quaternion operations
+	template<typename T> inline Quaternion<T> Slerp(const Quaternion<T>& a, const Quaternion<T>& b, T t) {
+		T cos_theta = a.X() * b.X() + a.Y() * b.Y() + a.Z() * b.Z() + a.W() * b.W();
+
+		if (cos_theta < T{0}) {
+			cos_theta = -cos_theta;
+			Quaternion<T> temp(-b.X(), -b.Y(), -b.Z(), -b.W());
+			return NLerp(a, temp, t);
+		}
+
+		if (cos_theta > T{0.9995}) {
+			return NLerp(a, b, t);
+		}
+
+		T theta     = Acos(cos_theta);
+		T sin_theta = Sin(theta);
+		T angle     = theta * t;
+		T scale1    = Sin(theta - angle) / sin_theta;
+		T scale2    = Sin(angle) / sin_theta;
+
+		return Quaternion<T>(scale1 * a.X() + scale2 * b.X(), scale1 * a.Y() + scale2 * b.Y(), scale1 * a.Z() + scale2 * b.Z(), scale1 * a.W() + scale2 * b.W());
+	}
+
+	template<typename T> inline Quaternion<T> NLerp(const Quaternion<T>& a, const Quaternion<T>& b, T t) {
+		Quaternion<T> result(a.X() * (T{1} - t) + b.X() * t, a.Y() * (T{1} - t) + b.Y() * t, a.Z() * (T{1} - t) + b.Z() * t, a.W() * (T{1} - t) + b.W() * t);
+		return result.Normalized();
+	}
+
+	// Matrix operations
+	template<typename T> inline Mat<T, 4, 4> CreateTranslationMatrix(const Vec<T, 3>& translation) {
+		Mat<T, 4, 4> result = Mat<T, 4, 4>::Identity();
+		result(3, 0)        = translation.X();
+		result(3, 1)        = translation.Y();
+		result(3, 2)        = translation.Z();
+		return result;
+	}
+
+	template<typename T> inline Mat<T, 4, 4> CreateScaleMatrix(const Vec<T, 3>& scale) {
+		Mat<T, 4, 4> result = Mat<T, 4, 4>::Identity();
+		result(0, 0)        = scale.X();
+		result(1, 1)        = scale.Y();
+		result(2, 2)        = scale.Z();
+		return result;
+	}
+
+	template<typename T> inline Mat<T, 4, 4> CreateRotationMatrix(const Vec<T, 3>& euler_angles) {
+		T cx                = Cos(euler_angles.X());
+		T sx                = Sin(euler_angles.X());
+		T cy                = Cos(euler_angles.Y());
+		T sy                = Sin(euler_angles.Y());
+		T cz                = Cos(euler_angles.Z());
+		T sz                = Sin(euler_angles.Z());
+
+		Mat<T, 4, 4> result = Mat<T, 4, 4>::Identity();
+
+		result(0, 0)        = cy * cz;
+		result(0, 1)        = cy * sz;
+		result(0, 2)        = -sy;
+
+		result(1, 0)        = sx * sy * cz - cx * sz;
+		result(1, 1)        = sx * sy * sz + cx * cz;
+		result(1, 2)        = sx * cy;
+
+		result(2, 0)        = cx * sy * cz + sx * sz;
+		result(2, 1)        = cx * sy * sz - sx * cz;
+		result(2, 2)        = cx * cy;
+
+		return result;
+	}
+
+	template<typename T> inline Vec<T, 3> Reflect(const Vec<T, 3>& incident, const Vec<T, 3>& normal) { return incident - T{2} * Dot(incident, normal) * normal; }
+
+	template<typename T> inline Vec<T, 3> Refract(const Vec<T, 3>& incident, const Vec<T, 3>& normal, T eta) {
+		T dot_ni = Dot(normal, incident);
+		T k      = T{1} - eta * eta * (T{1} - dot_ni * dot_ni);
+		if (k < T{0})
+			return Vec<T, 3>{};
+		return eta * incident - (eta * dot_ni + Sqrt(k)) * normal;
+	}
+
+	template<typename T> inline Vec<T, 3> Project(const Vec<T, 3>& vector, const Vec<T, 3>& normal) { return normal * (Dot(vector, normal) / Dot(normal, normal)); }
+
+	template<typename T> inline Vec<T, 3> Reject(const Vec<T, 3>& vector, const Vec<T, 3>& normal) { return vector - Project(vector, normal); }
+
+	template<typename T> inline T Angle(const Vec<T, 3>& a, const Vec<T, 3>& b) { return Acos(Dot(Normalize(a), Normalize(b))); }
+
+	template<typename T> inline T SignedAngle(const Vec<T, 3>& a, const Vec<T, 3>& b, const Vec<T, 3>& ref) {
+		T         angle         = Angle(a, b);
+		Vec<T, 3> cross_product = Cross(a, b);
+		return angle * Sign(Dot(cross_product, ref));
+	}
+
+	template<typename T> inline T CopySign(T mag, T sign) { return std::copysign(mag, sign); }
+
+	// Extended quaternion operations
+	template<typename T> inline Quaternion<T> RotationBetweenVectors(const Vec<T, 3>& start, const Vec<T, 3>& end) {
+		Vec<T, 3> start_norm = Normalize(start);
+		Vec<T, 3> end_norm   = Normalize(end);
+
+		T         cos_theta  = Dot(start_norm, end_norm);
+		Vec<T, 3> rotation_axis;
+
+		if (cos_theta < T{-0.999999}) {
+			rotation_axis = Cross(Vec<T, 3>(0, 0, 1), start_norm);
+			if (LengthSquared(rotation_axis) < T{0.000001})
+				rotation_axis = Cross(Vec<T, 3>(1, 0, 0), start_norm);
+			rotation_axis = Normalize(rotation_axis);
+			return Quaternion<T>(rotation_axis, T{k_pi});
+		}
+
+		rotation_axis = Cross(start_norm, end_norm);
+		T s           = Sqrt((T{1} + cos_theta) * T{2});
+		T invs        = T{1} / s;
+
+		return Quaternion<T>(rotation_axis.X() * invs, rotation_axis.Y() * invs, rotation_axis.Z() * invs, s * T{0.5});
+	}
+
+	template<typename T> inline Quaternion<T> LookAt(const Vec<T, 3>& direction, const Vec<T, 3>& up = Vec<T, 3>(0, 1, 0)) {
+		Vec<T, 3> forward   = Normalize(direction);
+		Vec<T, 3> right     = Normalize(Cross(up, forward));
+		Vec<T, 3> up_actual = Cross(forward, right);
+
+		Mat<T, 3, 3> rot;
+		rot(0, 0) = right.X();
+		rot(0, 1) = right.Y();
+		rot(0, 2) = right.Z();
+		rot(1, 0) = up_actual.X();
+		rot(1, 1) = up_actual.Y();
+		rot(1, 2) = up_actual.Z();
+		rot(2, 0) = forward.X();
+		rot(2, 1) = forward.Y();
+		rot(2, 2) = forward.Z();
+
+		return QuatCast(rot);
+	}
+
+	// Extended matrix operations
+	template<typename T> inline T Determinant(const Mat<T, 2, 2>& m) { return m(0, 0) * m(1, 1) - m(0, 1) * m(1, 0); }
+
+	template<typename T> inline T Determinant(const Mat<T, 3, 3>& m) {
+		return m(0, 0) * (m(1, 1) * m(2, 2) - m(1, 2) * m(2, 1)) - m(0, 1) * (m(1, 0) * m(2, 2) - m(1, 2) * m(2, 0)) + m(0, 2) * (m(1, 0) * m(2, 1) - m(1, 1) * m(2, 0));
+	}
+
+	template<typename T> inline T Determinant(const Mat<T, 4, 4>& m) {
+		return m(0, 3) * m(1, 2) * m(2, 1) * m(3, 0) - m(0, 2) * m(1, 3) * m(2, 1) * m(3, 0) - m(0, 3) * m(1, 1) * m(2, 2) * m(3, 0) + m(0, 1) * m(1, 3) * m(2, 2) * m(3, 0) +
+		       m(0, 2) * m(1, 1) * m(2, 3) * m(3, 0) - m(0, 1) * m(1, 2) * m(2, 3) * m(3, 0) - m(0, 3) * m(1, 2) * m(2, 0) * m(3, 1) + m(0, 2) * m(1, 3) * m(2, 0) * m(3, 1) +
+		       m(0, 3) * m(1, 0) * m(2, 2) * m(3, 1) - m(0, 0) * m(1, 3) * m(2, 2) * m(3, 1) - m(0, 2) * m(1, 0) * m(2, 3) * m(3, 1) + m(0, 0) * m(1, 2) * m(2, 3) * m(3, 1) +
+		       m(0, 3) * m(1, 1) * m(2, 0) * m(3, 2) - m(0, 1) * m(1, 3) * m(2, 0) * m(3, 2) - m(0, 3) * m(1, 0) * m(2, 1) * m(3, 2) + m(0, 0) * m(1, 3) * m(2, 1) * m(3, 2) +
+		       m(0, 1) * m(1, 0) * m(2, 3) * m(3, 2) - m(0, 0) * m(1, 1) * m(2, 3) * m(3, 2) - m(0, 2) * m(1, 1) * m(2, 0) * m(3, 3) + m(0, 1) * m(1, 2) * m(2, 0) * m(3, 3) +
+		       m(0, 2) * m(1, 0) * m(2, 1) * m(3, 3) - m(0, 0) * m(1, 2) * m(2, 1) * m(3, 3) - m(0, 1) * m(1, 0) * m(2, 2) * m(3, 3) + m(0, 0) * m(1, 1) * m(2, 2) * m(3, 3);
+	}
+
+	template<typename T> inline Mat<T, 4, 4> Inverse(const Mat<T, 4, 4>& m) {
+		T det = Determinant(m);
+		if (Abs(det) < k_epsilon) {
+			return Mat<T, 4, 4>::Identity(); // Return identity if matrix is singular
+		}
+
+		Mat<T, 4, 4> adj;
+		T            inv_det = T{1} / det;
+
+		// First row
+		adj(0, 0) = (m(1, 1) * m(2, 2) * m(3, 3) + m(1, 2) * m(2, 3) * m(3, 1) + m(1, 3) * m(2, 1) * m(3, 2) - m(1, 1) * m(2, 3) * m(3, 2) - m(1, 2) * m(2, 1) * m(3, 3) - m(1, 3) * m(2, 2) * m(3, 1)) * inv_det;
+		adj(0, 1) = (m(0, 1) * m(2, 3) * m(3, 2) + m(0, 2) * m(2, 1) * m(3, 3) + m(0, 3) * m(2, 2) * m(3, 1) - m(0, 1) * m(2, 2) * m(3, 3) - m(0, 2) * m(2, 3) * m(3, 1) - m(0, 3) * m(2, 1) * m(3, 2)) * inv_det;
+		adj(0, 2) = (m(0, 1) * m(1, 2) * m(3, 3) + m(0, 2) * m(1, 3) * m(3, 1) + m(0, 3) * m(1, 1) * m(3, 2) - m(0, 1) * m(1, 3) * m(3, 2) - m(0, 2) * m(1, 1) * m(3, 3) - m(0, 3) * m(1, 2) * m(3, 1)) * inv_det;
+		adj(0, 3) = (m(0, 1) * m(1, 3) * m(2, 2) + m(0, 2) * m(1, 1) * m(2, 3) + m(0, 3) * m(1, 2) * m(2, 1) - m(0, 1) * m(1, 2) * m(2, 3) - m(0, 2) * m(1, 3) * m(2, 1) - m(0, 3) * m(1, 1) * m(2, 2)) * inv_det;
+
+		// Second row
+		adj(1, 0) = (m(1, 0) * m(2, 3) * m(3, 2) + m(1, 2) * m(2, 0) * m(3, 3) + m(1, 3) * m(2, 2) * m(3, 0) - m(1, 0) * m(2, 2) * m(3, 3) - m(1, 2) * m(2, 3) * m(3, 0) - m(1, 3) * m(2, 0) * m(3, 2)) * inv_det;
+		adj(1, 1) = (m(0, 0) * m(2, 2) * m(3, 3) + m(0, 2) * m(2, 3) * m(3, 0) + m(0, 3) * m(2, 0) * m(3, 2) - m(0, 0) * m(2, 3) * m(3, 2) - m(0, 2) * m(2, 0) * m(3, 3) - m(0, 3) * m(2, 2) * m(3, 0)) * inv_det;
+		adj(1, 2) = (m(0, 0) * m(1, 3) * m(3, 2) + m(0, 2) * m(1, 0) * m(3, 3) + m(0, 3) * m(1, 2) * m(3, 0) - m(0, 0) * m(1, 2) * m(3, 3) - m(0, 2) * m(1, 3) * m(3, 0) - m(0, 3) * m(1, 0) * m(3, 2)) * inv_det;
+		adj(1, 3) = (m(0, 0) * m(1, 2) * m(2, 3) + m(0, 2) * m(1, 3) * m(2, 0) + m(0, 3) * m(1, 0) * m(2, 2) - m(0, 0) * m(1, 3) * m(2, 2) - m(0, 2) * m(1, 0) * m(2, 3) - m(0, 3) * m(1, 2) * m(2, 0)) * inv_det;
+
+		// Third row
+		adj(2, 0) = (m(1, 0) * m(2, 1) * m(3, 3) + m(1, 1) * m(2, 3) * m(3, 0) + m(1, 3) * m(2, 0) * m(3, 1) - m(1, 0) * m(2, 3) * m(3, 1) - m(1, 1) * m(2, 0) * m(3, 3) - m(1, 3) * m(2, 1) * m(3, 0)) * inv_det;
+		adj(2, 1) = (m(0, 0) * m(2, 3) * m(3, 1) + m(0, 1) * m(2, 0) * m(3, 3) + m(0, 3) * m(2, 1) * m(3, 0) - m(0, 0) * m(2, 1) * m(3, 3) - m(0, 1) * m(2, 3) * m(3, 0) - m(0, 3) * m(2, 0) * m(3, 1)) * inv_det;
+		adj(2, 2) = (m(0, 0) * m(1, 1) * m(3, 3) + m(0, 1) * m(1, 3) * m(3, 0) + m(0, 3) * m(1, 0) * m(3, 1) - m(0, 0) * m(1, 3) * m(3, 1) - m(0, 1) * m(1, 0) * m(3, 3) - m(0, 3) * m(1, 1) * m(3, 0)) * inv_det;
+		adj(2, 3) = (m(0, 0) * m(1, 3) * m(2, 1) + m(0, 1) * m(1, 0) * m(2, 3) + m(0, 3) * m(1, 1) * m(2, 0) - m(0, 0) * m(1, 1) * m(2, 3) - m(0, 1) * m(1, 3) * m(2, 0) - m(0, 3) * m(1, 0) * m(2, 1)) * inv_det;
+
+		// Fourth row
+		adj(3, 0) = (m(1, 0) * m(2, 2) * m(3, 1) + m(1, 1) * m(2, 0) * m(3, 2) + m(1, 2) * m(2, 1) * m(3, 0) - m(1, 0) * m(2, 1) * m(3, 2) - m(1, 1) * m(2, 2) * m(3, 0) - m(1, 2) * m(2, 0) * m(3, 1)) * inv_det;
+		adj(3, 1) = (m(0, 0) * m(2, 1) * m(3, 2) + m(0, 1) * m(2, 2) * m(3, 0) + m(0, 2) * m(2, 0) * m(3, 1) - m(0, 0) * m(2, 2) * m(3, 1) - m(0, 1) * m(2, 0) * m(3, 2) - m(0, 2) * m(2, 1) * m(3, 0)) * inv_det;
+		adj(3, 2) = (m(0, 0) * m(1, 2) * m(3, 1) + m(0, 1) * m(1, 0) * m(3, 2) + m(0, 2) * m(1, 1) * m(3, 0) - m(0, 0) * m(1, 1) * m(3, 2) - m(0, 1) * m(1, 2) * m(3, 0) - m(0, 2) * m(1, 0) * m(3, 1)) * inv_det;
+		adj(3, 3) = (m(0, 0) * m(1, 1) * m(2, 2) + m(0, 1) * m(1, 2) * m(2, 0) + m(0, 2) * m(1, 0) * m(2, 1) - m(0, 0) * m(1, 2) * m(2, 1) - m(0, 1) * m(1, 0) * m(2, 2) - m(0, 2) * m(1, 1) * m(2, 0)) * inv_det;
+
+		return adj;
+	}
+
+	// Transform decomposition
+	template<typename T> inline void DecomposeTransform(const Mat<T, 4, 4>& transform, Vec<T, 3>& translation, Quaternion<T>& rotation, Vec<T, 3>& scale) {
+		// Extract translation
+		translation = Vec<T, 3>(transform(3, 0), transform(3, 1), transform(3, 2));
+
+		// Extract scale
+		Vec<T, 3> x_axis(transform(0, 0), transform(0, 1), transform(0, 2));
+		Vec<T, 3> y_axis(transform(1, 0), transform(1, 1), transform(1, 2));
+		Vec<T, 3> z_axis(transform(2, 0), transform(2, 1), transform(2, 2));
+
+		scale.X() = Length(x_axis);
+		scale.Y() = Length(y_axis);
+		scale.Z() = Length(z_axis);
+
+		// Extract rotation
+		Mat<T, 3, 3> rot_mat;
+		rot_mat(0, 0) = x_axis.X() / scale.X();
+		rot_mat(0, 1) = x_axis.Y() / scale.X();
+		rot_mat(0, 2) = x_axis.Z() / scale.X();
+		rot_mat(1, 0) = y_axis.X() / scale.Y();
+		rot_mat(1, 1) = y_axis.Y() / scale.Y();
+		rot_mat(1, 2) = y_axis.Z() / scale.Y();
+		rot_mat(2, 0) = z_axis.X() / scale.Z();
+		rot_mat(2, 1) = z_axis.Y() / scale.Z();
+		rot_mat(2, 2) = z_axis.Z() / scale.Z();
+
+		rotation      = QuatCast(rot_mat);
+	}
+
+	// Geometric functions
+	template<typename T> inline bool RayPlaneIntersection(const Vec<T, 3>& ray_origin, const Vec<T, 3>& ray_dir, const Vec<T, 3>& plane_normal, const Vec<T, 3>& plane_poi32, T& t) {
+		T denom = Dot(plane_normal, ray_dir);
+		if (Abs(denom) > k_epsilon) {
+			Vec<T, 3> p0l0 = plane_poi32 - ray_origin;
+			t              = Dot(p0l0, plane_normal) / denom;
+			return t >= T{0};
 		}
 		return false;
 	}
 
-	inline bool RaySphereIntersection(const Vec3& ray_origin, const Vec3& ray_dir, const Vec3& sphere_center, f32 sphere_radius, f32& t) {
-		Vec3 oc           = ray_origin - sphere_center;
-		f32  a            = Dot(ray_dir, ray_dir);
-		f32  b            = 2.0f * Dot(oc, ray_dir);
-		f32  c            = Dot(oc, oc) - sphere_radius * sphere_radius;
-		f32  discriminant = b * b - 4 * a * c;
+	template<typename T> inline bool RaySphereIntersection(const Vec<T, 3>& ray_origin, const Vec<T, 3>& ray_dir, const Vec<T, 3>& sphere_center, T sphere_radius, T& t) {
+		Vec<T, 3> oc           = ray_origin - sphere_center;
+		T         a            = Dot(ray_dir, ray_dir);
+		T         b            = T{2} * Dot(oc, ray_dir);
+		T         c            = Dot(oc, oc) - sphere_radius * sphere_radius;
+		T         discriminant = b * b - T{4} * a * c;
 
-		if (discriminant < 0)
+		if (discriminant < T{0})
 			return false;
 
-		t = (-b - Sqrt(discriminant)) / (2.0f * a);
-		return t >= 0;
+		t = (-b - Sqrt(discriminant)) / (T{2} * a);
+		return t >= T{0};
 	}
 
-	// Color conversion functions
-	inline Vec3 HSVtoRGB(const Vec3& hsv) { return glm::rgbColor(hsv); }
-	inline Vec3 RGBtoHSV(const Vec3& rgb) { return glm::hsvColor(rgb); }
+	// Interpolation functions
+	template<typename T> inline T SmoothStep(T edge0, T edge1, T x) {
+		x = Clamp((x - edge0) / (edge1 - edge0), T{0}, T{1});
+		return x * x * (T{3} - T{2} * x);
+	}
+
+	template<typename T> inline Vec<T, 3> CatmullRom(const Vec<T, 3>& p0, const Vec<T, 3>& p1, const Vec<T, 3>& p2, const Vec<T, 3>& p3, T t) {
+		T t2 = t * t;
+		T t3 = t2 * t;
+
+		return T{0.5} * ((T{2} * p1) + (-p0 + p2) * t + (T{2} * p0 - T{5} * p1 + T{4} * p2 - p3) * t2 + (-p0 + T{3} * p1 - T{3} * p2 + p3) * t3);
+	}
 
 	// Easing functions
-	inline f32 EaseInQuad(f32 t) { return t * t; }
-	inline f32 EaseOutQuad(f32 t) { return t * (2 - t); }
-	inline f32 EaseInOutQuad(f32 t) { return t < 0.5f ? 2 * t * t : -1 + (4 - 2 * t) * t; }
-	inline f32 EaseInCubic(f32 t) { return t * t * t; }
-	inline f32 EaseOutCubic(f32 t) {
-		f32 t1 = t - 1;
-		return t1 * t1 * t1 + 1;
-	}
-	inline f32 EaseInSine(f32 t) { return 1.0f - Cos(t * HALF_PI); }
-	inline f32 EaseOutSine(f32 t) { return Sin(t * HALF_PI); }
-	inline f32 EaseInOutSine(f32 t) { return -0.5f * (Cos(PI * t) - 1.0f); }
-	inline f32 EaseInOutCubic(f32 t) { return t < 0.5f ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1; }
+	template<typename T> inline T EaseInQuad(T t) { return t * t; }
 
-	// Noise functions
-	inline f32 PerlinNoise(const Vec3& v) { return glm::perlin(v); }
-	inline f32 SimplexNoise(const Vec3& v) { return glm::simplex(v); }
-	inline f32 FractalBrownianMotion(const Vec3& v, i32 octaves, f32 lacunarity = 2.0f, f32 gain = 0.5f) {
-		f32  value     = 0.0f;
-		f32  amplitude = 1.0f;
-		Vec3 frequency = v;
+	template<typename T> inline T EaseOutQuad(T t) { return t * (T{2} - t); }
 
-		for (i32 i = 0; i < octaves; ++i) {
-			value += amplitude * PerlinNoise(frequency);
-			frequency *= lacunarity;
-			amplitude *= gain;
+	template<typename T> inline T EaseInOutQuad(T t) { return t < T{0.5} ? T{2} * t * t : -T{1} + (T{4} - T{2} * t) * t; }
+
+	namespace Detail {
+		constexpr i32 k_perm[512] = {151, 160, 137, 91,  90,  15,  131, 13,  201, 95,  96,  53,  194, 233, 7,   225, 140, 36,  103, 30,  69,  142, 8,   99,  37,  240, 21,  10,  23,  190, 6,   148,
+		                             247, 120, 234, 75,  0,   26,  197, 62,  94,  252, 219, 203, 117, 35,  11,  32,  57,  177, 33,  88,  237, 149, 56,  87,  174, 20,  125, 136, 171, 168, 68,  175,
+		                             74,  165, 71,  134, 139, 48,  27,  166, 77,  146, 158, 231, 83,  111, 229, 122, 60,  211, 133, 230, 220, 105, 92,  41,  55,  46,  245, 40,  244, 102, 143, 54,
+		                             65,  25,  63,  161, 1,   216, 80,  73,  209, 76,  132, 187, 208, 89,  18,  169, 200, 196, 135, 130, 116, 188, 159, 86,  164, 100, 109, 198, 173, 186, 3,   64,
+		                             52,  217, 226, 250, 124, 123, 5,   202, 38,  147, 118, 126, 255, 82,  85,  212, 207, 206, 59,  227, 47,  16,  58,  17,  182, 189, 28,  42,  223, 183, 170, 213,
+		                             119, 248, 152, 2,   44,  154, 163, 70,  221, 153, 101, 155, 167, 43,  172, 9,   129, 22,  39,  253, 19,  98,  108, 110, 79,  113, 224, 232, 178, 185, 112, 104,
+		                             218, 246, 97,  228, 251, 34,  242, 193, 238, 210, 144, 12,  191, 179, 162, 241, 81,  51,  145, 235, 249, 14,  239, 107, 49,  192, 214, 31,  181, 199, 106, 157,
+		                             184, 84,  204, 176, 115, 121, 50,  45,  127, 4,   150, 254, 138, 236, 205, 93,  222, 114, 67,  29,  24,  72,  243, 141, 128, 195, 78,  66,  215, 61,  156, 180};
+
+		inline f32 Fade(f32 t) { return t * t * t * (t * (t * 6.0f - 15.0f) + 10.0f); }
+
+		inline f32 Grad(i32 hash, f32 x, f32 y, f32 z) {
+			i32 h = hash & 15;
+			f32 u = h < 8 ? x : y;
+			f32 v = h < 4 ? y : h == 12 || h == 14 ? x : z;
+			return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
 		}
 
-		return value;
+		inline i32 FastFloor(f32 x) { return x > 0 ? (i32) x : (i32) x - 1; }
+	} // namespace Detail
+
+	// Improved Perlin Noise implementation
+	template<typename T> inline T PerlinNoise(const Vec<T, 3>& p) {
+		using namespace Detail;
+
+		i32 X  = FastFloor(p.X()) & 255;
+		i32 Y  = FastFloor(p.Y()) & 255;
+		i32 Z  = FastFloor(p.Z()) & 255;
+
+		f32 x  = p.X() - FastFloor(p.X());
+		f32 y  = p.Y() - FastFloor(p.Y());
+		f32 z  = p.Z() - FastFloor(p.Z());
+
+		f32 u  = Fade(x);
+		f32 v  = Fade(y);
+		f32 w  = Fade(z);
+
+		i32 A  = k_perm[X] + Y;
+		i32 AA = k_perm[A] + Z;
+		i32 AB = k_perm[A + 1] + Z;
+		i32 B  = k_perm[X + 1] + Y;
+		i32 BA = k_perm[B] + Z;
+		i32 BB = k_perm[B + 1] + Z;
+
+		return Lerp(Lerp(Lerp(Grad(k_perm[AA], x, y, z), Grad(k_perm[BA], x - 1, y, z), u), Lerp(Grad(k_perm[AB], x, y - 1, z), Grad(k_perm[BB], x - 1, y - 1, z), u), v),
+		            Lerp(Lerp(Grad(k_perm[AA + 1], x, y, z - 1), Grad(k_perm[BA + 1], x - 1, y, z - 1), u), Lerp(Grad(k_perm[AB + 1], x, y - 1, z - 1), Grad(k_perm[BB + 1], x - 1, y - 1, z - 1), u), v),
+		            w);
+	}
+
+	// Simplex Noise implementation
+	template<typename T> inline T SimplexNoise(const Vec<T, 3>& p) {
+		// Noise constants
+		constexpr T F3   = T{1} / T{3};
+		constexpr T G3   = T{1} / T{6};
+
+		// Skew input space
+		T         s      = (p.X() + p.Y() + p.Z()) * F3;
+		Vec<T, 3> skewed = p + s;
+
+		// Floor to get simplex cell origin
+		Vec<T, 3> cell(Floor(skewed.X()), Floor(skewed.Y()), Floor(skewed.Z()));
+
+		// Unskew cell origin back to (x,y,z) space
+		T         t        = (cell.X() + cell.Y() + cell.Z()) * G3;
+		Vec<T, 3> unskewed = cell - t;
+
+		// Relative coordinates with respect to simplex cell origin
+		Vec<T, 3> diff     = p - unskewed;
+
+		// For 3D simplex noise, we need to determine which of the tetrahedron cells we're in
+		i32 i1, j1, k1;
+		i32 i2, j2, k2;
+
+		if (diff.X() >= diff.Y()) {
+			if (diff.Y() >= diff.Z()) {
+				i1 = 1;
+				j1 = 0;
+				k1 = 0;
+				i2 = 1;
+				j2 = 1;
+				k2 = 0; // X Y Z order
+			} else if (diff.X() >= diff.Z()) {
+				i1 = 1;
+				j1 = 0;
+				k1 = 0;
+				i2 = 1;
+				j2 = 0;
+				k2 = 1; // X Z Y order
+			} else {
+				i1 = 0;
+				j1 = 0;
+				k1 = 1;
+				i2 = 1;
+				j2 = 0;
+				k2 = 1; // Z X Y order
+			}
+		} else {
+			if (diff.Y() < diff.Z()) {
+				i1 = 0;
+				j1 = 0;
+				k1 = 1;
+				i2 = 0;
+				j2 = 1;
+				k2 = 1; // Z Y X order
+			} else if (diff.X() < diff.Z()) {
+				i1 = 0;
+				j1 = 1;
+				k1 = 0;
+				i2 = 0;
+				j2 = 1;
+				k2 = 1; // Y Z X order
+			} else {
+				i1 = 0;
+				j1 = 1;
+				k1 = 0;
+				i2 = 1;
+				j2 = 1;
+				k2 = 0; // Y X Z order
+			}
+		}
+
+		// Calculate contributions from the five corners
+		T n  = T{0};
+
+		T t0 = T{0.5} - diff.X() * diff.X() - diff.Y() * diff.Y() - diff.Z() * diff.Z();
+		if (t0 > T{0}) {
+			t0 *= t0;
+			n += t0 * t0 * Detail::Grad(Detail::k_perm[Detail::k_perm[Detail::k_perm[i32(cell.X()) & 255] + i32(cell.Y()) & 255] + i32(cell.Z()) & 255], diff.X(), diff.Y(), diff.Z());
+		}
+
+		Vec<T, 3> diff1 = diff - Vec<T, 3>(i1, j1, k1) + G3;
+		T         t1    = T{0.5} - diff1.X() * diff1.X() - diff1.Y() * diff1.Y() - diff1.Z() * diff1.Z();
+		if (t1 > T{0}) {
+			t1 *= t1;
+			n += t1 * t1 * Detail::Grad(Detail::k_perm[Detail::k_perm[Detail::k_perm[i32(cell.X() + i1) & 255] + i32(cell.Y() + j1) & 255] + i32(cell.Z() + k1) & 255], diff1.X(), diff1.Y(), diff1.Z());
+		}
+
+		Vec<T, 3> diff2 = diff - Vec<T, 3>(i2, j2, k2) + T{2} * G3;
+		T         t2    = T{0.5} - diff2.X() * diff2.X() - diff2.Y() * diff2.Y() - diff2.Z() * diff2.Z();
+		if (t2 > T{0}) {
+			t2 *= t2;
+			n += t2 * t2 * Detail::Grad(Detail::k_perm[Detail::k_perm[Detail::k_perm[i32(cell.X() + i2) & 255] + i32(cell.Y() + j2) & 255] + i32(cell.Z() + k2) & 255], diff2.X(), diff2.Y(), diff2.Z());
+		}
+
+		Vec<T, 3> diff3 = diff - Vec<T, 3>(1, 1, 1) + T{3} * G3;
+		T         t3    = T{0.5} - diff3.X() * diff3.X() - diff3.Y() * diff3.Y() - diff3.Z() * diff3.Z();
+		if (t3 > T{0}) {
+			t3 *= t3;
+			n += t3 * t3 * Detail::Grad(Detail::k_perm[Detail::k_perm[Detail::k_perm[i32(cell.X() + 1) & 255] + i32(cell.Y() + 1) & 255] + i32(cell.Z() + 1) & 255], diff3.X(), diff3.Y(), diff3.Z());
+		}
+
+		// Scale to stay within [-1,1]
+		return T{32} * n;
+	}
+
+	// Voronoi Noise
+	template<typename T> inline T VoronoiNoise(const Vec<T, 3>& p) {
+		Vec<T, 3> cell_pos(Floor(p.X()), Floor(p.Y()), Floor(p.Z()));
+
+		T min_dist = T{1000};
+
+		for (i32 z = -1; z <= 1; z++) {
+			for (i32 y = -1; y <= 1; y++) {
+				for (i32 x = -1; x <= 1; x++) {
+					Vec<T, 3> neighbor = cell_pos + Vec<T, 3>(x, y, z);
+					Vec<T, 3> rand_poi32(neighbor.X() + Random(), neighbor.Y() + Random(), neighbor.Z() + Random());
+					T         dist = Distance(p, rand_poi32);
+					min_dist       = Min(min_dist, dist);
+				}
+			}
+		}
+
+		return min_dist;
 	}
 
 	// Additional utility functions
-	inline f32  Clamp01(f32 value) { return glm::clamp(value, 0.0f, 1.0f); }
-	inline Vec3 Clamp01(const Vec3& v) { return glm::clamp(v, Vec3(0), Vec3(1)); }
-	inline f32  Saturate(f32 value) { return Clamp01(value); }
-	inline Vec3 Saturate(const Vec3& v) { return Clamp01(v); }
-
-	// Interpolation functions
-	inline Vec3 CatmullRom(const Vec3& v1, const Vec3& v2, const Vec3& v3, const Vec3& v4, f32 t) { return glm::catmullRom(v1, v2, v3, v4, t); }
-	inline Vec3 Hermite(const Vec3& v1, const Vec3& t1, const Vec3& v2, const Vec3& t2, f32 t) { return glm::hermite(v1, t1, v2, t2, t); }
-	inline Vec3 BezierCurve(const Vec3& p0, const Vec3& p1, const Vec3& p2, f32 t) {
-		f32 u = 1.0f - t;
-		return u * u * p0 + 2.0f * u * t * p1 + t * t * p2;
+	template<typename T> inline Vec<T, 3> Orthogonal(const Vec<T, 3>& v) {
+		T         ax    = Abs(v.X());
+		T         ay    = Abs(v.Y());
+		T         az    = Abs(v.Z());
+		Vec<T, 3> other = ax < ay ? (ax < az ? Vec<T, 3>(1, 0, 0) : Vec<T, 3>(0, 0, 1)) : (ay < az ? Vec<T, 3>(0, 1, 0) : Vec<T, 3>(0, 0, 1));
+		return Normalize(Cross(v, other));
 	}
 
-	inline Vec3 CubicBezierCurve(const Vec3& p0, const Vec3& p1, const Vec3& p2, const Vec3& p3, f32 t) {
-		f32 u = 1.0f - t;
-		return u * u * u * p0 + 3.0f * u * u * t * p1 + 3.0f * u * t * t * p2 + t * t * t * p3;
+	template<typename T> inline Mat<T, 3, 3> OuterProduct(const Vec<T, 3>& a, const Vec<T, 3>& b) {
+		Mat<T, 3, 3> result;
+		for (usize i = 0; i < 3; ++i)
+			for (usize j = 0; j < 3; ++j)
+				result(i, j) = a[i] * b[j];
+		return result;
 	}
 
-	// Geometric functions
-	inline Vec3 TriangleNormal(const Vec3& a, const Vec3& b, const Vec3& c) { return Normalize(Cross(b - a, c - a)); }
-	inline f32  TriangleArea(const Vec3& a, const Vec3& b, const Vec3& c) { return Length(Cross(b - a, c - a)) * 0.5f; }
-	inline bool PointInTriangle(const Vec3& p, const Vec3& a, const Vec3& b, const Vec3& c) {
-		Vec3 v0      = c - a;
-		Vec3 v1      = b - a;
-		Vec3 v2      = p - a;
-
-		f32 dot00    = Dot(v0, v0);
-		f32 dot01    = Dot(v0, v1);
-		f32 dot02    = Dot(v0, v2);
-		f32 dot11    = Dot(v1, v1);
-		f32 dot12    = Dot(v1, v2);
-
-		f32 invDenom = 1.0f / (dot00 * dot11 - dot01 * dot01);
-		f32 u        = (dot11 * dot02 - dot01 * dot12) * invDenom;
-		f32 v        = (dot00 * dot12 - dot01 * dot02) * invDenom;
-
-		return (u >= 0) && (v >= 0) && (u + v < 1);
+	template<typename T> inline T OrientedAngle(const Vec<T, 2>& a, const Vec<T, 2>& b) {
+		T angle = Atan2(b.Y(), b.X()) - Atan2(a.Y(), a.X());
+		if (angle > k_pi)
+			angle -= T{k_two_pi};
+		if (angle <= -k_pi)
+			angle += T{k_two_pi};
+		return angle;
 	}
 
-	// Conversion functions
-	inline Vec3 CartesianToSpherical(const Vec3& cartesian) {
-		f32 r     = Length(cartesian);
-		f32 theta = _MATH Acos(cartesian.z / r);
-		f32 phi   = _MATH Atan2(cartesian.y, cartesian.x);
-		return Vec3(r, theta, phi);
-	}
-	
-	inline Vec3 SphericalToCartesian(const Vec3& spherical) {
-		f32 r = spherical.x, theta = spherical.y, phi = spherical.z;
-		f32 sin_theta = _MATH Sin(theta);
-		return Vec3(r * sin_theta * _MATH Cos(phi), r * sin_theta * _MATH Sin(phi), r * _MATH Cos(theta));
+	template<typename T> inline Vec<T, 3> SphericalToCartesian(T radius, T theta, T phi) {
+		return Vec<T, 3>(radius * Sin(theta) * Cos(phi), radius * Sin(theta) * Sin(phi), radius * Cos(theta));
 	}
 
-	// Matrix decomposition
-	inline void DecomposeTransform(const Mat4& transform, Vec3& translation, Quat& rotation, Vec3& scale) {
-		glm::vec3 skew;
-		glm::vec4 perspective;
-		glm::decompose(transform, scale, rotation, translation, skew, perspective);
+	template<typename T> inline void CartesianToSpherical(const Vec<T, 3>& cart, T& radius, T& theta, T& phi) {
+		radius = Length(cart);
+		theta  = Acos(cart.Z() / radius);
+		phi    = Atan2(cart.Y(), cart.X());
+	}
+
+	template<typename T> inline T FractalNoise(const Vec<T, 3>& p, i32 octaves, T frequency = T{1}, T persistence = T{0.5}) {
+		T total     = T{0};
+		T amplitude = T{1};
+		T max_value = T{0};
+
+		for (i32 i = 0; i < octaves; ++i) {
+			total += PerlinNoise(p * frequency) * amplitude;
+			max_value += amplitude;
+			frequency *= T{2};
+			amplitude *= persistence;
+		}
+
+		return total / max_value;
+	}
+
+	// Color space conversions
+	template<typename T> inline Vec<T, 3> RGBtoHSV(const Vec<T, 3>& rgb) {
+		T r = rgb.R(), g = rgb.G(), b = rgb.B();
+		T max_val = Max(Max(r, g), b);
+		T min_val = Min(Min(r, g), b);
+		T diff    = max_val - min_val;
+
+		Vec<T, 3> hsv;
+		hsv.X() = T{0};                                      // Hue
+		hsv.Y() = (max_val == T{0} ? T{0} : diff / max_val); // Saturation
+		hsv.Z() = max_val;                                   // Value
+
+		if (diff != T{0}) {
+			if (max_val == r) {
+				hsv.X() = T{60} * ((g - b) / diff);
+			} else if (max_val == g) {
+				hsv.X() = T{60} * (T{2} + (b - r) / diff);
+			} else {
+				hsv.X() = T{60} * (T{4} + (r - g) / diff);
+			}
+		}
+
+		if (hsv.X() < T{0})
+			hsv.X() += T{360};
+		return hsv;
+	}
+
+	template<typename T> inline Vec<T, 3> HSVtoRGB(const Vec<T, 3>& hsv) {
+		T         h = hsv.X(), s = hsv.Y(), v = hsv.Z();
+		Vec<T, 3> rgb;
+
+		if (s == T{0}) {
+			rgb = Vec<T, 3>(v, v, v);
+		} else {
+			T   sector = h / T{60};
+			i32 i      = static_cast<i32>(sector);
+			T   f      = sector - static_cast<T>(i);
+			T   p      = v * (T{1} - s);
+			T   q      = v * (T{1} - s * f);
+			T   t      = v * (T{1} - s * (T{1} - f));
+
+			switch (i % 6) {
+				case 0:
+					rgb = Vec<T, 3>(v, t, p);
+					break;
+				case 1:
+					rgb = Vec<T, 3>(q, v, p);
+					break;
+				case 2:
+					rgb = Vec<T, 3>(p, v, t);
+					break;
+				case 3:
+					rgb = Vec<T, 3>(p, q, v);
+					break;
+				case 4:
+					rgb = Vec<T, 3>(t, p, v);
+					break;
+				case 5:
+					rgb = Vec<T, 3>(v, p, q);
+					break;
+			}
+		}
+		return rgb;
+	}
+
+	template<typename T> inline Vec<T, 3> RotateAroundAxis(const Vec<T, 3>& v, const Vec<T, 3>& axis, T angle) {
+		T c                       = Cos(angle);
+		T s                       = Sin(angle);
+		T k                       = T{1} - c;
+
+		Vec<T, 3> normalized_axis = Normalize(axis);
+		T         x               = normalized_axis.X();
+		T         y               = normalized_axis.Y();
+		T         z               = normalized_axis.Z();
+
+		return Vec<T, 3>((k * x * x + c) * v.X() + (k * x * y - s * z) * v.Y() + (k * x * z + s * y) * v.Z(),
+		                 (k * x * y + s * z) * v.X() + (k * y * y + c) * v.Y() + (k * y * z - s * x) * v.Z(),
+		                 (k * x * z - s * y) * v.X() + (k * y * z + s * x) * v.Y() + (k * z * z + c) * v.Z());
+	}
+
+	// Matrix generators
+	template<typename T> inline Mat<T, 4, 4> CreatePerspectiveRH(T fovy, T aspect, T near_plane, T far_plane) {
+		T f = T{1} / Tan(fovy / T{2});
+
+		Mat<T, 4, 4> result;
+		result(0, 0) = f / aspect;
+		result(1, 1) = f;
+		result(2, 2) = (far_plane + near_plane) / (near_plane - far_plane);
+		result(2, 3) = -T{1};
+		result(3, 2) = (T{2} * far_plane * near_plane) / (near_plane - far_plane);
+		return result;
+	}
+
+	template<typename T> inline Mat<T, 4, 4> CreatePerspectiveLH(T fovy, T aspect, T near_plane, T far_plane) {
+		T f = T{1} / Tan(fovy / T{2});
+
+		Mat<T, 4, 4> result;
+		result(0, 0) = f / aspect;
+		result(1, 1) = f;
+		result(2, 2) = (far_plane + near_plane) / (far_plane - near_plane);
+		result(2, 3) = T{1};
+		result(3, 2) = (-T{2} * far_plane * near_plane) / (far_plane - near_plane);
+		return result;
+	}
+
+	template<typename T> inline Mat<T, 4, 4> CreateOrthographicRH(T left, T right, T bottom, T top, T near_plane, T far_plane) {
+		Mat<T, 4, 4> result;
+		result(0, 0) = T{2} / (right - left);
+		result(1, 1) = T{2} / (top - bottom);
+		result(2, 2) = T{2} / (near_plane - far_plane);
+		result(3, 0) = (left + right) / (left - right);
+		result(3, 1) = (top + bottom) / (bottom - top);
+		result(3, 2) = (far_plane + near_plane) / (near_plane - far_plane);
+		result(3, 3) = T{1};
+		return result;
+	}
+
+	// Bezier curves
+	template<typename T> inline Vec<T, 3> QuadraticBezier(const Vec<T, 3>& p0, const Vec<T, 3>& p1, const Vec<T, 3>& p2, T t) {
+		T one_minus_t = T{1} - t;
+		return one_minus_t * one_minus_t * p0 + T{2} * one_minus_t * t * p1 + t * t * p2;
+	}
+
+	template<typename T> inline Vec<T, 3> CubicBezier(const Vec<T, 3>& p0, const Vec<T, 3>& p1, const Vec<T, 3>& p2, const Vec<T, 3>& p3, T t) {
+		T one_minus_t = T{1} - t;
+		return one_minus_t * one_minus_t * one_minus_t * p0 + T{3} * one_minus_t * one_minus_t * t * p1 + T{3} * one_minus_t * t * t * p2 + t * t * t * p3;
+	}
+
+	// Spline i32erpolation
+	template<typename T> inline Vec<T, 3> CatmullRomSpline(const Vec<T, 3>& p0, const Vec<T, 3>& p1, const Vec<T, 3>& p2, const Vec<T, 3>& p3, T t, T tension = T{0.5}) {
+		T t2         = t * t;
+		T t3         = t2 * t;
+
+		Vec<T, 3> m0 = tension * (p2 - p0);
+		Vec<T, 3> m1 = tension * (p3 - p1);
+
+		return (T{2} * t3 - T{3} * t2 + T{1}) * p1 + (t3 - T{2} * t2 + t) * m0 + (-T{2} * t3 + T{3} * t2) * p2 + (t3 - t2) * m1;
+	}
+
+	// Advanced geometric functions
+	template<typename T> inline bool RayTriangleIntersection(const Vec<T, 3>& ray_origin, const Vec<T, 3>& ray_dir, const Vec<T, 3>& v0, const Vec<T, 3>& v1, const Vec<T, 3>& v2, T& t, Vec<T, 2>& bary) {
+		Vec<T, 3> edge1 = v1 - v0;
+		Vec<T, 3> edge2 = v2 - v0;
+		Vec<T, 3> h     = Cross(ray_dir, edge2);
+		T         a     = Dot(edge1, h);
+
+		if (a > -k_epsilon && a < k_epsilon)
+			return false;
+
+		T         f = T{1} / a;
+		Vec<T, 3> s = ray_origin - v0;
+		bary.X()    = f * Dot(s, h);
+
+		if (bary.X() < T{0} || bary.X() > T{1})
+			return false;
+
+		Vec<T, 3> q = Cross(s, edge1);
+		bary.Y()    = f * Dot(ray_dir, q);
+
+		if (bary.Y() < T{0} || bary.X() + bary.Y() > T{1})
+			return false;
+
+		t = f * Dot(edge2, q);
+		return t > k_epsilon;
 	}
 
 	// Frustum functions
-	inline bool PointInFrustum(const Vec3& point, const Mat4& view_projection) {
-		Vec4 clip_space = view_projection * Vec4(point, 1.0f);
-		return _MATH Abs(clip_space.x) <= clip_space.w && _MATH Abs(clip_space.y) <= clip_space.w && 0 <= clip_space.z && clip_space.z <= clip_space.w;
+	template<typename T> class Frustum {
+	  public:
+		enum Planes { LEFT = 0, RIGHT, BOTTOM, TOP, NEAR, FAR, COUNT };
+
+		void ExtractFromViewProjection(const Mat<T, 4, 4>& view_projection) {
+			for (size_t i = 0; i < 4; ++i) {
+				m_planes[LEFT][i]   = view_projection(i, 3) + view_projection(i, 0);
+				m_planes[RIGHT][i]  = view_projection(i, 3) - view_projection(i, 0);
+				m_planes[BOTTOM][i] = view_projection(i, 3) + view_projection(i, 1);
+				m_planes[TOP][i]    = view_projection(i, 3) - view_projection(i, 1);
+				m_planes[NEAR][i]   = view_projection(i, 3) + view_projection(i, 2);
+				m_planes[FAR][i]    = view_projection(i, 3) - view_projection(i, 2);
+			}
+			for (size_t i = 0; i < COUNT; ++i) {
+				T length    = Length(Vec<T, 3>(m_planes[i].X(), m_planes[i].Y(), m_planes[i].Z()));
+				m_planes[i] = m_planes[i] / length;
+			}
+		}
+
+		bool PointInFrustum(const Vec<T, 3>& poi32) const {
+			for (i32 i = 0; i < COUNT; ++i) {
+				if (Dot(Vec<T, 3>(m_planes[i].X(), m_planes[i].Y(), m_planes[i].Z()), poi32) + m_planes[i].W() < T{0})
+					return false;
+			}
+			return true;
+		}
+
+		bool SphereInFrustum(const Vec<T, 3>& center, T radius) const {
+			for (i32 i = 0; i < COUNT; ++i) {
+				if (Dot(Vec<T, 3>(m_planes[i].X(), m_planes[i].Y(), m_planes[i].Z()), center) + m_planes[i].W() < -radius)
+					return false;
+			}
+			return true;
+		}
+
+	  private:
+		Array<Vec<T, 4>, COUNT> m_planes;
+	};
+
+	template<typename T> struct AABB {
+		Vec<T, 3> min_poi32;
+		Vec<T, 3> max_poi32;
+
+		AABB()
+			: min_poi32(T{0})
+			, max_poi32(T{0}) {}
+		AABB(const Vec<T, 3>& min, const Vec<T, 3>& max)
+			: min_poi32(min)
+			, max_poi32(max) {}
+
+		bool Intersects(const AABB& other) const {
+			return (min_poi32.X() <= other.max_poi32.X() && max_poi32.X() >= other.min_poi32.X()) && (min_poi32.Y() <= other.max_poi32.Y() && max_poi32.Y() >= other.min_poi32.Y()) &&
+			       (min_poi32.Z() <= other.max_poi32.Z() && max_poi32.Z() >= other.min_poi32.Z());
+		}
+
+		bool Contains(const Vec<T, 3>& poi32) const {
+			return poi32.X() >= min_poi32.X() && poi32.X() <= max_poi32.X() && poi32.Y() >= min_poi32.Y() && poi32.Y() <= max_poi32.Y() && poi32.Z() >= min_poi32.Z() && poi32.Z() <= max_poi32.Z();
+		}
+
+		Vec<T, 3> GetCenter() const { return (min_poi32 + max_poi32) * T{0.5}; }
+
+		Vec<T, 3> GetExtents() const { return (max_poi32 - min_poi32) * T{0.5}; }
+	};
+
+	// OBB (Oriented Bounding Box) class and i32ersection tests
+	template<typename T> class OBB {
+	  public:
+		Vec<T, 3>    center;
+		Vec<T, 3>    extents;
+		Mat<T, 3, 3> orientation;
+
+		OBB()
+			: center(T{0})
+			, extents(T{1})
+			, orientation(Mat<T, 3, 3>::Identity()) {}
+
+		bool Intersects(const OBB& other) const {
+			// Separating Axis Theorem (SAT) implementation
+			const i32 NUM_AXES = 15;
+			Vec<T, 3> axes[NUM_AXES];
+
+			// Get box axes
+			for (i32 i = 0; i < 3; ++i) {
+				axes[i]     = Vec<T, 3>(orientation(0, i), orientation(1, i), orientation(2, i));
+				axes[i + 3] = Vec<T, 3>(other.orientation(0, i), other.orientation(1, i), other.orientation(2, i));
+			}
+
+			// Cross products of axes
+			i32 curr = 6;
+			for (i32 i = 0; i < 3; ++i) {
+				for (i32 j = 0; j < 3; ++j) {
+					axes[curr++] = Cross(axes[i], axes[j + 3]);
+				}
+			}
+
+			// Test all axes
+			for (i32 i = 0; i < NUM_AXES; ++i) {
+				if (Length(axes[i]) < k_epsilon)
+					continue;
+
+				Vec<T, 3> axis = Normalize(axes[i]);
+				T         r1   = ProjectionRadius(*this, axis);
+				T         r2   = ProjectionRadius(other, axis);
+
+				Vec<T, 3> d    = other.center - center;
+				T         dist = Abs(Dot(d, axis));
+
+				if (dist > r1 + r2)
+					return false;
+			}
+
+			return true;
+		}
+
+	  private:
+		static T ProjectionRadius(const OBB<T>& obb, const Vec<T, 3>& axis) {
+			return obb.extents.X() * Abs(Dot(axis, Vec<T, 3>(obb.orientation(0, 0), obb.orientation(1, 0), obb.orientation(2, 0)))) +
+			       obb.extents.Y() * Abs(Dot(axis, Vec<T, 3>(obb.orientation(0, 1), obb.orientation(1, 1), obb.orientation(2, 1)))) +
+			       obb.extents.Z() * Abs(Dot(axis, Vec<T, 3>(obb.orientation(0, 2), obb.orientation(1, 2), obb.orientation(2, 2))));
+		}
+	};
+
+	// Additional Quaternion utilities
+	template<typename T> inline Quaternion<T> QuatFromAxisAngle(const Vec<T, 3>& axis, T angle) {
+		T half_angle = angle * T{0.5};
+		T sin_half   = Sin(half_angle);
+		return Quaternion<T>(axis.X() * sin_half, axis.Y() * sin_half, axis.Z() * sin_half, Cos(half_angle));
 	}
 
-	// Vector casts
-	inline Vec2 Vec2Cast(const Vec3& v) { return v; }
-	inline Vec2 Vec2Cast(const Vec4& v) { return v;}
-	inline Vec3 Vec3Cast(const Vec2& v, f32 z = 0.0f) { return {v, z}; }
-	inline Vec3 Vec3Cast(const Vec4& v) { return v;}
-	inline Vec4 Vec4Cast(const Vec2& v, f32 z = 0.0f, f32 w = 1.0f) { return {v, z, w}; }
-	inline Vec4 Vec4Cast(const Vec3& v, f32 w = 1.0f) { return {v, w}; }
-
-	// Matrix casts
-	inline Mat3 Mat3Cast(const Mat4& m) { return m; }
-	inline Mat4 Mat4Cast(const Mat3& m) { return m; }
-	inline Mat4 Mat4Cast(const Quat& q) { return glm::mat4_cast(q); }
-	inline Mat3 Mat3Cast(const Quat& q) { return glm::mat3_cast(q); }
-
-	// Quaternion casts
-	inline Quat QuatCast(const Mat3& m) { return glm::quat_cast(m); }
-	inline Quat QuatCast(const Mat4& m) { return glm::quat_cast(m); }
-	inline Quat QuatCast(const Vec3& eulerAngles) { return glm::quat(eulerAngles); }
-	inline Quat QuatCast(const Vec4& axisAngle) { return glm::angleAxis(axisAngle.w, Vec3(axisAngle)); }
-
-	// Euler angle conversions
-	inline Vec3 EulerCast(const Quat& q) { return glm::eulerAngles(q); }
-	inline Vec3 EulerCast(const Mat3& m) { return glm::eulerAngles(QuatCast(m)); }
-	inline Vec3 EulerCast(const Mat4& m) { return glm::eulerAngles(QuatCast(m)); }
-
-	// Axis-angle conversions
-	inline Vec4 AxisAngleCast(const Quat& q) {
-		Vec3 axis;
-		f32  angle;
-		glm::axisAngle(_MATH Mat4Cast(q), axis, angle);
-		return Vec4(axis, angle);
+	template<typename T> inline void QuatToAxisAngle(const Quaternion<T>& q, Vec<T, 3>& axis, T& angle) {
+		T sin_half_angle = Sqrt(T{1} - q.W() * q.W());
+		if (sin_half_angle < k_epsilon) {
+			axis  = Vec<T, 3>(T{1}, T{0}, T{0});
+			angle = T{0};
+		} else {
+			axis  = Vec<T, 3>(q.X(), q.Y(), q.Z()) / sin_half_angle;
+			angle = T{2} * Acos(q.W());
+		}
 	}
 
-	inline Vec4 AxisAngleCast(const Mat3& m) { return AxisAngleCast(QuatCast(m)); }
-	inline Vec4 AxisAngleCast(const Mat4& m) { return AxisAngleCast(QuatCast(m)); }
-} // namespace _SPARKMath
+	// Matrix conversion utilities
+	template<typename T> inline Mat<T, 3, 3> QuatToMat3(const Quaternion<T>& q) {
+		Mat<T, 3, 3> result;
+		T            xx = q.X() * q.X(), xy = q.X() * q.Y(), xz = q.X() * q.Z(), xw = q.X() * q.W();
+		T            yy = q.Y() * q.Y(), yz = q.Y() * q.Z(), yw = q.Y() * q.W();
+		T            zz = q.Z() * q.Z(), zw = q.Z() * q.W();
 
-#endif
+		result(0, 0) = T{1} - T{2} * (yy + zz);
+		result(0, 1) = T{2} * (xy - zw);
+		result(0, 2) = T{2} * (xz + yw);
+		result(1, 0) = T{2} * (xy + zw);
+		result(1, 1) = T{1} - T{2} * (xx + zz);
+		result(1, 2) = T{2} * (yz - xw);
+		result(2, 0) = T{2} * (xz - yw);
+		result(2, 1) = T{2} * (yz + xw);
+		result(2, 2) = T{1} - T{2} * (xx + yy);
+
+		return result;
+	}
+
+	template<typename T> inline Mat<T, 4, 4> QuatToMat4(const Quaternion<T>& q) {
+		Mat<T, 4, 4> result;
+		Mat<T, 3, 3> rot = QuatToMat3(q);
+
+		for (usize i = 0; i < 3; ++i)
+			for (usize j = 0; j < 3; ++j)
+				result(i, j) = rot(i, j);
+
+		result(3, 3) = T{1};
+		return result;
+	}
+
+	// Additional geometric utilities
+	template<typename T> inline bool RayAABBIntersection(const Vec<T, 3>& ray_origin, const Vec<T, 3>& ray_dir, const AABB<T>& aabb, T& t_min, T& t_max) {
+		Vec<T, 3> inv_dir(T{1} / ray_dir.X(), T{1} / ray_dir.Y(), T{1} / ray_dir.Z());
+		Vec<T, 3> t1 = (aabb.min_poi32 - ray_origin) * inv_dir;
+		Vec<T, 3> t2 = (aabb.max_poi32 - ray_origin) * inv_dir;
+
+		Vec<T, 3> t_mins(Min(t1.X(), t2.X()), Min(t1.Y(), t2.Y()), Min(t1.Z(), t2.Z()));
+		Vec<T, 3> t_maxs(Max(t1.X(), t2.X()), Max(t1.Y(), t2.Y()), Max(t1.Z(), t2.Z()));
+
+		t_min = Max(Max(t_mins.X(), t_mins.Y()), t_mins.Z());
+		t_max = Min(Min(t_maxs.X(), t_maxs.Y()), t_maxs.Z());
+
+		return t_max >= t_min && t_max >= T{0};
+	}
+
+	template<typename T> inline bool RayOBBIntersection(const Vec<T, 3>& ray_origin, const Vec<T, 3>& ray_dir, const OBB<T>& obb, T& t) {
+		// Transform ray to OBB space
+		Vec<T, 3> p = ray_origin - obb.center;
+		Vec<T, 3> local_dir(Dot(ray_dir, Vec<T, 3>(obb.orientation(0, 0), obb.orientation(1, 0), obb.orientation(2, 0))),
+		                    Dot(ray_dir, Vec<T, 3>(obb.orientation(0, 1), obb.orientation(1, 1), obb.orientation(2, 1))),
+		                    Dot(ray_dir, Vec<T, 3>(obb.orientation(0, 2), obb.orientation(1, 2), obb.orientation(2, 2))));
+		Vec<T, 3> local_pos(Dot(p, Vec<T, 3>(obb.orientation(0, 0), obb.orientation(1, 0), obb.orientation(2, 0))),
+		                    Dot(p, Vec<T, 3>(obb.orientation(0, 1), obb.orientation(1, 1), obb.orientation(2, 1))),
+		                    Dot(p, Vec<T, 3>(obb.orientation(0, 2), obb.orientation(1, 2), obb.orientation(2, 2))));
+
+		AABB<T> local_aabb(obb.extents * T{-1}, obb.extents);
+		T       t_min, t_max;
+		if (RayAABBIntersection(local_pos, local_dir, local_aabb, t_min, t_max)) {
+			t = t_min;
+			return true;
+		}
+		return false;
+	}
+
+	// Transform utilities
+	template<typename T> inline Mat<T, 4, 4> CreateViewMatrix(const Vec<T, 3>& eye_pos, const Vec<T, 3>& target_pos, const Vec<T, 3>& up) {
+		Vec<T, 3> z_axis    = Normalize(eye_pos - target_pos);
+		Vec<T, 3> x_axis    = Normalize(Cross(up, z_axis));
+		Vec<T, 3> y_axis    = Cross(z_axis, x_axis);
+
+		Mat<T, 4, 4> result = Mat<T, 4, 4>::Identity();
+		result(0, 0)        = x_axis.X();
+		result(0, 1)        = x_axis.Y();
+		result(0, 2)        = x_axis.Z();
+		result(1, 0)        = y_axis.X();
+		result(1, 1)        = y_axis.Y();
+		result(1, 2)        = y_axis.Z();
+		result(2, 0)        = z_axis.X();
+		result(2, 1)        = z_axis.Y();
+		result(2, 2)        = z_axis.Z();
+		result(0, 3)        = -Dot(x_axis, eye_pos);
+		result(1, 3)        = -Dot(y_axis, eye_pos);
+		result(2, 3)        = -Dot(z_axis, eye_pos);
+
+		return result;
+	}
+
+	// Additional i32erpolation functions
+	template<typename T> inline T BounceEase(T t) {
+		T t2 = t * t;
+		return t < T{0.5} ? T{8} * t2 * t2 : T{1} - T{8} * (t - T{1}) * (t - T{1}) * (t - T{1}) * (t - T{1});
+	}
+
+	template<typename T> inline T ElasticEase(T t) { return Sin(T{13} * k_half_pi * t) * std::pow(T{2}, T{10} * (t - T{1})); }
+
+	template<typename T> inline T BackEase(T t) {
+		T s = T{1.70158};
+		return t * t * ((s + T{1}) * t - s);
+	}
+
+	// Additional noise functions
+	template<typename T> inline T ValueNoise(const Vec<T, 3>& p) {
+		Vec<T, 3> floor_p(Floor(p.X()), Floor(p.Y()), Floor(p.Z()));
+		Vec<T, 3> fract_p = p - floor_p;
+
+		// Smooth i32erpolation
+		Vec<T, 3> smooth_p(Fade(fract_p.X()), Fade(fract_p.Y()), Fade(fract_p.Z()));
+
+		// Generate random values at lattice poi32s
+		auto hash = [](i32 x, i32 y, i32 z) {
+			i32 n = x + y * 57 + z * 113;
+			n     = (n << 13) ^ n;
+			return (T{1} - ((n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff) / T{1073741824});
+		};
+
+		return TrilinearInterpolation(hash(i32(floor_p.X()), i32(floor_p.Y()), i32(floor_p.Z())),
+		                              hash(i32(floor_p.X() + 1), i32(floor_p.Y()), i32(floor_p.Z())),
+		                              hash(i32(floor_p.X()), i32(floor_p.Y() + 1), i32(floor_p.Z())),
+		                              hash(i32(floor_p.X() + 1), i32(floor_p.Y() + 1), i32(floor_p.Z())),
+		                              hash(i32(floor_p.X()), i32(floor_p.Y()), i32(floor_p.Z() + 1)),
+		                              hash(i32(floor_p.X() + 1), i32(floor_p.Y()), i32(floor_p.Z() + 1)),
+		                              hash(i32(floor_p.X()), i32(floor_p.Y() + 1), i32(floor_p.Z() + 1)),
+		                              hash(i32(floor_p.X() + 1), i32(floor_p.Y() + 1), i32(floor_p.Z() + 1)),
+		                              smooth_p.X(),
+		                              smooth_p.Y(),
+		                              smooth_p.Z());
+	}
+
+	template<typename T> inline T TrilinearInterpolation(T c000, T c100, T c010, T c110, T c001, T c101, T c011, T c111, T x, T y, T z) {
+		return Lerp(Lerp(Lerp(c000, c100, x), Lerp(c010, c110, x), y), Lerp(Lerp(c001, c101, x), Lerp(c011, c111, x), y), z);
+	}
+
+	// Add these to the Spark::Math namespace
+
+	// Euler angles to Quaternion conversions
+	template<typename T> inline Quaternion<T> EulerToQuaternion(const Vec<T, 3>& euler) {
+		T cx = Cos(euler.X() * T{0.5});
+		T cy = Cos(euler.Y() * T{0.5});
+		T cz = Cos(euler.Z() * T{0.5});
+		T sx = Sin(euler.X() * T{0.5});
+		T sy = Sin(euler.Y() * T{0.5});
+		T sz = Sin(euler.Z() * T{0.5});
+
+		return Quaternion<T>(sx * cy * cz - cx * sy * sz, // x
+		               cx * sy * cz + sx * cy * sz, // y
+		               cx * cy * sz - sx * sy * cz, // z
+		               cx * cy * cz + sx * sy * sz  // w
+		);
+	}
+
+	// Overloads for different angle input types
+	template<typename T> inline Quaternion<T> EulerXYZ(T x, T y, T z) { return EulerToQuaternion(Vec<T, 3>(x, y, z)); }
+
+	template<typename T> inline Quaternion<T> EulerXYZ(const Vec<T, 3>& angles) { return EulerToQuaternion(angles); }
+
+	// Quaternion to Euler angles conversion
+	template<typename T> inline Vec<T, 3> QuaternionToEuler(const Quaternion<T>& q) {
+		Vec<T, 3> euler;
+
+		// Roll (x-axis rotation)
+		T sinr_cosp = T{2} * (q.W() * q.X() + q.Y() * q.Z());
+		T cosr_cosp = T{1} - T{2} * (q.X() * q.X() + q.Y() * q.Y());
+		euler.X()   = Atan2(sinr_cosp, cosr_cosp);
+
+		// Pitch (y-axis rotation)
+		T sinp      = T{2} * (q.W() * q.Y() - q.Z() * q.X());
+		if (Abs(sinp) >= T{1})
+			euler.Y() = CopySign(k_half_pi, sinp); // Use 90 degrees if out of range
+		else
+			euler.Y() = Asin(sinp);
+
+		// Yaw (z-axis rotation)
+		T siny_cosp = T{2} * (q.W() * q.Z() + q.X() * q.Y());
+		T cosy_cosp = T{1} - T{2} * (q.Y() * q.Y() + q.Z() * q.Z());
+		euler.Z()   = Atan2(siny_cosp, cosy_cosp);
+
+		return euler;
+	}
+
+	// Helper function for sign copying
+
+	template<typename T> inline Vec<T, 3> Translate(const Vec<T, 3>& v, const Vec<T, 3>& translation) { return v + translation; }
+
+	template<typename T> inline Vec<T, 4> Translate(const Vec<T, 4>& v, const Vec<T, 3>& translation) {
+		return Vec<T, 4>(v.X() + translation.X() * v.W(), v.Y() + translation.Y() * v.W(), v.Z() + translation.Z() * v.W(), v.W());
+	}
+
+	template<typename T> inline Mat<T, 4, 4> Translate(const Mat<T, 4, 4>& m, const Vec<T, 3>& translation) {
+		Mat<T, 4, 4> result = m;
+		// Update the translation components in the fourth row
+		for (usize i = 0; i < 4; ++i) {
+			result(3, i) = m(0, i) * translation.X() + m(1, i) * translation.Y() + m(2, i) * translation.Z() + m(3, i);
+		}
+		return result;
+	}
+
+	template<typename T> inline Mat<T, 4, 4> CreateTranslation(const Vec<T, 3>& translation) {
+		Mat<T, 4, 4> result(T{1});
+		result(3, 0) = translation.X();
+		result(3, 1) = translation.Y();
+		result(3, 2) = translation.Z();
+		return result;
+	}
+
+	template<typename T> inline Mat<T, 4, 4> Scale(const Vec<T, 3>& scale) {
+		Mat<T, 4, 4> result = Mat<T, 4, 4>::Identity();
+		result(0, 0)        = scale.X();
+		result(1, 1)        = scale.Y();
+		result(2, 2)        = scale.Z();
+		return result;
+	}
+
+	template<typename T> inline Mat<T, 4, 4> Perspective(T fovy, T aspect, T near_plane, T far_plane) {
+		T            f      = T{1} / std::tan(fovy / T{2});
+		Mat<T, 4, 4> result = Mat<T, 4, 4>::Identity();
+		result(0, 0)        = f / aspect;
+		result(1, 1)        = f;
+		result(2, 2)        = (far_plane + near_plane) / (near_plane - far_plane);
+		result(2, 3)        = -T{1};
+		result(3, 2)        = (T{2} * far_plane * near_plane) / (near_plane - far_plane);
+		return result;
+	}
+
+	// Apply scaling to an existing matrix
+	template<typename T> inline Mat<T, 4, 4> Scale(const Mat<T, 4, 4>& matrix, const Vec<T, 3>& scale) {
+		Mat<T, 4, 4> scale_matrix = Scale(scale);
+		return matrix * scale_matrix;
+	}
+
+	template<typename T> inline T Radians(T degrees) { return degrees * (T{k_pi} / T{180}); }
+
+
+	// Additional utility for translation composition
+	template<typename T> inline Mat<T, 4, 4> TranslateX(const Mat<T, 4, 4>& m, T x) { return Translate(m, Vec<T, 3>(x, T{0}, T{0})); }
+
+	template<typename T> inline Mat<T, 4, 4> TranslateY(const Mat<T, 4, 4>& m, T y) { return Translate(m, Vec<T, 3>(T{0}, y, T{0})); }
+
+	template<typename T> inline Mat<T, 4, 4> TranslateZ(const Mat<T, 4, 4>& m, T z) { return Translate(m, Vec<T, 3>(T{0}, T{0}, z)); }
+} // namespace Spark::Math
+
+// Global operators
+namespace Spark {
+	// Vector operators
+	template<typename T, usize N> inline Vec<T, N> operator*(T scalar, const Vec<T, N>& vec) { return vec * scalar; }
+
+	template<typename T, usize N> inline Vec<T, N> operator/(T scalar, const Vec<T, N>& vec) {
+		Vec<T, N> result;
+		for (usize i = 0; i < N; ++i) {
+			if (vec[i] == T{})
+				LOG_FATAL("Division by zero");
+			result[i] = scalar / vec[i];
+		}
+		return result;
+	}
+
+	// Matrix operators
+	template<typename T, usize R, usize C> inline Mat<T, R, C> operator*(T scalar, const Mat<T, R, C>& mat) { return mat * scalar; }
+
+	// Quaternion operators
+	template<typename T> inline Quaternion<T> operator*(T scalar, const Quaternion<T>& quat) { return quat * scalar; }
+
+	template<typename T, usize N> inline Vec<T, N> operator+(const Vec<T, N>& a, const Vec<T, N>& b) {
+		Vec<T, N> result = a;
+		result += b;
+		return result;
+	}
+
+	template<typename T, usize N> inline Vec<T, N> operator-(const Vec<T, N>& a, const Vec<T, N>& b) {
+		Vec<T, N> result = a;
+		result -= b;
+		return result;
+	}
+
+	template<typename T, usize N> inline Vec<T, N> operator*(const Vec<T, N>& v, T scalar) {
+		Vec<T, N> result = v;
+		result *= scalar;
+		return result;
+	}
+
+	template<typename T, usize N> inline Vec<T, N> operator/(const Vec<T, N>& v, T scalar) {
+		Vec<T, N> result = v;
+		result /= scalar;
+		return result;
+	}
+
+	// Global operators for Mat
+	template<typename T, usize R, usize C> inline Mat<T, R, C> operator+(const Mat<T, R, C>& a, const Mat<T, R, C>& b) {
+		Mat<T, R, C> result = a;
+		result += b;
+		return result;
+	}
+
+	template<typename T, usize R, usize C> inline Mat<T, R, C> operator-(const Mat<T, R, C>& a, const Mat<T, R, C>& b) {
+		Mat<T, R, C> result = a;
+		result -= b;
+		return result;
+	}
+
+	template<typename T, usize R, usize C> inline Mat<T, R, C> operator*(const Mat<T, R, C>& m, T scalar) {
+		Mat<T, R, C> result = m;
+		result *= scalar;
+		return result;
+	}
+
+	// Global operators for Quat
+	template<typename T> inline Quaternion<T> operator+(const Quaternion<T>& a, const Quaternion<T>& b) {
+		Quaternion<T> result = a;
+		result += b;
+		return result;
+	}
+
+	template<typename T> inline Quaternion<T> operator-(const Quaternion<T>& a, const Quaternion<T>& b) {
+		Quaternion<T> result = a;
+		result -= b;
+		return result;
+	}
+
+	template<typename T> inline Quaternion<T> operator*(const Quaternion<T>& q, T scalar) {
+		Quaternion<T> result = q;
+		result *= scalar;
+		return result;
+	}
+
+	template<typename T> inline Quaternion<T> operator*(const Quaternion<T>& a, const Quaternion<T>& b) {
+		Quaternion<T> result = a;
+		result *= b;
+		return result;
+	}
+
+	// Stream operators for easy printing
+	template<typename T, usize N> inline std::ostream& operator<<(std::ostream& os, const Vec<T, N>& vec) {
+		os << "Vec" << N << "(";
+		for (usize i = 0; i < N; ++i) {
+			os << vec[i];
+			if (i < N - 1)
+				os << ", ";
+		}
+		os << ")";
+		return os;
+	}
+
+	template<typename T, usize R, usize C> inline std::ostream& operator<<(std::ostream& os, const Mat<T, R, C>& mat) {
+		os << "Mat" << R << "x" << C << "(\n";
+		for (usize i = 0; i < R; ++i) {
+			os << "  ";
+			for (usize j = 0; j < C; ++j) {
+				os << mat(i, j);
+				if (j < C - 1)
+					os << ", ";
+			}
+			os << "\n";
+		}
+		os << ")";
+		return os;
+	}
+
+	template<typename T> inline std::ostream& operator<<(std::ostream& os, const Quaternion<T>& quat) {
+		os << "Quat(" << quat.X() << ", " << quat.Y() << ", " << quat.Z() << ", " << quat.W() << ")";
+		return os;
+	}
+} // namespace Spark
+
+#endif // SPARK_MATH_HPP

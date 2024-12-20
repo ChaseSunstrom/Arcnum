@@ -179,8 +179,17 @@ namespace Spark {
 
 		BasicString& operator=(const BasicString& other) {
 			if (this != &other) {
-				BasicString tmp(other);
-				Swap(tmp);
+				// Deallocate existing memory
+				if (m_data) {
+					AllocatorTraits::Deallocate(m_allocator, m_data, m_capacity);
+				}
+
+				// Copy the other string's data
+				m_size     = other.m_size;
+				m_capacity = other.m_capacity;
+				m_data     = AllocatorTraits::Allocate(m_allocator, m_capacity);
+				StringCopyN(m_data, other.m_data, m_size);
+				m_data[m_size] = '\0';
 			}
 			return *this;
 		}
@@ -219,10 +228,18 @@ namespace Spark {
 		}
 
 		void Swap(BasicString& other) noexcept {
-			_SPARK Swap(m_data, other.m_data);
-			_SPARK Swap(m_size, other.m_size);
-			_SPARK Swap(m_capacity, other.m_capacity);
-			_SPARK Swap(m_allocator, other.m_allocator);
+			if (&m_allocator == &other.m_allocator) {
+				// Swap the data, size, and capacity only
+				_SPARK Swap(m_data, other.m_data);
+				_SPARK Swap(m_size, other.m_size);
+				_SPARK Swap(m_capacity, other.m_capacity);
+			} else {
+				// Swap everything, including the allocators
+				_SPARK Swap(m_data, other.m_data);
+				_SPARK Swap(m_size, other.m_size);
+				_SPARK Swap(m_capacity, other.m_capacity);
+				_SPARK Swap(m_allocator, other.m_allocator);
+			}
 		}
 
 		const CharType* CStr() const { return m_data ? m_data : ""; }

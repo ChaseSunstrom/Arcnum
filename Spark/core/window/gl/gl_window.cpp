@@ -8,7 +8,7 @@ namespace Spark {
 		CreateWindow(width, height, title);
 		SetVSync(vsync);
 
-		m_framebuffer = std::make_unique<GLFramebuffer>(width, height);
+		m_framebuffer = MakeUnique<GLFramebuffer>(width, height);
 
 		// Subscribes to make sure window gets resized properly
 		event_handler.SubscribeToEvent<WindowResizedEvent>([this](const EventPtr<WindowResizedEvent>& event) { SetSize(event->width, event->height); });
@@ -35,7 +35,7 @@ namespace Spark {
 			LOG_FATAL("Failed to initialize glad!");
 		}
 
-		glfwSetWindowUserPointer(m_window, m_window_data.get());
+		glfwSetWindowUserPointer(m_window, m_window_data.Get());
 
 		glfwSetWindowSizeCallback(m_window, [](GLFWwindow* window, i32 width, i32 height) {
 			WindowData& data = *(WindowData*) glfwGetWindowUserPointer(window);

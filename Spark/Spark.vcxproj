@@ -150,10 +150,7 @@
     <ClInclude Include="core\app\application.hpp" />
     <ClInclude Include="core\audio\audio.hpp" />
     <ClInclude Include="core\ecs\component.hpp" />
-    <ClInclude Include="core\ecs\components\model_component.hpp" />
     <ClInclude Include="core\ecs\components\name_component.hpp" />
-    <ClInclude Include="core\ecs\components\rigid_body_component.hpp" />
-    <ClInclude Include="core\ecs\components\transform_component.hpp" />
     <ClInclude Include="core\ecs\ecs.hpp" />
     <ClInclude Include="core\ecs\entity.hpp" />
     <ClInclude Include="core\ecs\query.hpp" />
@@ -163,9 +160,8 @@
     <ClInclude Include="core\event\event_handler.hpp" />
     <ClInclude Include="core\lighting\lighting.hpp" />
     <ClInclude Include="core\math\math.hpp" />
+    <ClInclude Include="core\math\math_types.hpp" />
     <ClInclude Include="core\pch.hpp" />
-    <ClInclude Include="core\physics\collision_shape.hpp" />
-    <ClInclude Include="core\physics\rigid_body.hpp" />
     <ClInclude Include="core\profile\fps.hpp" />
     <ClInclude Include="core\render\buffer.hpp" />
     <ClInclude Include="core\render\camera.hpp" />
@@ -192,6 +188,7 @@
     <ClInclude Include="core\util\classic\file.hpp" />
     <ClInclude Include="core\util\classic\function_traits.hpp" />
     <ClInclude Include="core\util\classic\hash.hpp" />
+    <ClInclude Include="core\util\classic\sort.hpp" />
     <ClInclude Include="core\util\classic\traits.hpp" />
     <ClInclude Include="core\util\classic\type.hpp" />
     <ClInclude Include="core\util\classic\util.hpp" />
@@ -465,7 +462,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\pch.cpp" />
-    <ClCompile Include="core\physics\rigid_body.cpp" />
+    <ClCompile Include="core\render\camera.cpp" />
     <ClCompile Include="core\system\file_serializer.cpp" />
     <ClCompile Include="core\util\classic\file.cpp" />
     <ClCompile Include="core\util\classic\type.cpp" />

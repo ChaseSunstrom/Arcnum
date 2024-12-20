@@ -22,8 +22,8 @@
 /// #include <glm/glm.hpp>
 /// #include <glm/gtc/type_ptr.hpp>
 ///
-/// glm::vec3 aVector(3);
-/// glm::mat4 someMatrix(1.0);
+/// _SPARK Vec3 aVector(3);
+/// _SPARK Mat4 someMatrix(1.0);
 ///
 /// glUniform3fv(uniformLoc, 1, glm::value_ptr(aVector));
 /// glUniformMatrix4fv(uniformMatrixLoc, 1, GL_FALSE, glm::value_ptr(someMatrix));

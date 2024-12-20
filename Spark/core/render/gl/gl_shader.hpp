@@ -123,18 +123,18 @@ namespace Spark {
 					glUniform1f(location, std::any_cast<f32>(value));
 				} else if (value.type() == typeid(i32)) {
 					glUniform1i(location, std::any_cast<i32>(value));
-				} else if (value.type() == typeid(glm::vec2)) {
-					const auto& v = std::any_cast<glm::vec2>(value);
-					glUniform2f(location, v.x, v.y);
-				} else if (value.type() == typeid(glm::vec3)) {
-					const auto& v = std::any_cast<glm::vec3>(value);
-					glUniform3f(location, v.x, v.y, v.z);
-				} else if (value.type() == typeid(glm::vec4)) {
-					const auto& v = std::any_cast<glm::vec4>(value);
-					glUniform4f(location, v.x, v.y, v.z, v.w);
-				} else if (value.type() == typeid(glm::mat4)) {
-					const auto& m = std::any_cast<glm::mat4>(value);
-					glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(m));
+				} else if (value.type() == typeid(_SPARK Vec2)) {
+					const auto& v = std::any_cast<_SPARK Vec2>(value);
+					glUniform2f(location, v.X(), v.Y());
+				} else if (value.type() == typeid(_SPARK Vec3)) {
+					const auto& v = std::any_cast<_SPARK Vec3>(value);
+					glUniform3f(location, v.X(), v.Y(), v.Z());
+				} else if (value.type() == typeid(_SPARK Vec4)) {
+					const auto& v = std::any_cast<_SPARK Vec4>(value);
+					glUniform4f(location, v.X(), v.Y(), v.Z(), v.W());
+				} else if (value.type() == typeid(_SPARK Mat4)) {
+					const auto& m = std::any_cast<_SPARK Mat4>(value);
+					glUniformMatrix4fv(location, 1, GL_FALSE, Math::ValuePtr(m));
 				}
 			} catch (const std::bad_any_cast&) {
 				LOG_ERROR("Invalid uniform type for: " << name);

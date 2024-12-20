@@ -3,6 +3,8 @@
 
 #include <array>
 #include <core/util/classic/util.hpp>
+#include <core/util/log.hpp>
+#include <iostream>
 #include <initializer_list>
 
 namespace Spark {
@@ -131,7 +133,7 @@ namespace Spark {
 
 		void Swap(Array& other) {
 			for (SizeType i = 0; i < N; ++i) {
-				Spark::Swap(reinterpret_cast<_Ty*>(m_data)[i], reinterpret_cast<_Ty*>(other.m_data)[i]);
+				_SPARK Swap(reinterpret_cast<_Ty*>(m_data)[i], reinterpret_cast<_Ty*>(other.m_data)[i]);
 			}
 		}
 

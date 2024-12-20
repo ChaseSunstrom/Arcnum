@@ -488,7 +488,7 @@ namespace detail
 		return detail::toFloat32(Unpack);
 	}
 
-	GLM_FUNC_QUALIFIER uint64 packHalf4x16(glm::vec4 const& v)
+	GLM_FUNC_QUALIFIER uint64 packHalf4x16(_SPARK Vec4 const& v)
 	{
 		i16vec4 const Unpack(
 			detail::toFloat16(v.x),
@@ -500,7 +500,7 @@ namespace detail
 		return Packed;
 	}
 
-	GLM_FUNC_QUALIFIER glm::vec4 unpackHalf4x16(uint64 v)
+	GLM_FUNC_QUALIFIER _SPARK Vec4 unpackHalf4x16(uint64 v)
 	{
 		i16vec4 Unpack;
 		memcpy(&Unpack, &v, sizeof(Unpack));

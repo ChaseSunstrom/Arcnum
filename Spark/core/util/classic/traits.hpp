@@ -374,6 +374,7 @@ namespace Spark {
 	template<typename _Ty> constexpr bool                 IsConstV                       = IsConst<_Ty>::Value;
 	template<typename _Ty> constexpr bool                 IsVolatileV                    = IsVolatile<_Ty>::Value;
 	template<typename _Ty> constexpr bool                 IsCVV                          = IsCV<_Ty>::Value;
+	template<typename _Ty> constexpr bool                 IsConstructibleV               = IsConstructible<_Ty>::Value;
 	template<typename _Ty> constexpr bool                 IsDefaultConstructibleV        = IsDefaultConstructible<_Ty>::Value;
 	template<typename _Ty> constexpr bool                 IsCopyConstructibleV           = IsCopyConstructible<_Ty>::Value;
 	template<typename _Ty> constexpr bool                 IsMoveConstructibleV           = IsMoveConstructible<_Ty>::Value;

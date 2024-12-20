@@ -15,7 +15,7 @@ namespace Spark {
 			, height(height)
 			, event_handler(event_handler) {}
 
-		String   title;
+		String        title;
 		bool          vsync;
 		i32           width;
 		i32           height;
@@ -25,7 +25,7 @@ namespace Spark {
 	class Window {
 	  public:
 		Window(const String& title, i32 width, i32 height, EventHandler& event_handler, bool vsync = false)
-			: m_window_data(std::make_unique<WindowData>(title, vsync, width, height, event_handler)) {}
+			: m_window_data(MakeUnique<WindowData>(title, vsync, width, height, event_handler)) {}
 		virtual ~Window()                                                                  = default;
 		virtual void         CreateWindow(i32 width, i32 height, const String& title) = 0;
 		virtual void         DestroyWindow()                                               = 0;
@@ -39,7 +39,7 @@ namespace Spark {
 		virtual Framebuffer& GetFrameBuffer() const                                        = 0;
 
 	  protected:
-		std::unique_ptr<WindowData> m_window_data;
+		UniquePtr<WindowData> m_window_data;
 	};
 
 	template<typename _Ty>

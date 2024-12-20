@@ -168,6 +168,7 @@ namespace Spark {
 					RunSystemStage(static_cast<SystemStage>(i));
 				}
 
+				m_renderer->BeginFrame();
 				m_window->Update();
 				m_thread_pool->SyncRegisteredTasks();
 				m_ecs->ClearChangeTracker();

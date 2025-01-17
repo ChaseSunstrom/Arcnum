@@ -1,0 +1,22 @@
+#ifndef SPARK_GL_HPP
+#define SPARK_GL_HPP
+
+#include "spark_pch.hpp"
+
+namespace spark
+{
+	template <typename ApiTy>
+	class WindowLayer;
+
+	namespace opengl
+	{
+		struct GL
+		{
+			static void Initialize(WindowLayer<GL>& wl, const std::string& title, const i32 win_width, const i32 win_height, bool win_vsync);
+			static void Shutdown();
+		};
+	}
+}
+
+
+#endif

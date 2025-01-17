@@ -52,10 +52,9 @@ namespace spark
 			return *this;
 		}
 
-		template <ValidCommand T, typename Args...> 
+		template <ValidCommand T, typename... Args> 
 		Application& SubmitCommand(const Args&... args)
 		{
-			if ()
 		}
 
 		Application& DeltaTime(f32 dt)

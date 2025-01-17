@@ -3,6 +3,11 @@
 
 #include <cstdarg> // for va_list
 
+#ifdef DEBUG
+#define DEBUG_TEMP DEBUG
+#undef DEBUG
+#endif
+
 namespace spark
 {
     // Simple log levels
@@ -37,5 +42,8 @@ namespace spark
         static LogLevel s_current_level;
     };
 }
+
+
+#undef DEBUG_TEMP
 
 #endif // SPARK_LOG_HPP

@@ -36,6 +36,7 @@
 #include <chrono>
 #include <stop_token>
 #include <algorithm>
+#include <ranges>
 #include <cassert>
 #include <array>
 #include <regex>

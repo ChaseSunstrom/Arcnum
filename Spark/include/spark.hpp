@@ -9,6 +9,7 @@
 #include "spark_layer_stack.hpp"
 #include "spark_vertex.hpp"
 #include "spark_mesh.hpp"
+#include "spark_event.hpp"
 
 #ifdef SPARK_USE_GL
 

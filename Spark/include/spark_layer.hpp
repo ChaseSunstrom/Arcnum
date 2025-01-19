@@ -5,11 +5,11 @@
 
 namespace spark
 {
-	class Layer
+	class ILayer
 	{
 	public:
-		Layer() = default;
-		virtual ~Layer() = default;
+		ILayer() = default;
+		virtual ~ILayer() = default;
 
 		// On application start
 		virtual void OnStart() {}

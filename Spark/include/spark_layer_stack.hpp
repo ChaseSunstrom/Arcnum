@@ -4,51 +4,109 @@
 #include "spark_pch.hpp"
 #include "spark_layer.hpp"
 
+#include <unordered_map>
+#include <typeindex>
+#include <memory>
+
 namespace spark
 {
-	class LayerStack
-	{
-	public:
-		using Iterator = std::vector<std::unique_ptr<Layer>>::iterator;
+    class LayerStack
+    {
+    public:
+        LayerStack() = default;
+        ~LayerStack() = default;
 
-		LayerStack() = default;
-		~LayerStack() = default;
-		
-		template <typename Ty, typename... Args>
-		void PushLayer(const Args&... args)
-		{
-			static_assert(std::is_base_of_v<Layer, Ty>, "Ty must derive from Layer");
-			m_layers.emplace_back(std::make_unique<Ty>(args...));
-			m_layers.back()->OnAttach();
-		}
+        // PushLayer inserts the layer by its type.
+        template <typename T, typename... Args>
+        T* PushLayer(Args&&... args)
+        {
+            static_assert(std::is_base_of_v<ILayer, T>, "T must derive from ILayer");
+            std::type_index key{ typeid(T) };
 
-		void PopLayer()
-		{
-			m_layers.back()->OnDetach();
-			m_layers.pop_back();
-		}
+            // You might want to check if a layer of this type already exists.
+            // If not, create and attach the layer.
+            auto layer = std::make_unique<T>(std::forward<Args>(args)...);
+            layer->OnAttach();
+            m_layers.emplace(key, std::move(layer));
+            return GetLayer<T>();
+        }
 
-		template <typename Ty, typename... Args>
-		void InsertLayer(usize index, const Args&... args)
-		{
-			static_assert(std::is_base_of_v<Layer, Ty>, "Ty must derive from Layer");
-			m_layers.emplace(m_layers.begin() + index, std::make_unique<Ty>(args...));
-			m_layers.begin()[index]->OnAttach();
-		}
-		
-		void RemoveLayer(usize index)
-		{
-			m_layers.begin()[index]->OnDetach();
-			m_layers.erase(m_layers.begin() + index);
-		}
+        // RemoveLayer removes and detaches a layer by type.
+        template <typename T>
+        void RemoveLayer()
+        {
+            std::type_index key{ typeid(T) };
+            auto it = m_layers.find(key);
+            if (it != m_layers.end())
+            {
+                it->second->OnDetach();
+                m_layers.erase(it);
+            }
+        }
 
-		Layer& operator[](usize index) { return *m_layers.begin()[index]; }
+        // GetLayer returns a pointer to the layer stored under type T, or nullptr if not found.
+        template <typename T>
+        T* GetLayer()
+        {
+            std::type_index key{ typeid(T) };
+            auto it = m_layers.find(key);
+            if (it != m_layers.end())
+            {
+                return dynamic_cast<T*>(it->second.get());
+            }
+            return nullptr;
+        }
 
-		Iterator begin() { return m_layers.begin(); }
-		Iterator end() { return m_layers.end(); }
-	private:
-		std::vector<std::unique_ptr<Layer>> m_layers;
-	};
+        // If needed, a const version of GetLayer.
+        template <typename T>
+        const T* GetLayer() const
+        {
+            std::type_index key{ typeid(T) };
+            auto it = m_layers.find(key);
+            if (it != m_layers.end())
+            {
+                return dynamic_cast<const T*>(it->second.get());
+            }
+            return nullptr;
+        }
+
+        // Remove all layers (calls OnDetach on each).
+        void Clear()
+        {
+            for (auto&  layer : m_layers | std::views::values)
+            {
+                layer->OnDetach();
+            }
+            m_layers.clear();
+        }
+
+        void Start()
+        {
+            for (auto& layer : m_layers | std::views::values)
+            {
+                layer->OnStart();
+            }
+        }
+
+        void Stop()
+        {
+            for (auto& layer : m_layers | std::views::values)
+            {
+                layer->OnDetach();
+            }
+        }
+
+        void Update(f32 dt)
+        {
+            for (auto& layer : m_layers | std::views::values)
+            {
+                layer->OnUpdate(dt);
+            }
+        }
+
+    private:
+        std::unordered_map<std::type_index, std::unique_ptr<ILayer>> m_layers;
+    };
 }
 
 #endif

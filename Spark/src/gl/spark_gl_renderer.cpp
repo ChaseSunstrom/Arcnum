@@ -13,7 +13,6 @@ namespace spark::opengl
     void GLRenderer::BeginFrame()
     {
         // Clear buffers, set viewport, etc.
-        glClearColor(0.f, 0.f, 0.f, 1.f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
@@ -21,6 +20,11 @@ namespace spark::opengl
     {
         // Possibly swap buffers if you manage that here
         // Usually the window layer might handle the actual glfwSwapBuffers()
+    }
+
+    void GLRenderer::RunRenderCommand(const RenderCommand& command)
+    {
+        glClearColor(command.sr, command.sg, command.sb, command.sa);
     }
 
     void GLRenderer::DrawSomething()

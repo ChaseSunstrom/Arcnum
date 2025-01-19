@@ -123,26 +123,37 @@ namespace spark
 	};
 
 
-	template <typename T, LayoutDescriptor... Descriptors>
-	inline VertexLayout& CreateVertexLayout()
+	template <LayoutDescriptor... Descriptors>
+	constexpr VertexLayout CreateVertexLayout()
 	{
-		static VertexLayout s_layout;
-		static bool s_initialized = false;
+		VertexLayout layout;
 
-		if (!s_initialized)
+		// Expand the Descriptors pack, adding each attribute
+		((layout.AddAttribute(
+			Descriptors.name,
+			Descriptors.type,
+			Descriptors.field_size,
+			Descriptors.normalized
+		)), ...);
+
+		return layout;
+	}
+
+	inline VertexLayout CreateVertexLayout(const std::vector<LayoutDescriptor>& descriptors)
+	{
+		VertexLayout layout;
+
+		for (const auto& descriptor : descriptors)
 		{
-			// Expand the Descriptors pack, adding each attribute
-			((s_layout.AddAttribute(
-				Descriptors.name,
-				Descriptors.type,
-				Descriptors.field_size,
-				Descriptors.normalized
-			)), ...);
-
-			s_initialized = true;
+			layout.AddAttribute(
+				descriptor.name,
+				descriptor.type,
+				descriptor.field_size,
+				descriptor.normalized
+			);
 		}
 
-		return s_layout;
+		return layout;
 	}
 	
 	template <typename T, LayoutDescriptor... Descriptors>

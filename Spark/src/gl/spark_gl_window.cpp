@@ -31,13 +31,16 @@ namespace spark::opengl
 			exit(EXIT_FAILURE);
 		}
 
-		if (!glewInit())
+		glfwMakeContextCurrent(m_window);
+
+		if (glewInit() != GLEW_OK)
 		{
 			Logger::Logln(LogLevel::ERROR, "Failed to initialize GLEW");
 			exit(EXIT_FAILURE);
 		}
 
-		glfwMakeContextCurrent(m_window);
+		SetVSync(vsync);
+
 	}
 	
 	GLWindow::~GLWindow()

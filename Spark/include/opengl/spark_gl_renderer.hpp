@@ -16,6 +16,7 @@ namespace spark::opengl
         void EndFrame() override;
         void DrawSomething() override;
         void Shutdown() override;
+        void RunRenderCommand(const RenderCommand& command) override;
 
     private:
         // Track GL-specific state if needed

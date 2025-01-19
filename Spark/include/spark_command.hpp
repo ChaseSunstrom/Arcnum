@@ -8,7 +8,12 @@ namespace spark
 	struct ICommand
 	{
 		virtual ~ICommand() = default;
+		virtual void Execute(const std::function<void(ICommand&)>& fn) = 0;
 	};
+
+
+	template <typename CTy>
+	concept ValidCommand = std::is_base_of_v<ICommand, CTy>;
 }
 
 #endif

@@ -2,17 +2,14 @@
 #define SPARK_GRAPHICS_API_HPP
 
 #include "spark_pch.hpp"
+#include "spark_gl.hpp"
+#include "spark_vk.hpp"
+#include "spark_dx.hpp"
 
 namespace spark
 {
-	enum class GraphicsAPI
-	{
-		None = 0,
-		OpenGL = 1,
-		DirectX = 2,
-		Vulkan = 3,
-		Metal = 4
-	};
+	template <typename ApiTy, typename CompTy>
+	concept IsGraphicsApi = std::same_as<ApiTy, CompTy>;
 }
 
 #endif

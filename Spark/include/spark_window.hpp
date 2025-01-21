@@ -5,9 +5,7 @@
 #include "spark_layer.hpp"
 #include "spark_defer.hpp"
 
-#include "spark_gl.hpp"
-#include "spark_vk.hpp"
-#include "spark_dx.hpp"
+#include "spark_graphics_api.hpp"
 
 namespace spark
 {
@@ -67,17 +65,17 @@ namespace spark
 
 		static void Initialize(WindowLayer& wl, const std::string& title, const i32 win_width, const i32 win_height, bool win_vsync)
 		{
-			if constexpr (is_gl)
+			if constexpr (IsGraphicsApi<ApiTy, opengl::GL>)
 			{
 				opengl::GL::Initialize(wl, title, win_width, win_height, win_vsync);
 			}
 
-			else if constexpr (is_dx)
+			else if constexpr (IsGraphicsApi<ApiTy, directx::DX>)
 			{
 				directx::DX::Initialize(wl, title, win_width, win_height, win_vsync);
 			}
 
-			else if constexpr (is_vk)
+			else if constexpr (IsGraphicsApi<ApiTy, vulkan::VK>)
 			{
 
 			}
@@ -85,10 +83,6 @@ namespace spark
 
 	private:		
 		std::unique_ptr<Window> m_window;
-
-		static constexpr bool is_gl = std::is_same_v<ApiTy, opengl::GL>;
-		static constexpr bool is_vk = std::is_same_v<ApiTy, vulkan::VK>;
-		static constexpr bool is_dx = std::is_same_v<ApiTy, directx::DX>;
 
 		friend struct opengl::GL;
 		friend struct vulkan::VK;

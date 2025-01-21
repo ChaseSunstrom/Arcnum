@@ -30,7 +30,14 @@ spark::i32 main()
                 spark::Logger::Logln("Received Blah Event: %d", event->i);
             })
 
+        .Subscribe<Blah>([](spark::Event<Blah>& event)
+            {
+                spark::Logger::Logln("Received Blah Event: %d", event->i * 2);
+            })
+
         .SubmitEvent(Blah{1})
+        .SubmitEvent(Blah{ 2 })
+        .SubmitEvent(Blah{ 3 })
        .Start()
        .SubmitCommand<spark::RenderCommand>({0.2f, 0.3f, 0.4f, 1.0f})
        .Run()

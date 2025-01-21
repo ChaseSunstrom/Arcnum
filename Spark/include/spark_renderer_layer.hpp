@@ -6,6 +6,8 @@
 #include "spark_renderer.hpp"
 #include "spark_command_queue.hpp"
 
+#include "spark_graphics_api.hpp"
+
 #include "opengl/spark_gl_renderer.hpp"
 // #include "vulkan/spark_vk_renderer.hpp"
 // #include "directx/spark_dx_renderer.hpp"
@@ -21,17 +23,17 @@ namespace spark
 		{
 			// Depending on ApiTy, create the correct renderer instance
 			// This is pseudo-coded, you might use if constexpr or specializations
-			if constexpr (std::is_same_v<ApiTy, opengl::GL>)
+			if constexpr (IsGraphicsApi<ApiTy, opengl::GL>)
 			{
 				m_renderer = std::make_unique<opengl::GLRenderer>();
 			}
-			else if constexpr (std::is_same_v<ApiTy, vulkan::VK>)
-			{
-				//m_renderer = std::make_unique<vulkan::VKRenderer>();
-			}
-			else if constexpr (std::is_same_v<ApiTy, directx::DX>)
+			else if constexpr (IsGraphicsApi<ApiTy, directx::DX>)
 			{
 				//m_renderer = std::make_unique<directx::DXRenderer>();
+			}
+			else if constexpr (IsGraphicsApi<ApiTy, vulkan::VK>)
+			{
+				//m_renderer = std::make_unique<vulkan::VKRenderer>();
 			}
 		}
 

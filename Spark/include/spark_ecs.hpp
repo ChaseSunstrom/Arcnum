@@ -3,18 +3,8 @@
 
 #include "spark_pch.hpp"
 
-// Forward declarations
 namespace spark
 {
-    class Coordinator;
-}
-
-namespace spark
-{
-    using usize = std::size_t;
-    using u32 = std::uint32_t;
-    using u64 = std::uint64_t;
-
     constexpr usize MAX_COMPONENTS = 64;
     using ComponentSignature = std::bitset<MAX_COMPONENTS>;
 

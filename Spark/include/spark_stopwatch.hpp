@@ -6,16 +6,14 @@
 
 namespace spark
 {
-    template <typename Ty = f64, typename Duration = std::chrono::milliseconds>
+    template <typename Ty = f64, typename Duration = std::chrono::duration<Ty>>
     class Stopwatch
     {
         static_assert(std::is_floating_point_v<Ty>, "Timer only supports floating-point types.");
 
     public:
         Stopwatch()
-            : m_start_time(Ty(0))
-            , m_end_time(Ty(0))
-            , m_is_running(false)
+            : m_start_time(), m_elapsed_time(Duration::zero()), m_is_running(false)
         {}
 
         void Start()
@@ -23,7 +21,7 @@ namespace spark
             if (!m_is_running)
             {
                 m_is_running = true;
-                m_start_time = GetElapsedDuration();
+                m_start_time = Clock::now();
             }
         }
 
@@ -31,15 +29,15 @@ namespace spark
         {
             if (m_is_running)
             {
-                m_end_time = GetElapsedDuration();
+                auto now = Clock::now();
+                m_elapsed_time += std::chrono::duration_cast<Duration>(now - m_start_time);
                 m_is_running = false;
             }
         }
 
         void Reset()
         {
-            m_start_time = Ty(0);
-            m_end_time = Ty(0);
+            m_elapsed_time = Duration::zero();
             m_is_running = false;
         }
 
@@ -47,24 +45,20 @@ namespace spark
         {
             if (m_is_running)
             {
-                return GetElapsedDuration() - m_start_time;
+                auto now = Clock::now();
+                auto current_elapsed = m_elapsed_time + std::chrono::duration_cast<Duration>(now - m_start_time);
+                return current_elapsed.count();
             }
-            return m_end_time > m_start_time ? m_end_time - m_start_time : Ty(0);
+            return m_elapsed_time.count();
         }
 
         bool IsRunning() const { return m_is_running; }
 
     private:
-        static Ty GetElapsedDuration()
-        {
-            auto current = std::chrono::high_resolution_clock::now().time_since_epoch();
-            auto duration_count = std::chrono::duration_cast<Duration>(current).count();
-            return static_cast<Ty>(duration_count);
-        }
+        using Clock = std::chrono::steady_clock;
 
-    private:
-        Ty m_start_time;
-        Ty m_end_time;
+        Clock::time_point m_start_time;
+        Duration m_elapsed_time;
         bool m_is_running;
     };
 

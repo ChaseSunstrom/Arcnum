@@ -1,5 +1,6 @@
 #define SPARK_USE_GL
 #include "spark.hpp"
+#include "spark_ecs.hpp"
 
 struct TestVertex
 {
@@ -13,6 +14,16 @@ struct Blah
     int i;
 };
 
+struct Blah2
+{
+    int j;
+};
+
+struct Blah3
+{
+    int k;
+};
+
 spark::i32 main()
 {
     auto layout_descriptor = spark::CreateVertexLayout<
@@ -20,6 +31,23 @@ spark::i32 main()
         spark::LayoutDescriptor{"m_j", spark::AttributeType::INT, sizeof(int)}, 
         spark::LayoutDescriptor{"m_k", spark::AttributeType::INT, sizeof(int)}
     >();
+
+    spark::Coordinator coordinator;
+    spark::Stopwatch sw;
+
+    sw.Start();
+    
+    for (int i = 0; i < 10000000; i++)
+    {
+        auto ent = coordinator.CreateEntity();
+        coordinator.AddComponent<Blah>(ent, 1);
+        coordinator.AddComponent<Blah2>(ent, 2);
+        coordinator.AddComponent<Blah3>(ent, 3);
+    }
+
+    sw.Stop();
+
+    spark::Logger::Logln(spark::LogLevel::DEBUG, "%lf", sw.GetElapsedTime());
 
     spark::Logger::Logln(spark::LogLevel::DEBUG, "%u", layout_descriptor.GetStride());
 

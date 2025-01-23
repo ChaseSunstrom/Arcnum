@@ -42,6 +42,43 @@ project "Spark"
         runtime "Release"
         optimize "on"
 
+project "TestMod"
+    location "TestMod"
+    kind "SharedLib"
+    language "C++"
+    cppdialect "C++20"
+
+    targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+    objdir ("obj/" .. outputdir .. "/%{prj.name}")
+
+    files {
+        "TestMod/src/**.cpp",
+        "TestMod/include/**.hpp"
+    }
+
+    includedirs {
+        "Spark/include",
+        "TestMod/include"
+    }
+    
+    links {
+        "Spark"
+    }
+    
+    defines { 
+        "SPARK_EXPORTS",  -- Export symbols for shared library
+        "NOMINMAX",       -- Prevent Windows macros
+        "WIN32_LEAN_AND_MEAN" -- Minimize Windows headers
+    }
+
+    filter "configurations:Debug"
+        runtime "Debug"
+        symbols "on"
+
+    filter "configurations:Release"
+        runtime "Release"
+        optimize "on"
+
 
 -- Main Application Project
 project "Arcnum"
@@ -68,7 +105,7 @@ project "Arcnum"
     }
 
     links {
-        "Spark" -- Default to linking the shared library
+        "Spark", -- Default to linking the shared library
     }
 
     postbuildcommands {

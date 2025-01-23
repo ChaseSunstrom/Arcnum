@@ -37,7 +37,7 @@ spark::i32 main()
 
     sw.Start();
     
-    for (int i = 0; i < 12000000; i++)
+    for (int i = 0; i < 12000; i++)
     {
         auto ent = coordinator.CreateEntity(Blah{1}, Blah2{2}, Blah3{3});
     }
@@ -50,6 +50,7 @@ spark::i32 main()
 
     spark::Application app(spark::GraphicsApi::OPENGL, "Arcnum", 1280, 720);
     app.DeltaTime(60)
+		.LoadMods("mods")
         .Subscribe<Blah>([](spark::Event<Blah>& event)
             {
                 spark::Logger::Logln("Received Blah Event: %d", event->i);

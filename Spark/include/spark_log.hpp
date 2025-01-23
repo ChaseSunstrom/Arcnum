@@ -7,6 +7,10 @@
 #undef DEBUG
 #endif
 
+#ifdef ERROR
+#undef ERROR
+#endif
+
 namespace spark
 {
     // Simple log levels
@@ -15,7 +19,7 @@ namespace spark
         DEBUG,
         INFO,
         WARN,
-        ERROR
+        ERROR,
     };
 
     class SPARK_API Logger

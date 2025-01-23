@@ -11,6 +11,7 @@
 #include "spark_renderer_layer.hpp"
 #include "spark_command_queue.hpp"
 #include "spark_event_layer.hpp"
+#include "special/spark_modding.hpp"
 
 namespace spark
 {
@@ -18,6 +19,7 @@ namespace spark
 	{
 	public:
 		Application(GraphicsApi gapi, const std::string& title, const i32 win_width, const i32 win_height, bool win_vsync = false)
+			: m_mod_manager(this)
 		{
 			m_layer_stack.PushLayer<WindowLayer>(gapi, title, win_width, win_height, win_vsync);
 			m_layer_stack.PushLayer<RendererLayer>(gapi, m_command_queue);
@@ -27,6 +29,12 @@ namespace spark
 		Application& Start()
 		{
 			m_layer_stack.Start();
+			return *this;
+		}
+
+		Application& LoadMods(const std::string& directory)
+		{
+			m_mod_manager.LoadMods(directory);
 			return *this;
 		}
 
@@ -139,6 +147,7 @@ namespace spark
 		LayerStack m_layer_stack;
 		CommandQueue m_command_queue;
 		EventQueue m_event_queue;
+		ModManager m_mod_manager;
 		f32 m_dt = 0;
 	};
 }

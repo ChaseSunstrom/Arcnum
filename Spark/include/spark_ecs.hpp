@@ -2,17 +2,6 @@
 #define SPARK_ECS_HPP
 
 #include "spark_pch.hpp"
-#include <bitset>
-#include <vector>
-#include <unordered_map>
-#include <stack>
-#include <cassert>
-#include <type_traits>
-#include <atomic>
-#include <algorithm>
-#include <tuple>
-#include <functional>
-#include <memory>
 
 namespace spark
 {
@@ -51,7 +40,7 @@ namespace spark
         u32 m_generation;
     };
 
-    namespace Detail
+    namespace detail
     {
         inline u32 GetUniqueTypeID()
         {
@@ -61,9 +50,9 @@ namespace spark
     }
 
     template <typename T>
-    inline u32 GetComponentTypeID() noexcept
+    u32 GetComponentTypeID() noexcept
     {
-        static const u32 type_id = Detail::GetUniqueTypeID();
+        static const u32 type_id = detail::GetUniqueTypeID();
         assert(type_id < MAX_COMPONENTS);
         return type_id;
     }
@@ -293,7 +282,6 @@ namespace spark
                 : m_coordinator(coordinator)
             {
                 ParseFilters<Filters...>();
-                ExtractIncludedTypes<Filters...>();
             }
 
             template <typename Func>
@@ -387,10 +375,6 @@ namespace spark
                 );
             }
 
-            template <typename... Fs>
-            void ExtractIncludedTypes()
-            {
-            }
         };
 
         template <typename... Filters>
@@ -423,10 +407,6 @@ namespace spark
                 return nullptr;
             return static_cast<ComponentPool<T>*>(m_component_pools[type_id].get());
         }
-
-        // Delete move constructor and move assignment to prevent accidental moves
-        Coordinator(Coordinator&&) = default;
-        Coordinator& operator=(Coordinator&&) = default;
 
         std::stack<Entity> m_recycled_entity_ids;
         std::vector<bool> m_active_entities;

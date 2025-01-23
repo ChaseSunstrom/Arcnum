@@ -14,26 +14,24 @@
 
 namespace spark
 {
-	template<typename ApiTy>
 	class RendererLayer : public ILayer
 	{
 	public:
-		RendererLayer(CommandQueue<ApiTy>& command_queue)
+		RendererLayer(GraphicsApi gapi, CommandQueue& command_queue)
 			: m_command_queue(command_queue)
 		{
-			// Depending on ApiTy, create the correct renderer instance
-			// This is pseudo-coded, you might use if constexpr or specializations
-			if constexpr (IsGraphicsApi<ApiTy, opengl::GL>)
+			
+			switch (gapi)
 			{
-				m_renderer = std::make_unique<opengl::GLRenderer>();
-			}
-			else if constexpr (IsGraphicsApi<ApiTy, directx::DX>)
-			{
-				//m_renderer = std::make_unique<directx::DXRenderer>();
-			}
-			else if constexpr (IsGraphicsApi<ApiTy, vulkan::VK>)
-			{
-				//m_renderer = std::make_unique<vulkan::VKRenderer>();
+				case GraphicsApi::OPENGL:
+					m_renderer = std::make_unique<opengl::GLRenderer>();
+					break;
+				case GraphicsApi::DIRECTX:
+					//m_renderer = std::make_unique<directx::DXRenderer>();
+					break;
+				case GraphicsApi::VULKAN:
+					//m_renderer = std::make_unique<vulkan::VKRenderer>();
+					break;
 			}
 		}
 
@@ -71,7 +69,7 @@ namespace spark
 	private:
 		// A pointer to the polymorphic renderer interface
 		std::unique_ptr<IRenderer> m_renderer;
-		CommandQueue<ApiTy>& m_command_queue;
+		CommandQueue& m_command_queue;
 	};
 }
 

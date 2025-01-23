@@ -14,18 +14,13 @@
 
 namespace spark
 {
-	template <typename ApiTy>
-	constexpr bool ValidGraphicsApi = std::is_same_v<ApiTy, opengl::GL> || std::is_same_v<ApiTy, vulkan::VK> || std::is_same_v<ApiTy, directx::DX>;
-
-	template <typename ApiTy>
 	class Application
 	{
-		static_assert(ValidGraphicsApi<ApiTy>, "Application API must be a valid graphics API!");
 	public:
-		Application(const std::string& title, const i32 win_width, const i32 win_height, bool win_vsync = false)
+		Application(GraphicsApi gapi, const std::string& title, const i32 win_width, const i32 win_height, bool win_vsync = false)
 		{
-			m_layer_stack.PushLayer<WindowLayer<ApiTy>>(title, win_width, win_height, win_vsync);
-			m_layer_stack.PushLayer<RendererLayer<ApiTy>>(m_command_queue);
+			m_layer_stack.PushLayer<WindowLayer>(gapi, title, win_width, win_height, win_vsync);
+			m_layer_stack.PushLayer<RendererLayer>(gapi, m_command_queue);
 			m_layer_stack.PushLayer<EventLayer>(m_event_queue);
 		}
 
@@ -125,14 +120,14 @@ namespace spark
 
 	private:
 
-		WindowLayer<ApiTy>& GetWindowLayer()
+		WindowLayer& GetWindowLayer()
 		{
-			return *m_layer_stack.GetLayer<WindowLayer<ApiTy>>();
+			return *m_layer_stack.GetLayer<WindowLayer>();
 		}
 
-		RendererLayer<ApiTy>& GetRendererLayer()
+		RendererLayer& GetRendererLayer()
 		{
-			return *m_layer_stack.GetLayer<RendererLayer<ApiTy>>();
+			return *m_layer_stack.GetLayer<RendererLayer>();
 		}
 
 		EventLayer& GetEventLayer()
@@ -142,7 +137,7 @@ namespace spark
 
 	private:
 		LayerStack m_layer_stack;
-		CommandQueue<ApiTy> m_command_queue;
+		CommandQueue m_command_queue;
 		EventQueue m_event_queue;
 		f32 m_dt = 0;
 	};

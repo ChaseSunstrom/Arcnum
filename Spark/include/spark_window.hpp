@@ -36,18 +36,17 @@ namespace spark
 		WindowData m_data;
 	};
 
-	template <typename ApiTy>
 	class WindowLayer : public ILayer
 	{
 	public:
-		WindowLayer(const std::string& title, const i32 win_width, const i32 win_height, bool win_vsync)
+		WindowLayer(GraphicsApi gapi, const std::string& title, const i32 win_width, const i32 win_height, bool win_vsync)
 		{
-			DeferredState<WindowLayer&, std::string, i32, i32, bool>::Initialize(*this, title, win_width, win_height, win_vsync);
+			DeferredState<WindowLayer&, GraphicsApi, std::string, i32, i32, bool>::Initialize(*this, gapi, title, win_width, win_height, win_vsync);
 		}
 
 		void OnStart() override
 		{
-			DeferredState<WindowLayer&, std::string, i32, i32, bool>::Execute(&WindowLayer::Initialize);
+			DeferredState<WindowLayer&, GraphicsApi, std::string, i32, i32, bool>::Execute(&WindowLayer::Initialize);
 		}
 
 		void OnAttach() override {}
@@ -63,21 +62,19 @@ namespace spark
 			return m_window->IsOpen();
 		}
 
-		static void Initialize(WindowLayer& wl, const std::string& title, const i32 win_width, const i32 win_height, bool win_vsync)
+		static void Initialize(WindowLayer& wl, GraphicsApi gapi, const std::string& title, const i32 win_width, const i32 win_height, bool win_vsync)
 		{
-			if constexpr (IsGraphicsApi<ApiTy, opengl::GL>)
+			switch (gapi)
 			{
+			case GraphicsApi::OPENGL:
 				opengl::GL::Initialize(wl, title, win_width, win_height, win_vsync);
-			}
-
-			else if constexpr (IsGraphicsApi<ApiTy, directx::DX>)
-			{
-				directx::DX::Initialize(wl, title, win_width, win_height, win_vsync);
-			}
-
-			else if constexpr (IsGraphicsApi<ApiTy, vulkan::VK>)
-			{
-
+				break;
+			case GraphicsApi::DIRECTX:
+				//directx::DX::Initialize(wl, title, win_width, win_height, win_vsync);
+				break;
+			case GraphicsApi::VULKAN:
+				//vulkan::VK::Initialize(wl, title, win_width, win_height, win_vsync);
+				break;
 			}
 		}
 

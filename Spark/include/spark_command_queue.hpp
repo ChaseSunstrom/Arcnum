@@ -7,11 +7,9 @@
 
 namespace spark
 {
-    template <typename ApiTy>
     class CommandQueue
     {
     public:
-        
         // Use perfect forwarding for args
         template <ValidCommand T, typename... Args>
         void SubmitCommand(Args&&... args)

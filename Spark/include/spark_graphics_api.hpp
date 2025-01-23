@@ -8,8 +8,12 @@
 
 namespace spark
 {
-	template <typename ApiTy, typename CompTy>
-	concept IsGraphicsApi = std::same_as<ApiTy, CompTy>;
+	enum class GraphicsApi
+	{
+		OPENGL,
+		DIRECTX,
+		VULKAN
+	};
 }
 
 #endif

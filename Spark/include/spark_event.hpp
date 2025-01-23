@@ -196,7 +196,7 @@ namespace spark
         }
 
         // IEvent: figure out which pointer is active, call callback
-        virtual void VisitActive(std::function<void(std::type_index, void*)> callback) override
+    	void VisitActive(std::function<void(std::type_index, void*)> callback) override
         {
             std::visit(
                 [&](auto& sp)

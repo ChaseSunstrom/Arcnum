@@ -37,7 +37,7 @@ spark::i32 main()
 
     sw.Start();
     
-    for (int i = 0; i < 10000000; i++)
+    for (int i = 0; i < 12000000; i++)
     {
         auto ent = coordinator.CreateEntity(Blah{1}, Blah2{2}, Blah3{3});
     }
@@ -48,7 +48,7 @@ spark::i32 main()
 
     spark::Logger::Logln(spark::LogLevel::DEBUG, "%u", layout_descriptor.GetStride());
 
-    spark::Application<spark::opengl::GL> app("Arcnum", 1280, 720);
+    spark::Application app(spark::GraphicsApi::OPENGL, "Arcnum", 1280, 720);
     app.DeltaTime(60)
         .Subscribe<Blah>([](spark::Event<Blah>& event)
             {

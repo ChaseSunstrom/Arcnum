@@ -1,16 +1,8 @@
 #ifndef SPARK_EVENT_HPP
 #define SPARK_EVENT_HPP
 
-#include <memory>
-#include <variant>
-#include <stdexcept>
-#include <functional>
-#include <typeindex>
-#include <iostream>
+#include "spark_pch.hpp"
 
-// -----------------------------------------------------
-// Base interface for all events
-// -----------------------------------------------------
 namespace spark
 {
     struct IEvent

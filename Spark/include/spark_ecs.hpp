@@ -2,18 +2,35 @@
 #define SPARK_ECS_HPP
 
 #include "spark_pch.hpp"
+#include <bitset>
+#include <vector>
+#include <unordered_map>
+#include <stack>
+#include <cassert>
+#include <type_traits>
+#include <atomic>
+#include <algorithm>
+#include <tuple>
+#include <functional>
+#include <memory>
 
 namespace spark
 {
+    using usize = std::size_t;
+    using u32 = uint32_t;
+
     constexpr usize MAX_COMPONENTS = 64;
     using ComponentSignature = std::bitset<MAX_COMPONENTS>;
+
+    class Coordinator;
+    struct IComponentPool;
 
     class Entity
     {
     public:
-        static constexpr u32 InvalidId = 0;
+        static constexpr u32 INVALID_ID = 0;
 
-        Entity() : m_id(InvalidId), m_generation(0) {}
+        Entity() : m_id(INVALID_ID), m_generation(0) {}
         Entity(u32 id, u32 generation) : m_id(id), m_generation(generation) {}
 
         u32 GetId() const { return m_id; }
@@ -34,8 +51,7 @@ namespace spark
         u32 m_generation;
     };
 
-    // TypeID Generator
-    namespace detail
+    namespace Detail
     {
         inline u32 GetUniqueTypeID()
         {
@@ -47,10 +63,28 @@ namespace spark
     template <typename T>
     inline u32 GetComponentTypeID() noexcept
     {
-        static const u32 type_id = detail::GetUniqueTypeID();
-        assert(type_id < MAX_COMPONENTS && "Exceeded maximum number of components");
+        static const u32 type_id = Detail::GetUniqueTypeID();
+        assert(type_id < MAX_COMPONENTS);
         return type_id;
     }
+
+    template <typename T>
+    struct Without { using type = T; };
+
+    template <typename, template <typename> class>
+    struct IsSpecialization : std::false_type {};
+
+    template <typename T, template <typename> class Template>
+    struct IsSpecialization<Template<T>, Template> : std::true_type {};
+
+    template <typename Tuple>
+    struct TupleOfReferences;
+
+    template <typename... Ts>
+    struct TupleOfReferences<std::tuple<Ts...>>
+    {
+        using type = std::tuple<Ts&...>;
+    };
 
     struct IComponentPool
     {
@@ -65,23 +99,21 @@ namespace spark
     public:
         ComponentPool()
         {
-            m_sparse.reserve(1024); // Preallocate
+            m_dense.reserve(1024);
+            m_sparse.reserve(1024);
+            m_sparse.resize(1024, INVALID_INDEX);
         }
 
-        ~ComponentPool() override = default;
-
-        // Add component using entity ID
         template <typename... Args>
         T& AddComponent(u32 entity_id, Args&&... args)
         {
             if (HasComponent(entity_id))
             {
-                Logger::Logln(LogLevel::WARN, "Entity %u already has component: %s", entity_id, typeid(T).name());
                 return m_dense[m_sparse[entity_id]].component;
             }
 
-            if (entity_id >= m_sparse.size())
-                m_sparse.resize(entity_id + 1, InvalidIndex);
+            if (static_cast<usize>(entity_id) >= m_sparse.size())
+                m_sparse.resize(static_cast<usize>(entity_id) + 1, INVALID_INDEX);
 
             m_sparse[entity_id] = m_dense.size();
             m_dense.emplace_back(entity_id, std::forward<Args>(args)...);
@@ -98,37 +130,35 @@ namespace spark
 
             if (index_to_remove != last_index)
             {
-                // Swap with last
                 m_dense[index_to_remove] = std::move(m_dense[last_index]);
                 m_sparse[m_dense[index_to_remove].entity_id] = index_to_remove;
             }
 
             m_dense.pop_back();
-            m_sparse[entity_id] = InvalidIndex;
+            m_sparse[entity_id] = INVALID_INDEX;
         }
 
         bool HasComponent(u32 entity_id) const override
         {
-            return entity_id < m_sparse.size() && m_sparse[entity_id] != InvalidIndex;
+            return static_cast<usize>(entity_id) < m_sparse.size() && m_sparse[entity_id] != INVALID_INDEX;
         }
 
         T& GetComponent(u32 entity_id)
         {
-            assert(HasComponent(entity_id) && "Component not found");
+            assert(HasComponent(entity_id));
             return m_dense[m_sparse[entity_id]].component;
         }
 
         const T& GetComponent(u32 entity_id) const
         {
-            assert(HasComponent(entity_id) && "Component not found");
+            assert(HasComponent(entity_id));
             return m_dense[m_sparse[entity_id]].component;
         }
 
-        // Iterators for component access
-        auto begin() { return m_dense.begin(); }
-        auto end() { return m_dense.end(); }
-        auto begin() const { return m_dense.begin(); }
-        auto end() const { return m_dense.end(); }
+        auto Begin() { return m_dense.begin(); }
+        auto End() { return m_dense.end(); }
+        auto Begin() const { return m_dense.begin(); }
+        auto End() const { return m_dense.end(); }
 
     private:
         struct DenseElement
@@ -136,12 +166,11 @@ namespace spark
             u32 entity_id;
             T component;
 
-            DenseElement(u32 id, T&& comp) : entity_id(id), component(std::move(comp)) {}
             template <typename... Args>
             DenseElement(u32 id, Args&&... args) : entity_id(id), component(std::forward<Args>(args)...) {}
         };
 
-        static constexpr usize InvalidIndex = static_cast<usize>(-1);
+        static constexpr usize INVALID_INDEX = static_cast<usize>(-1);
         std::vector<DenseElement> m_dense;
         std::vector<usize> m_sparse;
     };
@@ -153,50 +182,58 @@ namespace spark
         {
             m_entity_signatures.reserve(1024);
             m_entity_generations.reserve(1024);
+            m_active_entities.reserve(1024);
+            m_component_pools.resize(MAX_COMPONENTS);
         }
 
-        ~Coordinator()
+        // Delete copy constructor and copy assignment to prevent copying unique_ptr
+        Coordinator(const Coordinator&) = delete;
+        Coordinator& operator=(const Coordinator&) = delete;
+
+        template <typename... Components>
+        Entity CreateEntity(Components&&... components)
         {
-            // Clean up component pools
-            for (auto& pool : m_component_pools)
-            {
-                delete pool;
-            }
+            Entity entity = CreateEntity();
+            (AddComponent<Components>(entity, std::forward<Components>(components)), ...);
+            return entity;
         }
 
-        // Entity Management
         Entity CreateEntity()
         {
             if (!m_recycled_entity_ids.empty())
             {
                 Entity recycled = m_recycled_entity_ids.top();
                 m_recycled_entity_ids.pop();
-                m_entity_signatures[recycled.GetId()] = ComponentSignature();
-                return recycled;
+                u32 id = recycled.GetId();
+                m_entity_signatures[id].reset();
+                m_entity_generations[id]++;
+                m_active_entities[id] = true;
+                return Entity(id, m_entity_generations[id]);
             }
 
             u32 new_id = static_cast<u32>(m_entity_generations.size());
-            m_entity_generations.push_back(0);
+            m_entity_generations.emplace_back(0);
             m_entity_signatures.emplace_back();
+            m_active_entities.emplace_back(true);
             return Entity(new_id, 0);
         }
 
         void DestroyEntity(Entity entity)
         {
             u32 id = entity.GetId();
-            if (id == Entity::InvalidId)
+            if (id == Entity::INVALID_ID || id >= m_entity_generations.size())
                 return;
 
             m_entity_signatures[id].reset();
-
             m_entity_generations[id]++;
-            m_recycled_entity_ids.emplace(id, m_entity_generations[id]);
+            m_recycled_entity_ids.emplace(Entity(id, m_entity_generations[id]));
+            m_active_entities[id] = false;
 
-            for (usize i = 0; i < m_component_pools.size(); ++i)
+            for (auto& pool : m_component_pools)
             {
-                if (m_component_pools[i])
+                if (pool && pool->HasComponent(id))
                 {
-                    m_component_pools[i]->RemoveComponent(id);
+                    pool->RemoveComponent(id);
                 }
             }
         }
@@ -205,7 +242,7 @@ namespace spark
         T& AddComponent(Entity entity, Args&&... args)
         {
             u32 id = entity.GetId();
-            auto type_id = GetComponentTypeID<T>();
+            u32 type_id = GetComponentTypeID<T>();
 
             RegisterComponent<T>();
 
@@ -213,7 +250,6 @@ namespace spark
             T& component = pool->AddComponent(id, std::forward<Args>(args)...);
 
             m_entity_signatures[id].set(type_id, true);
-
             return component;
         }
 
@@ -221,7 +257,7 @@ namespace spark
         void RemoveComponent(Entity entity)
         {
             u32 id = entity.GetId();
-            auto type_id = GetComponentTypeID<T>();
+            u32 type_id = GetComponentTypeID<T>();
 
             auto pool = GetComponentPool<T>();
             if (pool && pool->HasComponent(id))
@@ -232,7 +268,7 @@ namespace spark
         }
 
         template <typename T>
-        T& GetComponent(Entity entity)
+        T& GetComponent(Entity entity) const
         {
             u32 id = entity.GetId();
             auto pool = GetComponentPool<T>();
@@ -243,75 +279,160 @@ namespace spark
         bool HasComponent(Entity entity) const
         {
             u32 id = entity.GetId();
-            auto type_id = GetComponentTypeID<T>();
+            if (id >= m_entity_signatures.size())
+                return false;
+            u32 type_id = GetComponentTypeID<T>();
             return m_entity_signatures[id].test(type_id);
         }
 
-        template <typename... Components>
-        std::vector<Entity> QueryEntities()
+        template <typename... Filters>
+        class Query
         {
-            ComponentSignature required_signature;
-            (required_signature.set(GetComponentTypeID<Components>()), ...);
-
-            std::vector<Entity> result;
-            usize entity_count = static_cast<usize>(m_entity_generations.size());
-
-            // Iterate through all entities and match signatures
-            for (usize id = 0; id < entity_count; ++id)
+        public:
+            Query(const Coordinator& coordinator)
+                : m_coordinator(coordinator)
             {
-                // Skip invalid entities
-                if (id == Entity::InvalidId)
-                    continue;
+                ParseFilters<Filters...>();
+                ExtractIncludedTypes<Filters...>();
+            }
 
-                if ((m_entity_signatures[id] & required_signature) == required_signature)
+            template <typename Func>
+            void ForEach(Func func) const
+            {
+                usize entity_count = m_coordinator.m_entity_generations.size();
+
+                for (usize id = 0; id < entity_count; ++id)
                 {
-                    if (m_recycled_entity_ids.empty() || m_recycled_entity_ids.top().GetId() != id)
-                    {
-                        result.emplace_back(id, m_entity_generations[id]);
-                    }
+                    if (!m_coordinator.m_active_entities[id])
+                        continue;
+
+                    const ComponentSignature& signature = m_coordinator.m_entity_signatures[id];
+
+                    if ((signature & m_include_signature) != m_include_signature)
+                        continue;
+
+                    if ((signature & m_exclude_signature).any())
+                        continue;
+
+                    auto components = GetComponents(static_cast<u32>(id));
+                    std::apply([&](auto&... comps) { func(static_cast<u32>(id), comps...); }, components);
                 }
             }
 
-            return result;
-        }
+        private:
+            const Coordinator& m_coordinator;
+            ComponentSignature m_include_signature;
+            ComponentSignature m_exclude_signature;
 
-        // Optimized Query with Archetypes (Optional Extension)
-        // Further optimizations can be implemented here
+            template <typename First, typename... Rest>
+            void ParseFilters()
+            {
+                SetFilter<First>();
+                if constexpr (sizeof...(Rest) > 0)
+                {
+                    ParseFilters<Rest...>();
+                }
+            }
+
+            void ParseFilters() {}
+
+            template <typename Filter>
+            void SetFilter()
+            {
+                if constexpr (IsSpecialization<Filter, Without>::value)
+                {
+                    using T = typename Filter::type;
+                    m_exclude_signature.set(GetComponentTypeID<T>(), true);
+                }
+                else
+                {
+                    m_include_signature.set(GetComponentTypeID<Filter>(), true);
+                }
+            }
+
+            template <typename... Fs>
+            struct ExtractIncluded;
+
+            template <>
+            struct ExtractIncluded<>
+            {
+                using type = std::tuple<>;
+            };
+
+            template <typename First, typename... Rest>
+            struct ExtractIncluded<First, Rest...>
+            {
+                using type = std::conditional_t<
+                    IsSpecialization<First, Without>::value,
+                    typename ExtractIncluded<Rest...>::type,
+                    decltype(std::tuple_cat(std::declval<std::tuple<First>>(), std::declval<typename ExtractIncluded<Rest...>::type>()))>;
+            };
+
+            using IncludedTypesTuple = typename ExtractIncluded<Filters...>::type;
+            using IncludedTypesRefsTuple = typename TupleOfReferences<IncludedTypesTuple>::type;
+
+            IncludedTypesRefsTuple GetComponents(u32 entity_id) const
+            {
+                return GetComponentsTuple<IncludedTypesTuple>(entity_id, std::make_index_sequence<std::tuple_size<IncludedTypesTuple>::value>{});
+            }
+
+            template <typename Tuple, std::size_t... I>
+            auto GetComponentsTuple(u32 entity_id, std::index_sequence<I...>) const
+                -> std::tuple<std::tuple_element_t<I, Tuple>&...>
+            {
+                return std::tuple<std::tuple_element_t<I, Tuple>&...>(
+                    m_coordinator.GetComponent<std::tuple_element_t<I, Tuple>>(
+                        Entity(entity_id, m_coordinator.m_entity_generations[entity_id])
+                    )...
+                );
+            }
+
+            template <typename... Fs>
+            void ExtractIncludedTypes()
+            {
+            }
+        };
+
+        template <typename... Filters>
+        Query<Filters...> CreateQuery() const
+        {
+            return Query<Filters...>(*this);
+        }
 
     private:
         template <typename T>
         void RegisterComponent()
         {
-            auto type_id = GetComponentTypeID<T>();
+            u32 type_id = GetComponentTypeID<T>();
             if (type_id >= m_component_pools.size())
             {
-                m_component_pools.resize(type_id + 1, nullptr);
+                m_component_pools.resize(type_id + 1);
             }
 
             if (!m_component_pools[type_id])
             {
-                m_component_pools[type_id] = new ComponentPool<T>();
+                m_component_pools[type_id] = std::make_unique<ComponentPool<T>>();
             }
         }
 
         template <typename T>
         ComponentPool<T>* GetComponentPool() const
         {
-            auto type_id = GetComponentTypeID<T>();
+            u32 type_id = GetComponentTypeID<T>();
             if (type_id >= m_component_pools.size() || !m_component_pools[type_id])
                 return nullptr;
-            return static_cast<ComponentPool<T>*>(m_component_pools[type_id]);
+            return static_cast<ComponentPool<T>*>(m_component_pools[type_id].get());
         }
 
-        // Entity Recycling with Generation Counts
-        std::stack<Entity> m_recycled_entity_ids;
+        // Delete move constructor and move assignment to prevent accidental moves
+        Coordinator(Coordinator&&) = default;
+        Coordinator& operator=(Coordinator&&) = default;
 
-        // Entity Signatures
+        std::stack<Entity> m_recycled_entity_ids;
+        std::vector<bool> m_active_entities;
         std::vector<ComponentSignature> m_entity_signatures;
         std::vector<u32> m_entity_generations;
-
-        // Component Pools
-        std::vector<IComponentPool*> m_component_pools;
+        std::vector<std::unique_ptr<IComponentPool>> m_component_pools;
     };
 }
 

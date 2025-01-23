@@ -1,16 +1,8 @@
 #ifndef SPARK_EVENT_HPP
 #define SPARK_EVENT_HPP
 
-#include <memory>
-#include <variant>
-#include <stdexcept>
-#include <functional>
-#include <typeindex>
-#include <iostream>
+#include "spark_pch.hpp"
 
-// -----------------------------------------------------
-// Base interface for all events
-// -----------------------------------------------------
 namespace spark
 {
     struct IEvent
@@ -99,14 +91,8 @@ namespace spark
 
     private:
         Variant m_variant;
-    };
-
-
-    // -------------------------------------------------------------
-    // MULTI-TYPE: e.g. Event<WindowEvent, ECSEvent, ...>
-    // -------------------------------------------------------------
-
-    // Some helper concepts from your code
+};
+    
     template <typename T, typename... Us>
     struct IsAnyOf : std::bool_constant<(std::is_same_v<T, Us> || ...)> { };
 
@@ -209,7 +195,7 @@ namespace spark
                     else
                     {
                         // null pointer, pass typeid(X) and nullptr
-                        // (The line below uses 'std::remove_pointer_t' to ensure it’s the correct type)
+                        // (The line below uses 'std::remove_pointer_t' to ensure itâ€™s the correct type)
                         callback(std::type_index(typeid(std::remove_pointer_t<decltype(sp.get())>)), nullptr);
                     }
                 },

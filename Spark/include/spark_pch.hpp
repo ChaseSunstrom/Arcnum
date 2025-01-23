@@ -42,6 +42,7 @@
 #include <regex>
 #include <memory_resource>
 
+#include "spark_defines.hpp"
 #include "spark_types.hpp"
 #include "spark_alloc.hpp"
 #include "spark_log.hpp"

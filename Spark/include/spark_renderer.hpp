@@ -23,7 +23,7 @@ namespace spark
 
 
     // A minimal interface for a renderer that can work with any API
-    class IRenderer
+    class SPARK_API IRenderer
     {
     public:
         virtual ~IRenderer() = default;

@@ -9,7 +9,7 @@ namespace spark
 
 	namespace opengl
 	{
-		struct GL
+		struct SPARK_API GL
 		{
 			static void Initialize(WindowLayer& wl, const std::string& title, const i32 win_width, const i32 win_height, bool win_vsync);
 			static void Shutdown();

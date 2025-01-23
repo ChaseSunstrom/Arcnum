@@ -5,58 +5,45 @@ workspace "Arcnum"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
+-- Shared Library Project
 project "Spark"
     location "Spark"
-    kind "StaticLib"
+    kind "SharedLib"
     language "C++"
     cdialect "C17"
     cppdialect "C++20"
-    
+
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("obj/" .. outputdir .. "/%{prj.name}")
 
     files {
-        "Spark/src/**.c",
-        "Spark/src/**.cpp"
+        "Spark/src/**.cpp",
+        "Spark/include/**.hpp"
     }
 
-
     includedirs {
-        "Spark/include",
+        "Spark/include"
     }
     
     pchheader "spark_pch.hpp"
     pchsource "Spark/src/spark_pch.cpp"
 
     defines { 
-        "AL_LIBTYPE_STATIC",
-        "NOMINMAX",  -- Prevents Windows.h from defining min/max macros
-        "WIN32_LEAN_AND_MEAN"  -- Reduces Windows header bulk
-    }
-
-    links {
-        "d3d11.lib",
-        "d3dcompiler.lib",
-        "dxgi.lib",
-        "opengl32.lib",
-        "winmm.lib",
-        "imm32.lib",
-        "version.lib",
-        "setupapi.lib",
-        "ws2_32.lib",
-        "Avrt.lib"
+        "SPARK_EXPORTS",  -- Export symbols for shared library
+        "NOMINMAX",       -- Prevent Windows macros
+        "WIN32_LEAN_AND_MEAN" -- Minimize Windows headers
     }
 
     filter "configurations:Debug"
-        defines { "DEBUG", "_ITERATOR_DEBUG_LEVEL=2" }
         runtime "Debug"
         symbols "on"
 
     filter "configurations:Release"
-        defines { "NDEBUG", "_ITERATOR_DEBUG_LEVEL=0" }
         runtime "Release"
         optimize "on"
 
+
+-- Main Application Project
 project "Arcnum"
     location "Arcnum"
     kind "ConsoleApp"
@@ -68,25 +55,31 @@ project "Arcnum"
     objdir ("obj/" .. outputdir .. "/%{prj.name}")
 
     files {
-        "Arcnum/src/**.hpp",
         "Arcnum/src/**.cpp",
-        "Arcnum/src/**.c"
+        "Arcnum/src/**.hpp"
     }
 
     includedirs {
-        "Spark/include",
+        "Spark/include"
+    }
+
+    libdirs {
+        "bin/" .. outputdir .. "/Spark", -- For linking shared library
     }
 
     links {
-        "Spark"
+        "Spark" -- Default to linking the shared library
+    }
+
+    postbuildcommands {
+        -- Copy SparkShared.dll to the Arcnum output directory
+        "{COPY} ../bin/" .. outputdir .. "/Spark/*.dll %{cfg.targetdir}"
     }
 
     filter "configurations:Debug"
-        defines "DEBUG"
         runtime "Debug"
         symbols "on"
 
     filter "configurations:Release"
-        defines "NDEBUG"
         runtime "Release"
         optimize "on"

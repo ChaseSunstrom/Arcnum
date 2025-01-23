@@ -5,11 +5,11 @@
 
 namespace spark::opengl
 {
-    class GLRenderer : public IRenderer
+    class SPARK_API GLRenderer : public IRenderer
     {
     public:
         GLRenderer() = default;
-        virtual ~GLRenderer() override = default;
+        ~GLRenderer() override = default;
 
         void Initialize() override;
         void BeginFrame() override;

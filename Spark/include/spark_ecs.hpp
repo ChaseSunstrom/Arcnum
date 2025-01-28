@@ -1,20 +1,7 @@
 #ifndef SPARK_ECS_HPP
 #define SPARK_ECS_HPP
 
-#include <bitset>
-#include <vector>
-#include <memory>
-#include <stack>
-#include <tuple>
-#include <cassert>
-#include <atomic>
-#include <cstdint>
-#include <limits>
-#include <type_traits>
-#include <utility>
-#include <functional>
-#include <new>     
-#include <cstring> // memcpy
+#include "spark_pch.hpp"
 
 namespace spark
 {

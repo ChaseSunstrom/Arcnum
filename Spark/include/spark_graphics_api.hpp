@@ -10,9 +10,10 @@ namespace spark
 {
 	enum class GraphicsApi
 	{
-		OPENGL,
-		DIRECTX,
-		VULKAN
+		INVALID = 0,
+		OPENGL = 1,
+		DIRECTX = 2,
+		VULKAN = 3
 	};
 }
 

@@ -6,7 +6,7 @@
 
 namespace spark
 {
-    struct RenderCommand : public ICommand
+    struct SPARK_API RenderCommand : public ICommand
     {
         f32 sr, sg, sb, sa;
 

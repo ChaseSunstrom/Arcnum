@@ -1,5 +1,11 @@
 #include "spark_pch.hpp"
+#include "spark_log.hpp"
+
 #include "special/spark_modding.hpp"
+
+#ifdef ERROR
+#undef ERROR
+#endif
 
 namespace fs = std::filesystem;
 
@@ -61,12 +67,12 @@ namespace spark
             if (entry.is_regular_file() &&
                 (entry.path().extension() == ".dll" || entry.path().extension() == ".so"))
             {
-                std::cout << "Loading mod: " << entry.path() << std::endl;
+                Logger::Logln(LogLevel::INFO, "Loading mod: %s", entry.path().c_str());
 
                 auto handle = LoadLibrary(entry.path().string());
                 if (!handle)
                 {
-                    std::cerr << "Failed to load library: " << entry.path() << std::endl;
+                    Logger::Logln(LogLevel::ERROR, "Failed to load library: %s", entry.path().c_str());
                     continue;
                 }
 
@@ -79,8 +85,7 @@ namespace spark
 
                 if (!ValidateDependencies(mod_instance))
                 {
-                    std::cerr << "Dependencies not satisfied for mod: "
-                        << mod_instance->GetModName() << std::endl;
+                    Logger::Logln(LogLevel::ERROR, "Dependencies not satisfied for mod: %s", mod_instance->GetModName().c_str());
                     delete mod_instance;
                     UnloadLibrary(handle);
                     continue;
@@ -88,7 +93,7 @@ namespace spark
 
                 mod_instance->OnLoad(m_impl->app);
                 m_impl->loaded_mods[mod_instance->GetModName()] = ModHandle{ handle, mod_instance };
-                std::cout << "Successfully loaded mod: " << mod_instance->GetModName() << std::endl;
+                Logger::Logln(LogLevel::INFO, "Successfully loaded mod: %s", mod_instance->GetModName().c_str());
             }
         }
     }
@@ -148,14 +153,14 @@ namespace spark
 
         if (!create_mod)
         {
-            std::cerr << "Failed to find CreateMod entry point." << std::endl;
+            Logger::Logln(LogLevel::ERROR, "Failed to find CreateMod entry point.");
             return nullptr;
         }
 
         IMod* mod_instance = create_mod();
         if (!mod_instance)
         {
-            std::cerr << "Failed to create mod instance." << std::endl;
+            Logger::Logln(LogLevel::ERROR, "Failed to create mod instance.");
         }
         return mod_instance;
     }
@@ -167,7 +172,7 @@ namespace spark
         {
             if (m_impl->loaded_mods.find(dependency) == m_impl->loaded_mods.end())
             {
-                std::cerr << "Missing dependency: " << dependency << std::endl;
+                Logger::Logln(LogLevel::ERROR, "Missing dependency: %s", dependency.c_str());
                 return false;
             }
         }

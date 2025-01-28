@@ -20,19 +20,7 @@ namespace spark
 		RendererLayer(GraphicsApi gapi, CommandQueue& command_queue)
 			: m_command_queue(command_queue)
 		{
-			
-			switch (gapi)
-			{
-				case GraphicsApi::OPENGL:
-					m_renderer = std::make_unique<opengl::GLRenderer>();
-					break;
-				case GraphicsApi::DIRECTX:
-					//m_renderer = std::make_unique<directx::DXRenderer>();
-					break;
-				case GraphicsApi::VULKAN:
-					//m_renderer = std::make_unique<vulkan::VKRenderer>();
-					break;
-			}
+			SetGraphicsApi(gapi);
 		}
 
 		~RendererLayer() override = default;
@@ -40,6 +28,27 @@ namespace spark
 		void OnAttach() override
 		{
 			m_renderer->Initialize();
+		}
+
+		void SetGraphicsApi(GraphicsApi gapi)
+		{
+			if (m_renderer)
+			{
+				m_renderer.reset();
+			}
+
+			switch (gapi)
+			{
+			case GraphicsApi::OPENGL:
+				m_renderer = std::make_unique<opengl::GLRenderer>();
+				break;
+			case GraphicsApi::DIRECTX:
+				//m_renderer = std::make_unique<directx::DXRenderer>();
+				break;
+			case GraphicsApi::VULKAN:
+				//m_renderer = std::make_unique<vulkan::VKRenderer>();
+				break;
+			}
 		}
 
 		void OnDetach() override

@@ -17,7 +17,7 @@ namespace spark
 		bool vsync;
 	};
 
-	class Window
+	class SPARK_API Window
 	{
 	public:
 		Window(const std::string& title, i32 width, i32 height, bool vsync = false);
@@ -36,7 +36,7 @@ namespace spark
 		WindowData m_data;
 	};
 
-	class WindowLayer : public ILayer
+	class SPARK_API WindowLayer : public ILayer
 	{
 	public:
 		WindowLayer(GraphicsApi gapi, const std::string& title, const i32 win_width, const i32 win_height, bool win_vsync)
@@ -60,6 +60,21 @@ namespace spark
 		bool Running() const
 		{
 			return m_window->IsOpen();
+		}
+
+		void SetGraphicsApi(GraphicsApi gapi)
+		{
+			if (!m_window)
+				return;
+
+			i32 width = m_window->GetWidth();
+			i32 height = m_window->GetHeight();
+			std::string title = m_window->GetTitle();
+			bool vsync = m_window->IsVSync();
+
+			m_window.reset();
+
+			Initialize(*this, gapi, title, width, height, vsync);
 		}
 
 		static void Initialize(WindowLayer& wl, GraphicsApi gapi, const std::string& title, const i32 win_width, const i32 win_height, bool win_vsync)

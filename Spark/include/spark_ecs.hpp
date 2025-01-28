@@ -137,7 +137,6 @@ namespace spark
             : m_signature(signature)
             , m_capacity_bytes(chunk_size_bytes)
         {
-            // Initialize the type map to -1 for fast "not found" checks
             for (int i = 0; i < MAX_COMPONENTS; ++i)
             {
                 m_type_map[i] = -1;
@@ -148,18 +147,15 @@ namespace spark
         {
             m_type_ids.clear();
             m_type_sizes.clear();
+            m_component_offsets.clear();
 
-            // Sum up the sizes of each active bit
+            // Calculate total_size_per_entity, gather TIDs
             usize total_size_per_entity = 0;
             for (u32 tid = 0; tid < MAX_COMPONENTS; ++tid)
             {
                 if (m_signature.test(tid))
                 {
                     usize sz = g_type_sizes[tid];
-                    if (sz == 0)
-                    {
-                        // Could log warning or handle error
-                    }
                     m_type_ids.push_back(tid);
                     m_type_sizes.push_back(sz);
                     total_size_per_entity += sz;
@@ -168,7 +164,6 @@ namespace spark
 
             if (total_size_per_entity == 0)
             {
-                // empty signature => can hold "arbitrary" number
                 m_capacity_entities = m_capacity_bytes;
             }
             else
@@ -179,16 +174,18 @@ namespace spark
             m_entities.resize(m_capacity_entities);
             m_entity_count = 0;
 
-            // For each type, allocate a SoA array
-            m_component_arrays.resize(m_type_ids.size());
+            // We now allocate one big buffer:
+            m_data.resize(m_capacity_entities * total_size_per_entity);
+            m_component_offsets.resize(m_type_ids.size());
+
+            // Compute offsets for each component within an "entity record"
+            usize running_offset = 0;
             for (usize i = 0; i < m_type_ids.size(); ++i)
             {
-                usize needed = m_capacity_entities * m_type_sizes[i];
-                m_component_arrays[i].resize(needed);
-
-                // Fill the map so we can do O(1) lookups for each tid
                 u32 tid = m_type_ids[i];
                 m_type_map[tid] = static_cast<int>(i);
+                m_component_offsets[i] = running_offset;
+                running_offset += m_type_sizes[i];
             }
         }
 
@@ -209,19 +206,18 @@ namespace spark
 
         usize AddEntity(Entity e)
         {
-            usize idx = m_entity_count;
-            m_entity_count++;
+            const usize idx = m_entity_count++;
             m_entities[idx] = e;
             return idx;
         }
 
         void RemoveEntity(usize idx)
         {
-            usize last_idx = m_entity_count - 1;
+            const usize last_idx = m_entity_count - 1;
             if (idx != last_idx)
             {
                 m_entities[idx] = m_entities[last_idx];
-                // For each active type, do swap
+                // Swap each component's data
                 for (usize i = 0; i < m_type_ids.size(); ++i)
                 {
                     SwapData(i, idx, last_idx);
@@ -230,16 +226,23 @@ namespace spark
             m_entity_count--;
         }
 
+        // The SoA "array" for component i is effectively:
+        //   base pointer = &m_data[ m_component_offsets[i] + (index * m_type_sizes[i]) ]
+        // A swap or copy is just memmove or byte copying.
+
         void SwapData(usize arr_index, usize idx_a, usize idx_b)
         {
             if (idx_a == idx_b)
             {
                 return;
             }
-            usize sz = m_type_sizes[arr_index];
-            std::byte* arr = m_component_arrays[arr_index].data();
-            std::byte* A = arr + (idx_a * sz);
-            std::byte* B = arr + (idx_b * sz);
+            const usize sz = m_type_sizes[arr_index];
+            const usize offset = m_component_offsets[arr_index];
+            std::byte* base = m_data.data();
+
+            std::byte* A = base + offset + idx_a * sz;
+            std::byte* B = base + offset + idx_b * sz;
+
             for (usize i = 0; i < sz; ++i)
             {
                 std::byte tmp = A[i];
@@ -250,15 +253,18 @@ namespace spark
 
         void CopyTo(usize idx_src, Chunk* dst_chunk, usize idx_dst) const
         {
-            // We assume same signature => same m_type_ids ordering
+            // We assume same signature => same ordering of m_type_ids
             for (usize i = 0; i < m_type_ids.size(); ++i)
             {
                 u32 tid = m_type_ids[i];
                 CopyFn fn = g_copy_fns[tid];
                 usize sz = m_type_sizes[i];
 
-                const void* s_ptr = &m_component_arrays[i][idx_src * sz];
-                void* d_ptr = &dst_chunk->m_component_arrays[i][idx_dst * sz];
+                const usize src_offset = m_component_offsets[i] + idx_src * sz;
+                const usize dst_offset = dst_chunk->m_component_offsets[i] + idx_dst * sz;
+
+                const void* s_ptr = &m_data[src_offset];
+                void* d_ptr = &dst_chunk->m_data[dst_offset];
 
                 if (fn)
                 {
@@ -273,24 +279,28 @@ namespace spark
 
         void* GetComponentData(u32 tid, usize idx)
         {
-            int arr_index = m_type_map[tid];
-            if (arr_index < 0)
-            {
-                return nullptr; // not found
-            }
-            usize sz = m_type_sizes[arr_index];
-            return &m_component_arrays[arr_index][idx * sz];
-        }
-
-        const void* GetComponentData(u32 tid, usize idx) const
-        {
-            int arr_index = m_type_map[tid];
+            const int arr_index = m_type_map[tid];
             if (arr_index < 0)
             {
                 return nullptr;
             }
+            std::byte* base = m_data.data();
+            usize offset = m_component_offsets[arr_index];
             usize sz = m_type_sizes[arr_index];
-            return &m_component_arrays[arr_index][idx * sz];
+            return &base[offset + idx * sz];
+        }
+
+        const void* GetComponentData(u32 tid, usize idx) const
+        {
+            const int arr_index = m_type_map[tid];
+            if (arr_index < 0)
+            {
+                return nullptr;
+            }
+            const std::byte* base = m_data.data();
+            usize offset = m_component_offsets[arr_index];
+            usize sz = m_type_sizes[arr_index];
+            return &base[offset + idx * sz];
         }
 
         const ComponentSignature& GetSignature() const
@@ -309,15 +319,24 @@ namespace spark
         usize m_capacity_entities = 0;
         usize m_entity_count = 0;
 
-        // SoA arrays
-        std::vector<u32> m_type_ids;  // which TIDs are in this chunk
+        // Single data buffer
+        std::vector<std::byte> m_data;
+
+        // For each type in this chunk, we store a start offset for that type
+        //   within an entity's "slice" in m_data
+        std::vector<usize> m_component_offsets;
+
+        // So we know how big each type is
+        std::vector<u32> m_type_ids;
         std::vector<usize> m_type_sizes;
-        std::vector<std::vector<std::byte>> m_component_arrays;
+
+        // Entities
         std::vector<Entity> m_entities;
 
-        // Fast lookup: tid -> index in m_component_arrays (or -1 if not present)
-        int m_type_map[MAX_COMPONENTS];
+        // tid -> index in m_type_ids (or -1 if not present)
+        i32  m_type_map[MAX_COMPONENTS];
     };
+
 
     class Archetype
     {

@@ -17,12 +17,14 @@ namespace spark
         static constexpr u32 INVALID_ID = 0;
 
         Entity()
-            : m_id(INVALID_ID), m_generation(0)
+            : m_id(INVALID_ID)
+            , m_generation(0)
         {
         }
 
         Entity(u32 id, u32 generation)
-            : m_id(id), m_generation(generation)
+            : m_id(id)
+            , m_generation(generation)
         {
         }
 
@@ -52,7 +54,7 @@ namespace spark
     };
 
     // ------------------------------------------------------------------------
-    // get_component_type_id
+    // GetComponentTypeID
     // ------------------------------------------------------------------------
     namespace detail
     {
@@ -97,7 +99,7 @@ namespace spark
         using type = std::tuple<Ts&...>;
     };
 
-    using CopyFn = void(*)(const void* src, void* dst);
+    using CopyFn = void (*)(const void* src, void* dst);
 
     template <typename T>
     void CopyComponentFn(const void* s, void* d)
@@ -107,6 +109,7 @@ namespace spark
         *dst = *src;
     }
 
+    // Global arrays for all component types:
     static inline CopyFn g_copy_fns[MAX_COMPONENTS] = { nullptr };
     static inline usize g_type_sizes[MAX_COMPONENTS] = { 0 };
 
@@ -134,6 +137,11 @@ namespace spark
             : m_signature(signature)
             , m_capacity_bytes(chunk_size_bytes)
         {
+            // Initialize the type map to -1 for fast "not found" checks
+            for (int i = 0; i < MAX_COMPONENTS; ++i)
+            {
+                m_type_map[i] = -1;
+            }
         }
 
         void InitLayout()
@@ -150,7 +158,7 @@ namespace spark
                     usize sz = g_type_sizes[tid];
                     if (sz == 0)
                     {
-                        // warn or fallback
+                        // Could log warning or handle error
                     }
                     m_type_ids.push_back(tid);
                     m_type_sizes.push_back(sz);
@@ -169,6 +177,7 @@ namespace spark
             }
 
             m_entities.resize(m_capacity_entities);
+            m_entity_count = 0;
 
             // For each type, allocate a SoA array
             m_component_arrays.resize(m_type_ids.size());
@@ -176,6 +185,10 @@ namespace spark
             {
                 usize needed = m_capacity_entities * m_type_sizes[i];
                 m_component_arrays[i].resize(needed);
+
+                // Fill the map so we can do O(1) lookups for each tid
+                u32 tid = m_type_ids[i];
+                m_type_map[tid] = static_cast<int>(i);
             }
         }
 
@@ -219,7 +232,10 @@ namespace spark
 
         void SwapData(usize arr_index, usize idx_a, usize idx_b)
         {
-            if (idx_a == idx_b) return;
+            if (idx_a == idx_b)
+            {
+                return;
+            }
             usize sz = m_type_sizes[arr_index];
             std::byte* arr = m_component_arrays[arr_index].data();
             std::byte* A = arr + (idx_a * sz);
@@ -234,7 +250,7 @@ namespace spark
 
         void CopyTo(usize idx_src, Chunk* dst_chunk, usize idx_dst) const
         {
-            // We assume same signature => same m_type_ids
+            // We assume same signature => same m_type_ids ordering
             for (usize i = 0; i < m_type_ids.size(); ++i)
             {
                 u32 tid = m_type_ids[i];
@@ -257,29 +273,34 @@ namespace spark
 
         void* GetComponentData(u32 tid, usize idx)
         {
-            // linear search over m_type_ids
-            for (usize i = 0; i < m_type_ids.size(); ++i)
+            int arr_index = m_type_map[tid];
+            if (arr_index < 0)
             {
-                if (m_type_ids[i] == tid)
-                {
-                    usize sz = m_type_sizes[i];
-                    return &m_component_arrays[i][idx * sz];
-                }
+                return nullptr; // not found
             }
-            return nullptr; // not found
+            usize sz = m_type_sizes[arr_index];
+            return &m_component_arrays[arr_index][idx * sz];
         }
 
         const void* GetComponentData(u32 tid, usize idx) const
         {
-            for (usize i = 0; i < m_type_ids.size(); ++i)
+            int arr_index = m_type_map[tid];
+            if (arr_index < 0)
             {
-                if (m_type_ids[i] == tid)
-                {
-                    usize sz = m_type_sizes[i];
-                    return &m_component_arrays[i][idx * sz];
-                }
+                return nullptr;
             }
-            return nullptr;
+            usize sz = m_type_sizes[arr_index];
+            return &m_component_arrays[arr_index][idx * sz];
+        }
+
+        const ComponentSignature& GetSignature() const
+        {
+            return m_signature;
+        }
+
+        const std::vector<Entity>& GetEntities() const
+        {
+            return m_entities;
         }
 
     private:
@@ -289,10 +310,13 @@ namespace spark
         usize m_entity_count = 0;
 
         // SoA arrays
-        std::vector<u32>   m_type_ids;
+        std::vector<u32> m_type_ids;  // which TIDs are in this chunk
         std::vector<usize> m_type_sizes;
         std::vector<std::vector<std::byte>> m_component_arrays;
         std::vector<Entity> m_entities;
+
+        // Fast lookup: tid -> index in m_component_arrays (or -1 if not present)
+        int m_type_map[MAX_COMPONENTS];
     };
 
     class Archetype
@@ -311,14 +335,14 @@ namespace spark
 
         std::pair<Chunk*, usize> AddEntity(Entity e)
         {
-            Chunk* last = &m_chunks.back();
-            if (!last->HasSpace())
+            Chunk& last = m_chunks.back();
+            if (!last.HasSpace())
             {
                 AddChunk();
-                last = &m_chunks.back();
             }
-            usize idx = last->AddEntity(e);
-            return { last, idx };
+            Chunk& chunk_ref = m_chunks.back();
+            usize idx = chunk_ref.AddEntity(e);
+            return { &chunk_ref, idx };
         }
 
         void RemoveEntity(Chunk* chunk_ptr, usize idx_in_chunk)
@@ -348,6 +372,7 @@ namespace spark
             m_chunks.back().InitLayout();
         }
 
+    private:
         ComponentSignature m_signature;
         std::vector<Chunk> m_chunks;
     };
@@ -356,7 +381,7 @@ namespace spark
     {
         Archetype* archetype_ptr = nullptr;
         Chunk* chunk_ptr = nullptr;
-        usize      index_in_chunk = 0;
+        usize index_in_chunk = 0;
     };
 
     class Coordinator
@@ -388,8 +413,6 @@ namespace spark
                 auto [chunk_ptr, idx] = arch->AddEntity(e);
 
                 FillComponents<Components...>(chunk_ptr, idx, std::forward<Components>(comps)...);
-
-                // CHANGED: Use vector instead of map
                 SetEntityLocation(e.GetId(), { arch, chunk_ptr, idx });
             }
             else
@@ -409,20 +432,21 @@ namespace spark
         {
             u32 id = e.GetId();
             if (id == Entity::INVALID_ID || id >= m_entity_generations.size())
+            {
                 return;
+            }
 
+            // Invalidate entity, recycle ID
             m_entity_generations[id]++;
             m_active_entities[id] = false;
             m_recycled_ids.push(e);
 
-            // CHANGED: no map lookup, check if ID is in range
             if (id < m_entity_locations.size())
             {
                 EntityLocation& loc = m_entity_locations[id];
                 if (loc.archetype_ptr)
                 {
                     loc.archetype_ptr->RemoveEntity(loc.chunk_ptr, loc.index_in_chunk);
-                    // Mark location as invalid
                     loc.archetype_ptr = nullptr;
                 }
             }
@@ -435,11 +459,10 @@ namespace spark
             InitTypeIfNeeded<T>();
 
             u32 id = e.GetId();
-            // Ensure ID is valid in the vector
             if (id >= m_entity_locations.size())
             {
-                // If the entity wasn't in range, something's off. Possibly throw or expand
-                return *reinterpret_cast<T*>(nullptr); // or handle error
+                // This shouldn't happen unless the Entity is invalid or we've not resized properly
+                throw std::runtime_error("Invalid entity ID in AddComponent.");
             }
             EntityLocation old_loc = m_entity_locations[id];
             Archetype* old_arch = old_loc.archetype_ptr;
@@ -448,26 +471,29 @@ namespace spark
             u32 tid = GetComponentTypeID<T>();
             if (old_sig.test(tid))
             {
-                // already has T
+                // Already has T, return reference
                 return GetComponentRef<T>(old_loc);
             }
 
-            // new sig
+            // Build new signature
             ComponentSignature new_sig = old_sig;
             new_sig.set(tid, true);
 
+            // Move to new archetype
             Archetype* new_arch = GetOrCreateArchetype(new_sig);
-
-            // remove from old
-            old_arch->RemoveEntity(old_loc.chunk_ptr, old_loc.index_in_chunk);
-
             auto [new_chunk, new_idx] = new_arch->AddEntity(e);
+
+            // Copy old data
             old_arch->CopyEntity(old_loc.chunk_ptr, old_loc.index_in_chunk, new_chunk, new_idx);
 
-            // set T
+            // Remove from old
+            old_arch->RemoveEntity(old_loc.chunk_ptr, old_loc.index_in_chunk);
+
+            // Construct T in place
             T tmp{ std::forward<Args>(args)... };
             SetComponentInChunk<T>(new_chunk, new_idx, tmp);
 
+            // Update location
             EntityLocation new_loc;
             new_loc.archetype_ptr = new_arch;
             new_loc.chunk_ptr = new_chunk;
@@ -481,10 +507,16 @@ namespace spark
         void RemoveComponent(Entity e)
         {
             u32 id = e.GetId();
-            if (id >= m_entity_locations.size()) return;
+            if (id >= m_entity_locations.size())
+            {
+                return;
+            }
 
             EntityLocation old_loc = m_entity_locations[id];
-            if (!old_loc.archetype_ptr) return;
+            if (!old_loc.archetype_ptr)
+            {
+                return;
+            }
 
             Archetype* old_arch = old_loc.archetype_ptr;
             ComponentSignature old_sig = old_arch->GetSignature();
@@ -495,14 +527,15 @@ namespace spark
                 // doesn't have T
                 return;
             }
+
             ComponentSignature new_sig = old_sig;
             new_sig.set(tid, false);
 
             Archetype* new_arch = GetOrCreateArchetype(new_sig);
-            old_arch->RemoveEntity(old_loc.chunk_ptr, old_loc.index_in_chunk);
-
             auto [new_chunk, new_idx] = new_arch->AddEntity(e);
+
             old_arch->CopyEntity(old_loc.chunk_ptr, old_loc.index_in_chunk, new_chunk, new_idx);
+            old_arch->RemoveEntity(old_loc.chunk_ptr, old_loc.index_in_chunk);
 
             m_entity_locations[id] = { new_arch, new_chunk, new_idx };
         }
@@ -511,7 +544,6 @@ namespace spark
         T& GetComponent(Entity e)
         {
             u32 id = e.GetId();
-            // fetch location from vector
             EntityLocation& loc = m_entity_locations[id];
             return GetComponentRef<T>(loc);
         }
@@ -520,53 +552,100 @@ namespace spark
         bool HasComponent(Entity e) const
         {
             u32 id = e.GetId();
-            if (id >= m_entity_locations.size()) return false;
+            if (id >= m_entity_locations.size())
+            {
+                return false;
+            }
             const EntityLocation& loc = m_entity_locations[id];
-            if (!loc.archetype_ptr) return false;
+            if (!loc.archetype_ptr)
+            {
+                return false;
+            }
             return loc.archetype_ptr->GetSignature().test(GetComponentTypeID<T>());
         }
 
+        // ----------------------------------------------------------
+// Query
+// ----------------------------------------------------------
+        // --------------------------------------------------------------------------
+// Query: collects chunks, then iterates them efficiently
+// --------------------------------------------------------------------------
         template <typename... Filters>
         class Query
         {
         public:
+            template <typename... Fs>
+            struct ExtractIncluded;
+
+            template <>
+            struct ExtractIncluded<>
+            {
+                using type = std::tuple<>;
+            };
+
+            template <typename First, typename... Rest>
+            struct ExtractIncluded<First, Rest...>
+            {
+            private:
+                using Tail = typename ExtractIncluded<Rest...>::type;
+
+            public:
+                using type = std::conditional_t<
+                    IsSpecialization<First, Without>::value,
+                    Tail,
+                    decltype(std::tuple_cat(std::declval<std::tuple<First>>(), std::declval<Tail>()))
+                >;
+            };
+
+            using IncludedTypes = typename ExtractIncluded<Filters...>::type;
+
+            struct ChunkView
+            {
+                Chunk* m_chunk = nullptr;
+                const Entity* m_entity_array = nullptr;
+                usize m_count = 0;
+
+                // For each included type: pointer to array base + size
+                std::array<std::byte*, std::tuple_size<IncludedTypes>::value> m_arrays;
+                std::array<usize, std::tuple_size<IncludedTypes>::value> m_sizes;
+            };
+
             Query(const Coordinator& c)
                 : m_coord(c)
             {
                 ParseFilters<Filters...>();
-                // gather matching archetypes
+
+                // gather archetypes that match
                 for (auto& kv : m_coord.m_archetypes)
                 {
-                    const ComponentSignature& sig = kv.first;
-                    if ((sig & m_include_sig) == m_include_sig)
+                    const auto& arch_sig = kv.first;
+                    if ((arch_sig & m_include_sig) == m_include_sig)
                     {
-                        if ((sig & m_exclude_sig).any())
+                        if ((arch_sig & m_exclude_sig).any())
                             continue;
-                        m_archetypes.push_back(kv.second.get());
+
+                        // Gather chunk data
+                        Archetype* arch = kv.second.get();
+                        GatherChunkViews(arch);
                     }
                 }
             }
 
+            // ForEach: pass (entityId, T1&, T2&, ...) to func
             template <typename Func>
-            void ForEach(Func func) const
+            void ForEach(Func func)
             {
-                for (auto* arch : m_archetypes)
+                for (auto& cv : m_chunk_views)
                 {
-                    for (auto& chunk : arch->GetChunks())
+                    const Entity* entity_array = cv.m_entity_array;
+                    usize count = cv.m_count;
+
+                    for (usize i = 0; i < count; ++i)
                     {
-                        usize count = chunk.Size();
-                        for (usize i = 0; i < count; ++i)
-                        {
-                            Entity e = chunk.GetEntity(i);
-                            auto comps = GetComps(e, &chunk, i);
-                            std::apply(
-                                [&](auto&... refs)
-                                {
-                                    func(e.GetId(), refs...);
-                                },
-                                comps
-                            );
-                        }
+                        Entity e = entity_array[i];
+                        // Expand references to each included component
+                        CallFunc(e, func, cv, i,
+                            std::make_index_sequence<std::tuple_size<IncludedTypes>::value>{});
                     }
                 }
             }
@@ -581,6 +660,7 @@ namespace spark
                     ParseFilters<Rest...>();
                 }
             }
+
             void ParseFilters() {}
 
             template <typename F>
@@ -597,46 +677,54 @@ namespace spark
                 }
             }
 
-            template <typename... Fs>
-            struct ExtractIncluded;
-
-            template <>
-            struct ExtractIncluded<>
+            void GatherChunkViews(Archetype* arch)
             {
-                using type = std::tuple<>;
-            };
+                // We can iterate non-const to get non-const chunk pointers
+                for (auto& chunk : arch->GetChunks())
+                {
+                    if (chunk.Size() == 0)
+                        continue;
 
-            template <typename First, typename... Rest>
-            struct ExtractIncluded<First, Rest...>
-            {
-            private:
-                using tail = typename ExtractIncluded<Rest...>::type;
-            public:
-                using type = std::conditional_t<
-                    IsSpecialization<First, Without>::value,
-                    tail,
-                    decltype(std::tuple_cat(std::declval<std::tuple<First>>(), std::declval<tail>()))>;
-            };
+                    ChunkView cv;
+                    cv.m_chunk = &chunk;
+                    cv.m_entity_array = chunk.GetEntities().data();
+                    cv.m_count = chunk.Size();
 
-            using IncludedTypes = typename ExtractIncluded<Filters...>::type;
-            using IncludedRefs = typename TupleOfReferences<IncludedTypes>::type;
+                    FillChunkViewArrays(cv,
+                        std::make_index_sequence<std::tuple_size<IncludedTypes>::value>{});
 
-            IncludedRefs GetComps(Entity e, const Chunk* c, usize idx) const
-            {
-                return GetCompsTuple<IncludedTypes>(c, idx,
-                    std::make_index_sequence<std::tuple_size<IncludedTypes>::value>{});
+                    m_chunk_views.emplace_back(cv);
+                }
             }
 
-            template <typename Tuple, std::size_t... I>
-            auto GetCompsTuple(const Chunk* c, usize idx, std::index_sequence<I...>) const
-                -> std::tuple<std::tuple_element_t<I, Tuple>&...>
+            template <size_t... I>
+            void FillChunkViewArrays(ChunkView& cv, std::index_sequence<I...>)
             {
-                return std::tuple<std::tuple_element_t<I, Tuple>&...>(
-                    *reinterpret_cast<std::tuple_element_t<I, Tuple>*>(
-                        const_cast<void*>(
-                            c->GetComponentData(GetComponentTypeID<std::tuple_element_t<I, Tuple>>(), idx)
-                            )
-                        )...
+                (FillOneArray<I, std::tuple_element_t<I, IncludedTypes>>(cv), ...);
+            }
+
+            template <size_t IDX, typename T>
+            void FillOneArray(ChunkView& cv)
+            {
+                u32 tid = GetComponentTypeID<T>();
+                // Use non-const GetComponentData => returns void*
+                void* base_ptr = cv.m_chunk->GetComponentData(tid, 0);
+                cv.m_arrays[IDX] = static_cast<std::byte*>(base_ptr);
+                cv.m_sizes[IDX] = g_type_sizes[tid];
+            }
+
+            // CallFunc: create references for each T from ChunkView => pass to Func
+            template <typename Func, size_t... I>
+            void CallFunc(const Entity& e,
+                Func& func,
+                const ChunkView& cv,
+                usize idx,
+                std::index_sequence<I...>)
+            {
+                func(
+                    e.GetId(),
+                    *reinterpret_cast<std::tuple_element_t<I, IncludedTypes>*>(
+                        cv.m_arrays[I] + idx * cv.m_sizes[I])...
                 );
             }
 
@@ -644,9 +732,10 @@ namespace spark
             const Coordinator& m_coord;
             ComponentSignature m_include_sig;
             ComponentSignature m_exclude_sig;
-            std::vector<Archetype*> m_archetypes;
+            std::vector<ChunkView> m_chunk_views;
         };
 
+        // Query builder
         template <typename... Fs>
         Query<Fs...> CreateQuery() const
         {
@@ -658,8 +747,8 @@ namespace spark
 
         // Freed IDs
         std::stack<Entity> m_recycled_ids;
-        std::vector<bool>  m_active_entities;
-        std::vector<u32>   m_entity_generations;
+        std::vector<bool> m_active_entities;
+        std::vector<u32> m_entity_generations;
 
         // Archetypes by signature
         std::unordered_map<ComponentSignature, std::unique_ptr<Archetype>> m_archetypes;

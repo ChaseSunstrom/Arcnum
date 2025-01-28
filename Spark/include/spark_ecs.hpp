@@ -18,9 +18,6 @@
 
 namespace spark
 {
-    using u32 = std::uint32_t;
-    using usize = std::size_t;
-
     constexpr usize MAX_COMPONENTS = 64;
     using ComponentSignature = std::bitset<MAX_COMPONENTS>;
 

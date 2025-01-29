@@ -669,6 +669,16 @@ namespace spark
                 }
             }
 
+            usize Size()
+            {
+				usize total = 0;
+				for (auto& cv : m_chunk_views)
+				{
+					total += cv.m_count;
+				}
+				return total;
+            }
+
         private:
             template <typename First, typename... Rest>
             void ParseFilters()
@@ -841,6 +851,9 @@ namespace spark
             m_entity_locations[id] = loc;
         }
     };
+
+    template <typename... Filters>
+    using Query = Coordinator::Query<Filters...>;
 }
 
 #endif // SPARK_ECS_HPP

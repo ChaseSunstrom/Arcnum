@@ -3,10 +3,6 @@
 
 #include "spark_pch.hpp"
 
-#include <bitset>
-#include <functional>
-
-
 namespace spark
 {
     constexpr usize MAX_COMPONENTS = 64;

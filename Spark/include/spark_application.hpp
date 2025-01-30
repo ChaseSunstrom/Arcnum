@@ -1,5 +1,3 @@
-// spark_application.hpp
-
 #ifndef SPARK_APPLICATION_HPP
 #define SPARK_APPLICATION_HPP
 

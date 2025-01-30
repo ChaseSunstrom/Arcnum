@@ -64,35 +64,49 @@ namespace spark
     struct FunctionTraits<T, std::void_t<decltype(&T::operator())>>
         : FunctionTraits<decltype(&T::operator())> {};
 
-    // Helper to determine if a type is a spark::Query
+    // Helper to determine if a type is a Query
     template<typename T>
     struct IsSparkQuery : std::false_type {};
 
     template<typename... Ts>
-    struct IsSparkQuery<spark::Query<Ts...>> : std::true_type {};
+    struct IsSparkQuery<Query<Ts...>> : std::true_type {};
+
+    // Helper to check if a type is an Event
+    template<typename T>
+    struct IsEvent : std::false_type {};
+
+    template<typename... Ts>
+    struct IsEvent<Event<Ts...>> : std::true_type {};
 
     template<typename T>
     struct ParamTrait
     {
         using Decayed = std::remove_cv_t<std::remove_reference_t<T>>;
 
-        static constexpr bool is_application = std::is_same_v<Decayed, spark::Application>;
-        static constexpr bool is_coordinator = std::is_same_v<Decayed, spark::Coordinator>;
+        static constexpr bool is_application = std::is_same_v<Decayed, Application>;
+        static constexpr bool is_coordinator = std::is_same_v<Decayed, Coordinator>;
         static constexpr bool is_query = IsSparkQuery<Decayed>::value;
-        static constexpr bool is_resource = !is_application && !is_coordinator && !is_query;
+        static constexpr bool is_event = IsEvent<Decayed>::value;
+        static constexpr bool is_resource = !is_application && !is_coordinator && !is_query && !is_event;
     };
 
     template<typename T>
     struct QueryComponents;
 
     template<typename... Ts>
-    struct QueryComponents<spark::Query<Ts...>>
+    struct QueryComponents<Query<Ts...>>
     {
-        static spark::Query<Ts...> Get(spark::Coordinator& coord)
+        static Query<Ts...> Get(Coordinator& coord)
         {
             return coord.template CreateQuery<Ts...>();
         }
     };
+
+
+    template <size_t... Is, typename F>
+    void for_sequence(std::index_sequence<Is...>, F&& f) {
+        (f(std::integral_constant<size_t, Is>{}), ...);
+    }
 
     // Removed the faulty specialization:
     // template<typename... Ts>
@@ -102,14 +116,14 @@ namespace spark
     {
         // Primary ComputeArgument that selects the correct overload
         template<typename Arg>
-        Arg ComputeArgument(spark::Application& app);
+        Arg ComputeArgument(Application& app);
         // Overload for non-Query types
         template<typename Arg>
-        Arg ComputeArgument(spark::Application& app, std::false_type /* is_query */);
+        Arg ComputeArgument(Application& app, std::false_type /* is_query */);
 
         // Overload for Query types
         template<typename Arg>
-        Arg ComputeArgument(spark::Application& app, std::true_type /* is_query */);
+        Arg ComputeArgument(Application& app, std::true_type /* is_query */);
 
         // Base class for type-erased systems
         struct ISystem
@@ -222,18 +236,61 @@ namespace spark
             m_layer_stack.Stop();
             return *this;
         }
+        template<typename T>
+        T& GetCurrentEvent() {
+            return std::any_cast<std::reference_wrapper<T>>(m_current_event).get();
+        }
 
-        // Register any system (lambda, function, etc.) for a given phase
+        void SetCurrentEvent(std::any event) {
+            m_current_event = std::move(event);
+        }
+
+        void ClearCurrentEvent() {
+            m_current_event.reset();
+        }
+
         template<typename Func>
         Application& RegisterSystem(Func&& system_func,
             LifecyclePhase phase = LifecyclePhase::UPDATE)
         {
             using F = std::decay_t<Func>;
-            auto system = std::make_unique<detail::System<F>>(std::forward<Func>(system_func));
-            m_systems[phase].push_back(std::move(system));
+            using Traits = FunctionTraits<F>;
+            constexpr size_t arity = Traits::arity;
+
+            bool has_event_param = false;
+            for_sequence(std::make_index_sequence<arity>{}, [&](auto I) {
+                using Arg = typename Traits::template Arg<decltype(I)::value>;
+                if constexpr (ParamTrait<Arg>::is_event) {
+                    has_event_param = true;
+                }
+                });
+
+            if (has_event_param) {
+                auto system = std::make_unique<detail::System<F>>(std::forward<Func>(system_func));
+
+                for_sequence(std::make_index_sequence<arity>{}, [&](auto I) {
+                    using Arg = typename Traits::template Arg<decltype(I)::value>; // Corrected here
+                    if constexpr (ParamTrait<Arg>::is_event) {
+                        using EventType = std::decay_t<Arg>;
+                        m_event_queue.template Subscribe<EventType>(
+                            [this, system_ptr = system.get()](EventType& event) {
+                                SetCurrentEvent(std::ref(event));
+                                system_ptr->Execute(*this);
+                                ClearCurrentEvent();
+                            }
+                        );
+                    }
+                    });
+
+                m_event_systems.push_back(std::move(system));
+            }
+            else {
+                auto system = std::make_unique<detail::System<F>>(std::forward<Func>(system_func));
+                m_systems[phase].push_back(std::move(system));
+            }
+
             return *this;
         }
-
         Application& SetDeltaTime(float dt)
         {
             m_dt = dt;
@@ -261,7 +318,7 @@ namespace spark
             return *this;
         }
 
-        spark::Coordinator& GetCoordinator()
+        Coordinator& GetCoordinator()
         {
             return m_coordinator;
         }
@@ -290,6 +347,10 @@ namespace spark
         ModManager m_mod_manager;
         GraphicsApi m_gapi;
         f32 m_dt = 0.0f;
+
+
+        std::vector<std::unique_ptr<detail::ISystem>> m_event_systems;
+        std::any m_current_event;
 
         Coordinator m_coordinator;
 
@@ -324,48 +385,38 @@ namespace spark
     namespace detail
     {
         template<typename Arg>
-        Arg ComputeArgument(Application& app)
+        Arg ComputeArgument(Application& app, std::true_type /* is_event */)
         {
-            constexpr bool is_query = ParamTrait<Arg>::is_query;
-            if constexpr (is_query)
-            {
-                return ComputeArgument<Arg>(app, std::true_type{});
-            }
-            else
-            {
-                return ComputeArgument<Arg>(app, std::false_type{});
-            }
+            return app.GetCurrentEvent<Arg>();
         }
 
-        // Overload for non-Query types
         template<typename Arg>
-        Arg ComputeArgument(spark::Application& app, std::false_type /* is_query */)
+        Arg ComputeArgument(Application& app, std::false_type /* is_event */)
         {
             using Trait = ParamTrait<Arg>;
 
-            if constexpr (Trait::is_application)
-            {
+            if constexpr (Trait::is_application) {
                 return app;
             }
-            else if constexpr (Trait::is_coordinator)
-            {
+            else if constexpr (Trait::is_coordinator) {
                 return app.GetCoordinator();
             }
-            else if constexpr (Trait::is_resource)
-            {
+            else if constexpr (Trait::is_resource) {
                 return app.GetResource<Arg>();
             }
-            else
-            {
+            else if constexpr (Trait::is_query) {
+                return QueryComponents<Arg>::Get(app.GetCoordinator());
+            }
+            else {
                 static_assert(sizeof(Arg) == 0, "Unhandled Arg type in ComputeArgument.");
             }
         }
 
-        // Overload for Query types
         template<typename Arg>
-        Arg ComputeArgument(spark::Application& app, std::true_type /* is_query */)
+        Arg ComputeArgument(Application& app)
         {
-            return QueryComponents<Arg>::Get(app.GetCoordinator());
+            constexpr bool is_event = ParamTrait<Arg>::is_event;
+            return ComputeArgument<Arg>(app, std::integral_constant<bool, is_event>{});
         }
 
 

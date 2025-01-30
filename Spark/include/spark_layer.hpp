@@ -5,7 +5,7 @@
 
 namespace spark
 {
-	class ILayer
+	class SPARK_API ILayer
 	{
 	public:
 		ILayer() = default;

@@ -15,6 +15,11 @@ struct Acceleration
     spark::u64 x, y, z;
 };
 
+struct Blah
+{
+    spark::i32 i;
+};
+
 using Arcnum = spark::Application;
 
 
@@ -22,7 +27,8 @@ using Arcnum = spark::Application;
 void Move(
     Arcnum& app,
     spark::Coordinator& coordinator,
-    spark::Query<Position, Velocity> query
+    spark::Query<Position, Velocity> query,
+    spark::Event<Blah> event
 )
 {
     auto entity = coordinator.CreateEntity(
@@ -73,7 +79,7 @@ int main()
     spark::Application app(spark::GraphicsApi::OPENGL, "Arcnum", 1280, 720);
 
     // Register systems with correct parameter passing
-    app.RegisterSystem(Move, spark::LifecyclePhase::UPDATE);
+    app.RegisterSystem(Move);
     app.RegisterSystem(See, spark::LifecyclePhase::ON_SHUTDOWN);
 
     app.Start();

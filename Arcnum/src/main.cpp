@@ -28,10 +28,10 @@ void Move(
     Arcnum& app,
     spark::Coordinator& coordinator,
     spark::Query<Position, Velocity> query,
-    spark::Event<Blah> event
+    spark::Event<Blah, Acceleration> event
 )
 {
-    spark::Logger::Logln("Got event: %d", event->i);
+    spark::Logger::Logln("Got event: %d", event.Get<Blah>().i);
 
     auto entity = coordinator.CreateEntity(
         Position{ 0, 0, 0 },

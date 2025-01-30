@@ -53,9 +53,6 @@ namespace spark
         u32 m_generation;
     };
 
-    // ------------------------------------------------------------------------
-    // GetComponentTypeID
-    // ------------------------------------------------------------------------
     namespace detail
     {
         inline u32 GetUniqueTypeID()
@@ -127,9 +124,7 @@ namespace spark
         }
     }
 
-    // ------------------------------------------------------------------------
     // Chunk: SoA data portion for a given signature
-    // ------------------------------------------------------------------------
     class Chunk
     {
     public:
@@ -316,7 +311,8 @@ namespace spark
             std::byte* base = m_data.data();
             usize offset = m_component_offsets[arr_index];
             usize sz = m_type_sizes[arr_index];
-            return &base[offset + idx * sz];
+            // Correct address calculation for AoS
+            return &base[idx * GetTotalSizePerEntity() + offset];
         }
 
         const void* GetComponentData(u32 tid, usize idx) const
@@ -329,8 +325,10 @@ namespace spark
             const std::byte* base = m_data.data();
             usize offset = m_component_offsets[arr_index];
             usize sz = m_type_sizes[arr_index];
-            return &base[offset + idx * sz];
+            // Correct address calculation for AoS
+            return &base[idx * GetTotalSizePerEntity() + offset];
         }
+
 
         const ComponentSignature& GetSignature() const
         {
@@ -612,12 +610,6 @@ namespace spark
             return loc.archetype_ptr->GetSignature().test(GetComponentTypeID<T>());
         }
 
-        // ----------------------------------------------------------
-// Query
-// ----------------------------------------------------------
-        // --------------------------------------------------------------------------
-// Query: collects chunks, then iterates them efficiently
-// --------------------------------------------------------------------------
         template <typename... Filters>
         class Query
         {
@@ -786,7 +778,6 @@ namespace spark
                 (FillOneArray<I, std::tuple_element_t<I, IncludedTypes>>(cv), ...);
             }
 
-            // spark_ecs.hpp (within Query class)
             template <size_t IDX, typename T>
             void FillOneArray(ChunkView& cv)
             {
@@ -814,10 +805,6 @@ namespace spark
                 {
                     throw std::runtime_error("Chunk data is null.");
                 }
-
-                // Debug log for component addresses
-                ((std::cout << "Entity " << e.GetId() << " Component " << typeid(std::tuple_element_t<I, IncludedTypes>).name()
-                    << " Address: " << static_cast<void*>(cv.m_data + idx * cv.m_total_size_per_entity + cv.m_component_offsets[I]) << "\n"), ...);
 
                 func(
                     e.GetId(),

@@ -3,6 +3,10 @@
 
 #include "spark_pch.hpp"
 
+#include <bitset>
+#include <functional>
+
+
 namespace spark
 {
     constexpr usize MAX_COMPONENTS = 64;
@@ -541,6 +545,10 @@ namespace spark
             return GetComponentRef<T>(new_loc);
         }
 
+		std::unordered_map<ComponentSignature, std::unique_ptr<Archetype>>& GetArchetypes() {
+			return m_archetypes;
+		}
+
         template <typename T>
         void RemoveComponent(Entity e)
         {
@@ -606,6 +614,8 @@ namespace spark
         class Query
         {
         public:
+            using ComponentTypes = std::tuple<Filters...>;
+
             template <typename... Fs>
             struct ExtractIncluded;
 
@@ -690,12 +700,12 @@ namespace spark
 
             usize Size()
             {
-				usize total = 0;
-				for (auto& cv : m_chunk_views)
-				{
-					total += cv.m_count;
-				}
-				return total;
+                usize total = 0;
+                for (auto& cv : m_chunk_views)
+                {
+                    total += cv.m_count;
+                }
+                return total;
             }
 
         private:

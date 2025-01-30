@@ -1,8 +1,10 @@
+// spark_application.hpp
+
 #ifndef SPARK_APPLICATION_HPP
 #define SPARK_APPLICATION_HPP
 
 #include "spark_pch.hpp"
-#include "spark_ecs.hpp" 
+#include "spark_ecs.hpp"
 #include "spark_window.hpp"
 #include "spark_event.hpp"
 #include "spark_stopwatch.hpp"
@@ -27,97 +29,59 @@ namespace spark
         ON_SHUTDOWN
     };
 
+    // FunctionTraits implementation
     template<typename R, typename... Args>
     struct FunctionTraitsImpl
     {
-        static constexpr size_t arg_count = sizeof...(Args);
-
         using ReturnType = R;
+        using ArgsTuple = std::tuple<Args...>;
+        static constexpr size_t arity = sizeof...(Args);
 
-        template<size_t Index>
-        using ArgType = std::tuple_element_t<Index, std::tuple<Args...>>;
+        template <size_t Index>
+        using Arg = std::tuple_element_t<Index, ArgsTuple>;
     };
 
     // Primary template
     template<typename T, typename = void>
-    struct FunctionTraits
-    {
-        // fallback if not specialized below
-    };
+    struct FunctionTraits;
 
-    // Detect if T has operator(), then delegate to that
+    // Specialization for function types
+    template<typename R, typename... Args>
+    struct FunctionTraits<R(Args...), void> : FunctionTraitsImpl<R, Args...> {};
+
+    // Specialization for function pointers
+    template<typename R, typename... Args>
+    struct FunctionTraits<R(*)(Args...), void> : FunctionTraits<R(Args...), void> {};
+
+    // Specialization for member function pointers
+    template<typename C, typename R, typename... Args>
+    struct FunctionTraits<R(C::*)(Args...), void> : FunctionTraits<R(Args...), void> {};
+
+    // Specialization for const member function pointers
+    template<typename C, typename R, typename... Args>
+    struct FunctionTraits<R(C::*)(Args...) const, void> : FunctionTraits<R(Args...), void> {};
+
+    // Specialization for functors (objects with operator())
     template<typename T>
-    struct FunctionTraits<T, std::void_t<decltype(&std::decay_t<T>::operator())>>
-        : FunctionTraits<decltype(&std::decay_t<T>::operator())>
-    {
-    };
+    struct FunctionTraits<T, std::void_t<decltype(&T::operator())>>
+        : FunctionTraits<decltype(&T::operator())> {};
 
-    // Handle free function: R(Args...)
-    template<typename R, typename... Args>
-    struct FunctionTraits<R(Args...), void> : FunctionTraitsImpl<R, Args...>
-    {
-    };
+    // Helper to determine if a type is a spark::Query
+    template<typename T>
+    struct IsSparkQuery : std::false_type {};
 
-    // Handle function pointer: R(*)(Args...)
-    template<typename R, typename... Args>
-    struct FunctionTraits<R(*)(Args...), void> : FunctionTraitsImpl<R, Args...>
-    {
-    };
-
-    // Handle non-const member function: R(C::*)(Args...)
-    template<typename C, typename R, typename... Args>
-    struct FunctionTraits<R(C::*)(Args...), void> : FunctionTraitsImpl<R, Args...>
-    {
-    };
-
-    // Handle const member function: R(C::*)(Args...) const
-    template<typename C, typename R, typename... Args>
-    struct FunctionTraits<R(C::*)(Args...) const, void> : FunctionTraitsImpl<R, Args...>
-    {
-    };
+    template<typename... Ts>
+    struct IsSparkQuery<spark::Query<Ts...>> : std::true_type {};
 
     template<typename T>
     struct ParamTrait
     {
-        static constexpr bool is_application = false;
-        static constexpr bool is_coordinator = false;
-        static constexpr bool is_query = false;
-        static constexpr bool is_resource = true; // fallback
-    };
+        using Decayed = std::remove_cv_t<std::remove_reference_t<T>>;
 
-    // Application
-    template<>
-    struct ParamTrait<spark::Application>
-    {
-        static constexpr bool is_application = true;
-        static constexpr bool is_coordinator = false;
-        static constexpr bool is_query = false;
-        static constexpr bool is_resource = false;
-    };
-    // If user writes "Application&"
-    template<>
-    struct ParamTrait<Application&> : ParamTrait<Application> {};
-
-    // Coordinator
-    template<>
-    struct ParamTrait<Coordinator>
-    {
-        static constexpr bool is_application = false;
-        static constexpr bool is_coordinator = true;
-        static constexpr bool is_query = false;
-        static constexpr bool is_resource = false;
-    };
-    // If user writes "Coordinator&"
-    template<>
-    struct ParamTrait<Coordinator&> : ParamTrait<Coordinator> {};
-
-    template<typename... Ts>
-    struct ParamTrait<Query<Ts...>>
-    {
-        static constexpr bool is_application = false;
-        static constexpr bool is_coordinator = false;
-        static constexpr bool is_query = true;
-        static constexpr bool is_resource = false;
+        static constexpr bool is_application = std::is_same_v<Decayed, spark::Application>;
+        static constexpr bool is_coordinator = std::is_same_v<Decayed, spark::Coordinator>;
+        static constexpr bool is_query = IsSparkQuery<Decayed>::value;
+        static constexpr bool is_resource = !is_application && !is_coordinator && !is_query;
     };
 
     template<typename T>
@@ -132,32 +96,45 @@ namespace spark
         }
     };
 
-    template<typename... Ts>
-    struct QueryComponents<spark::Query<Ts...>&>
-    {
-        static spark::Query<Ts...> Get(spark::Coordinator& coord)
-        {
-            return coord.template CreateQuery<Ts...>();
-        }
-    };
-
-    template<typename... Ts>
-    struct ParamTrait<Query<Ts...>&> : ParamTrait<Query<Ts...>> {};
-
+    // Removed the faulty specialization:
+    // template<typename... Ts>
+    // struct ParamTrait<Query<Ts...>&> : ParamTrait<Query<Ts...>> {};
 
     namespace detail
     {
+        // Primary ComputeArgument that selects the correct overload
         template<typename Arg>
-        Arg& ComputeArgument(spark::Application& app);
+        Arg ComputeArgument(spark::Application& app);
+        // Overload for non-Query types
+        template<typename Arg>
+        Arg ComputeArgument(spark::Application& app, std::false_type /* is_query */);
 
-        template<typename Func, size_t... I>
-        void RunInjectedSystemImpl(spark::Application& app,
-            Func&& func,
-            std::index_sequence<I...>);
+        // Overload for Query types
+        template<typename Arg>
+        Arg ComputeArgument(spark::Application& app, std::true_type /* is_query */);
+
+        // Base class for type-erased systems
+        struct ISystem
+        {
+            virtual ~ISystem() = default;
+            virtual void Execute(Application& app) = 0;
+        };
+
+        // Templated derived class for systems
+        template<typename Func>
+        struct System : ISystem
+        {
+            Func func;
+
+            System(Func&& f) : func(std::forward<Func>(f)) {}
+
+            virtual void Execute(Application& app) override;
+        private:
+            template<size_t... I>
+            void ExecuteImpl(Application& app, std::index_sequence<I...>);
+        };
+
     }
-
-    template<typename Func>
-    void RunInjectedSystem(spark::Application& app, Func&& func);
 
     class Application
     {
@@ -202,9 +179,9 @@ namespace spark
         Application& Start()
         {
             // ON_START
-            for (auto& system_fn : m_systems[LifecyclePhase::ON_START])
+            for (auto& system : m_systems[LifecyclePhase::ON_START])
             {
-                RunInjectedSystem(*this, system_fn);
+                system->Execute(*this);
             }
             m_layer_stack.Start();
             return *this;
@@ -215,23 +192,23 @@ namespace spark
             while (IsRunning())
             {
                 // BEFORE_UPDATE
-                for (auto& system_fn : m_systems[LifecyclePhase::BEFORE_UPDATE])
+                for (auto& system : m_systems[LifecyclePhase::BEFORE_UPDATE])
                 {
-                    RunInjectedSystem(*this, system_fn);
+                    system->Execute(*this);
                 }
 
                 m_layer_stack.Update(m_dt);
 
                 // UPDATE
-                for (auto& system_fn : m_systems[LifecyclePhase::UPDATE])
+                for (auto& system : m_systems[LifecyclePhase::UPDATE])
                 {
-                    RunInjectedSystem(*this, system_fn);
+                    system->Execute(*this);
                 }
 
                 // AFTER_UPDATE
-                for (auto& system_fn : m_systems[LifecyclePhase::AFTER_UPDATE])
+                for (auto& system : m_systems[LifecyclePhase::AFTER_UPDATE])
                 {
-                    RunInjectedSystem(*this, system_fn);
+                    system->Execute(*this);
                 }
             }
             return *this;
@@ -240,9 +217,9 @@ namespace spark
         Application& Close()
         {
             // ON_SHUTDOWN
-            for (auto& system_fn : m_systems[LifecyclePhase::ON_SHUTDOWN])
+            for (auto& system : m_systems[LifecyclePhase::ON_SHUTDOWN])
             {
-                RunInjectedSystem(*this, system_fn);
+                system->Execute(*this);
             }
             m_layer_stack.Stop();
             return *this;
@@ -254,16 +231,8 @@ namespace spark
             LifecyclePhase phase = LifecyclePhase::UPDATE)
         {
             using F = std::decay_t<Func>;
-
-            // We'll store a std::function that takes no args, 
-            // but captures system_func. Then we call RunInjectedSystem(*this, system_func).
-            auto wrapper = [fn = std::forward<F>(system_func)]() mutable
-                {
-                    // We'll do injection by calling the free function:
-                    RunInjectedSystem(*(Application*)s_app_ptr, fn);
-                };
-
-            m_systems[phase].push_back(std::move(wrapper));
+            auto system = std::make_unique<detail::System<F>>(std::forward<Func>(system_func));
+            m_systems[phase].push_back(std::move(system));
             return *this;
         }
 
@@ -322,25 +291,23 @@ namespace spark
         EventQueue m_event_queue;
         ModManager m_mod_manager;
         GraphicsApi m_gapi;
-        float m_dt = 0.0f;
+        f32 m_dt = 0.0f;
 
-        // Unchanged chunk-based ECS
         Coordinator m_coordinator;
 
         // Resource storage
         std::unordered_map<std::type_index, std::any> m_resources;
 
-        // Systems by phase: each system is stored as function<void()>
-        // We'll do injection by capturing the system and calling RunInjectedSystem(*this, system).
+        // Systems by phase: each system is stored as unique_ptr<ISystem>
         std::unordered_map<
             LifecyclePhase,
-            std::vector<std::function<void()>>>
+            std::vector<std::unique_ptr<detail::ISystem>>>
             m_systems;
 
         static inline Application* s_app_ptr = nullptr;
 
     public:
-        // We can set s_app_ptr in the constructor:
+        // Delete copy and move constructors/assignments
         Application(const Application&) = delete;
         Application& operator=(const Application&) = delete;
 
@@ -359,64 +326,72 @@ namespace spark
     namespace detail
     {
         template<typename Arg>
-        Arg& ComputeArgument(spark::Application& app)
+        Arg ComputeArgument(Application& app)
+        {
+            constexpr bool is_query = ParamTrait<Arg>::is_query;
+            if constexpr (is_query)
+            {
+                return ComputeArgument<Arg>(app, std::true_type{});
+            }
+            else
+            {
+                return ComputeArgument<Arg>(app, std::false_type{});
+            }
+        }
+
+        // Overload for non-Query types
+        template<typename Arg>
+        Arg ComputeArgument(spark::Application& app, std::false_type /* is_query */)
         {
             using Trait = ParamTrait<Arg>;
 
             if constexpr (Trait::is_application)
             {
-                // Return the app object itself
                 return app;
             }
             else if constexpr (Trait::is_coordinator)
             {
-                // Return the chunk-based ECS coordinator
                 return app.GetCoordinator();
             }
-            else if constexpr (Trait::is_query)
+            else if constexpr (Trait::is_resource)
             {
-                // Build a Query from the coordinator and return a reference
-                static auto query =
-                    QueryComponents<Arg>::Get(app.GetCoordinator());
-                return query;
+                return app.GetResource<Arg>();
             }
             else
             {
-                // It's a resource => do app.GetResource<Arg>()
-                return app.GetResource<Arg>();
+                static_assert(sizeof(Arg) == 0, "Unhandled Arg type in ComputeArgument.");
             }
         }
 
-        template<typename Func, size_t... I>
-        void RunInjectedSystemImpl(spark::Application& app,
-            Func&& func,
-            std::index_sequence<I...>)
+        // Overload for Query types
+        template<typename Arg>
+        Arg ComputeArgument(spark::Application& app, std::true_type /* is_query */)
         {
-            using Decayed = std::decay_t<Func>;
-            using Traits = FunctionTraits<Decayed>;
-
-            auto args_tuple = std::forward_as_tuple(
-                ComputeArgument<typename Traits::template ArgType<I>>(app)...
-            );
-
-            std::apply(std::forward<Func>(func), args_tuple);
+            return QueryComponents<Arg>::Get(app.GetCoordinator());
         }
-    } // namespace detail
 
 
+        template<typename Func>
+        void System<Func>::Execute(Application& app)
+        {
+            using Traits = FunctionTraits<Func>;
+            constexpr size_t arity = Traits::arity;
 
-    template<typename Func>
-    void RunInjectedSystem(spark::Application& app, Func&& func)
-    {
-        using Decayed = std::decay_t<Func>;
-        using Traits = FunctionTraits<Decayed>;
+            // Collect dependencies
+            ExecuteImpl(app, std::make_index_sequence<arity>{});
+        }
 
-        detail::RunInjectedSystemImpl(
-            app,
-            std::forward<Func>(func),
-            std::make_index_sequence<Traits::arg_count>{}
-        );
+        template<typename Func>
+    	template<size_t... I>
+        void System<Func>::ExecuteImpl(Application& app, std::index_sequence<I...>)
+        {
+            using Traits = FunctionTraits<Func>;
+
+            // Inject dependencies based on parameter types
+            func(ComputeArgument<typename Traits::template Arg<I>>(app)...);
+        }
     }
+
 } // namespace spark
 
 #endif // SPARK_APPLICATION_HPP

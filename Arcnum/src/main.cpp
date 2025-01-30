@@ -21,14 +21,13 @@ using Arcnum = spark::Application;
 // System function to initialize entities
 void InitEntities(Arcnum& app, spark::Coordinator& coordinator)
 {
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < 1000000; i++)
     {
         // Initialize Velocity with non-zero values
         auto entity = coordinator.CreateEntity(
             Position{ 0, 0, 0 },
             Velocity{ 0.01, 0.01, 0.01 } // Example non-zero velocity
         );
-        spark::Logger::Logln(spark::LogLevel::DEBUG, "Created entity with Position and Velocity: %d", entity.GetId());
     }
 }
 

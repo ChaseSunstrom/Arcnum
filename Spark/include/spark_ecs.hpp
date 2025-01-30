@@ -145,7 +145,7 @@ namespace spark
             m_component_offsets.clear();
 
             // Calculate total_size_per_entity, gather TIDs
-            usize total_size_per_entity = 0;
+            m_total_size_per_entity = 0; // Initialize the member variable
             for (u32 tid = 0; tid < MAX_COMPONENTS; ++tid)
             {
                 if (m_signature.test(tid))
@@ -153,40 +153,34 @@ namespace spark
                     usize sz = g_type_sizes[tid];
                     m_type_ids.push_back(tid);
                     m_type_sizes.push_back(sz);
-                    total_size_per_entity += sz;
+                    m_component_offsets.push_back(m_total_size_per_entity); // Update offsets
+                    m_total_size_per_entity += sz;
                 }
             }
 
-            if (total_size_per_entity == 0)
+            if (m_total_size_per_entity == 0)
             {
                 m_capacity_entities = m_capacity_bytes;
             }
             else
             {
-                m_capacity_entities = m_capacity_bytes / total_size_per_entity;
+                m_capacity_entities = m_capacity_bytes / m_total_size_per_entity;
             }
 
             m_entities.resize(m_capacity_entities);
             m_entity_count = 0;
 
             // Allocate the data buffer
-            m_data.resize(m_capacity_entities * total_size_per_entity);
-            m_component_offsets.resize(m_type_ids.size());
+            m_data.resize(m_capacity_entities * m_total_size_per_entity);
 
-            // Compute offsets for each component within an entity's data slice
-            usize running_offset = 0;
+            // Initialize m_type_map
             for (usize i = 0; i < m_type_ids.size(); ++i)
             {
                 u32 tid = m_type_ids[i];
                 m_type_map[tid] = static_cast<int>(i);
-                m_component_offsets[i] = running_offset;
-                running_offset += m_type_sizes[i];
             }
-
-            // Debug log
-            std::cout << "Initialized Chunk with " << m_type_ids.size() << " components and "
-                << m_capacity_entities << " entity slots.\n";
         }
+
 
         const std::vector<std::byte>& GetData() const
         {
@@ -232,12 +226,9 @@ namespace spark
         }
 
         usize GetTotalSizePerEntity() const {
-            usize total_size = 0;
-            for (usize i = 0; i < m_type_sizes.size(); ++i) {
-                total_size += m_type_sizes[i];
-            }
-            return total_size;
+            return m_total_size_per_entity;
         }
+
 
         usize GetComponentOffset(u32 tid) const
         {
@@ -348,6 +339,7 @@ namespace spark
 
         // Single data buffer
         std::vector<std::byte> m_data;
+        usize m_total_size_per_entity = 0;
 
         // For each type in this chunk, we store a start offset for that type
         //   within an entity's "slice" in m_data
@@ -786,8 +778,6 @@ namespace spark
                 usize offset = cv.m_chunk->GetComponentOffset(tid);
                 cv.m_component_offsets[IDX] = offset;
 
-                // Debug log
-                std::cout << "Component " << typeid(T).name() << " has offset " << offset << " in Chunk.\n";
             }
 
 

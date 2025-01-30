@@ -174,11 +174,11 @@ namespace spark
             m_entities.resize(m_capacity_entities);
             m_entity_count = 0;
 
-            // We now allocate one big buffer:
+            // Allocate the data buffer
             m_data.resize(m_capacity_entities * total_size_per_entity);
             m_component_offsets.resize(m_type_ids.size());
 
-            // Compute offsets for each component within an "entity record"
+            // Compute offsets for each component within an entity's data slice
             usize running_offset = 0;
             for (usize i = 0; i < m_type_ids.size(); ++i)
             {
@@ -187,7 +187,17 @@ namespace spark
                 m_component_offsets[i] = running_offset;
                 running_offset += m_type_sizes[i];
             }
+
+            // Debug log
+            std::cout << "Initialized Chunk with " << m_type_ids.size() << " components and "
+                << m_capacity_entities << " entity slots.\n";
         }
+
+        const std::vector<std::byte>& GetData() const
+        {
+            return m_data;
+        }
+
 
         bool HasSpace() const
         {
@@ -225,6 +235,25 @@ namespace spark
             }
             m_entity_count--;
         }
+
+        usize GetTotalSizePerEntity() const {
+            usize total_size = 0;
+            for (usize i = 0; i < m_type_sizes.size(); ++i) {
+                total_size += m_type_sizes[i];
+            }
+            return total_size;
+        }
+
+        usize GetComponentOffset(u32 tid) const
+        {
+            const i32 arr_index = m_type_map[tid];
+            if (arr_index < 0)
+            {
+                throw std::runtime_error("Component type ID not found in Chunk.");
+            }
+            return m_component_offsets[arr_index];
+        }
+
 
         // The SoA "array" for component i is effectively:
         //   base pointer = &m_data[ m_component_offsets[i] + (index * m_type_sizes[i]) ]
@@ -624,10 +653,16 @@ namespace spark
                 const Entity* m_entity_array = nullptr;
                 usize m_count = 0;
 
-                // For each included type: pointer to array base + size
-                std::array<std::byte*, std::tuple_size<IncludedTypes>::value> m_arrays;
-                std::array<usize, std::tuple_size<IncludedTypes>::value> m_sizes;
+                // Pointer to the start of the data buffer
+                std::byte* m_data = nullptr;
+
+                // Total size of all components per entity
+                usize m_total_size_per_entity = 0;
+
+                // Offsets for each component within an entity's data slice
+                std::array<usize, std::tuple_size<IncludedTypes>::value> m_component_offsets;
             };
+
 
             Query(const Coordinator& c)
                 : m_coord(c)
@@ -708,7 +743,6 @@ namespace spark
 
             void GatherChunkViews(Archetype* arch)
             {
-                // We can iterate non-const to get non-const chunk pointers
                 for (auto& chunk : arch->GetChunks())
                 {
                     if (chunk.Size() == 0)
@@ -719,6 +753,22 @@ namespace spark
                     cv.m_entity_array = chunk.GetEntities().data();
                     cv.m_count = chunk.Size();
 
+                    // Retrieve the data buffer from the Chunk
+                    const std::vector<std::byte>& data = chunk.GetData();
+                    if (data.empty())
+                    {
+                        // Handle empty data buffer
+                        cv.m_data = nullptr;
+                    }
+                    else
+                    {
+                        // Assign the data pointer (const_cast is used to remove constness if necessary)
+                        cv.m_data = const_cast<std::byte*>(data.data());
+                    }
+
+                    cv.m_total_size_per_entity = chunk.GetTotalSizePerEntity();
+
+                    // Populate component offsets
                     FillChunkViewArrays(cv,
                         std::make_index_sequence<std::tuple_size<IncludedTypes>::value>{});
 
@@ -729,20 +779,30 @@ namespace spark
             template <size_t... I>
             void FillChunkViewArrays(ChunkView& cv, std::index_sequence<I...>)
             {
+                // Retrieve total size per entity from the chunk
+                cv.m_total_size_per_entity = cv.m_chunk->GetTotalSizePerEntity();
+
+                // Populate component offsets
                 (FillOneArray<I, std::tuple_element_t<I, IncludedTypes>>(cv), ...);
             }
 
+            // spark_ecs.hpp (within Query class)
             template <size_t IDX, typename T>
             void FillOneArray(ChunkView& cv)
             {
                 u32 tid = GetComponentTypeID<T>();
-                // Use non-const GetComponentData => returns void*
-                void* base_ptr = cv.m_chunk->GetComponentData(tid, 0);
-                cv.m_arrays[IDX] = static_cast<std::byte*>(base_ptr);
-                cv.m_sizes[IDX] = g_type_sizes[tid];
+                // Retrieve the offset of component T within the entity's data slice
+                usize offset = cv.m_chunk->GetComponentOffset(tid);
+                cv.m_component_offsets[IDX] = offset;
+
+                // Debug log
+                std::cout << "Component " << typeid(T).name() << " has offset " << offset << " in Chunk.\n";
             }
 
+
+
             // CallFunc: create references for each T from ChunkView => pass to Func
+            // spark_ecs.hpp (within Query class)
             template <typename Func, size_t... I>
             void CallFunc(const Entity& e,
                 Func& func,
@@ -750,12 +810,23 @@ namespace spark
                 usize idx,
                 std::index_sequence<I...>)
             {
+                if (!cv.m_data)
+                {
+                    throw std::runtime_error("Chunk data is null.");
+                }
+
+                // Debug log for component addresses
+                ((std::cout << "Entity " << e.GetId() << " Component " << typeid(std::tuple_element_t<I, IncludedTypes>).name()
+                    << " Address: " << static_cast<void*>(cv.m_data + idx * cv.m_total_size_per_entity + cv.m_component_offsets[I]) << "\n"), ...);
+
                 func(
                     e.GetId(),
                     *reinterpret_cast<std::tuple_element_t<I, IncludedTypes>*>(
-                        cv.m_arrays[I] + idx * cv.m_sizes[I])...
+                        cv.m_data + idx * cv.m_total_size_per_entity + cv.m_component_offsets[I])...
                 );
             }
+
+
 
         private:
             const Coordinator& m_coord;

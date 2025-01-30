@@ -2,12 +2,12 @@
 
 struct Position
 {
-    spark::u64 x, y, z;
+    spark::f64 x, y, z;
 };
 
 struct Velocity
 {
-    spark::u64 x, y, z;
+    spark::f64 x, y, z;
 };
 
 struct Acceleration
@@ -21,12 +21,12 @@ using Arcnum = spark::Application;
 // System function to initialize entities
 void InitEntities(Arcnum& app, spark::Coordinator& coordinator)
 {
-    for (int i = 0; i < 100000; i++)
+    for (int i = 0; i < 100; i++)
     {
         // Initialize Velocity with non-zero values
         auto entity = coordinator.CreateEntity(
             Position{ 0, 0, 0 },
-            Velocity{ 1, 1, 1 } // Example non-zero velocity
+            Velocity{ 0.0001, 0.0001, 0.0001 } // Example non-zero velocity
         );
         spark::Logger::Logln(spark::LogLevel::DEBUG, "Created entity with Position and Velocity: %d", entity.GetId());
     }
@@ -34,11 +34,14 @@ void InitEntities(Arcnum& app, spark::Coordinator& coordinator)
 
 
 // System function to move entities
-void Move(Arcnum& app,
+void Move(
+    Arcnum& app,
     spark::Coordinator& coordinator,
     spark::Query<Position, Velocity>& query,
     spark::Query<Position>& pquery,
-    spark::Query<Position, spark::Without<Velocity>>& vquery)
+    spark::Query<Position, spark::Without<Velocity>>& vquery,
+    spark::Query<Velocity>& vquery2
+)
 {
     query.ForEach([](spark::u32 ent, Position& pos, Velocity& vel)
         {

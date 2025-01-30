@@ -487,6 +487,13 @@ namespace spark
         }
     }
 
+    template <typename T>
+    using Ref = T&;
+
+    template <typename T>
+    using CRef = const T&;
+
+
 } // namespace spark
 
 #endif // SPARK_APPLICATION_HPP

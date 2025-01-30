@@ -185,4 +185,11 @@ namespace spark
 
         free(buffer);
     }
+
+    void Logger::Log(LogLevel level, const std::string& message) {
+        if (s_enabled_levels[static_cast<int>(level)]) {
+            std::cout << GetLogPrefix(level) << message;
+        }
+    }
+
 }

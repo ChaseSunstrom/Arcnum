@@ -17,7 +17,7 @@ struct Acceleration
 
 struct Blah
 {
-    spark::i32 i;
+    spark::u32 i;
 };
 
 using Arcnum = spark::Application;
@@ -25,13 +25,20 @@ using Arcnum = spark::Application;
 
 // System function to move entities
 void Move(
-    Arcnum& app,
-    spark::Coordinator& coordinator,
+    spark::Ref<spark::Coordinator> coordinator,
     spark::Query<Position, Velocity> query,
     spark::Event<Blah, Acceleration> event
 )
 {
-    spark::Logger::Logln("Got event: %d", event.Get<Blah>().i);
+    if (event.Holds<Blah>())
+        spark::Logger::Logln("Got Blah event: %d", event.Get<Blah>().i);
+
+
+    if (event.Holds<Acceleration>())
+    {
+        auto aevent = event.Get<Acceleration>();
+        spark::Logger::Logln("Got Acceleration event: %d, %d, %d", aevent.x, aevent.y, aevent.z);
+    }
 
     auto entity = coordinator.CreateEntity(
         Position{ 0, 0, 0 },
@@ -46,26 +53,23 @@ void Move(
         });
 }
 
-void EventMaker(Arcnum& app)
+void EventMaker(spark::Ref<Arcnum> app)
 {
-    static spark::i32 i = 0;
+    static spark::u32 i = 0;
 
-    if (i++ % 2000 == 0)
+    if (i % 2000 == 0)
         app.SubmitEvent(Blah{ i });
+    else if (i % 3000 == 0)
+        app.SubmitEvent(Acceleration{ i, i * 2, i * 3});
+
+    i++;
 }
 
 // System function to see entities
 // Modified See function to debug
-void See(spark::Coordinator& coordinator, spark::Query<Position, Velocity> query, spark::Query<Velocity> vquery, spark::Query<Position> pquery)
+void See(spark::Ref<spark::Coordinator> coordinator, spark::Query<Position, Velocity> query)
 {
-
-    auto man_query = coordinator.CreateQuery<Position, Velocity>();
-
-
-
     spark::Logger::Logln(spark::LogLevel::INFO, "See Query size: %d", query.Size());
-spark::Logger::Logln(spark::LogLevel::INFO, "See MANUAL QUERY size: %d", man_query.Size());
-
 
     // Log all entities in the coordinator
     for (const auto& arch_pair : coordinator.GetArchetypes()) {
@@ -78,7 +82,7 @@ spark::Logger::Logln(spark::LogLevel::INFO, "See MANUAL QUERY size: %d", man_que
     }
 
     query.ForEach([](spark::u32 ent, Position& pos, Velocity& vel) {
-        std::cout << "Entity: " << ent
+        spark::Log(spark::LogLevel::INFO) << "Entity: " << ent
             << " Position: " << pos.x << ", " << pos.y << ", " << pos.z
             << " Velocity: " << vel.x << ", " << vel.y << ", " << vel.z
             << std::endl;

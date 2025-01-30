@@ -2,13 +2,6 @@
 #define SPARK_EVENT_QUEUE_HPP
 
 #include "spark_event.hpp"
-#include <queue>
-#include <memory>
-#include <vector>
-#include <functional>
-#include <typeindex>
-#include <set>
-#include <iostream>
 
 namespace spark
 {

@@ -31,6 +31,8 @@ void Move(
     spark::Event<Blah> event
 )
 {
+    spark::Logger::Logln("Got event: %d", event->i);
+
     auto entity = coordinator.CreateEntity(
         Position{ 0, 0, 0 },
         Velocity{ 0.01, 0.01, 0.01 } // Example non-zero velocity
@@ -42,6 +44,14 @@ void Move(
             pos.y += vel.y;
             pos.z += vel.z;
         });
+}
+
+void EventMaker(Arcnum& app)
+{
+    static spark::i32 i = 0;
+
+    if (i++ % 2000 == 0)
+        app.SubmitEvent(Blah{ i });
 }
 
 // System function to see entities
@@ -79,7 +89,9 @@ int main()
     spark::Application app(spark::GraphicsApi::OPENGL, "Arcnum", 1280, 720);
 
     // Register systems with correct parameter passing
+    app.RegisterSystem(EventMaker);
     app.RegisterSystem(Move);
+
     app.RegisterSystem(See, spark::LifecyclePhase::ON_SHUTDOWN);
 
     app.Start();

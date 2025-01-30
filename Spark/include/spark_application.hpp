@@ -236,6 +236,43 @@ namespace spark
             m_layer_stack.Stop();
             return *this;
         }
+
+
+        template <ValidCommand T, typename... Args>
+        Application& SubmitCommand(Args&&... args)
+        {
+            m_command_queue.template SubmitCommand<T>(std::forward<Args>(args)...);
+            return *this;
+        }
+
+        template <ValidCommand T>
+        Application& SubmitCommand(T&& command)
+        {
+            m_command_queue.template SubmitCommand<T>(std::forward<T>(command));
+            return *this;
+        }
+
+        template <typename... Ts>
+        Application& SubmitEvent(const Event<Ts...>& ev)
+        {
+            m_event_queue.SubmitEvent<Ts...>(ev);
+            return *this;
+        }
+
+        template <typename T, typename... Ts>
+        Application& SubmitEvent(const T& ev)
+        {
+            // Construct an Event<T, Ts...> from 'ev'
+            // => your Event partial specialization must have a constructor
+            //    that takes (const T&) or T (some data type).
+            Event<T, Ts...> event(ev);
+
+            // Then pass it to the queue as an Event<T, Ts...>
+            m_event_queue.SubmitEvent<T, Ts...>(event);
+
+            return *this;
+        }
+
         template<typename T>
         T& GetCurrentEvent() {
             return std::any_cast<std::reference_wrapper<T>>(m_current_event).get();
@@ -248,7 +285,7 @@ namespace spark
         void ClearCurrentEvent() {
             m_current_event.reset();
         }
-
+        
         template<typename Func>
         Application& RegisterSystem(Func&& system_func,
             LifecyclePhase phase = LifecyclePhase::UPDATE)
@@ -269,16 +306,24 @@ namespace spark
                 auto system = std::make_unique<detail::System<F>>(std::forward<Func>(system_func));
 
                 for_sequence(std::make_index_sequence<arity>{}, [&](auto I) {
-                    using Arg = typename Traits::template Arg<decltype(I)::value>; // Corrected here
+                    using Arg = typename Traits::template Arg<decltype(I)::value>;
                     if constexpr (ParamTrait<Arg>::is_event) {
-                        using EventType = std::decay_t<Arg>;
-                        m_event_queue.template Subscribe<EventType>(
-                            [this, system_ptr = system.get()](EventType& event) {
-                                SetCurrentEvent(std::ref(event));
-                                system_ptr->Execute(*this);
-                                ClearCurrentEvent();
-                            }
-                        );
+                        using EventT = std::decay_t<Arg>;
+                        [this, system_ptr = system.get()] <typename... Us>(Event<Us...>*) {
+                            ([this, system_ptr] {
+                                // Subscribe to Event<Us> type (not raw Us)
+                                m_event_queue.template Subscribe<Us>(
+                                    // Correct lambda parameter to Event<Us>&
+                                    [this, system_ptr](Event<Us>& event) {
+                                        // Convert Event<Us> to the system's expected EventT
+                                        EventT wrapped_event(event);
+                                        SetCurrentEvent(std::ref(wrapped_event));
+                                        system_ptr->Execute(*this);
+                                        ClearCurrentEvent();
+                                    }
+                                );
+                                }(), ...);
+                        }(static_cast<EventT*>(nullptr));
                     }
                     });
 
@@ -291,6 +336,7 @@ namespace spark
 
             return *this;
         }
+
         Application& SetDeltaTime(float dt)
         {
             m_dt = dt;

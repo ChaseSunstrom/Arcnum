@@ -90,12 +90,9 @@ void See(spark::Ref<spark::Coordinator> coordinator, spark::Query<Position, Velo
         });
 }
 
-void TestThreading()
+void TestThreading(spark::threading::ThreadPool& pool)
 {
     using namespace spark::threading;
-
-    // Create a ThreadPool with 4 worker threads
-    ThreadPool pool(4);
 
     // Enqueue tasks with different priorities
     auto task1 = pool.Enqueue(TaskPriority::HIGH, []() -> int {
@@ -131,8 +128,6 @@ void TestThreading()
 int main()
 {
     spark::Application app(spark::GraphicsApi::OPENGL, "Arcnum", 1280, 720);
-
-    app.Threads(6);
 
     // Register systems with correct parameter passing
     app.RegisterSystem(EventMaker);

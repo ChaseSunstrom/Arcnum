@@ -86,9 +86,10 @@ namespace spark
 
         static constexpr bool is_application = std::is_same_v<Decayed, Application>;
         static constexpr bool is_coordinator = std::is_same_v<Decayed, Coordinator>;
+        static constexpr bool is_thread_pool = std::is_same_v<Decayed, threading::ThreadPool>;
         static constexpr bool is_query = IsSparkQuery<Decayed>::value;
         static constexpr bool is_event = IsEvent<Decayed>::value;
-        static constexpr bool is_resource = !is_application && !is_coordinator && !is_query && !is_event;
+        static constexpr bool is_resource = !is_application && !is_coordinator && !is_query && !is_event && !is_thread_pool;
     };
 
     template<typename T>
@@ -174,16 +175,6 @@ namespace spark
         Application& AddResource(T&& resource)
         {
             m_resources[std::type_index(typeid(T))] = std::forward<T>(resource);
-            return *this;
-        }
-
-        Application& Threads(usize num_threads)
-        {
-            m_thread_pool.~ThreadPool();
-
-            // Yes I know this is being initialized after, but its faster than storing it on the heap, a tradeoff
-            // im willing to take.
-            threading::ThreadPool m_thread_pool(num_threads);
             return *this;
         }
 
@@ -403,6 +394,11 @@ namespace spark
             return m_coordinator;
         }
 
+        threading::ThreadPool& GetThreadPool()
+        {
+            return m_thread_pool;
+        }
+
     private:
         WindowLayer& GetWindowLayer()
         {
@@ -476,6 +472,9 @@ namespace spark
             }
             else if constexpr (Trait::is_query) {
                 return QueryComponents<Arg>::Get(app.GetCoordinator());
+            }
+            else if constexpr (Trait::is_thread_pool) {
+                return app.GetThreadPool();
             }
             else {
                 static_assert(sizeof(Arg) == 0, "Unhandled Arg type in ComputeArgument.");

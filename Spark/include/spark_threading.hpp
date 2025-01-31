@@ -150,8 +150,11 @@ namespace spark::threading {
                 {
                     std::unique_lock<std::mutex> lock(m_queue_mutex);
                     m_condition.wait(lock, [this, index]() {
-                        return m_stop.load() || !m_task_queues[index].empty();
+                        return m_stop.load() ||
+                            !m_task_queues[index].empty() ||
+                            std::any_of(m_task_queues.begin(), m_task_queues.end(), [](const auto& q) { return !q.empty(); });
                         });
+
 
                     if (m_stop.load() && m_active_tasks.load() == 0) {
                         return;

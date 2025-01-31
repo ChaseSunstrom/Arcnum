@@ -5,6 +5,7 @@
 #include "spark_ecs.hpp"
 #include "spark_window.hpp"
 #include "spark_event.hpp"
+#include "spark_threading.hpp"
 #include "spark_stopwatch.hpp"
 #include "spark_graphics_api.hpp"
 #include "spark_defer.hpp"
@@ -104,7 +105,7 @@ namespace spark
 
 
     template <size_t... Is, typename F>
-    void for_sequence(std::index_sequence<Is...>, F&& f) {
+    void ForSequence(std::index_sequence<Is...>, F&& f) {
         (f(std::integral_constant<size_t, Is>{}), ...);
     }
 
@@ -159,22 +160,36 @@ namespace spark
             : m_mod_manager(this)
             , m_gapi(gapi)
         {
-            // If there's only one app, we can do:
-            if (!s_app_ptr)
-            {
-                s_app_ptr = this;
-            }
-
             m_layer_stack.PushLayer<WindowLayer>(gapi, title, win_width, win_height, win_vsync);
             m_layer_stack.PushLayer<RendererLayer>(gapi, m_command_queue);
             m_layer_stack.PushLayer<EventLayer>(m_event_queue);
         }
+
+		~Application()
+		{
+			Close();
+		}
 
         template<typename T>
         Application& AddResource(T&& resource)
         {
             m_resources[std::type_index(typeid(T))] = std::forward<T>(resource);
             return *this;
+        }
+
+        Application& Threads(usize num_threads)
+        {
+            m_thread_pool.~ThreadPool();
+
+            // Yes I know this is being initialized after, but its faster than storing it on the heap, a tradeoff
+            // im willing to take.
+            threading::ThreadPool m_thread_pool(num_threads);
+            return *this;
+        }
+
+        Application& AddThreads(usize num_threads)
+        {
+            m_thread_pool.AddThreads(num_threads);
         }
 
         template<typename T>
@@ -237,6 +252,25 @@ namespace spark
             return *this;
         }
 
+		Application& LoadMod(const std::string& mod_path)
+		{
+			auto handle = m_mod_manager.LoadLibrary(mod_path);
+			if (!handle)
+			{
+				return *this;
+			}
+
+			auto mod_instance = m_mod_manager.LoadModInstance(handle);
+			if (!mod_instance)
+			{
+				m_mod_manager.UnloadLibrary(handle);
+				return *this;
+			}
+
+			return *this;
+		}
+
+
 
         template <ValidCommand T, typename... Args>
         Application& SubmitCommand(Args&&... args)
@@ -292,10 +326,10 @@ namespace spark
         {
             using F = std::decay_t<Func>;
             using Traits = FunctionTraits<F>;
-            constexpr size_t arity = Traits::arity;
+            constexpr usize arity = Traits::arity;
 
             bool has_event_param = false;
-            for_sequence(std::make_index_sequence<arity>{}, [&](auto I) {
+            ForSequence(std::make_index_sequence<arity>{}, [&](auto I) {
                 using Arg = typename Traits::template Arg<decltype(I)::value>;
                 if constexpr (ParamTrait<Arg>::is_event) {
                     has_event_param = true;
@@ -305,7 +339,7 @@ namespace spark
             if (has_event_param) {
                 auto system = std::make_unique<detail::System<F>>(std::forward<Func>(system_func));
 
-                for_sequence(std::make_index_sequence<arity>{}, [&](auto I) {
+                ForSequence(std::make_index_sequence<arity>{}, [&](auto I) {
                     using Arg = typename Traits::template Arg<decltype(I)::value>;
                     if constexpr (ParamTrait<Arg>::is_event) {
                         using EventT = std::decay_t<Arg>;
@@ -386,11 +420,12 @@ namespace spark
         }
 
     private:
-        // snake_case for member variables
         LayerStack m_layer_stack;
         CommandQueue m_command_queue;
         EventQueue m_event_queue;
         ModManager m_mod_manager;
+        threading::ThreadPool m_thread_pool;
+
         GraphicsApi m_gapi;
         f32 m_dt = 0.0f;
 
@@ -409,20 +444,9 @@ namespace spark
             std::vector<std::unique_ptr<detail::ISystem>>>
             m_systems;
 
-        static inline Application* s_app_ptr = nullptr;
-
-    public:
         // Delete copy and move constructors/assignments
         Application(const Application&) = delete;
         Application& operator=(const Application&) = delete;
-
-        ~Application()
-        {
-            if (s_app_ptr == this)
-            {
-                s_app_ptr = nullptr;
-            }
-        }
 
         Application(Application&&) = delete;
         Application& operator=(Application&&) = delete;
@@ -492,8 +516,6 @@ namespace spark
 
     template <typename T>
     using CRef = const T&;
-
-
 } // namespace spark
 
 #endif // SPARK_APPLICATION_HPP

@@ -37,6 +37,7 @@ namespace spark
         static void Logln(LogLevel level, const char* format, ...);
 
         static void Log(LogLevel level, const std::string& message);
+        static void Logln(LogLevel level, const std::string& message);
 
     private:
         // Store if logging is enabled for each level
@@ -77,6 +78,10 @@ namespace spark
 
     // Helper function to create a LoggerStream with a specific log level
     inline LoggerStream Log(LogLevel level = LogLevel::INFO) {
+        return LoggerStream(level);
+    }
+
+    inline LoggerStream Logln(LogLevel level = LogLevel::INFO) {
         return LoggerStream(level);
     }
 

@@ -58,8 +58,7 @@ namespace spark
         // Get a loaded mod by name
         IMod* GetMod(const std::string& mod_name);
 
-    private:
-        // Helper functions for dynamic library loading
+
 #ifdef _WIN32
         HMODULE
 #else

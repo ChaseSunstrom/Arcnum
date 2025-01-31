@@ -1,4 +1,5 @@
 ﻿#include "spark_application.hpp"
+#include "spark_threading.hpp"
 
 struct Position
 {
@@ -59,6 +60,7 @@ void EventMaker(spark::Ref<Arcnum> app)
 
     if (i % 2000 == 0)
         app.SubmitEvent(Blah{ i });
+
     else if (i % 3000 == 0)
         app.SubmitEvent(Acceleration{ i, i * 2, i * 3});
 
@@ -81,20 +83,61 @@ void See(spark::Ref<spark::Coordinator> coordinator, spark::Query<Position, Velo
         }
     }
 
-    query.ForEach([](spark::u32 ent, Position& pos, Velocity& vel) {
-        spark::Log(spark::LogLevel::INFO) << "Entity: " << ent
+    query.ForEach([](spark::u32 ent, const Position& pos, const Velocity& vel) {
+        spark::Logln(spark::LogLevel::INFO) << "Entity: " << ent
             << " Position: " << pos.x << ", " << pos.y << ", " << pos.z
-            << " Velocity: " << vel.x << ", " << vel.y << ", " << vel.z
-            << std::endl;
+            << " Velocity: " << vel.x << ", " << vel.y << ", " << vel.z << std::endl;
         });
 }
+
+void TestThreading()
+{
+    using namespace spark::threading;
+
+    // Create a ThreadPool with 4 worker threads
+    ThreadPool pool(4);
+
+    // Enqueue tasks with different priorities
+    auto task1 = pool.Enqueue(TaskPriority::HIGH, []() -> int {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::cout << "Executing High Priority Task\n";
+        return 42;
+        });
+
+    auto task2 = pool.Enqueue(TaskPriority::LOW, []() -> std::string {
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        std::cout << "Executing Low Priority Task\n";
+        return "Hello, World!";
+        });
+
+    auto task3 = pool.Enqueue(TaskPriority::CRITICAL, []() -> void {
+        std::cout << "Executing Critical Task\n";
+        });
+
+    // Retrieve and print the results
+    std::cout << "Result of Task1: " << task1.result.get() << "\n";
+    std::cout << "Task1 executed by thread ID: " << task1.thread_id.get() << "\n";
+
+    std::cout << "Result of Task2: " << task2.result.get() << "\n";
+    std::cout << "Task2 executed by thread ID: " << task2.thread_id.get() << "\n";
+
+    task3.result.get(); // Wait for completion
+    std::cout << "Task3 executed by thread ID: " << task3.thread_id.get() << "\n";
+
+    // Wait for all tasks to complete before shutting down
+    pool.WaitForAllTasks();
+}
+
 int main()
 {
     spark::Application app(spark::GraphicsApi::OPENGL, "Arcnum", 1280, 720);
 
+    app.Threads(6);
+
     // Register systems with correct parameter passing
     app.RegisterSystem(EventMaker);
     app.RegisterSystem(Move);
+    app.RegisterSystem(TestThreading);
 
     app.RegisterSystem(See, spark::LifecyclePhase::ON_SHUTDOWN);
 

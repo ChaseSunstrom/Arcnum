@@ -192,4 +192,9 @@ namespace spark
         }
     }
 
+    void Logger::Logln(LogLevel level, const std::string& message) {
+        if (s_enabled_levels[static_cast<int>(level)]) {
+            std::cout << GetLogPrefix(level) << message << std::endl;
+        }
+    }
 }

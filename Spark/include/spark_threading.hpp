@@ -255,60 +255,138 @@ namespace spark::threading {
         std::mutex m_rng_mutex;              // Mutex for RNG
     };
 
-    template <typename T, typename MutexT = std::shared_mutex>
-    class RefLock {
+
+    // LockedRef provides exclusive (write) access.
+    // Only one LockedRef may exist at a time.
+    template <typename T>
+    class LockedRef
+    {
     public:
-        // Constructor accepts a reference to the object and its associated mutex.
-        // It immediately locks the mutex exclusively.
-        RefLock(T& ref, MutexT& mutex)
-            : m_ref(ref), m_lock(mutex) {
+        // Immediately acquires an exclusive lock.
+        LockedRef(T& obj, std::shared_mutex& mutex)
+            : m_lock(mutex), m_obj(obj)
+        {
         }
 
-        // Access the object
-        T& operator*() {
-            return m_ref;
+        // Implicit conversion to T&.
+        operator T& ()
+        {
+            return m_obj;
         }
 
-        T* operator->() {
-            return &m_ref;
+        // Arrow operator.
+        T* operator->()
+        {
+            return &m_obj;
         }
 
-        // No copying allowed
-        RefLock(const RefLock&) = delete;
-        RefLock& operator=(const RefLock&) = delete;
+		T& Get()
+		{
+			return m_obj;
+		}
 
     private:
-        T& m_ref;
-        std::unique_lock<MutexT> m_lock;  // acquires exclusive ownership
+        std::unique_lock<std::shared_mutex> m_lock;
+        T& m_obj;
     };
 
-    // Shared (read) lock for const access
-    template <typename T, typename MutexT = std::shared_mutex>
-    class CRefLock {
+    // LockedCRef provides shared (read) access.
+    // Multiple LockedCRef objects may coexist.
+    template <typename T>
+    class LockedCRef
+    {
     public:
-        // Constructor accepts a const reference to the object and its associated mutex.
-        // It immediately locks the mutex in shared mode.
-        CRefLock(const T& ref, MutexT& mutex)
-            : m_ref(ref), m_lock(mutex) {
+        // Immediately acquires a shared lock.
+        LockedCRef(const T& obj, std::shared_mutex& mutex)
+            : m_lock(mutex), m_obj(obj)
+        {
         }
 
-        // Access the object
-        const T& operator*() const {
-            return m_ref;
+        // Implicit conversion to const T&.
+        operator const T& () const
+        {
+            return m_obj;
         }
 
-        const T* operator->() const {
-            return &m_ref;
+        // Arrow operator.
+        const T* operator->() const
+        {
+            return &m_obj;
         }
 
-        // No copying allowed
-        CRefLock(const CRefLock&) = delete;
-        CRefLock& operator=(const CRefLock&) = delete;
+
+        T& Get()
+        {
+            return m_obj;
+        }
 
     private:
-        const T& m_ref;
-        std::shared_lock<MutexT> m_lock;  // acquires shared (read) ownership
+        std::shared_lock<std::shared_mutex> m_lock;
+        const T& m_obj;
     };
+
+    // AutoLockable wraps any object with an internal shared mutex.
+    template <typename T>
+    class AutoLockable {
+    public:
+        template <typename ... Args>
+        AutoLockable(Args && ... args)
+            : m_obj(std::forward<Args>(args)...)
+            , m_mutex(std::make_shared<std::shared_mutex>())
+        {
+        }
+
+        LockedRef<T> Lock() {
+            return LockedRef<T>(m_obj, *m_mutex);
+        }
+
+        LockedCRef<T> CLock() const {
+            return LockedCRef<T>(m_obj, *m_mutex);
+        }
+
+        T& Get() {
+            return m_obj;
+        }
+
+        const T& Get() const {
+            return m_obj;
+        }
+
+    private:
+        T m_obj;
+        std::shared_ptr<std::shared_mutex> m_mutex;
+    };
+
+    template <typename T>
+    class AutoLockable<T*> {
+    public:
+        explicit AutoLockable(T* ptr)
+            : m_ptr(ptr)
+            , m_mutex(std::make_shared<std::shared_mutex>())
+        {
+        }
+
+        LockedRef<T> Lock() {
+            return LockedRef<T>(*m_ptr, *m_mutex);
+        }
+
+        LockedCRef<T> CLock() const {
+            return LockedCRef<T>(*m_ptr, *m_mutex);
+        }
+
+        T* Get() {
+            return m_ptr;
+        }
+
+        const T* Get() const {
+            return m_ptr;
+        }
+
+    private:
+        T* m_ptr;
+        std::shared_ptr<std::shared_mutex> m_mutex;
+    };
+
 }
 
 #endif // THREAD_POOL_HPP

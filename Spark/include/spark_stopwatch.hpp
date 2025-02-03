@@ -9,7 +9,7 @@ namespace spark
     template <typename Ty = f64, typename Duration = std::chrono::duration<Ty>>
     class Stopwatch
     {
-        static_assert(std::is_floating_point_v<Ty>, "Timer only supports floating-point types.");
+        static_assert(std::is_floating_point_v<Ty>, "Stopwatch only supports floating-point types.");
 
     public:
         Stopwatch()

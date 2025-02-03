@@ -80,7 +80,7 @@ namespace spark
                 auto evt_ptr = m_events.front();
                 m_events.pop();
 
-                // For each event, get (active_tid, active_ptr) via VisitActive
+                // For each event, Get (active_tid, active_ptr) via VisitActive
                 evt_ptr->VisitActive([this, base_evt = evt_ptr.get()](std::type_index tid, void* ptr)
                     {
                         // For each subscription, run if we match

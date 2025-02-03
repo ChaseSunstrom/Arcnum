@@ -28,19 +28,43 @@ using Arcnum = spark::Application;
 void Move(
     spark::Ref<spark::Coordinator> coordinator,
     spark::Query<Position, Velocity> query,
+    spark::Query<Position, Velocity> query2,
+    spark::Query<Position, Velocity> query3,
+    spark::Query<Position, Velocity> query4,
+    spark::Query<Position, Velocity> query5,
     spark::Event<Blah, Acceleration> event
 )
 {
     if (event.Holds<Blah>())
-        spark::Logger::Logln("Got Blah event: %d", event.Get<Blah>().i);
+        spark::Logger::Logln("Got Blah event: %u", event.Get<Blah>().i);
 
 
     if (event.Holds<Acceleration>())
     {
         auto aevent = event.Get<Acceleration>();
-        spark::Logger::Logln("Got Acceleration event: %d, %d, %d", aevent.x, aevent.y, aevent.z);
+        spark::Logger::Logln("Got Acceleration event: %llu, %llu, %llu", aevent.x, aevent.y, aevent.z);
     }
 
+    auto entity = coordinator.CreateEntity(
+        Position{ 0, 0, 0 },
+        Velocity{ 0.01, 0.01, 0.01 } // Example non-zero velocity
+    );
+
+    query.ForEach([](spark::u32 ent, Position& pos, Velocity& vel)
+        {
+            pos.x += vel.x;
+			pos.y += vel.y;
+			pos.z += vel.z;
+
+        });
+
+}
+
+void Move2(
+    spark::Ref<spark::Coordinator> coordinator,
+    spark::Query<Position, Velocity> query
+)
+{
     auto entity = coordinator.CreateEntity(
         Position{ 0, 0, 0 },
         Velocity{ 0.01, 0.01, 0.01 } // Example non-zero velocity
@@ -54,7 +78,7 @@ void Move(
         });
 }
 
-void EventMaker(spark::Ref<Arcnum> app)
+void EventMaker(spark::Ref<spark::Application> app)
 {
     static spark::u32 i = 0;
 
@@ -125,16 +149,17 @@ void TestThreading(spark::threading::ThreadPool& pool)
     pool.WaitForAllTasks();
 }
 
-int main()
+spark::i32 main()
 {
     spark::Application app(spark::GraphicsApi::OPENGL, "Arcnum", 1280, 720);
 
     // Register systems with correct parameter passing
-    app.RegisterSystem(EventMaker);
-    app.RegisterSystem(Move);
-    app.RegisterSystem(TestThreading);
+    app.RegisterSystem(EventMaker, spark::SystemSettings{ .execution_mode = spark::SystemExecutionMode::MULTITHREADED_ASYNC, .priority = spark::SystemPriority::NORMAL });
+    app.RegisterSystem(Move, spark::SystemSettings{ .execution_mode = spark::SystemExecutionMode::MULTITHREADED_ASYNC, .priority = spark::SystemPriority::NORMAL });
+    app.RegisterSystem(Move2, spark::SystemSettings{ .execution_mode = spark::SystemExecutionMode::MULTITHREADED_ASYNC, .priority = spark::SystemPriority::NORMAL });
+    //app.RegisterSystem(TestThreading);
 
-    app.RegisterSystem(See, spark::LifecyclePhase::ON_SHUTDOWN);
+    app.RegisterSystem(See, spark::SystemSettings{ spark::SystemPhase::ON_SHUTDOWN });
 
     app.Start();
     app.Run();

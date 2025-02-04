@@ -17,16 +17,6 @@
 #include "spark_event_layer.hpp"
 #include "special/spark_modding.hpp"
 
-#include <any>
-#include <typeindex>
-#include <memory>
-#include <unordered_map>
-#include <stdexcept>
-#include <mutex>
-#include <shared_mutex>
-#include <tuple>
-#include <utility>
-
 namespace spark
 {
 	// --------------------------------------------------------------------
@@ -84,6 +74,30 @@ namespace spark
 			T Get()
 			{
 				return m_value;
+			}
+		};
+
+		template <typename T>
+		struct QueryArgHolder
+		{
+			// T is your query type, e.g. Query<Position, Velocity>
+			// We'll hold the locked coordinator and the actual query.
+			// This lock must stay alive until the system finishes.
+
+			// The locked coordinator. For an exclusive lock, you might have:
+			threading::LockedRef<Coordinator> m_coord_lock;
+			T m_query;
+
+			QueryArgHolder(threading::LockedRef<Coordinator> lock, T&& query)
+				: m_coord_lock(std::move(lock))
+				, m_query(std::move(query))
+			{
+			}
+
+			// Return the query itself
+			T Get()
+			{
+				return m_query;
 			}
 		};
 
@@ -643,15 +657,27 @@ namespace spark
 			void CallFunc(Application& app, std::shared_ptr<IEvent> forced_evt)
 			{
 				using traits = FunctionTraits<Func>;
-				constexpr size_t arity = traits::arity;
-				auto holders = [&]<std::size_t... Is>(std::index_sequence<Is...>)
-				{
-					return std::make_tuple(MakeArgHolder<typename traits::template arg<Is>>(app, forced_evt)...);
-				}(std::make_index_sequence<arity>{});
-				std::apply([this](auto& ... holder)
-					{
+				using args_tuple = typename traits::args_tuple;
+				constexpr size_t n = traits::arity;
+
+				// 1) Make a tuple of ArgHolders
+				auto holders = MakeHolders<args_tuple>(app, forced_evt, std::make_index_sequence<n>{});
+
+				// 2) Unpack them into m_func(...)
+				std::apply(
+					[this](auto &... holder) {
 						m_func(holder.Get()...);
-					}, holders);
+					},
+					holders
+				);
+			}
+
+			template <typename TUP, size_t... Is>
+			auto MakeHolders(Application& app, std::shared_ptr<IEvent> forced_evt, std::index_sequence<Is...>)
+			{
+				return std::make_tuple(
+					MakeArgHolder<std::tuple_element_t<Is, TUP>>(app, forced_evt)...
+				);
 			}
 
 			void ExecuteImpl(Application& app, std::shared_ptr<IEvent> forced_evt)
@@ -681,8 +707,14 @@ namespace spark
 		{
 			if constexpr (ParamTrait<Arg>::is_query)
 			{
-				return QueryComponents<Arg>::Get(app.GetCoordinator());
+				using Q = std::remove_reference_t<Arg>;
+				auto& co_lockable = app.GetResource<Coordinator>();
+				auto locked_coord = co_lockable.Lock();          // lock the coordinator
+				auto local_query = QueryComponents<Q>::Get(locked_coord.Get());
+				
+				return QueryArgHolder<Q>{ std::move(locked_coord), std::move(local_query) };
 			}
+
 			else if constexpr (ParamTrait<Arg>::is_resource)
 			{
 				using bare_t = std::remove_reference_t<Arg>;
@@ -715,18 +747,6 @@ namespace spark
 					throw std::runtime_error("Dependency must be registered as a resource for automatic locking!");
 				}
 			}
-			else if constexpr (ParamTrait<Arg>::is_coordinator)
-			{
-				return app.GetCoordinator();
-			}
-			else if constexpr (ParamTrait<Arg>::is_thread_pool)
-			{
-				return app.GetThreadPool();
-			}
-			else if constexpr (ParamTrait<Arg>::is_application)
-			{
-				return app;
-			}
 			else
 			{
 				static_assert(sizeof(Arg) == 0, "Unhandled Arg type in ComputeArgument!");
@@ -744,7 +764,11 @@ namespace spark
 		template <typename Arg>
 		auto MakeArgHolder(Application& app, std::shared_ptr<IEvent> forced_evt)
 		{
-			if constexpr (ParamTrait<Arg>::is_resource)
+			if constexpr (ParamTrait<Arg>::is_query)
+			{
+				return ComputeArgument<Arg>(app, forced_evt);
+			}
+			else if constexpr (ParamTrait<Arg>::is_resource)
 			{
 				using ResourceType = std::remove_reference_t<Arg>;
 				if constexpr (std::is_const_v<ResourceType>)

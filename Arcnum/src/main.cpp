@@ -46,14 +46,6 @@ void Move(
         Velocity{ 0.01, 0.01, 0.01 } // Example non-zero velocity
     );
 
-    query.ForEach([](spark::u32 ent, Position& pos, Velocity& vel)
-        {
-            pos.x += vel.x;
-			pos.y += vel.y;
-			pos.z += vel.z;
-
-        });
-
 }
 
 void Move2(
@@ -66,12 +58,6 @@ void Move2(
         Velocity{ 0.01, 0.01, 0.01 } // Example non-zero velocity
     );
 
-    query.ForEach([](spark::u32 ent, Position& pos, Velocity& vel)
-        {
-            pos.x += vel.x;
-            pos.y += vel.y;
-            pos.z += vel.z;
-        });
 }
 
 void EventMaker(spark::Ref<spark::Application> app)
@@ -152,7 +138,7 @@ spark::i32 main()
 
     // Register systems with correct parameter passing
     app.RegisterSystems(EventMaker);
-    app.RegisterSystems(Move, Move2, spark::SystemSettings{ .execution_mode = spark::SystemExecutionMode::MULTITHREADED_ASYNC});
+    app.RegisterSystems(Move, Move2, spark::SystemSettings{.execution_mode = spark::SystemExecutionMode::MULTITHREADED_ASYNC});
     //app.RegisterSystem(TestThreading);
 
     app.RegisterSystem(See, spark::SystemSettings{ spark::SystemPhase::ON_SHUTDOWN });

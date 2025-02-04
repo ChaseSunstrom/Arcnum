@@ -386,7 +386,6 @@ namespace spark::threading {
         T* m_ptr;
         std::shared_ptr<std::shared_mutex> m_mutex;
     };
-
 }
 
 #endif // THREAD_POOL_HPP

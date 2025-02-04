@@ -115,9 +115,6 @@ namespace spark
     {
         using decayed = std::remove_cv_t<std::remove_reference_t<T>>;
 
-        static constexpr bool is_application = std::is_same_v<decayed, Application>;
-        static constexpr bool is_coordinator = std::is_same_v<decayed, Coordinator>;
-        static constexpr bool is_thread_pool = std::is_same_v<decayed, threading::ThreadPool>;
         static constexpr bool is_query = IsSparkQuery<decayed>::value;
         static constexpr bool is_event = IsEvent<decayed>::value;
         static constexpr bool is_resource = !is_query && !is_event;
@@ -744,21 +741,6 @@ namespace spark
                 {
                     throw std::runtime_error("Dependency must be registered as a resource for automatic locking!");
                 }
-            }
-            // If Application
-            else if constexpr (ParamTrait<Arg>::is_application)
-            {
-                return app;
-            }
-            // If Coordinator
-            else if constexpr (ParamTrait<Arg>::is_coordinator)
-            {
-                return app.GetCoordinator();
-            }
-            // If ThreadPool
-            else if constexpr (ParamTrait<Arg>::is_thread_pool)
-            {
-                return app.GetThreadPool();
             }
             else
             {

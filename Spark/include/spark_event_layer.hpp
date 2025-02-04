@@ -3,6 +3,7 @@
 
 #include "spark_layer.hpp"
 #include "spark_event_queue.hpp"
+#include "spark_delta_time.hpp"
 
 namespace spark
 {
@@ -32,7 +33,7 @@ namespace spark
         }
 
         // Called every frame
-        void OnUpdate(f32 dt) override
+        void OnUpdate(DeltaTime<f64> dt) override
         {
             m_event_queue.DispatchAll();
         }

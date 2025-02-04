@@ -5,6 +5,7 @@
 #include "spark_layer.hpp"
 #include "spark_renderer.hpp"
 #include "spark_command_queue.hpp"
+#include "spark_delta_time.hpp"
 
 #include "spark_graphics_api.hpp"
 
@@ -61,7 +62,7 @@ namespace spark
 			// Possibly do nothing here or set up extra state
 		}
 
-		void OnUpdate(float dt) override
+		void OnUpdate(DeltaTime<f64> dt) override
 		{
 			m_renderer->BeginFrame();
 

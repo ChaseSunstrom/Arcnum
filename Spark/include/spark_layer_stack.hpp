@@ -3,10 +3,7 @@
 
 #include "spark_pch.hpp"
 #include "spark_layer.hpp"
-
-#include <unordered_map>
-#include <typeindex>
-#include <memory>
+#include "spark_delta_time.hpp"
 
 namespace spark
 {
@@ -96,7 +93,8 @@ namespace spark
             }
         }
 
-        void Update(f32 dt)
+        template <typename T>
+        void Update(DeltaTime<T> dt)
         {
             for (auto& layer : m_layers | std::views::values)
             {

@@ -2,6 +2,7 @@
 #define SPARK_LAYER_HPP
 
 #include "spark_pch.hpp"
+#include "spark_delta_time.hpp"
 
 namespace spark
 {
@@ -15,7 +16,7 @@ namespace spark
 		virtual void OnStart() {}
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
-		virtual void OnUpdate(f32 dt) {}
+		virtual void OnUpdate(DeltaTime<f64> dt) {}
 	};
 }
 

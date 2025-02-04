@@ -2,32 +2,44 @@
 #define SPARK_EVENT_HPP
 
 #include "spark_pch.hpp"
+#include <memory>
+#include <variant>
+#include <functional>
+#include <typeindex>
+#include <type_traits>
+#include <stdexcept>
 
+// Base interface
 namespace spark
 {
     struct IEvent
     {
         virtual ~IEvent() = default;
 
-        // This method should call `callback(type_index, void*)` 
-        // indicating which data type is active, plus the pointer to that data.
+        // Called to identify which type is active, plus a pointer
         virtual void VisitActive(std::function<void(std::type_index, void*)> callback) = 0;
     };
 
+    // Forward declare
     template <typename... Ts>
     class Event;
 
-    //-------------------------------------------------------------
-    // SINGLE-TYPE SPECIALIZATION: Event<T>
-    //-------------------------------------------------------------
+    //-----------------------------------------------------
+    // Single-type specialization: Event<T>
+    //-----------------------------------------------------
     template <typename T>
     class Event<T> : public IEvent
     {
     public:
-        using Variant = std::variant<std::shared_ptr<T>>;
+        using variant_type = std::variant<std::shared_ptr<T>>;
 
-        // Default constructor
         Event() = default;
+
+        // Construct from a T by value
+        explicit Event(const T& value)
+            : m_variant(std::make_shared<T>(value))
+        {
+        }
 
         // Construct from a shared_ptr<T>
         explicit Event(std::shared_ptr<T> ptr)
@@ -35,67 +47,39 @@ namespace spark
         {
         }
 
-        explicit Event(const T& value)
-            : m_variant(std::make_shared<T>(value))
-        {
-        }
+        const variant_type& GetVariant() const { return m_variant; }
+        variant_type& GetVariant() { return m_variant; }
 
-        // Access the variant
-        const Variant& GetVariant() const { return m_variant; }
-        Variant& GetVariant() { return m_variant; }
-
-        // operator-> for convenience
-        T* operator->()
-        {
-            return std::get<std::shared_ptr<T>>(m_variant).get();
-        }
-        const T* operator->() const
-        {
-            return std::get<std::shared_ptr<T>>(m_variant).get();
-        }
-
-        // operator* => T&
-        T& operator*()
-        {
-            return *std::get<std::shared_ptr<T>>(m_variant);
-        }
-        const T& operator*() const
-        {
-            return *std::get<std::shared_ptr<T>>(m_variant);
-        }
-
-        // IEvent method: identify that we only hold T
-        virtual void VisitActive(std::function<void(std::type_index, void*)> callback) override
+        // IEvent override
+        void VisitActive(std::function<void(std::type_index, void*)> callback) override
         {
             auto& sp = std::get<std::shared_ptr<T>>(m_variant);
             if (sp)
             {
-                // typeid(*sp) => typeid(T) if sp not empty
                 callback(std::type_index(typeid(*sp)), sp.get());
             }
             else
             {
-                // If null, still pass typeid(T), but pointer is nullptr
                 callback(std::type_index(typeid(T)), nullptr);
             }
         }
 
-        // Conversion from multi => single if you wanted
-        // but typically you'd do single => multi. We'll skip or block it.
-        template <typename... Others>
-        Event(const Event<Others...>&)
-        {
-            static_assert(sizeof...(Others) == -1,
-                "Multi => single not supported. Use single => multi instead.");
-        }
+        // For convenience, if you want a direct check or get:
+        bool Holds() const { return (std::get_if<std::shared_ptr<T>>(&m_variant) != nullptr); }
 
     private:
-        Variant m_variant;
-};
-    
-    template <typename T, typename... Us>
-    struct IsAnyOf : std::bool_constant<(std::is_same_v<T, Us> || ...)> { };
+        variant_type m_variant;
+    };
 
+    // ------------------------------------------------------------
+    // Helper to see if T is among [Us...]
+    // ------------------------------------------------------------
+    template <typename T, typename... Us>
+    struct IsAnyOf : std::bool_constant<(std::is_same_v<T, Us> || ...)> {};
+
+    // For smaller => bigger multi check
+    // We say "All of Others... appear in T, U, More..."
+    // So if Others... = (Blah), and T,U,More... = (Blah, Accel), we pass.
     template <typename... As>
     struct AllAreIn;
 
@@ -116,15 +100,18 @@ namespace spark
     template <typename... As, typename... Bs>
     concept AllIn = AllAreIn<As...>::template value<Bs...>;
 
-    // Now define the multi-type partial specialization
+    //-----------------------------------------------------
+    // Multi-type specialization: Event<T, U, More...>
+    //-----------------------------------------------------
     template <typename T, typename U, typename... More>
     class Event<T, U, More...> : public IEvent
     {
     public:
-        using Variant = std::variant<std::shared_ptr<T>, std::shared_ptr<U>, std::shared_ptr<More>...>;
+        using variant_type = std::variant<std::shared_ptr<T>, std::shared_ptr<U>, std::shared_ptr<More>...>;
 
         Event() = default;
 
+        // Construct from a shared_ptr<X> if X is in [T, U, More...]
         template <typename X>
             requires IsAnyOf<X, T, U, More...>::value
         explicit Event(std::shared_ptr<X> ptr)
@@ -132,70 +119,24 @@ namespace spark
         {
         }
 
-        const Variant& GetVariant() const { return m_variant; }
-        Variant& GetVariant() { return m_variant; }
+        // Return the underlying variant
+        const variant_type& GetVariant() const { return m_variant; }
+        variant_type& GetVariant() { return m_variant; }
 
-        // Checks if we hold a certain type X
-        template <typename X>
-            requires IsAnyOf<X, T, U, More...>::value
-        bool Holds() const
-        {
-            return std::holds_alternative<std::shared_ptr<X>>(m_variant);
-        }
-
-        // Return reference to X
-        template <typename X>
-            requires IsAnyOf<X, T, U, More...>::value
-        X& Get()
-        {
-            auto& sp = std::get<std::shared_ptr<X>>(m_variant);
-            if (!sp) { throw std::runtime_error("Null pointer stored for this type."); }
-            return *sp;
-        }
-        template <typename X>
-            requires IsAnyOf<X, T, U, More...>::value
-        const X& Get() const
-        {
-            auto& sp = std::get<std::shared_ptr<X>>(m_variant);
-            if (!sp) { throw std::runtime_error("Null pointer stored for this type."); }
-            return *sp;
-        }
-
-        // TryGet => pointer or nullptr
-        template <typename X>
-            requires IsAnyOf<X, T, U, More...>::value
-        X* TryGet()
-        {
-            if (!std::holds_alternative<std::shared_ptr<X>>(m_variant))
-                return nullptr;
-            auto& sp = std::get<std::shared_ptr<X>>(m_variant);
-            return sp.get();
-        }
-        template <typename X>
-            requires IsAnyOf<X, T, U, More...>::value
-        const X* TryGet() const
-        {
-            if (!std::holds_alternative<std::shared_ptr<X>>(m_variant))
-                return nullptr;
-            auto& sp = std::get<std::shared_ptr<X>>(m_variant);
-            return sp.get();
-        }
-
-        // IEvent: figure out which pointer is active, call callback
-    	void VisitActive(std::function<void(std::type_index, void*)> callback) override
+        // IEvent override
+        void VisitActive(std::function<void(std::type_index, void*)> callback) override
         {
             std::visit(
                 [&](auto& sp)
                 {
-                    using actual_t = std::decay_t<decltype(sp)>; // e.g. std::shared_ptr<X>
                     if (sp)
                     {
                         callback(std::type_index(typeid(*sp)), sp.get());
                     }
                     else
                     {
-                        // null pointer, pass typeid(X) and nullptr
-                        // (The line below uses 'std::remove_pointer_t' to ensure it’s the correct type)
+                        // null pointer for that type
+                        using sp_type = std::remove_reference_t<decltype(sp)>;
                         callback(std::type_index(typeid(std::remove_pointer_t<decltype(sp.get())>)), nullptr);
                     }
                 },
@@ -203,33 +144,63 @@ namespace spark
             );
         }
 
-        // Conversion from smaller => bigger
+        //-------------------------------------------------
+        // Smaller multi => bigger multi
+        // e.g. Event<Blah> => Event<Blah, Accel>
+        // or   Event<Blah, Foo> => Event<Blah, Foo, Accel>
+        //-------------------------------------------------
         template <typename... Others>
             requires AllIn<Others..., T, U, More...>
         Event(const Event<Others...>& other)
         {
+            // whichever pointer is active in "other", store that pointer in this->m_variant
             std::visit(
-                [this](auto&& arg_ptr)
+                [this](auto&& active_ptr)
                 {
-                    this->m_variant = arg_ptr;
+                    this->m_variant = active_ptr;
                 },
                 other.GetVariant()
             );
         }
 
-        // Conversion from single => multi
+        //-------------------------------------------------
+        // Single => bigger multi
+        // e.g. Event<Acceleration> => Event<Blah,Acceleration>
+        //-------------------------------------------------
         template <typename Single>
             requires IsAnyOf<Single, T, U, More...>::value
         Event(const Event<Single>& single_event)
         {
+            // single_event has a variant with exactly one type: shared_ptr<Single>
             const auto& var_single = single_event.GetVariant();
+            // e.g. var_single is a variant<std::shared_ptr<Single>>
+            // We'll get that pointer
             const auto& sp = std::get<std::shared_ptr<Single>>(var_single);
+            // store it in our multi-variant
             m_variant = sp;
         }
 
+        // For convenience
+        template <typename X>
+            requires IsAnyOf<X, T, U, More...>::value
+        bool Holds() const
+        {
+            return std::holds_alternative<std::shared_ptr<X>>(m_variant);
+        }
+
+        template <typename X>
+            requires IsAnyOf<X, T, U, More...>::value
+        X& Get()
+        {
+            auto& sp = std::get<std::shared_ptr<X>>(m_variant);
+            if (!sp) { throw std::runtime_error("Null pointer for that type in multi-event."); }
+            return *sp;
+        }
+
     private:
-        Variant m_variant;
+        variant_type m_variant;
     };
-}
+
+} // namespace spark
 
 #endif // SPARK_EVENT_HPP

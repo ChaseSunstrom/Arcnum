@@ -4,6 +4,7 @@
 #include "spark_pch.hpp"
 #include "spark_layer.hpp"
 #include "spark_defer.hpp"
+#include "spark_delta_time.hpp"
 
 #include "spark_graphics_api.hpp"
 
@@ -52,7 +53,7 @@ namespace spark
 		void OnAttach() override {}
 		void OnDetach() override {}
 
-		void OnUpdate(f32 dt) override 
+		void OnUpdate(DeltaTime<f64> dt) override 
 		{
 			m_window->Update();
 		}

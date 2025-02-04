@@ -28,10 +28,6 @@ using Arcnum = spark::Application;
 void Move(
     spark::Ref<spark::Coordinator> coordinator,
     spark::Query<Position, Velocity> query,
-    spark::Query<Position, Velocity> query2,
-    spark::Query<Position, Velocity> query3,
-    spark::Query<Position, Velocity> query4,
-    spark::Query<Position, Velocity> query5,
     spark::Event<Blah, Acceleration> event
 )
 {
@@ -80,16 +76,17 @@ void Move2(
 
 void EventMaker(spark::Ref<spark::Application> app)
 {
-    static spark::u32 i = 0;
+    static std::atomic<spark::u32> i{ 0 };
 
-    if (i % 2000 == 0)
-        app.SubmitEvent(Blah{ i });
+    spark::u32 current = i.fetch_add(1, std::memory_order_relaxed);
+    // Now we safely have a unique 'current' for this call
 
-    else if (i % 3000 == 0)
-        app.SubmitEvent(Acceleration{ i, i * 2, i * 3});
-
-    i++;
+    if (current % 2000 == 0)
+        app.SubmitEvent(Blah{ current });
+    else if (current % 3000 == 0)
+        app.SubmitEvent(Acceleration{ current, current * 2, current * 3 });
 }
+
 
 // System function to see entities
 // Modified See function to debug
@@ -154,9 +151,8 @@ spark::i32 main()
     spark::Application app(spark::GraphicsApi::OPENGL, "Arcnum", 1280, 720);
 
     // Register systems with correct parameter passing
-    app.RegisterSystem(EventMaker, spark::SystemSettings{ .execution_mode = spark::SystemExecutionMode::MULTITHREADED_ASYNC, .priority = spark::SystemPriority::NORMAL });
-    app.RegisterSystem(Move, spark::SystemSettings{ .execution_mode = spark::SystemExecutionMode::MULTITHREADED_ASYNC, .priority = spark::SystemPriority::NORMAL });
-    app.RegisterSystem(Move2, spark::SystemSettings{ .execution_mode = spark::SystemExecutionMode::MULTITHREADED_ASYNC, .priority = spark::SystemPriority::NORMAL });
+    app.RegisterSystems(EventMaker);
+    app.RegisterSystems(Move, Move2, spark::SystemSettings{ .execution_mode = spark::SystemExecutionMode::MULTITHREADED_ASYNC});
     //app.RegisterSystem(TestThreading);
 
     app.RegisterSystem(See, spark::SystemSettings{ spark::SystemPhase::ON_SHUTDOWN });

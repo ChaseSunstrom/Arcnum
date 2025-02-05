@@ -142,7 +142,8 @@ spark::i32 main()
     spark::Application app(spark::GraphicsApi::OPENGL, "Arcnum", 1280, 720);
 
     // Register systems with correct parameter passing
-    app.RegisterSystems(Move, Move2, Move3, Move4, Move5, Move6, EventMaker, spark::SystemSettings{.execution_mode = spark::SystemExecutionMode::MULTITHREADED_ASYNC});
+    app.RegisterSystems(Move, Move2, Move3, EventMaker, spark::SystemSettings{.execution_mode = spark::SystemExecutionMode::MULTITHREADED_ASYNC});
+    app.RegisterSystems(Move4, Move5, Move6, EventMaker, spark::SystemSettings{ .execution_mode = spark::SystemExecutionMode::SINGLE_THREADED });
 
     app.RegisterSystem(See, spark::SystemSettings{ spark::SystemPhase::ON_SHUTDOWN });
 

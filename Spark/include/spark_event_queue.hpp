@@ -5,7 +5,14 @@
 
 namespace spark
 {
-    class EventQueue
+    class Application;
+
+    namespace detail
+    {
+        struct ISystem;
+    }
+
+    class SPARK_API EventQueue
     {
     public:
         EventQueue() = default;
@@ -63,25 +70,8 @@ namespace spark
         }
 
         // DispatchAll calls each subscription's callback for each event
-        void DispatchAll()
-        {
+        void DispatchAll(Application& app, std::vector<std::unique_ptr<detail::ISystem>>& event_systems);
 
-            std::lock_guard<std::mutex> lock(m_mutex);
-            while (!m_events.empty())
-            {
-                auto evt_ptr = m_events.front();
-                m_events.pop();
-
-                // For each subscription
-                evt_ptr->VisitActive([this, base_evt = evt_ptr.get()](std::type_index tid, void* ptr)
-                    {
-                        for (auto& sub : m_subscriptions)
-                        {
-                            sub.fn(base_evt, tid, ptr);
-                        }
-                    });
-            }
-        }
 
         // Clear out events of any active type in [Ts...]
         template <typename... Ts>

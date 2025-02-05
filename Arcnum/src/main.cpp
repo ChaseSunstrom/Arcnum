@@ -129,15 +129,6 @@ void See(spark::Ref<spark::Coordinator> coordinator, spark::Query<Position, Velo
 {
     spark::Logger::Logln(spark::LogLevel::INFO, "See Query size: %d", query.Size());
 
-    // Log all entities in the coordinator
-    for (const auto& arch_pair : coordinator.GetArchetypes()) {
-        const auto& signature = arch_pair.first;
-        spark::Logger::Logln(spark::LogLevel::INFO, "Archetype Signature: %s", signature.to_string().c_str());
-
-        for (const auto& chunk : arch_pair.second->GetChunks()) {
-            spark::Logger::Logln(spark::LogLevel::INFO, "Chunk has %zu entities", chunk.Size());
-        }
-    }
 }
 
 
@@ -147,7 +138,6 @@ spark::i32 main()
 
     // Register systems with correct parameter passing
     app.RegisterSystems(Move, Move2, Move3, Move4, Move5, Move6, EventMaker, spark::SystemSettings{.execution_mode = spark::SystemExecutionMode::MULTITHREADED_ASYNC});
-    
 
     app.RegisterSystem(See, spark::SystemSettings{ spark::SystemPhase::ON_SHUTDOWN });
 

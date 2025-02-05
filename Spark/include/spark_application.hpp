@@ -240,7 +240,7 @@ namespace spark
             // Basic layering
             m_layer_stack.PushLayer<WindowLayer>(gapi, title, win_width, win_height, vsync);
             m_layer_stack.PushLayer<RendererLayer>(gapi, m_command_queue);
-            m_layer_stack.PushLayer<EventLayer>(m_event_queue);
+            m_layer_stack.PushLayer<EventLayer>(*this, m_event_queue);
 
             // Add these resources
             AddResource(*this);
@@ -282,6 +282,7 @@ namespace spark
         {
             DispatchSystemsForPhase(SystemPhase::ON_SHUTDOWN);
             m_layer_stack.Stop();
+            m_thread_pool.Shutdown();
             return *this;
         }
 
@@ -490,6 +491,8 @@ namespace spark
             return *this;
         }
 
+        std::vector<std::unique_ptr<detail::ISystem>>& GetEventSystems() { return m_event_systems; }
+
     private:
         template <size_t... Is, typename F>
         static void ForSequence(std::index_sequence<Is...>, F&& func)
@@ -547,6 +550,62 @@ namespace spark
             bool coordinator_needed = false;
             std::any coordinator_any; // same idea: a shared_ptr<LockedRef<Coordinator>>
         };
+
+        // helper that assigns the underlying shared_ptr into evt if tid matches one of the types
+        template <typename ... ts, typename t>
+        bool SetVariant(Event<ts...>& evt, t* typed_ptr)
+        {
+            if (typed_ptr == nullptr)
+            {
+                return false;
+            }
+            // Instead of using a no‐op deleter, create a new, owned copy of the event data.
+            std::shared_ptr<t> sp = std::make_shared<t>(*typed_ptr);
+            evt = Event<ts...>(sp);
+            return true;
+        }
+
+        template <typename ... ts>
+        bool AssignVariantToEvent(Event<ts...>& evt, std::type_index tid, void* raw_ptr)
+        {
+            bool assigned = false;
+            // Use a fold expression over the types ts...
+            ((tid == std::type_index(typeid(ts))
+                ? (assigned = SetVariant(evt, reinterpret_cast<ts*>(raw_ptr)))
+                : false) || ...);
+            return assigned;
+        }
+
+
+        template <typename t_expected>
+        std::shared_ptr<t_expected> ConvertForcedEvent(std::shared_ptr<IEvent> forced)
+        {
+            // First try a direct dynamic cast.
+            auto casted = std::dynamic_pointer_cast<t_expected>(forced);
+            if (casted)
+            {
+                return casted;
+            }
+
+            // Otherwise, assume t_expected is a multi-event.
+            // Create a temporary t_expected via its default constructor.
+            t_expected temp_evt;
+            bool assigned = false;
+
+            // Use forced->VisitActive to extract the active payload.
+            forced->VisitActive([&](std::type_index tid, void* raw_ptr)
+                {
+                    assigned = AssignVariantToEvent(temp_evt, tid, raw_ptr);
+                });
+
+            if (!assigned)
+            {
+                return nullptr;
+            }
+
+            return std::make_shared<t_expected>(std::move(temp_evt));
+        }
+
 
         template <typename Arg>
         void MarkNeededResources(ResourceAggregator& agg)
@@ -664,13 +723,18 @@ namespace spark
             if constexpr (ParamTrait<Arg>::is_event)
             {
                 if (!forced)
+                {
                     throw std::runtime_error("Event param but no forced event!");
-                auto casted = std::dynamic_pointer_cast<decayed>(forced);
+                }
+                auto casted = ConvertForcedEvent<decayed>(forced);
                 if (!casted)
-                    throw std::runtime_error("Could not cast forced event param!");
-                // event => ArgHolder<Arg,false>
+                {
+                    throw std::runtime_error("Could not convert forced event param to expected type!");
+                }
+                // Now we create an ArgHolder for the event.
                 return ArgHolder<Arg, false>(std::move(*casted));
             }
+
             else if constexpr (ParamTrait<Arg>::is_query)
             {
                 // aggregator.coordinator_any is a shared_ptr<LockedRef<Coordinator>>

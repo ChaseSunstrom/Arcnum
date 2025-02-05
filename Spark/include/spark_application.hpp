@@ -280,9 +280,9 @@ namespace spark
 
         Application& Close()
         {
+            m_thread_pool.Shutdown();
             DispatchSystemsForPhase(SystemPhase::ON_SHUTDOWN);
             m_layer_stack.Stop();
-            m_thread_pool.Shutdown();
             return *this;
         }
 
@@ -522,7 +522,7 @@ namespace spark
         CommandQueue m_command_queue;
         EventQueue m_event_queue;
         threading::ThreadPool m_thread_pool;
-        DeltaTime<double> m_dt;
+        DeltaTime<f64> m_dt;
         Coordinator m_coordinator;
 
         // Systems

@@ -40,73 +40,79 @@ void Move(
         spark::Logger::Logln("Got Acceleration event: %llu, %llu, %llu", aevent.x, aevent.y, aevent.z);
     }
 
-    auto entity = coordinator.CreateEntity(
-        Position{ 0, 0, 0 },
-        Velocity{ 0.01, 0.01, 0.01 } // Example non-zero velocity
-    );
-
+    for (spark::i32 i = 0; i < 1000; i++)
+    {
+        auto entity = coordinator.CreateEntity(
+            Position{ 0, 0, 0 },
+            Velocity{ 0.01, 0.01, 0.01 } // Example non-zero velocity
+        );
+    }
 }
 
 void Move2(
-    spark::Ref<spark::Coordinator> coordinator,
-    spark::Query<Position, Velocity> query,
-    spark::Query<Position, Velocity> query2,
-    spark::Query<Position, Velocity> query3,
-    spark::Query<Position, Velocity> query4
+    spark::Ref<spark::Coordinator> coordinator
 )
 {
-    auto entity = coordinator.CreateEntity(
-        Position{ 0, 0, 0 },
-        Velocity{ 0.01, 0.01, 0.01 } // Example non-zero velocity
-    );
-
+    for (spark::i32 i = 0; i < 1000; i++)
+    {
+        auto entity = coordinator.CreateEntity(
+            Position{ 0, 0, 0 },
+            Velocity{ 0.01, 0.01, 0.01 } // Example non-zero velocity
+        );
+    }
 }
 
 void Move3(
-    spark::Ref<spark::Coordinator> coordinator,
-    spark::Query<Position, Velocity> query
+    spark::Ref<spark::Coordinator> coordinator
 )
 {
-    auto entity = coordinator.CreateEntity(
-        Position{ 0, 0, 0 },
-        Velocity{ 0.01, 0.01, 0.01 } // Example non-zero velocity
-    );
+    for (spark::i32 i = 0; i < 1000; i++)
+    {
+        auto entity = coordinator.CreateEntity(
+            Position{ 0, 0, 0 },
+            Velocity{ 0.01, 0.01, 0.01 } // Example non-zero velocity
+        );
+    }
 }
 
 void Move4(
-    spark::Ref<spark::Coordinator> coordinator,
-    spark::Query<Position, Velocity> query
+    spark::Ref<spark::Coordinator> coordinator
 )
 {
-    auto entity = coordinator.CreateEntity(
-        Position{ 0, 0, 0 },
-        Velocity{ 0.01, 0.01, 0.01 } // Example non-zero velocity
-    );
-
+    for (spark::i32 i = 0; i < 1000; i++)
+    {
+        auto entity = coordinator.CreateEntity(
+            Position{ 0, 0, 0 },
+            Velocity{ 0.01, 0.01, 0.01 } // Example non-zero velocity
+        );
+    }
 }
 
 void Move5(
-    spark::Ref<spark::Coordinator> coordinator,
-    spark::Query<Position, Velocity> query
+    spark::Ref<spark::Coordinator> coordinator
 )
 {
-    auto entity = coordinator.CreateEntity(
-        Position{ 0, 0, 0 },
-        Velocity{ 0.01, 0.01, 0.01 } // Example non-zero velocity
-    );
+    for (spark::i32 i = 0; i < 1000; i++)
+    {
+        auto entity = coordinator.CreateEntity(
+            Position{ 0, 0, 0 },
+            Velocity{ 0.01, 0.01, 0.01 } // Example non-zero velocity
+        );
+    }
 
 }
 
 void Move6(
-    spark::Ref<spark::Coordinator> coordinator,
-    spark::Query<Position, Velocity> query
+    spark::Ref<spark::Coordinator> coordinator
 )
 {
-    auto entity = coordinator.CreateEntity(
-        Position{ 0, 0, 0 },
-        Velocity{ 0.01, 0.01, 0.01 } // Example non-zero velocity
-    );
-
+    for (spark::i32 i = 0; i < 1000; i++)
+    {
+        auto entity = coordinator.CreateEntity(
+            Position{ 0, 0, 0 },
+            Velocity{ 0.01, 0.01, 0.01 } // Example non-zero velocity
+        );
+    }
 }
 
 void EventMaker(spark::Ref<spark::Application> app)
@@ -128,7 +134,6 @@ void EventMaker(spark::Ref<spark::Application> app)
 void See(spark::Ref<spark::Coordinator> coordinator, spark::Query<Position, Velocity> query)
 {
     spark::Logger::Logln(spark::LogLevel::INFO, "See Query size: %d", query.Size());
-
 }
 
 
@@ -143,7 +148,6 @@ spark::i32 main()
 
     app.Start();
     app.Run();
-    app.Close();
 
     return 0;
 }

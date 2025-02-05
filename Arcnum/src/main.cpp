@@ -27,7 +27,6 @@ using Arcnum = spark::Application;
 // System function to move entities
 void Move(
     spark::Ref<spark::Coordinator> coordinator,
-    spark::Query<Position, Velocity> query,
     spark::Event<Blah, Acceleration> event
 )
 {
@@ -50,7 +49,10 @@ void Move(
 
 void Move2(
     spark::Ref<spark::Coordinator> coordinator,
-    spark::Query<Position, Velocity> query
+    spark::Query<Position, Velocity> query,
+    spark::Query<Position, Velocity> query2,
+    spark::Query<Position, Velocity> query3,
+    spark::Query<Position, Velocity> query4
 )
 {
     auto entity = coordinator.CreateEntity(
@@ -69,7 +71,6 @@ void Move3(
         Position{ 0, 0, 0 },
         Velocity{ 0.01, 0.01, 0.01 } // Example non-zero velocity
     );
-
 }
 
 void Move4(

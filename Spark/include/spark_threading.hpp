@@ -285,6 +285,20 @@ namespace spark::threading {
 			return m_obj;
 		}
 
+        LockedRef(LockedRef&& other) noexcept
+            : m_lock(std::move(other.m_lock))
+            , m_obj(other.m_obj)
+        {
+            // after move, other can't really hold the lock
+        }
+
+        LockedRef& operator=(LockedRef&& other) noexcept
+        {
+            m_lock = std::move(other.m_lock);
+            m_obj = other.m_obj;
+            return *this;
+        }
+
     private:
         std::unique_lock<std::shared_mutex> m_lock;
         T& m_obj;
@@ -312,6 +326,19 @@ namespace spark::threading {
         const T* operator->() const
         {
             return &m_obj;
+        }
+
+        LockedCRef(LockedCRef&& other) noexcept
+            : m_lock(std::move(other.m_lock))
+            , m_obj(other.m_obj)
+        {
+        }
+
+        LockedCRef& operator=(LockedCRef&& other) noexcept
+        {
+            m_lock = std::move(other.m_lock);
+            m_obj = other.m_obj;
+            return *this;
         }
 
 

@@ -2,12 +2,6 @@
 #define SPARK_EVENT_HPP
 
 #include "spark_pch.hpp"
-#include <memory>
-#include <variant>
-#include <functional>
-#include <typeindex>
-#include <type_traits>
-#include <stdexcept>
 
 // Base interface
 namespace spark

@@ -4,9 +4,9 @@
 
 namespace spark::opengl
 {
-	void GL::Initialize(WindowLayer& wl, const std::string& title, const i32 win_width, const i32 win_height, bool win_vsync)
+	void GL::Initialize(WindowLayer& wl, EventQueue& eq, const std::string& title, const i32 win_width, const i32 win_height, bool win_vsync)
 	{
-		wl.m_window = std::make_unique<GLWindow>(title, win_width, win_height, win_vsync);
+		wl.m_window = std::make_unique<GLWindow>(eq, title, win_width, win_height, win_vsync);
 	}
 
 	void GL::Shutdown()

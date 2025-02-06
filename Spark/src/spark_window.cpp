@@ -5,10 +5,16 @@
 
 namespace spark
 {
-	Window::Window(const std::string& title, i32 width, i32 height, bool vsync)
+	Window::Window(EventQueue& eq, const std::string& title, i32 width, i32 height, bool vsync)
+		: m_data(eq, title, width, height, vsync)
 	{
-		m_data = { title, width, height, vsync };
 	}
+
+	EventQueue& Window::GetEventQueue() const
+	{
+		return m_data.eq;
+	}
+
 
 	i32 Window::GetWidth() const
 	{

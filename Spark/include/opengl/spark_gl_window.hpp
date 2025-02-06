@@ -13,7 +13,7 @@ namespace spark
 		class GLWindow : public Window
 		{
 		public:
-			GLWindow(const std::string& title, i32 width, i32 height, bool vsync = false);
+			GLWindow(EventQueue& eq, const std::string& title, i32 width, i32 height, bool vsync = false);
 			~GLWindow() override;
 			void SetTitle(const std::string& title) override;
 			void Update() override;

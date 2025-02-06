@@ -107,7 +107,7 @@ void Move6(
 {
     for (spark::i32 i = 0; i < 1000; i++)
     {
-        auto entity = coordinator.CreateEntity(
+        coordinator.CreateEntity(
             Position{ 0, 0, 0 },
             Velocity{ 0.01, 0.01, 0.01 } // Example non-zero velocity
         );
@@ -142,7 +142,6 @@ spark::i32 main()
 
     // Register systems with correct parameter passing
     app.RegisterSystems(Move, Move2, Move3, EventMaker, spark::SystemSettings{.execution_mode = spark::SystemExecutionMode::MULTITHREADED_ASYNC});
-    app.RegisterSystems(Move4, Move5, Move6, EventMaker, spark::SystemSettings{ .execution_mode = spark::SystemExecutionMode::SINGLE_THREADED });
 
     app.RegisterSystem(See, spark::SystemSettings{ spark::SystemPhase::ON_SHUTDOWN });
 

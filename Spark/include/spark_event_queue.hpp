@@ -21,10 +21,18 @@ namespace spark
         template <typename... Ts>
         void SubmitEvent(const Event<Ts...>& ev)
         {
-
             std::lock_guard<std::mutex> lock(m_mutex);
             auto ptr = std::make_shared<Event<Ts...>>(ev);
-            m_events.push(ptr);
+            m_events.emplace(ptr);
+        }
+
+        template <typename T, typename... Args>
+        void SubmitEvent(Args&&... args)
+        {
+
+            std::lock_guard<std::mutex> lock(m_mutex);
+            auto ptr = std::make_shared<Event<T>>(T{std::forward<Args>(args)...});
+            m_events.emplace(ptr);
         }
 
         /**

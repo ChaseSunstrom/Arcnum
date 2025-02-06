@@ -4,11 +4,13 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "spark_events.hpp"
+
 
 namespace spark::opengl
 {
-	GLWindow::GLWindow(const std::string& title, i32 width, i32 height, bool vsync)
-		: Window(title, width, height, vsync)
+	GLWindow::GLWindow(EventQueue& eq, const std::string& title, i32 width, i32 height, bool vsync)
+		: Window(eq, title, width, height, vsync)
 	{
 		if (!glfwInit())
 		{
@@ -40,6 +42,15 @@ namespace spark::opengl
 		}
 
 		SetVSync(vsync);
+
+		glfwSetWindowSizeCallback(m_window, 
+			[](GLFWwindow* window, i32 width, i32 height)
+			{
+				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+				data.width = width;
+				data.height = height;
+				data.eq.SubmitEvent<WindowResized>(width, height);
+			});
 
 	}
 	

@@ -131,7 +131,7 @@ void EventMaker(spark::Ref<spark::Application> app)
 
 // System function to see entities
 // Modified See function to debug
-void See(spark::Ref<spark::Coordinator> coordinator, spark::Query<Position, Velocity> query)
+void See(spark::Query<Position, Velocity> query)
 {
     spark::Logger::Logln(spark::LogLevel::INFO, "See Query size: %d", query.Size());
 }

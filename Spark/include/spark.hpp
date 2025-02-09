@@ -11,6 +11,8 @@
 #include "spark_mesh.hpp"
 #include "spark_util.hpp"
 #include "spark_event.hpp"
+#include "spark_events.hpp"
+
 
 #ifdef SPARK_USE_GL
 

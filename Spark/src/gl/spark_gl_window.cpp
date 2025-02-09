@@ -52,6 +52,57 @@ namespace spark::opengl
 				data.eq.SubmitEvent<WindowResized>(width, height);
 			});
 
+		glfwSetWindowCloseCallback(m_window, [](GLFWwindow* window) {
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			data.eq.SubmitEvent<WindowClosed>();
+			});
+
+		glfwSetKeyCallback(m_window, [](GLFWwindow* window, i32 key, i32 scancode, i32 action, i32 mods) {
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			switch (action) {
+			case GLFW_PRESS: {
+				data.eq.SubmitEvent<KeyPressed>(key, 0);
+				break;
+			}
+			case GLFW_RELEASE: {
+				data.eq.SubmitEvent<KeyReleased>(key);
+				break;
+			}
+			case GLFW_REPEAT: {
+				data.eq.SubmitEvent<KeyPressed>(key, 1);
+				break;
+			}
+			}
+			});
+
+		glfwSetMouseButtonCallback(m_window, [](GLFWwindow* window, i32 button, i32 action, i32 mods) {
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			switch (action) {
+			case GLFW_PRESS: {
+				data.eq.SubmitEvent<MouseButtonPressed>(button);
+				break;
+			}
+			case GLFW_RELEASE: {
+				data.eq.SubmitEvent<MouseButtonReleased>(button);
+				break;
+			}
+			}
+			});
+
+		glfwSetCursorPosCallback(m_window, [](GLFWwindow* window, f64 x, f64 y) {
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			data.eq.SubmitEvent<MouseMoved>(x, y);
+			});
+
+		glfwSetScrollCallback(m_window, [](GLFWwindow* window, f64 x, f64 y) {
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			data.eq.SubmitEvent<MouseScrolled>(x, y);
+			});
 	}
 	
 	GLWindow::~GLWindow()

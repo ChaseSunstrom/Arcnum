@@ -25,7 +25,7 @@ namespace spark
     class Event<T> : public IEvent
     {
     public:
-        using variant_type = std::variant<std::shared_ptr<T>>;
+        using VariantT = std::variant<std::shared_ptr<T>>;
 
         Event() = default;
 
@@ -41,8 +41,8 @@ namespace spark
         {
         }
 
-        const variant_type& GetVariant() const { return m_variant; }
-        variant_type& GetVariant() { return m_variant; }
+        const VariantT& GetVariant() const { return m_variant; }
+        VariantT& GetVariant() { return m_variant; }
 
         // IEvent override
         void VisitActive(std::function<void(std::type_index, void*)> callback) override
@@ -61,8 +61,10 @@ namespace spark
         // For convenience, if you want a direct check or get:
         bool Holds() const { return (std::get_if<std::shared_ptr<T>>(&m_variant) != nullptr); }
 
+        T* operator->() { return std::get<std::shared_ptr<T>>(m_variant).get(); }
+
     private:
-        variant_type m_variant;
+        VariantT m_variant;
     };
 
     // ------------------------------------------------------------
@@ -101,7 +103,7 @@ namespace spark
     class Event<T, U, More...> : public IEvent
     {
     public:
-        using variant_type = std::variant<std::shared_ptr<T>, std::shared_ptr<U>, std::shared_ptr<More>...>;
+        using VariantT = std::variant<std::shared_ptr<T>, std::shared_ptr<U>, std::shared_ptr<More>...>;
 
         Event() = default;
 
@@ -114,8 +116,8 @@ namespace spark
         }
 
         // Return the underlying variant
-        const variant_type& GetVariant() const { return m_variant; }
-        variant_type& GetVariant() { return m_variant; }
+        const VariantT& GetVariant() const { return m_variant; }
+        VariantT& GetVariant() { return m_variant; }
 
         // IEvent override
         void VisitActive(std::function<void(std::type_index, void*)> callback) override
@@ -192,7 +194,7 @@ namespace spark
         }
 
     private:
-        variant_type m_variant;
+        VariantT m_variant;
     };
 
 } // namespace spark

@@ -1,5 +1,5 @@
-﻿#include "spark_application.hpp"
-#include "spark_threading.hpp"
+﻿#define SPARK_USE_GL
+#include "spark.hpp"
 
 struct Position
 {
@@ -127,6 +127,10 @@ void EventMaker(spark::Ref<spark::Application> app)
         app.SubmitEvent(Acceleration{ current, current * 2, current * 3 });
 }
 
+void LogMouseMove(spark::Event<spark::MouseMoved> event)
+{
+    spark::Logln(spark::LogLevel::INFO) << "Mouse moved: " << event->x << ", " << event->y << "\n";
+}
 
 // System function to see entities
 // Modified See function to debug
@@ -142,7 +146,7 @@ spark::i32 main()
 
     // Register systems with correct parameter passing
     app.RegisterSystems(Move, Move2, Move3, EventMaker, spark::SystemSettings{.execution_mode = spark::SystemExecutionMode::MULTITHREADED_ASYNC});
-
+    app.RegisterSystems(LogMouseMove, spark::SystemSettings{ .execution_mode = spark::SystemExecutionMode::MULTITHREADED_ASYNC });
     app.RegisterSystem(See, spark::SystemSettings{ spark::SystemPhase::ON_SHUTDOWN });
 
     app.Start();

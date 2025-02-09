@@ -21,13 +21,6 @@ namespace spark
 		i32 key;
 	};
 
-	struct KeyHeld
-	{
-		KeyHeld(i32 key) : key(key) {}
-
-		i32 key;
-	};
-
 	struct MouseMoved
 	{
 		MouseMoved(f64 x, f64 y) : x(x), y(y) {}

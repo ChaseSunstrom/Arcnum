@@ -6,6 +6,7 @@
 #include "spark_renderer.hpp"
 #include "spark_command_queue.hpp"
 #include "spark_delta_time.hpp"
+#include "spark_render_command.hpp"
 
 #include "spark_graphics_api.hpp"
 

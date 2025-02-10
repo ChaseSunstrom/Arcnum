@@ -6,10 +6,8 @@
 
 typedef struct GLFWwindow GLFWwindow;
 
-namespace spark
+namespace spark::opengl
 {
-	namespace opengl
-	{
 		class GLWindow : public Window
 		{
 		public:
@@ -25,7 +23,6 @@ namespace spark
 		private:
 			GLFWwindow* m_window;
 		};
-	}
 }
 
 

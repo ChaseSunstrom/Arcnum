@@ -1,6 +1,7 @@
 #include "spark_pch.hpp"
 #include "opengl/spark_gl_renderer.hpp"
-#include <GL/glew.h>  // or <glad/glad.h>, whichever your project uses
+#include "spark_render_command.hpp"
+#include <GL/glew.h> 
 
 namespace spark::opengl
 {
@@ -24,7 +25,7 @@ namespace spark::opengl
 
     void GLRenderer::RunRenderCommand(const RenderCommand& command)
     {
-        glClearColor(command.sr, command.sg, command.sb, command.sa);
+        const_cast<RenderCommand&>(command).Execute(*this);
     }
 
     void GLRenderer::DrawSomething()

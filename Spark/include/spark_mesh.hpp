@@ -2,17 +2,19 @@
 #define SPARK_MESH_HPP
 
 #include "spark_pch.hpp"
+
+#include "spark_transform.hpp"
 #include "spark_vertex.hpp"
 
 namespace spark
 {
     // Base interface for a mesh
-    class IMesh
+    class SPARK_API IMesh
     {
     public:
         virtual ~IMesh() = default;
 
-        virtual void SetData(const std::vector<u8>& vertex_data,
+        virtual void SetDataBytes(const std::vector<u8>& vertex_data,
             const VertexLayout& layout,
             const std::vector<u32>& indices) = 0;
 
@@ -21,15 +23,14 @@ namespace spark
             const VertexLayout& layout,
             const std::vector<u32>& indices)
         {
-            // Reinterpret the vector<T> data as bytes
             const auto byte_ptr = reinterpret_cast<const u8*>(vertex_data.data());
             std::vector<u8> data(byte_ptr, byte_ptr + vertex_data.size() * sizeof(T));
-
-            // Forward to the pure virtual
-            SetData(data, layout, indices);
+            SetDataBytes(data, layout, indices);
         }
 
+        virtual void SetInstanceData(const std::vector<math::Mat4>& instance_data) = 0;
         virtual void Draw() const = 0;
+        virtual void DrawInstanced(usize instance_count) const = 0;
 
     protected:
         // Some derived classes might store these, but it's optional

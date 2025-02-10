@@ -3,28 +3,29 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-namespace spark
+namespace spark::opengl
 {
     GLMesh::GLMesh()
-        : m_vao(0), m_vbo(0), m_ebo(0), m_index_count(0)
+        : m_vao(0), m_vbo(0), m_ebo(0), m_index_count(0), m_instance_vbo(0)
     {
         glGenVertexArrays(1, &m_vao);
         glGenBuffers(1, &m_vbo);
         glGenBuffers(1, &m_ebo);
+        glGenBuffers(1, &m_instance_vbo);
     }
 
     GLMesh::~GLMesh()
     {
         glDeleteBuffers(1, &m_ebo);
         glDeleteBuffers(1, &m_vbo);
+        glDeleteBuffers(1, &m_instance_vbo);
         glDeleteVertexArrays(1, &m_vao);
     }
 
-    void GLMesh::SetData(const std::vector<u8>& vertex_data,
+    void GLMesh::SetDataBytes(const std::vector<u8>& vertex_data,
         const VertexLayout& layout,
         const std::vector<u32>& indices)
     {
-        // Store data internally if desired
         m_vertex_data = vertex_data;
         m_index_data = indices;
         m_layout = layout;
@@ -32,25 +33,20 @@ namespace spark
 
         glBindVertexArray(m_vao);
 
-        // Upload vertices
         glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
         glBufferData(GL_ARRAY_BUFFER, vertex_data.size(), vertex_data.data(), GL_STATIC_DRAW);
 
-        // Upload indices
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(u32), indices.data(), GL_STATIC_DRAW);
 
-        // Setup vertex attributes
         const auto& attrs = layout.GetAttributes();
         const size_t stride = layout.GetStride();
 
         for (size_t i = 0; i < attrs.size(); ++i)
         {
-            // Enable the vertex attribute location
             glEnableVertexAttribArray(static_cast<GLuint>(i));
 
             const auto& attr = attrs[i];
-            // For simplicity, we'll map your enum to the appropriate GL type + function
             GLenum gl_type = 0;
             bool use_integer_pointer = false;
 
@@ -62,43 +58,36 @@ namespace spark
             case AttributeType::VEC4:
             case AttributeType::MAT3:
             case AttributeType::MAT4:
-                // All these are floating-point attributes
                 gl_type = GL_FLOAT;
                 use_integer_pointer = false;
                 break;
-
             case AttributeType::INT:
             case AttributeType::IVEC2:
             case AttributeType::IVEC3:
             case AttributeType::IVEC4:
-                // Integer attributes
                 gl_type = GL_INT;
                 use_integer_pointer = true;
                 break;
             default:
-                // fallback or assert
                 break;
             }
 
-            // Decide which function to call based on whether it's an integer attribute
             if (!use_integer_pointer)
             {
-                // glVertexAttribPointer for float-based types
                 glVertexAttribPointer(
                     static_cast<GLuint>(i),
-                    attr.GetComponentCount(),  // e.g., 3 for VEC3
-                    gl_type,                  // e.g., GL_FLOAT
+                    attr.GetComponentCount(),
+                    gl_type,
                     attr.normalized ? GL_TRUE : GL_FALSE,
                     static_cast<GLsizei>(stride),
                     reinterpret_cast<const void*>(attr.offset));
             }
             else
             {
-                // glVertexAttribIPointer for integer-based types
                 glVertexAttribIPointer(
                     static_cast<GLuint>(i),
                     attr.GetComponentCount(),
-                    gl_type,  // e.g., GL_INT
+                    gl_type,
                     static_cast<GLsizei>(stride),
                     reinterpret_cast<const void*>(attr.offset));
             }
@@ -107,11 +96,53 @@ namespace spark
         glBindVertexArray(0);
     }
 
+    void GLMesh::SetInstanceData(const std::vector<math::Mat4>& instance_data)
+    {
+
+
+        glBindVertexArray(m_vao);
+        glBindBuffer(GL_ARRAY_BUFFER, m_instance_vbo);
+        glBufferData(GL_ARRAY_BUFFER,
+            instance_data.size() * sizeof(math::Mat4),
+            instance_data.data(),
+            GL_DYNAMIC_DRAW);
+
+        // We assume that the standard vertex attributes (for example, those set in SetDataBytes)
+        // occupy attribute locations [0, ..., N-1]. We will use the next available locations
+        // for the instance data. For a Mat4, we need 4 consecutive attribute locations.
+        // For this example, let’s assume your layout has N attributes.
+        GLuint base_location = static_cast<GLuint>(m_layout.GetAttributes().size());
+        // A Mat4 is 16 floats. We set each column as a separate attribute.
+        for (GLuint i = 0; i < 4; ++i)
+        {
+            GLuint location = base_location + i;
+            glEnableVertexAttribArray(location);
+            glVertexAttribPointer(
+                location,           // attribute location
+                4,                  // 4 components (a vec4)
+                GL_FLOAT,           // type
+                GL_FALSE,           // normalized?
+                sizeof(math::Mat4), // stride between matrices
+                (void*)(sizeof(float) * 4 * i)); // offset for the ith column
+            // Set the divisor so that these attributes update once per instance.
+            glVertexAttribDivisor(location, 1);
+        }
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
 
     void GLMesh::Draw() const
     {
         glBindVertexArray(m_vao);
         glDrawElements(GL_TRIANGLES, (GLsizei)m_index_count, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+    }
+
+    void GLMesh::DrawInstanced(usize instance_count) const
+    {
+        glBindVertexArray(m_vao);
+        glDrawElementsInstanced(GL_TRIANGLES, (GLsizei)m_index_count, GL_UNSIGNED_INT, 0, (GLsizei)instance_count);
         glBindVertexArray(0);
     }
 }

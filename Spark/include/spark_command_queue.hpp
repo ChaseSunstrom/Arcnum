@@ -10,11 +10,22 @@ namespace spark
     class CommandQueue
     {
     public:
-        // Use perfect forwarding for args
-        template <ValidCommand T, typename... Args>
+        // Use perfect forwarding for args.
+        // Note: We assume T satisfies the ValidCommand constraint.
+        template <typename T, typename... Args>
         void SubmitCommand(Args&&... args)
         {
-            m_command_queue[typeid(T)].emplace(std::make_unique<T>(std::forward<Args>(args)...));
+            // Create a unique_ptr for the new command.
+            auto cmd = std::make_unique<T>(std::forward<Args>(args)...);
+            m_command_queue[typeid(T)].push(std::move(cmd));
+        }
+
+        // Overload that accepts a const command reference.
+        template <typename T>
+        void SubmitCommand(const T& command)
+        {
+            // This overload creates a copy (or move) of the command.
+            m_command_queue[typeid(T)].push(std::make_unique<T>(command));
         }
 
         template <typename T>
@@ -27,9 +38,6 @@ namespace spark
                     if (auto* concrete_command = dynamic_cast<T*>(&command))
                     {
                         fn(*concrete_command);
-                    }
-                    else
-                    {
                     }
                 };
 
@@ -54,8 +62,6 @@ namespace spark
     private:
         std::unordered_map<std::type_index, std::queue<std::unique_ptr<ICommand>>> m_command_queue;
     };
-
 }
-
 
 #endif

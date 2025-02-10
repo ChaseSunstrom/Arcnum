@@ -1,153 +1,187 @@
 ﻿#define SPARK_USE_GL
 #include "spark.hpp"
+#include "opengl/spark_gl_shader.hpp"
 
-struct Position
+using namespace spark;
+using namespace spark::opengl;
+using namespace spark::math;
+
+static i32 frame = 0;
+
+struct MeshName
 {
-    spark::f64 x, y, z;
+    std::string_view name;
 };
 
-struct Velocity
+struct ShaderName
 {
-    spark::f64 x, y, z;
+    std::string_view name;
 };
 
-struct Acceleration
+// Creates a square mesh and stores it in the ItemManager.
+void CreateSquareMesh(Application& app)
 {
-    spark::u64 x, y, z;
-};
+    // Create a vertex layout with a single attribute: 2D position.
+    VertexLayout layout;
+    layout.AddAttribute<float>("a_position", AttributeType::VEC2, false);
 
-struct Blah
-{
-    spark::u32 i;
-};
+    // Define four vertices for a unit square (using 2D positions).
+    std::vector<f32> vertices = {
+        -0.5f, -0.5f,  // Bottom left
+         0.5f, -0.5f,  // Bottom right
+         0.5f,  0.5f,  // Top right
+        -0.5f,  0.5f   // Top left
+    };
 
-using Arcnum = spark::Application;
+    // Define indices for two triangles that make up the square.
+    std::vector<u32> indices = { 0, 1, 2, 2, 3, 0 };
 
-
-// System function to move entities
-void Move(
-    spark::Ref<spark::Coordinator> coordinator,
-    spark::Event<Blah, Acceleration> event
-)
-{
-    if (event.Holds<Blah>())
-        spark::Logger::Logln("Got Blah event: %u", event.Get<Blah>().i);
-
-
-    if (event.Holds<Acceleration>())
+    // Create the mesh (if not already present) and set its data.
+    if (!app.HasItem<GLMesh>("square_mesh"))
     {
-        auto aevent = event.Get<Acceleration>();
-        spark::Logger::Logln("Got Acceleration event: %llu, %llu, %llu", aevent.x, aevent.y, aevent.z);
-    }
-
-    for (spark::i32 i = 0; i < 1000; i++)
-    {
-        auto entity = coordinator.CreateEntity(
-            Position{ 0, 0, 0 },
-            Velocity{ 0.01, 0.01, 0.01 } // Example non-zero velocity
-        );
+        auto& mesh = app.AddItem<GLMesh>("square_mesh");
+        // The templated SetDataBytes will reinterpret the float vector as bytes.
+        mesh.SetData(vertices, layout, indices);
     }
 }
 
-void Move2(
-    spark::Ref<spark::Coordinator> coordinator
-)
+// Creates a simple shader for drawing a square and stores it as an Item.
+void CreateSquareShader(Application& app)
 {
-    for (spark::i32 i = 0; i < 1000; i++)
+    const std::string vertexShaderSource = R"(
+#version 330 core
+layout (location = 0) in vec2 a_position;
+
+// Assume that the static attributes (vertex positions) use location 0.
+// The instance model matrix will use locations 1, 2, 3, and 4.
+layout (location = 1) in mat4 a_instance_model;
+
+uniform mat4 u_viewProjection;
+
+void main() {
+    gl_Position = u_viewProjection * a_instance_model * vec4(a_position, 0.0, 1.0);
+}
+
+
+    )";
+
+    const std::string fragmentShaderSource = R"(
+        #version 330 core
+        out vec4 frag_color;
+        uniform vec4 u_color;
+        void main() {
+            frag_color = u_color;
+        }
+    )";
+
+    if (!app.HasItem<GLShaderProgram>("square_shader"))
     {
-        auto entity = coordinator.CreateEntity(
-            Position{ 0, 0, 0 },
-            Velocity{ 0.01, 0.01, 0.01 } // Example non-zero velocity
-        );
+        auto& shader = app.AddItem<GLShaderProgram>("square_shader");
+        // Add shader stages generically.
+        shader.AddShader(ShaderStageType::VERTEX, vertexShaderSource);
+        shader.AddShader(ShaderStageType::FRAGMENT, fragmentShaderSource);
+        shader.Link();
     }
 }
 
-void Move3(
-    spark::Ref<spark::Coordinator> coordinator
-)
+void CreateMeshEntities(Application& app, Coordinator& coord)
 {
-    for (spark::i32 i = 0; i < 1000; i++)
-    {
-        auto entity = coordinator.CreateEntity(
-            Position{ 0, 0, 0 },
-            Velocity{ 0.01, 0.01, 0.01 } // Example non-zero velocity
-        );
-    }
+	for (usize i  = 0; i < 1000000; i++)
+	{
+        coord.CreateEntity( Translate(Mat4(1.0f), Vec3(i, 0.0f, 0.0f)) *
+            Scale(Mat4(1.0f), Vec3(100.0f, 100.0f, 1.0f)));
+	}
 }
 
-void Move4(
-    spark::Ref<spark::Coordinator> coordinator
-)
+// Creates a main camera and stores it as an Item.
+void CreateMainCamera(Application& app)
 {
-    for (spark::i32 i = 0; i < 1000; i++)
-    {
-        auto entity = coordinator.CreateEntity(
-            Position{ 0, 0, 0 },
-            Velocity{ 0.01, 0.01, 0.01 } // Example non-zero velocity
-        );
-    }
+    // Create a Camera with orthographic projection.
+    Camera cam(
+        Vec3(0.0f, 0.0f, 500.0f),  // position
+        Vec3(0.0f, 0.0f, 0.0f),    // target
+        45.0f,                     // fov (not used in orthographic)
+        1280.0f / 720.0f,          // aspect ratio
+        0.1f, 1000.0f,
+        ProjectionMode::ORTHOGRAPHIC
+    );
+
+    // Increase the ortho scale so that the view volume is large enough.
+    // A negative value increases the scale.
+    cam.Zoom(-500.0f);
+
+    app.AddItem<Camera>("main_camera", cam);
 }
 
-void Move5(
-    spark::Ref<spark::Coordinator> coordinator
-)
+
+void RenderEntities(Application& app, Query<Mat4> query)
 {
-    for (spark::i32 i = 0; i < 1000; i++)
-    {
-        auto entity = coordinator.CreateEntity(
-            Position{ 0, 0, 0 },
-            Velocity{ 0.01, 0.01, 0.01 } // Example non-zero velocity
-        );
-    }
+    Camera* cam_ptr = &app.GetItem<Camera>("main_camera");
+    IMesh* mesh = &app.GetItem<GLMesh>("square_mesh");
+    IShaderProgram* shader = &app.GetItem<GLShaderProgram>("square_shader");
+
+    RenderCommand cmd;
+    cmd.shader_program = shader;
+    cmd.mesh = mesh;
+    cmd.instance_transforms = query.GetVector();
+    cmd.camera = cam_ptr;
+    // In this instanced render command, you do not set a uniform model matrix.
+    // Instead, your shader uses the instanced attribute.
+    cmd.set_uniforms_fn = [=](IShaderProgram& shader)
+        {
+            shader.SetUniformMat4("u_viewProjection", cam_ptr->GetViewProjectionMatrix());
+
+            float r = 1.0f;
+            float g = 0.0f;
+            float b = 0.0f;
+
+            shader.SetUniformVec4("u_color", Vec4(r, g, b, 1.0f));
+        };
+
+    // The renderer will call DrawInstanced(instance_count).
+    app.SubmitCommand(cmd);
 }
 
-void Move6(
-    spark::Ref<spark::Coordinator> coordinator
-)
+// -----------------------------------------------------------------------------
+// Update function to submit a RenderCommand to draw the square.
+// -----------------------------------------------------------------------------
+void UpdateSquareRenderCommand(Application& app)
 {
-    for (spark::i32 i = 0; i < 1000; i++)
-    {
-        coordinator.CreateEntity(
-            Position{ 0, 0, 0 },
-            Velocity{ 0.01, 0.01, 0.01 } // Example non-zero velocity
-        );
-    }
+    // Retrieve the shader, mesh, and camera from the ItemManager.
+    IShaderProgram* shader_ptr = &app.GetItem<GLShaderProgram>("square_shader");
+    IMesh* mesh_ptr = &app.GetItem<GLMesh>("square_mesh");
+    Camera* cam_ptr = &app.GetItem<Camera>("main_camera");
+
+    // Create a RenderCommand.
+    RenderCommand cmd;
+    cmd.shader_program = shader_ptr;
+    cmd.mesh = mesh_ptr;
+
+    frame++;
+
+    cmd.camera = cam_ptr; // Attach the Camera (if desired)
+    cmd.set_uniforms_fn = [=](IShaderProgram& shader) {
+        Mat4 model = Translate(Mat4(1.0f), Vec3(0.0f, 0.0f, 0.0f)) *
+            Scale(Mat4(1.0f), Vec3(100.0f, 100.0f, 1.0f));
+
+        shader.SetUniformMat4("u_model", model);
+        if (cmd.camera) {
+            // Use the camera's viewProjection as the only matrix.
+            shader.SetUniformMat4("u_viewProjection", cmd.camera->GetViewProjectionMatrix());
+        }
+        shader.SetUniformVec4("u_color", Vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        };
+
+    app.SubmitCommand(cmd);
 }
-
-void EventMaker(spark::Ref<spark::Application> app)
-{
-    static std::atomic<spark::u32> i{ 0 };
-
-    spark::u32 current = i.fetch_add(1, std::memory_order_relaxed);
-    // Now we safely have a unique 'current' for this call
-
-    if (current % 2000 == 0)
-        app.SubmitEvent(Blah{ current });
-    else if (current % 3000 == 0)
-        app.SubmitEvent(Acceleration{ current, current * 2, current * 3 });
-}
-
-void LogMouseMove(spark::Event<spark::MouseMoved> event)
-{
-    spark::Logln(spark::LogLevel::INFO) << "Mouse moved: " << event->x << ", " << event->y << "\n";
-}
-
-// System function to see entities
-// Modified See function to debug
-void See(spark::Query<Position, Velocity> query)
-{
-    spark::Logger::Logln(spark::LogLevel::INFO, "See Query size: %d", query.Size());
-}
-
 
 spark::i32 main()
 {
     spark::Application app(spark::GraphicsApi::OPENGL, "Arcnum", 1280, 720);
 
     // Register systems with correct parameter passing
-    app.RegisterSystems(Move, Move2, Move3, EventMaker, spark::SystemSettings{.execution_mode = spark::SystemExecutionMode::MULTITHREADED_ASYNC});
-    app.RegisterSystems(LogMouseMove, spark::SystemSettings{ .execution_mode = spark::SystemExecutionMode::MULTITHREADED_ASYNC });
-    app.RegisterSystem(See, spark::SystemSettings{ spark::SystemPhase::ON_SHUTDOWN });
+    app.RegisterSystems(CreateSquareMesh, CreateSquareShader, CreateMainCamera, CreateMeshEntities, spark::SystemSettings{.phase = SystemPhase::ON_START});
+    app.RegisterSystems(RenderEntities);
 
     app.Start();
     app.Run();

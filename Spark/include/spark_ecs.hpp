@@ -704,6 +704,25 @@ namespace spark
                 return total;
             }
 
+            auto GetVector() const
+            {
+                using result_type = std::conditional_t<
+                    (std::tuple_size<IncludedTypes>::value == 1),
+                    std::tuple_element_t<0, IncludedTypes>,
+                    IncludedTypes
+                >;
+                std::vector<result_type> result_vector;
+
+                for (const auto& chunk_view : m_chunk_views)
+                {
+                    for (usize idx = 0; idx < chunk_view.m_count; ++idx)
+                    {
+                        result_vector.emplace_back(GetResult(chunk_view, idx));
+                    }
+                }
+                return result_vector;
+            }
+
         private:
             template <typename First, typename... Rest>
             void ParseFilters()
@@ -728,6 +747,34 @@ namespace spark
                 else
                 {
                     m_include_sig.set(GetComponentTypeID<F>(), true);
+                }
+            }
+
+            // Helper: Given a ChunkView and an entity index, build a tuple of component values
+    // by reading the data at the proper offsets.
+            template <std::size_t... idxs>
+            auto GetTupleFromChunkView(const ChunkView& chunk_view, usize idx, std::index_sequence<idxs...>) const
+            {
+                return std::make_tuple(
+                    *reinterpret_cast<std::tuple_element_t<idxs, IncludedTypes>*>(
+                        chunk_view.m_data + idx * chunk_view.m_total_size_per_entity + chunk_view.m_component_offsets[idxs]
+                        )...
+                );
+            }
+
+            // Helper: For a given ChunkView and entity index, return the result.
+            // If exactly one component is queried, return that component's value;
+            // otherwise, return a tuple of the values.
+            auto GetResult(const ChunkView& chunk_view, usize idx) const
+            {
+                if constexpr (std::tuple_size<IncludedTypes>::value == 1)
+                {
+                    auto tuple_val = GetTupleFromChunkView(chunk_view, idx, std::make_index_sequence<1>{});
+                    return std::get<0>(tuple_val);
+                }
+                else
+                {
+                    return GetTupleFromChunkView(chunk_view, idx, std::make_index_sequence<std::tuple_size<IncludedTypes>::value>{});
                 }
             }
 

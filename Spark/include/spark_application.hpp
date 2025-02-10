@@ -16,6 +16,7 @@
 #include "spark_delta_time.hpp"
 #include "spark_event_layer.hpp"
 #include "special/spark_modding.hpp"
+#include "spark_item.hpp"
 
 namespace spark
 {
@@ -57,6 +58,7 @@ namespace spark
 
 	enum class SystemPhase
 	{
+		BEFORE_START,
 		ON_START,
 		BEFORE_UPDATE,
 		UPDATE,
@@ -515,6 +517,7 @@ namespace spark
 			AddResource(m_gapi);
 			AddResource(m_layer_stack);
 			AddResource(m_command_queue);
+			AddResource(m_item_manager);
 			AddResource(m_event_queue);
 		}
 
@@ -531,8 +534,9 @@ namespace spark
 
 		Application& Start()
 		{
-			DispatchSystemsForPhase(SystemPhase::ON_START);
+			DispatchSystemsForPhase(SystemPhase::BEFORE_START);
 			m_layer_stack.Start();
+			DispatchSystemsForPhase(SystemPhase::ON_START);
 			return *this;
 		}
 
@@ -753,6 +757,66 @@ namespace spark
 			return m_event_systems;
 		}
 
+		// Adds an item by copying the provided resource.
+		template <typename T>
+		T& AddItem(const std::string& key, const T& res)
+		{
+			return m_item_manager.AddItem(key, res);
+		}
+
+		// Adds an item by constructing T in place using perfect forwarding.
+		template <typename T, typename... Args>
+		T& AddItem(const std::string& key, Args&&... args)
+		{
+			return m_item_manager.AddItem<T>(key, std::forward<Args>(args)...);
+		}
+
+		// Retrieves a mutable reference to an item. Throws std::runtime_error if not found.
+		template <typename T>
+		T& GetItem(const std::string& key)
+		{
+			return m_item_manager.GetItem<T>(key);
+		}
+
+		// Retrieves a const reference to an item. Throws std::runtime_error if not found.
+		template <typename T>
+		const T& GetItem(const std::string& key) const
+		{
+			return m_item_manager.GetItem<T>(key);
+		}
+
+		// Checks whether an item of type T with the specified key exists.
+		template <typename T>
+		bool HasItem(const std::string& key) const
+		{
+			return m_item_manager.HasItem<T>(key);
+		}
+
+		template <ValidCommand T>
+		void SubmitCommand(const T& command)
+		{
+			m_command_queue.SubmitCommand<T>(command);
+		}
+
+		template <ValidCommand T, typename... Args>
+		void SubmitCommand(Args&&... args)
+		{
+			m_command_queue.SubmitCommand<T>(std::forward<Args>(args)...);
+		}
+
+		// Removes the item of type T with the specified key.
+		template <typename T>
+		void RemoveItem(const std::string& key)
+		{
+			m_item_manager.RemoveItem<T>(key);
+		}
+
+		// Clears all items from the manager.
+		void ClearItems()
+		{
+			m_item_manager.Clear();
+		}
+
 	private:
 		template <size_t... Is, typename F>
 		static void ForSequence(std::index_sequence<Is...>, F&& func)
@@ -781,6 +845,7 @@ namespace spark
 		LayerStack m_layer_stack;
 		CommandQueue m_command_queue;
 		EventQueue m_event_queue;
+		ItemManager m_item_manager;
 		threading::ThreadPool m_thread_pool;
 		DeltaTime<f64> m_delta_time;
 		Coordinator m_coordinator;

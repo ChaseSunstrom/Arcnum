@@ -6,21 +6,7 @@
 
 namespace spark
 {
-    struct SPARK_API RenderCommand : public ICommand
-    {
-        f32 sr, sg, sb, sa;
-
-        RenderCommand(f32 sr, f32 sg, f32 sb, f32 sa) : sr(sr), sg(sg), sb(sb), sa(sa)
-			{}
-        // Override Execute so that it calls the provided functor with a reference to itself.
-        void Execute(const std::function<void(ICommand&)>& fn) override
-        {
-            // Downcast: since we know this command is a RenderCommand,
-            // we cast ICommand& to RenderCommand& before calling the functor.
-            fn(*this);
-        }
-    };
-
+    class RenderCommand;
 
     // A minimal interface for a renderer that can work with any API
     class SPARK_API IRenderer

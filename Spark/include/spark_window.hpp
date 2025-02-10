@@ -95,6 +95,9 @@ namespace spark
 			case GraphicsApi::VULKAN:
 				//vulkan::VK::Initialize(wl, title, win_width, win_height, win_vsync);
 				break;
+			default:
+				assert(false);
+				Logln(LogLevel::ERROR) << "Not able to initialize Window Layer with unknown graphics API. \n";
 			}
 		}
 

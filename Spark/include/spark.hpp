@@ -11,6 +11,11 @@
 #include "spark_mesh.hpp"
 #include "spark_util.hpp"
 #include "spark_event.hpp"
+#include "spark_command.hpp"
+#include "spark_render_command.hpp"
+#include "spark_camera.hpp"
+#include "spark_math.hpp"
+#include "spark_transform.hpp"
 #include "spark_events.hpp"
 
 

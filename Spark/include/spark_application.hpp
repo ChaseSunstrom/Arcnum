@@ -15,11 +15,16 @@
 #include "spark_command_queue.hpp"
 #include "spark_delta_time.hpp"
 #include "spark_event_layer.hpp"
+#include "spark_factory.hpp"
 #include "special/spark_modding.hpp"
-#include "spark_item.hpp"
+#include "opengl/spark_gl_mesh.hpp"
+#include "opengl/spark_gl_shader.hpp"
+
 
 namespace spark
 {
+	class ItemManager;
+
 	template <typename T>
 	struct IsSparkQuery : std::false_type {};
 
@@ -493,40 +498,21 @@ namespace spark
 	} // namespace detail
 
 
-	class Application
+	class SPARK_API Application
 	{
 	public:
 		Application(GraphicsApi gapi,
 			const std::string& title,
 			int32_t win_width,
 			int32_t win_height,
-			bool vsync = false)
-			: m_gapi(gapi)
-			, m_mod_manager(this)
-		{
-			// Basic layering
-			m_layer_stack.PushLayer<WindowLayer>(m_event_queue, gapi, title, win_width, win_height, vsync);
-			m_layer_stack.PushLayer<RendererLayer>(gapi, m_command_queue);
-			m_layer_stack.PushLayer<EventLayer>(*this, m_event_queue);
-
-			// Add these resources
-			AddResource(*this);
-			AddResource(m_coordinator);
-			AddResource(m_thread_pool);
-			AddResource(m_delta_time);
-			AddResource(m_gapi);
-			AddResource(m_layer_stack);
-			AddResource(m_command_queue);
-			AddResource(m_item_manager);
-			AddResource(m_event_queue);
-		}
+			bool vsync = false);
 
 		~Application()
 		{
 			Close();
 		}
 
-		Application& AddThreads(std::size_t num_threads)
+		Application& AddThreads(usize num_threads)
 		{
 			m_thread_pool.AddThreads(num_threads);
 			return *this;
@@ -743,6 +729,8 @@ namespace spark
 			return GetRendererLayer().GetRenderer();
 		}
 
+		GraphicsApi GetGraphicsApi() const { return m_gapi;  }
+
 		Application& ChangeGraphicsApi(GraphicsApi new_gapi)
 		{
 			if (new_gapi == m_gapi)
@@ -759,38 +747,26 @@ namespace spark
 
 		// Adds an item by copying the provided resource.
 		template <typename T>
-		T& AddItem(const std::string& key, const T& res)
-		{
-			return m_item_manager.AddItem(key, res);
-		}
+		T& AddItem(const std::string& key, const T& res);
 
 		// Adds an item by constructing T in place using perfect forwarding.
 		template <typename T, typename... Args>
-		T& AddItem(const std::string& key, Args&&... args)
-		{
-			return m_item_manager.AddItem<T>(key, std::forward<Args>(args)...);
-		}
+		T& AddItem(const std::string& key, Args&&... args);
 
 		// Retrieves a mutable reference to an item. Throws std::runtime_error if not found.
 		template <typename T>
-		T& GetItem(const std::string& key)
-		{
-			return m_item_manager.GetItem<T>(key);
-		}
+		T& GetItem(const std::string& key);
 
 		// Retrieves a const reference to an item. Throws std::runtime_error if not found.
 		template <typename T>
-		const T& GetItem(const std::string& key) const
-		{
-			return m_item_manager.GetItem<T>(key);
-		}
+		const T& GetItem(const std::string& key) const;
 
 		// Checks whether an item of type T with the specified key exists.
 		template <typename T>
-		bool HasItem(const std::string& key) const
-		{
-			return m_item_manager.HasItem<T>(key);
-		}
+		bool HasItem(const std::string& key) const;
+
+		FactoryRegistry& GetFactoryRegistry() { return m_factory_registry; }
+		const FactoryRegistry& GetFactoryRegistry() const { return m_factory_registry; }
 
 		template <ValidCommand T>
 		void SubmitCommand(const T& command)
@@ -806,16 +782,10 @@ namespace spark
 
 		// Removes the item of type T with the specified key.
 		template <typename T>
-		void RemoveItem(const std::string& key)
-		{
-			m_item_manager.RemoveItem<T>(key);
-		}
+		void RemoveItem(const std::string& key);
 
 		// Clears all items from the manager.
-		void ClearItems()
-		{
-			m_item_manager.Clear();
-		}
+		void ClearItems();
 
 	private:
 		template <size_t... Is, typename F>
@@ -839,13 +809,41 @@ namespace spark
 			return *m_layer_stack.GetLayer<EventLayer>();
 		}
 
+		void SetupFactories()
+		{
+			m_factory_registry.RegisterFactory<IMesh>([](Application& app) -> std::shared_ptr<IMesh>
+				{
+					switch (app.GetGraphicsApi())
+					{
+					case GraphicsApi::OPENGL:
+						return std::make_shared<opengl::GLMesh>();
+					//case GraphicsApi::VULKAN:
+						// return std::make_shared<vulkan::VKMesh>();
+					}
+					throw std::runtime_error("Unsupported API for IMesh");
+				});
+
+			m_factory_registry.RegisterFactory<IShaderProgram>([](Application& app) -> std::shared_ptr<IShaderProgram>
+				{
+					switch (app.GetGraphicsApi())
+					{
+					case GraphicsApi::OPENGL:
+						return std::make_shared<opengl::GLShaderProgram>();
+					//case GraphicsApi::VULKAN:
+						// ...
+					}
+					throw std::runtime_error("Unsupported API for IShaderProgram");
+				});
+		}
+
 	private:
 		GraphicsApi m_gapi;
 		ModManager m_mod_manager;
 		LayerStack m_layer_stack;
 		CommandQueue m_command_queue;
 		EventQueue m_event_queue;
-		ItemManager m_item_manager;
+		FactoryRegistry m_factory_registry;
+		std::unique_ptr<ItemManager> m_item_manager;
 		threading::ThreadPool m_thread_pool;
 		DeltaTime<f64> m_delta_time;
 		Coordinator m_coordinator;
@@ -920,5 +918,8 @@ namespace spark
 
 	}
 } // namespace spark
+
+
+#include "spark_application.inl"
 
 #endif // SPARK_APPLICATION_HPP

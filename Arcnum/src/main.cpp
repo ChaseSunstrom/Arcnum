@@ -23,10 +23,10 @@ void CreateSquareMesh(Application& app)
 {
     // Create a vertex layout with a single attribute: 2D position.
     VertexLayout layout;
-    layout.AddAttribute<float>("a_position", AttributeType::VEC2, false);
+    layout.AddAttribute<f32>("a_position", AttributeType::VEC2, false);
 
     // Define four vertices for a unit square (using 2D positions).
-    std::vector<f32> vertices = {
+    std::vector vertices = {
         -0.5f, -0.5f,  // Bottom left
          0.5f, -0.5f,  // Bottom right
          0.5f,  0.5f,  // Top right
@@ -37,9 +37,9 @@ void CreateSquareMesh(Application& app)
     std::vector<u32> indices = { 0, 1, 2, 2, 3, 0 };
 
     // Create the mesh (if not already present) and set its data.
-    if (!app.HasItem<GLMesh>("square_mesh"))
+    if (!app.HasItem<IMesh>("square_mesh"))
     {
-        auto& mesh = app.AddItem<GLMesh>("square_mesh");
+        auto& mesh = app.AddItem<IMesh>("square_mesh");
         // The templated SetDataBytes will reinterpret the float vector as bytes.
         mesh.SetData(vertices, layout, indices);
     }
@@ -49,20 +49,18 @@ void CreateSquareMesh(Application& app)
 void CreateSquareShader(Application& app)
 {
     const std::string vertexShaderSource = R"(
-#version 330 core
-layout (location = 0) in vec2 a_position;
+	    #version 330 core
+	    layout (location = 0) in vec2 a_position;
 
-// Assume that the static attributes (vertex positions) use location 0.
-// The instance model matrix will use locations 1, 2, 3, and 4.
-layout (location = 1) in mat4 a_instance_model;
+	    // Assume that the static attributes (vertex positions) use location 0.
+	    // The instance model matrix will use locations 1, 2, 3, and 4.
+	    layout (location = 1) in mat4 a_instance_model;
 
-uniform mat4 u_viewProjection;
+	    uniform mat4 u_viewProjection;
 
-void main() {
-    gl_Position = u_viewProjection * a_instance_model * vec4(a_position, 0.0, 1.0);
-}
-
-
+	    void main() {
+	        gl_Position = u_viewProjection * a_instance_model * vec4(a_position, 0.0, 1.0);
+		}
     )";
 
     const std::string fragmentShaderSource = R"(
@@ -74,9 +72,9 @@ void main() {
         }
     )";
 
-    if (!app.HasItem<GLShaderProgram>("square_shader"))
+    if (!app.HasItem<IShaderProgram>("square_shader"))
     {
-        auto& shader = app.AddItem<GLShaderProgram>("square_shader");
+        auto& shader = app.AddItem<IShaderProgram>("square_shader");
         // Add shader stages generically.
         shader.AddShader(ShaderStageType::VERTEX, vertexShaderSource);
         shader.AddShader(ShaderStageType::FRAGMENT, fragmentShaderSource);
@@ -117,8 +115,8 @@ void CreateMainCamera(Application& app)
 void RenderEntities(Application& app, Query<Mat4> query)
 {
     Camera* cam_ptr = &app.GetItem<Camera>("main_camera");
-    IMesh* mesh = &app.GetItem<GLMesh>("square_mesh");
-    IShaderProgram* shader = &app.GetItem<GLShaderProgram>("square_shader");
+    IMesh* mesh = &app.GetItem<IMesh>("square_mesh");
+    IShaderProgram* shader = &app.GetItem<IShaderProgram>("square_shader");
 
     RenderCommand cmd;
     cmd.shader_program = shader;
@@ -139,39 +137,6 @@ void RenderEntities(Application& app, Query<Mat4> query)
         };
 
     // The renderer will call DrawInstanced(instance_count).
-    app.SubmitCommand(cmd);
-}
-
-// -----------------------------------------------------------------------------
-// Update function to submit a RenderCommand to draw the square.
-// -----------------------------------------------------------------------------
-void UpdateSquareRenderCommand(Application& app)
-{
-    // Retrieve the shader, mesh, and camera from the ItemManager.
-    IShaderProgram* shader_ptr = &app.GetItem<GLShaderProgram>("square_shader");
-    IMesh* mesh_ptr = &app.GetItem<GLMesh>("square_mesh");
-    Camera* cam_ptr = &app.GetItem<Camera>("main_camera");
-
-    // Create a RenderCommand.
-    RenderCommand cmd;
-    cmd.shader_program = shader_ptr;
-    cmd.mesh = mesh_ptr;
-
-    frame++;
-
-    cmd.camera = cam_ptr; // Attach the Camera (if desired)
-    cmd.set_uniforms_fn = [=](IShaderProgram& shader) {
-        Mat4 model = Translate(Mat4(1.0f), Vec3(0.0f, 0.0f, 0.0f)) *
-            Scale(Mat4(1.0f), Vec3(100.0f, 100.0f, 1.0f));
-
-        shader.SetUniformMat4("u_model", model);
-        if (cmd.camera) {
-            // Use the camera's viewProjection as the only matrix.
-            shader.SetUniformMat4("u_viewProjection", cmd.camera->GetViewProjectionMatrix());
-        }
-        shader.SetUniformVec4("u_color", Vec4(1.0f, 0.0f, 0.0f, 1.0f));
-        };
-
     app.SubmitCommand(cmd);
 }
 

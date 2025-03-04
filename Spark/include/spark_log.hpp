@@ -11,80 +11,75 @@
 #undef ERROR
 #endif
 
-namespace spark
-{
-    // Simple log levels
-    enum class LogLevel
-    {
-        DEBUG,
-        INFO,
-        WARN,
-        ERROR,
-    };
+#include "spark_defines.hpp"
 
-    class SPARK_API Logger
-    {
-    public:
-        // Disable logging for a particular level
-        static void Disable(LogLevel level);
+namespace spark {
+// Simple log levels
+enum class LogLevel {
+  DEBUG,
+  INFO,
+  WARN,
+  ERROR,
+};
 
-        // Variadic C-style logging (current log level)
-        static void Log(const char* format, ...);
-        static void Logln(const char* format, ...);
+class SPARK_API Logger {
+public:
+  // Disable logging for a particular level
+  static void Disable(LogLevel level);
 
-        // Variadic C-style logging (explicit log level)
-        static void Log(LogLevel level, const char* format, ...);
-        static void Logln(LogLevel level, const char* format, ...);
+  // Variadic C-style logging (current log level)
+  static void Log(const char *format, ...);
+  static void Logln(const char *format, ...);
 
-        static void Log(LogLevel level, const std::string& message);
-        static void Logln(LogLevel level, const std::string& message);
+  // Variadic C-style logging (explicit log level)
+  static void Log(LogLevel level, const char *format, ...);
+  static void Logln(LogLevel level, const char *format, ...);
 
-    private:
-        // Store if logging is enabled for each level
-        // For example, we can just store an array indexed by (int)LogLevel.
-        static bool s_enabled_levels[4];
+  static void Log(LogLevel level, const std::string &message);
+  static void Logln(LogLevel level, const std::string &message);
 
-        // Current "active" log level if not explicitly specified
-        static LogLevel s_current_level;
-    };
+private:
+  // Store if logging is enabled for each level
+  // For example, we can just store an array indexed by (int)LogLevel.
+  static bool s_enabled_levels[4];
 
-    class LoggerStream {
-    public:
-        LoggerStream(LogLevel level = LogLevel::INFO)
-            : m_level(level), m_buffer() {}
+  // Current "active" log level if not explicitly specified
+  static LogLevel s_current_level;
+};
 
-        ~LoggerStream() {
-            Logger::Log(m_level, m_buffer.str().c_str());
-        }
+class LoggerStream {
+public:
+  LoggerStream(LogLevel level = LogLevel::INFO) : m_level(level), m_buffer() {}
 
-        // Overload the << operator for various types
-        template <typename T>
-        LoggerStream& operator<<(const T& value) {
-            m_buffer << value;
-            return *this;
-        }
+  ~LoggerStream() { Logger::Log(m_level, m_buffer.str().c_str()); }
 
-        // Overload for manipulators like std::endl
-        typedef std::ostream& (*Manipulator)(std::ostream&);
-        LoggerStream& operator<<(Manipulator manip) {
-            manip(m_buffer);
-            return *this;
-        }
+  // Overload the << operator for various types
+  template <typename T> LoggerStream &operator<<(const T &value) {
+    m_buffer << value;
+    return *this;
+  }
 
-    private:
-        LogLevel m_level;
-        std::ostringstream m_buffer;
-    };
+  // Overload for manipulators like std::endl
+  typedef std::ostream &(*Manipulator)(std::ostream &);
+  LoggerStream &operator<<(Manipulator manip) {
+    manip(m_buffer);
+    return *this;
+  }
 
-    // Helper function to create a LoggerStream with a specific log level
-    inline LoggerStream Log(LogLevel level = LogLevel::INFO) {
-        return LoggerStream(level);
-    }
+private:
+  LogLevel m_level;
+  std::ostringstream m_buffer;
+};
 
-    inline LoggerStream Logln(LogLevel level = LogLevel::INFO) {
-        return LoggerStream(level);
-    }
-
+// Helper function to create a LoggerStream with a specific log level
+inline LoggerStream Log(LogLevel level = LogLevel::INFO) {
+  return LoggerStream(level);
 }
+
+inline LoggerStream Logln(LogLevel level = LogLevel::INFO) {
+  return LoggerStream(level);
+}
+
+} // namespace spark
 
 #endif // SPARK_LOG_HPP

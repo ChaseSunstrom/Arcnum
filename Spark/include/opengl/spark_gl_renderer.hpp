@@ -18,9 +18,12 @@ namespace spark::opengl
         void Shutdown() override;
         void RunRenderCommand(const RenderCommand& command) override;
 
+        // Viewport management
+        void SetViewport(uint32_t width, uint32_t height);
+
     private:
-        // Track GL-specific state if needed
-        // e.g., function pointers, contexts, FBOs, etc.
+        uint32_t m_viewport_width = 800;  // Default width
+        uint32_t m_viewport_height = 600; // Default height
     };
 }
 

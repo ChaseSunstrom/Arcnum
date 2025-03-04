@@ -23,6 +23,7 @@
 
 	#include "opengl/spark_gl_window.hpp"
 	#include "opengl/spark_gl_mesh.hpp"
+	#include "opengl/spark_gl_shader.hpp"
 
 #elif defined(SPARK_USE_DX)
 

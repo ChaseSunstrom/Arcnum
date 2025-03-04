@@ -2,6 +2,7 @@
 
 #include "spark_application.hpp"
 #include "spark_item.hpp"
+#include "spark_render_system.hpp"
 
 namespace spark
 {
@@ -16,8 +17,16 @@ namespace spark
 	{
 		// Basic layering
 		m_layer_stack.PushLayer<WindowLayer>(m_event_queue, gapi, title, win_width, win_height, vsync);
-		m_layer_stack.PushLayer<RendererLayer>(gapi, m_command_queue);
+		m_layer_stack.PushLayer<RendererLayer>(m_coordinator, gapi, m_command_queue);
 		m_layer_stack.PushLayer<EventLayer>(*this, m_event_queue);
+
+		RenderSystem render_system(m_coordinator, m_command_queue);
+
+		RegisterSystem(
+		[this, &render_system](Query<RenderableComponent> query)
+		{
+			render_system.Update(std::move(query));
+		});
 
 		// Add these resources
 		AddResource(*this);

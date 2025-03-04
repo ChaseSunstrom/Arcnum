@@ -16,12 +16,12 @@ namespace spark
 
         virtual void SetDataBytes(const std::vector<u8>& vertex_data,
             const VertexLayout& layout,
-            const std::vector<u32>& indices) = 0;
+            const std::vector<u32>& indices = {}) = 0;
 
         template <typename T>
         void SetData(const std::vector<T>& vertex_data,
             const VertexLayout& layout,
-            const std::vector<u32>& indices)
+            const std::vector<u32>& indices = {})
         {
             const auto byte_ptr = reinterpret_cast<const u8*>(vertex_data.data());
             std::vector<u8> data(byte_ptr, byte_ptr + vertex_data.size() * sizeof(T));

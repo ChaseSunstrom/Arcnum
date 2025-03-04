@@ -6,86 +6,120 @@
 #include "spark_mesh.hpp"
 #include "spark_math.hpp"
 #include "spark_renderer.hpp"
-#include "spark_camera.hpp" // For Camera, if desired
 
 namespace spark
 {
-    // A generic render command that does not hardcode any uniform names.
-    // The user supplies callbacks to set both regular and instance data.
-    // Optionally, a Camera pointer may be attached for convenience, but nothing is set automatically.
+    // A generic render command that can handle any type of rendering
     class SPARK_API RenderCommand : public ICommand
     {
     public:
-        // A custom command function may override the default behavior.
+        // Custom command function for complete flexibility
         using CommandFunction = std::function<void(IRenderer&)>;
+        // Uniform setter function type
+        using UniformFunction = std::function<void(IShaderProgram&)>;
+        // Instance data setter function type
+        using InstanceFunction = std::function<void(IShaderProgram&, const std::vector<math::Mat4>&)>;
 
         RenderCommand() = default;
-        RenderCommand(CommandFunction command_fn)
-            : m_command_fn(command_fn)
+        
+        // Constructor for custom rendering logic
+        explicit RenderCommand(CommandFunction command_fn)
+            : m_command_fn(std::move(command_fn))
         {
         }
 
-        // Pointers to the shader and mesh.
+        // Core rendering components
         IShaderProgram* shader_program = nullptr;
         IMesh* mesh = nullptr;
-        // If non-empty, instanced drawing is used.
-        std::vector<math::Mat4> instance_transforms;
-        // Optional lambda: set any non-instance-specific uniforms.
-        // For example, you can set model, view, projection, camera data, etc.
-        std::function<void(IShaderProgram&)> set_uniforms_fn;
-        // Optional lambda: set the instance data uniform(s) as desired.
-        // For example, you might set a uniform array named "u_instanceData" here.
-        std::function<void(IShaderProgram&, const std::vector<math::Mat4>&)> set_instance_uniforms_fn;
-        // Optional draw mode (e.g., GL_TRIANGLES, GL_LINES, etc.). Not used by default.
-        i32 draw_mode = 0;
-        // Optionally attach a Camera. This pointer is available for your use in the uniform callback;
-        // nothing is automatically set.
-        Camera* camera = nullptr;
 
-        // Execute the command.
-        void Execute(IRenderer& renderer)
+        // Rendering state
+        i32 draw_mode = 0;
+        bool depth_test = true;
+        bool blending = false;
+        bool wireframe = false;
+
+        // Instance data for batched rendering
+        std::vector<math::Mat4> instance_transforms;
+
+        // Flexible uniform setting
+        UniformFunction set_uniforms_fn;
+        InstanceFunction set_instance_uniforms_fn;
+
+        // Optional user data for custom rendering
+        std::any user_data;
+
+        // Execute the render command
+        void ExecuteRender(IRenderer& renderer) const
         {
+            // If custom command function exists, use it
             if (m_command_fn)
             {
                 m_command_fn(renderer);
                 return;
             }
-            if (shader_program && mesh)
+
+            // Standard rendering path
+            if (!shader_program || !mesh) return;
+
+            shader_program->Bind();
+
+            // Set any uniforms
+            if (set_uniforms_fn)
             {
-                shader_program->Bind();
+                set_uniforms_fn(*shader_program);
+            }
 
-                // The user is responsible for setting all uniforms (including any camera data).
-                if (set_uniforms_fn)
+            // Handle instanced rendering
+            if (!instance_transforms.empty())
+            {
+                if (set_instance_uniforms_fn)
                 {
-                    set_uniforms_fn(*shader_program);
-                }
-
-                // If instance data is provided, call the lambda to set it, then perform instanced drawing.
-                if (!instance_transforms.empty())
-                {
-                    if (set_instance_uniforms_fn)
-                    {
-                        set_instance_uniforms_fn(*shader_program, instance_transforms);
-                    }
-                    else
-                    {
-                        mesh->SetInstanceData(instance_transforms);
-                    }
-                    mesh->DrawInstanced(instance_transforms.size());
+                    set_instance_uniforms_fn(*shader_program, instance_transforms);
                 }
                 else
                 {
-                    mesh->Draw();
+                    mesh->SetInstanceData(instance_transforms);
                 }
-
-                shader_program->Unbind();
+                mesh->DrawInstanced(instance_transforms.size());
             }
+            else
+            {
+                mesh->Draw();
+            }
+
+            shader_program->Unbind();
         }
 
-        // ICommand interface implementation.
+        // ICommand interface implementation
         void Execute(const std::function<void(ICommand&)>& fn) override
         {
             fn(*this);
+        }
+
+        // Helper methods for easy command creation
+        static RenderCommand Create(IMesh* mesh, IShaderProgram* shader)
+        {
+            RenderCommand cmd;
+            cmd.mesh = mesh;
+            cmd.shader_program = shader;
+            return cmd;
+        }
+
+        static RenderCommand CreateInstanced(
+            IMesh* mesh, 
+            IShaderProgram* shader,
+            std::vector<math::Mat4> instances)
+        {
+            RenderCommand cmd;
+            cmd.mesh = mesh;
+            cmd.shader_program = shader;
+            cmd.instance_transforms = std::move(instances);
+            return cmd;
+        }
+
+        static RenderCommand CreateCustom(CommandFunction fn)
+        {
+            return RenderCommand(std::move(fn));
         }
 
     private:

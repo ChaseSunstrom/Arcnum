@@ -1,4 +1,3 @@
-// spark_renderer_layer.hpp
 #ifndef SPARK_RENDERER_LAYER_HPP
 #define SPARK_RENDERER_LAYER_HPP
 
@@ -7,7 +6,7 @@
 #include "spark_command_queue.hpp"
 #include "spark_delta_time.hpp"
 #include "spark_render_command.hpp"
-
+#include "spark_render_system.hpp"
 #include "spark_graphics_api.hpp"
 
 #include "opengl/spark_gl_renderer.hpp"
@@ -16,72 +15,110 @@
 
 namespace spark
 {
-	class RendererLayer : public ILayer
-	{
-	public:
-		RendererLayer(GraphicsApi gapi, CommandQueue& command_queue)
-			: m_command_queue(command_queue)
-		{
-			SetGraphicsApi(gapi);
-		}
+    class RendererLayer : public ILayer
+    {
+    public:
+        RendererLayer(Coordinator& coordinator, GraphicsApi gapi, CommandQueue& command_queue)
+            : m_command_queue(command_queue)
+            , m_render_system(coordinator, command_queue)
+            , m_viewport_width(800)  // Default width
+            , m_viewport_height(600) // Default height
+        {
+            SetGraphicsApi(gapi);
+        }
 
-		~RendererLayer() override = default;
+        ~RendererLayer() override = default;
 
-		void OnAttach() override
-		{
-			m_renderer->Initialize();
-		}
+        void OnAttach() override
+        {
+            m_renderer->Initialize();
+            UpdateViewport(m_viewport_width, m_viewport_height);
+        }
 
-		void SetGraphicsApi(GraphicsApi gapi)
-		{
-			if (m_renderer)
-			{
-				m_renderer.reset();
-			}
+        void OnDetach() override
+        {
+            m_renderer->Shutdown();
+        }
 
-			switch (gapi)
-			{
-			case GraphicsApi::OPENGL:
-				m_renderer = std::make_unique<opengl::GLRenderer>();
-				break;
-			case GraphicsApi::DIRECTX:
-				//m_renderer = std::make_unique<directx::DXRenderer>();
-				break;
-			case GraphicsApi::VULKAN:
-				//m_renderer = std::make_unique<vulkan::VKRenderer>();
-				break;
-			}
-		}
+        void OnStart() override
+        {
+            // Initialize any render resources if needed
+        }
 
-		void OnDetach() override
-		{
-			m_renderer->Shutdown();
-		}
+        void OnUpdate(DeltaTime<f64> dt) override
+        {
+            if (!m_renderer) return;
 
-		void OnStart() override
-		{
-			// Possibly do nothing here or set up extra state
-		}
+            m_renderer->BeginFrame();
 
-		void OnUpdate(DeltaTime<f64> dt) override
-		{
-			m_renderer->BeginFrame();
+            // Let the render system handle all rendering
 
-			m_command_queue.template FlushQueue<RenderCommand>([this](const RenderCommand& command)
-				{
-					this->m_renderer->RunRenderCommand(command);
-				});
+            // Process any manual render commands
+            m_command_queue.template FlushQueue<RenderCommand>([this](const RenderCommand& command)
+            {
+                m_renderer->RunRenderCommand(command);
+            });
 
-			m_renderer->EndFrame();
-		}
+            m_renderer->EndFrame();
+        }
 
-		IRenderer& GetRenderer() { return *m_renderer; }
+        void SetGraphicsApi(GraphicsApi gapi)
+        {
+            if (m_renderer)
+            {
+                m_renderer->Shutdown();
+                m_renderer.reset();
+            }
 
-	private:
-		// A pointer to the polymorphic renderer interface
-		std::unique_ptr<IRenderer> m_renderer;
-		CommandQueue& m_command_queue;
-	};
+            switch (gapi)
+            {
+            case GraphicsApi::OPENGL:
+                m_renderer = std::make_unique<opengl::GLRenderer>();
+                break;
+            case GraphicsApi::DIRECTX:
+                //m_renderer = std::make_unique<directx::DXRenderer>();
+                break;
+            case GraphicsApi::VULKAN:
+                //m_renderer = std::make_unique<vulkan::VKRenderer>();
+                break;
+            default:
+                // Log error about invalid graphics API
+                break;
+            }
+
+            if (m_renderer)
+            {
+                m_renderer->Initialize();
+                UpdateViewport(m_viewport_width, m_viewport_height);
+            }
+        }
+
+        void UpdateViewport(uint32_t width, uint32_t height)
+        {
+            if (!m_renderer) return;
+
+            m_viewport_width = width;
+            m_viewport_height = height;
+
+            if (auto* gl_renderer = dynamic_cast<opengl::GLRenderer*>(m_renderer.get()))
+            {
+                gl_renderer->SetViewport(width, height);
+            }
+            // Add similar cases for other renderer types when implemented
+        }
+
+        IRenderer& GetRenderer() { return *m_renderer; }
+
+        uint32_t GetViewportWidth() const { return m_viewport_width; }
+        uint32_t GetViewportHeight() const { return m_viewport_height; }
+
+    private:
+        std::unique_ptr<IRenderer> m_renderer;
+        CommandQueue& m_command_queue;
+        RenderSystem m_render_system;
+        uint32_t m_viewport_width;
+        uint32_t m_viewport_height;
+    };
 }
 
 #endif // SPARK_RENDERER_LAYER_HPP

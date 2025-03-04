@@ -144,7 +144,6 @@ namespace spark::opengl
     void GLShaderProgram::SetUniformMat4(const std::string& name, const math::Mat4& value)
     {
         Bind();
-        // Assumes that math::Mat4::Data() returns a poi32er to a contiguous block of f32s.
         glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, value.Data());
     }
 

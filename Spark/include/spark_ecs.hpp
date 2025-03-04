@@ -850,7 +850,7 @@ namespace spark
                 }
 
                 func(
-                    e.GetId(),
+                    e,
                     *reinterpret_cast<std::tuple_element_t<I, IncludedTypes>*>(
                         cv.m_data + idx * cv.m_total_size_per_entity + cv.m_component_offsets[I])...
                 );
@@ -918,7 +918,7 @@ namespace spark
         }
 
         template <typename T>
-        void SetComponentInChunk(Chunk* c, usize idx, T&& val)
+        void SetComponentInChunk(Chunk* c, usize idx, const T& val)
         {
             u32 tid = GetComponentTypeID<T>();
             void* data = c->GetComponentData(tid, idx);

@@ -135,7 +135,16 @@ namespace spark::opengl
     void GLMesh::Draw() const
     {
         glBindVertexArray(m_vao);
-        glDrawElements(GL_TRIANGLES, (GLsizei)m_index_count, GL_UNSIGNED_INT, 0);
+
+        if (m_index_count)
+        {
+            glDrawElements(GL_TRIANGLES, (GLsizei)m_index_count, GL_UNSIGNED_INT, 0);
+        }
+        else
+        {
+            glDrawArrays(GL_TRIANGLES, 0, m_vertex_data.size());
+        }
+
         glBindVertexArray(0);
     }
 

@@ -2,6 +2,7 @@
 #define SPARK_ECS_HPP
 
 #include "spark_pch.hpp"
+#include <cstring>
 
 namespace spark
 {
@@ -53,13 +54,49 @@ namespace spark
         u32 m_generation;
     };
 
+    template <typename T>
+    struct Without
+    {
+        using type = T;
+    };
+
     namespace detail
     {
+        template <typename T, template <typename...> class Template>
+        struct IsSpecialization : std::false_type {};
+
+        template <template <typename...> class Template, typename... Args>
+        struct IsSpecialization<Template<Args...>, Template> : std::true_type {};
+
         inline u32 GetUniqueTypeID()
         {
             static std::atomic<u32> s_last_id{ 0 };
             return s_last_id++;
         }
+
+        // Move ExtractIncluded to namespace scope
+        template <typename... Fs>
+        struct ExtractIncluded;
+
+        template <>
+        struct ExtractIncluded<>
+        {
+            using type = std::tuple<>;
+        };
+
+        template <typename First, typename... Rest>
+        struct ExtractIncluded<First, Rest...>
+        {
+        private:
+            using Tail = typename ExtractIncluded<Rest...>::type;
+
+        public:
+            using type = std::conditional_t<
+                IsSpecialization<First, Without>::value,
+                Tail,
+                decltype(std::tuple_cat(std::declval<std::tuple<First>>(), std::declval<Tail>()))
+            >;
+        };
     }
 
     template <typename T>
@@ -70,22 +107,6 @@ namespace spark
         assert(s_type_id < MAX_COMPONENTS);
         return s_type_id;
     }
-
-    template <typename T>
-    struct Without
-    {
-        using type = T;
-    };
-
-    template <typename, template <typename> class>
-    struct IsSpecialization : std::false_type
-    {
-    };
-
-    template <typename T, template <typename> class Template>
-    struct IsSpecialization<Template<T>, Template> : std::true_type
-    {
-    };
 
     template <typename Tuple>
     struct TupleOfReferences;
@@ -612,30 +633,7 @@ namespace spark
         public:
             using ComponentTypes = std::tuple<Filters...>;
 
-            template <typename... Fs>
-            struct ExtractIncluded;
-
-            template <>
-            struct ExtractIncluded<>
-            {
-                using type = std::tuple<>;
-            };
-
-            template <typename First, typename... Rest>
-            struct ExtractIncluded<First, Rest...>
-            {
-            private:
-                using Tail = typename ExtractIncluded<Rest...>::type;
-
-            public:
-                using type = std::conditional_t<
-                    IsSpecialization<First, Without>::value,
-                    Tail,
-                    decltype(std::tuple_cat(std::declval<std::tuple<First>>(), std::declval<Tail>()))
-                >;
-            };
-
-            using IncludedTypes = typename ExtractIncluded<Filters...>::type;
+            using IncludedTypes = typename detail::ExtractIncluded<Filters...>::type;
 
             struct ChunkView
             {
@@ -739,7 +737,7 @@ namespace spark
             template <typename F>
             void SetFilter()
             {
-                if constexpr (IsSpecialization<F, Without>::value)
+                if constexpr (detail::IsSpecialization<F, Without>::value)
                 {
                     using TT = typename F::type;
                     m_exclude_sig.set(GetComponentTypeID<TT>(), true);
@@ -830,10 +828,7 @@ namespace spark
                 // Retrieve the offset of component T within the entity's data slice
                 usize offset = cv.m_chunk->GetComponentOffset(tid);
                 cv.m_component_offsets[IDX] = offset;
-
             }
-
-
 
             // CallFunc: create references for each T from ChunkView => pass to Func
             // spark_ecs.hpp (within Query class)
@@ -855,8 +850,6 @@ namespace spark
                         cv.m_data + idx * cv.m_total_size_per_entity + cv.m_component_offsets[I])...
                 );
             }
-
-
 
         private:
             const Coordinator& m_coord;
@@ -917,7 +910,7 @@ namespace spark
             return raw;
         }
 
-        template <typename T>
+       template <typename T>
         void SetComponentInChunk(Chunk* c, usize idx, const T& val)
         {
             u32 tid = GetComponentTypeID<T>();

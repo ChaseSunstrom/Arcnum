@@ -1,0 +1,32 @@
+[project]
+name = "Arcnum"
+version = "0.1.0"
+description = "Arcnum Application"
+type = "executable"
+language = "c++"
+standard = "c++20"
+
+[build]
+build_dir = "build"
+default_config = "Debug"
+
+
+[build.configs.Debug]
+defines = ["DEBUG", "_DEBUG"]
+
+[build.configs.Release]
+defines = ["NDEBUG"]
+flags = ["OPTIMIZE", "LTO"]
+
+[dependencies]
+workspace = [
+    { name = "Spark", link_type = "shared-library", include_paths = ["include", "."] }
+]
+
+[output]
+bin_dir = "bin/${CONFIG}-${OS}-${ARCH}/Arcnum"
+obj_dir = "obj/${CONFIG}-${OS}-${ARCH}/Arcnum"
+
+[targets.default]
+sources = ["src/**"]
+include_dirs = ["../Spark/include"]

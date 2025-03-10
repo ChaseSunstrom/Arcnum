@@ -1,0 +1,49 @@
+[project]
+name = "Spark"
+version = "0.1.0"
+description = "Spark Library"
+type = "shared-library"
+language = "c++"
+standard = "c++20"
+
+[build]
+build_dir = "build"
+default_config = "Debug"
+cmake_options = [
+  "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+  "-DCMAKE_POSITION_INDEPENDENT_CODE=ON"
+]
+
+[build.configs.Debug]
+defines = ["DEBUG", "_DEBUG"]
+flags = ["NO_WARNINGS"]
+
+[build.configs.Release]
+defines = ["NDEBUG"]
+flags = ["OPTIMIZE", "LTO"]
+
+[dependencies]
+vcpkg = { enabled = true, path = "~/.vcpkg", packages = ["glfw3:x64-mingw-dynamic", "glew:x64-mingw-dynamic", "fmt:x64-mingw-dynamic"] }
+
+[output]
+bin_dir = "bin/${CONFIG}-${OS}-${ARCH}/Spark"
+lib_dir = "bin/${CONFIG}-${OS}-${ARCH}/Spark"
+obj_dir = "obj/${CONFIG}-${OS}-${ARCH}/Spark"
+
+[targets.Spark]
+sources = ["src/**"]
+include_dirs = ["include"]
+defines = ["NOMINMAX", "WIN32_LEAN_AND_MEAN", "SPARK_EXPORTS"]
+links = ["glfw", "GLEW::GLEW", "fmt::fmt-header-only"]
+
+[targets.Spark.platform_links]
+windows = ["opengl32", "user32", "gdi32", "shell32"]
+linux = ["GL", "X11"]
+darwin = ["OpenGL"]
+
+[hooks]
+
+post_build = [
+  "echo Build completed at: $(pwd)",
+  "find ../../bin -name \"*.a\" -o -name \"*.lib\" | sort"
+]

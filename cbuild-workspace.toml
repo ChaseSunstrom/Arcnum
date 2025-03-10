@@ -1,0 +1,8 @@
+[workspace]
+name = "Arcnum"
+projects = [
+    "Spark",
+    "Arcnum"
+]
+startup_projects = ["Arcnum"]
+default_startup_project = "Arcnum"

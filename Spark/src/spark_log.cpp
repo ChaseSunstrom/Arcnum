@@ -2,6 +2,7 @@
 #include "spark_log.hpp"
 
 // We only need {fmt} in the .cpp
+#define FMT_HEADER_ONLY
 #define FMT_UNICODE 0
 #include <fmt/core.h>
 #include <fmt/color.h>

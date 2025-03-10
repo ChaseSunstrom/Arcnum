@@ -45,7 +45,6 @@
 
 #include "spark_defines.hpp"
 #include "spark_types.hpp"
-#include "spark_alloc.hpp"
 #include "spark_log.hpp"
 
 #endif

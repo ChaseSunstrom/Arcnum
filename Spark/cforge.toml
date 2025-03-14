@@ -23,7 +23,7 @@ defines = ["NDEBUG"]
 flags = ["OPTIMIZE", "LTO"]
 
 [dependencies]
-vcpkg = { enabled = true, path = "~/.vcpkg", packages = ["glfw3:x64-mingw-dynamic", "glew:x64-mingw-dynamic", "fmt:x64-mingw-dynamic"] }
+vcpkg = { enabled = true, path = "~/.vcpkg", packages = ["glfw3", "glew", "fmt"] }
 
 [output]
 bin_dir = "bin/${CONFIG}-${OS}-${ARCH}/Spark"

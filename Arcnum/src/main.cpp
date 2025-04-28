@@ -102,6 +102,7 @@ BenchResult benchmarkEntityIterationSimple(size_t count) {
     auto query = coord.CreateQuery<Position, spark::Without<Velocity>>();
     query.ForEach([&](const spark::Entity& e, Position& p) {
         ++iterated;
+        p.x += 1;
         });
     auto elapsed = std::chrono::high_resolution_clock::now() - start;
     return { std::chrono::duration<double>(elapsed).count(), iterated, 0 };
@@ -134,11 +135,13 @@ BenchResult benchmarkComponentAccess(size_t accesses) {
     }
     auto start = std::chrono::high_resolution_clock::now();
     for (size_t i = 0; i < accesses; ++i) {
-        auto& ent = entities[rng() % entities.size()];
-        coord.GetComponent<Position>(ent);
-        coord.GetComponent<Velocity>(ent);
-        coord.GetComponent<Health>(ent);
+        auto& ent = entities[createCount - (i / 10)];
+        coord.GetComponent<Position>(ent).x += 1;
+
     }
+
+    std::cout << coord.GetComponent<Position>(entities[0]).x << std::endl;
+
     auto elapsed = std::chrono::high_resolution_clock::now() - start;
     return { std::chrono::duration<double>(elapsed).count(), accesses, 0 };
 }
@@ -208,12 +211,12 @@ int main() {
     std::cout << "=== Entity Iteration Simple ===\n"
         << res4.opsPerSecond() << " entities/sec, "
         << res4.microsecondsPerOp() << " us/entity\n\n";
-
+    
     auto res5 = benchmarkEntityIterationComplex(ENTITY_COUNT);
     std::cout << "=== Entity Iteration Complex ===\n"
         << res5.opsPerSecond() << " entities/sec, "
         << res5.microsecondsPerOp() << " us/entity\n\n";
-
+	
     auto res6 = benchmarkComponentAccess(ACCESS_COUNT);
     std::cout << "=== Random Component Access ===\n"
         << res6.opsPerSecond() << " accesses/sec, "

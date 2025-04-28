@@ -5,6 +5,7 @@
 #include "spark_defines.hpp"
 #include <cstring>
 #include <type_traits>
+#include <list>
 
 namespace spark
 {
@@ -363,16 +364,18 @@ namespace spark
             }
         }
 
-        void* GetComponentData(u32 tid, usize idx) noexcept
+        void* GetComponentData(u32 tid, usize idx)
         {
-            int arr_index = m_type_map[tid];
-            return (arr_index < 0) ? nullptr : m_data.data() + idx * m_total_size_per_entity + m_component_offsets[arr_index];
+            // Validate component type and retrieve offset (throws if not present)
+            usize offset = GetComponentOffset(tid);
+            return m_data.data() + idx * m_total_size_per_entity + offset;
         }
 
-        const void* GetComponentData(u32 tid, usize idx) const noexcept
+        const void* GetComponentData(u32 tid, usize idx) const
         {
-            int arr_index = m_type_map[tid];
-            return (arr_index < 0) ? nullptr : m_data.data() + idx * m_total_size_per_entity + m_component_offsets[arr_index];
+            // Validate component type and retrieve offset (throws if not present)
+            usize offset = GetComponentOffset(tid);
+            return m_data.data() + idx * m_total_size_per_entity + offset;
         }
 
 
@@ -451,12 +454,13 @@ namespace spark
             from_chunk->CopyTo(idxA, to_chunk, idxB);
         }
 
-        std::vector<Chunk>& GetChunks()
+        // Return stable references to chunks; we use list to avoid invalidating pointers on resize
+        std::list<Chunk>& GetChunks()
         {
             return m_chunks;
         }
 
-        const std::vector<Chunk>& GetChunks() const
+        const std::list<Chunk>& GetChunks() const
         {
             return m_chunks;
         }
@@ -470,7 +474,8 @@ namespace spark
 
     private:
         ComponentSignature m_signature;
-        std::vector<Chunk> m_chunks;
+        // Using list to keep chunk pointers stable across insertions
+        std::list<Chunk> m_chunks;
     };
 
     struct EntityLocation
@@ -556,7 +561,7 @@ namespace spark
             ComponentSignature old_sig = old_arch->GetSignature();
 
             u32 tid = GetComponentTypeID<T>();
-            if (old_sig.test(tid))
+            if ((old_sig >> tid) & 1ULL)
             {
                 // Already has T, return reference
                 return GetComponentRef<T>(old_loc);
@@ -612,7 +617,7 @@ namespace spark
             ComponentSignature old_sig = old_arch->GetSignature();
 
             u32 tid = GetComponentTypeID<T>();
-            if (!old_sig.test(tid))
+            if (!((old_sig >> tid) & 1ULL))
             {
                 // doesn't have T
                 return;
@@ -650,7 +655,10 @@ namespace spark
             {
                 return false;
             }
-            return loc.archetype_ptr->GetSignature().test(GetComponentTypeID<T>());
+            {
+                ComponentSignature sig = loc.archetype_ptr->GetSignature();
+                return ((sig >> GetComponentTypeID<T>()) & 1ULL) != 0;
+            }
         }
 
         template <typename... Filters>

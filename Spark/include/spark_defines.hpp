@@ -26,4 +26,14 @@
   #define MOD_API
 #endif
 
+#ifndef SPARK_ECS_FORCEINLINE
+	#if defined(_MSC_VER)
+		#define SPARK_ECS_FORCEINLINE __forceinline
+	#elif defined(__GNUC__) || defined(__clang__)
+		#define SPARK_ECS_FORCEINLINE inline __attribute__((always_inline))
+	#else
+		#define SPARK_ECS_FORCEINLINE inline
+	#endif
+#endif
+
 #endif // SPARK_DEFINES_HPP

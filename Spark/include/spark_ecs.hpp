@@ -2,12 +2,14 @@
 #define SPARK_ECS_HPP
 
 #include "spark_pch.hpp"
+#include "spark_defines.hpp"
 #include <cstring>
+#include <type_traits>
 
 namespace spark
 {
     constexpr usize MAX_COMPONENTS = 64;
-    using ComponentSignature = std::bitset<MAX_COMPONENTS>;
+    using ComponentSignature = u64;
 
     // The chunk size in bytes (for SoA storage inside archetypes)
     constexpr usize CHUNK_SIZE_BYTES = 16 * 1024;
@@ -138,7 +140,11 @@ namespace spark
         if (g_type_sizes[tid] == 0)
         {
             g_type_sizes[tid] = sizeof(T);
-            if (!g_copy_fns[tid])
+            if constexpr (std::is_trivially_copyable_v<T>)
+            {
+                g_copy_fns[tid] = nullptr;
+            }
+            else
             {
                 g_copy_fns[tid] = &CopyComponentFn<T>;
             }
@@ -169,7 +175,7 @@ namespace spark
             m_total_size_per_entity = 0; // Initialize the member variable
             for (u32 tid = 0; tid < MAX_COMPONENTS; ++tid)
             {
-                if (m_signature.test(tid))
+                if ((m_signature >> tid) & 1ULL)
                 {
                     usize sz = g_type_sizes[tid];
                     m_type_ids.push_back(tid);
@@ -179,6 +185,14 @@ namespace spark
                 }
             }
 
+            // For large component sets, ensure at least N entities per chunk
+            if (m_total_size_per_entity > 0)
+            {
+                constexpr usize min_entities = 64;
+                usize needed_bytes = m_total_size_per_entity * min_entities;
+                if (needed_bytes > m_capacity_bytes)
+                    m_capacity_bytes = needed_bytes;
+            }
             if (m_total_size_per_entity == 0)
             {
                 m_capacity_entities = m_capacity_bytes;
@@ -200,6 +214,17 @@ namespace spark
                 u32 tid = m_type_ids[i];
                 m_type_map[tid] = static_cast<int>(i);
             }
+
+            // Determine if we can memcpy whole entities (all components trivially copyable)
+            m_all_trivial = true;
+            for (u32 tid : m_type_ids)
+            {
+                if (g_copy_fns[tid])
+                {
+                    m_all_trivial = false;
+                    break;
+                }
+            }
         }
 
 
@@ -209,41 +234,62 @@ namespace spark
         }
 
 
-        bool HasSpace() const
+        bool HasSpace() const noexcept
         {
             return (m_entity_count < m_capacity_entities);
         }
 
-        usize Size() const
+        usize Size() const noexcept
         {
             return m_entity_count;
         }
 
-        Entity GetEntity(usize i) const
+        Entity GetEntity(usize i) const noexcept
         {
             return m_entities[i];
         }
 
-        usize AddEntity(Entity e)
+        usize AddEntity(Entity e) noexcept
         {
             const usize idx = m_entity_count++;
             m_entities[idx] = e;
             return idx;
         }
 
-        void RemoveEntity(usize idx)
+        void RemoveEntity(usize idx) noexcept
         {
             const usize last_idx = m_entity_count - 1;
             if (idx != last_idx)
             {
                 m_entities[idx] = m_entities[last_idx];
-                // Swap each component's data
-                for (usize i = 0; i < m_type_ids.size(); ++i)
+                if (m_all_trivial)
                 {
-                    SwapData(i, idx, last_idx);
+                    // fast path: memcpy whole entity
+                    std::memcpy(
+                        m_data.data() + idx * m_total_size_per_entity,
+                        m_data.data() + last_idx * m_total_size_per_entity,
+                        m_total_size_per_entity);
+                }
+                else
+                {
+                    // slow path: per-component copy or custom fn
+                    for (usize i = 0; i < m_type_ids.size(); ++i)
+                    {
+                        u32 tid = m_type_ids[i];
+                        CopyFn fn = g_copy_fns[tid];
+                        usize sz = m_type_sizes[i];
+                        const usize src_offset = m_component_offsets[i] + last_idx * sz;
+                        const usize dst_offset = m_component_offsets[i] + idx * sz;
+                        const void* s_ptr = m_data.data() + src_offset;
+                        void* d_ptr = m_data.data() + dst_offset;
+                        if (fn)
+                            fn(s_ptr, d_ptr);
+                        else
+                            std::memcpy(d_ptr, s_ptr, sz);
+                    }
                 }
             }
-            m_entity_count--;
+            --m_entity_count;
         }
 
         usize GetTotalSizePerEntity() const {
@@ -287,58 +333,46 @@ namespace spark
             }
         }
 
-        void CopyTo(usize idx_src, Chunk* dst_chunk, usize idx_dst) const
+        void CopyTo(usize idx_src, Chunk* dst_chunk, usize idx_dst) const noexcept
         {
-            // We assume same signature => same ordering of m_type_ids
-            for (usize i = 0; i < m_type_ids.size(); ++i)
+            if (m_all_trivial)
             {
-                u32 tid = m_type_ids[i];
-                CopyFn fn = g_copy_fns[tid];
-                usize sz = m_type_sizes[i];
-
-                const usize src_offset = m_component_offsets[i] + idx_src * sz;
-                const usize dst_offset = dst_chunk->m_component_offsets[i] + idx_dst * sz;
-
-                const void* s_ptr = &m_data[src_offset];
-                void* d_ptr = &dst_chunk->m_data[dst_offset];
-
-                if (fn)
+                // fast path: memcpy entire entity slice
+                std::memcpy(
+                    dst_chunk->m_data.data() + idx_dst * m_total_size_per_entity,
+                    m_data.data() + idx_src * m_total_size_per_entity,
+                    m_total_size_per_entity);
+            }
+            else
+            {
+                // slow path: per-component copy or custom fn
+                for (usize i = 0; i < m_type_ids.size(); ++i)
                 {
-                    fn(s_ptr, d_ptr);
-                }
-                else
-                {
-                    std::memcpy(d_ptr, s_ptr, sz);
+                    u32 tid = m_type_ids[i];
+                    CopyFn fn = g_copy_fns[tid];
+                    usize sz = m_type_sizes[i];
+                    const usize src_offset = m_component_offsets[i] + idx_src * sz;
+                    const usize dst_offset = dst_chunk->m_component_offsets[i] + idx_dst * sz;
+                    const void* s_ptr = &m_data[src_offset];
+                    void* d_ptr = &dst_chunk->m_data[dst_offset];
+                    if (fn)
+                        fn(s_ptr, d_ptr);
+                    else
+                        std::memcpy(d_ptr, s_ptr, sz);
                 }
             }
         }
 
-        void* GetComponentData(u32 tid, usize idx)
+        void* GetComponentData(u32 tid, usize idx) noexcept
         {
-            const int arr_index = m_type_map[tid];
-            if (arr_index < 0)
-            {
-                return nullptr;
-            }
-            std::byte* base = m_data.data();
-            usize offset = m_component_offsets[arr_index];
-            usize sz = m_type_sizes[arr_index];
-            // Correct address calculation for AoS
-            return &base[idx * GetTotalSizePerEntity() + offset];
+            int arr_index = m_type_map[tid];
+            return (arr_index < 0) ? nullptr : m_data.data() + idx * m_total_size_per_entity + m_component_offsets[arr_index];
         }
 
-        const void* GetComponentData(u32 tid, usize idx) const
+        const void* GetComponentData(u32 tid, usize idx) const noexcept
         {
-            const int arr_index = m_type_map[tid];
-            if (arr_index < 0)
-            {
-                return nullptr;
-            }
-            const std::byte* base = m_data.data();
-            usize offset = m_component_offsets[arr_index];
-            usize sz = m_type_sizes[arr_index];
-            // Correct address calculation for AoS
-            return &base[idx * GetTotalSizePerEntity() + offset];
+            int arr_index = m_type_map[tid];
+            return (arr_index < 0) ? nullptr : m_data.data() + idx * m_total_size_per_entity + m_component_offsets[arr_index];
         }
 
 
@@ -372,6 +406,9 @@ namespace spark
 
         // Entities
         std::vector<Entity> m_entities;
+
+        // Flag indicating if entire entity memory can be memcpy'd
+        bool m_all_trivial = false;
 
         // tid -> index in m_type_ids (or -1 if not present)
         i32  m_type_map[MAX_COMPONENTS];
@@ -450,6 +487,8 @@ namespace spark
         {
             m_active_entities.reserve(1024);
             m_entity_generations.reserve(1024);
+            m_entity_locations.reserve(1024);
+            m_archetypes.reserve(32);
         }
 
         Coordinator(const Coordinator&) = delete;
@@ -459,31 +498,20 @@ namespace spark
         template <typename... Components>
         Entity CreateEntity(Components&&... comps)
         {
-            (InitTypeIfNeeded<std::remove_reference_t<Components>>(), ...);
-
+            // one-time type init and signature creation per template instantiation
+            static const bool inited = []() {
+                (InitTypeIfNeeded<std::remove_reference_t<Components>>(), ...);
+                return true;
+            }(); (void)inited;
+            static const ComponentSignature sig =
+                ((ComponentSignature(1ULL) << GetComponentTypeID<std::remove_reference_t<Components>>()) | ...);
             Entity e = CreateEmptyEntity();
-
+            Archetype* arch = GetOrCreateArchetype(sig);
+            auto [chunk_ptr, idx] = arch->AddEntity(e);
+            // fill components if any
             if constexpr (sizeof...(comps) > 0)
-            {
-                ComponentSignature sig;
-                (sig.set(GetComponentTypeID<std::remove_reference_t<Components>>()), ...);
-
-                Archetype* arch = GetOrCreateArchetype(sig);
-                auto [chunk_ptr, idx] = arch->AddEntity(e);
-
                 FillComponents<Components...>(chunk_ptr, idx, std::forward<Components>(comps)...);
-                SetEntityLocation(e.GetId(), { arch, chunk_ptr, idx });
-            }
-            else
-            {
-                // empty signature
-                ComponentSignature sig;
-                Archetype* arch = GetOrCreateArchetype(sig);
-                auto [chunk_ptr, idx] = arch->AddEntity(e);
-
-                SetEntityLocation(e.GetId(), { arch, chunk_ptr, idx });
-            }
-
+            SetEntityLocation(e.GetId(), { arch, chunk_ptr, idx });
             return e;
         }
 
@@ -535,8 +563,7 @@ namespace spark
             }
 
             // Build new signature
-            ComponentSignature new_sig = old_sig;
-            new_sig.set(tid, true);
+            ComponentSignature new_sig = old_sig | (ComponentSignature(1ULL) << tid);
 
             // Move to new archetype
             Archetype* new_arch = GetOrCreateArchetype(new_sig);
@@ -562,9 +589,9 @@ namespace spark
             return GetComponentRef<T>(new_loc);
         }
 
-		std::unordered_map<ComponentSignature, std::unique_ptr<Archetype>>& GetArchetypes() {
-			return m_archetypes;
-		}
+        std::vector<std::pair<ComponentSignature, std::unique_ptr<Archetype>>>& GetArchetypes() {
+            return m_archetypes;
+        }
 
         template <typename T>
         void RemoveComponent(Entity e)
@@ -591,8 +618,7 @@ namespace spark
                 return;
             }
 
-            ComponentSignature new_sig = old_sig;
-            new_sig.set(tid, false);
+            ComponentSignature new_sig = old_sig & ~(ComponentSignature(1ULL) << tid);
 
             Archetype* new_arch = GetOrCreateArchetype(new_sig);
             auto [new_chunk, new_idx] = new_arch->AddEntity(e);
@@ -635,6 +661,13 @@ namespace spark
 
             using IncludedTypes = typename detail::ExtractIncluded<Filters...>::type;
 
+            // The result type of this query (single component type or tuple of types)
+            using result_type = std::conditional_t<
+                (std::tuple_size<IncludedTypes>::value == 1),
+                std::tuple_element_t<0, IncludedTypes>,
+                IncludedTypes
+            >;
+
             struct ChunkView
             {
                 Chunk* m_chunk = nullptr;
@@ -652,18 +685,21 @@ namespace spark
             };
 
 
-            Query(const Coordinator& c)
+            Query(Coordinator& c)
                 : m_coord(c)
+                , m_include_sig(0)
+                , m_exclude_sig(0)
             {
+                // avoid reallocations when gathering chunk views
+                m_chunk_views.reserve(m_coord.GetArchetypes().size());
                 ParseFilters<Filters...>();
-
-                // gather archetypes that match
-                for (auto& kv : m_coord.m_archetypes)
+                // Gather matching archetypes
+                for (auto& kv : m_coord.GetArchetypes())
                 {
                     const auto& arch_sig = kv.first;
                     if ((arch_sig & m_include_sig) == m_include_sig)
                     {
-                        if ((arch_sig & m_exclude_sig).any())
+                        if ((arch_sig & m_exclude_sig) != 0ULL)
                             continue;
 
                         // Gather chunk data
@@ -675,51 +711,98 @@ namespace spark
 
             // ForEach: pass (entityId, T1&, T2&, ...) to func
             template <typename Func>
-            void ForEach(Func func)
+            void ForEach(Func func) const noexcept
+            {
+                ForEachImpl<Func>(func, std::make_index_sequence<std::tuple_size<IncludedTypes>::value>{});
+            }
+
+            // Optimized implementation: precompute per-component base pointers and advance by stride
+            template <typename Func, size_t... I>
+            void ForEachImpl(Func func, std::index_sequence<I...>) const noexcept
             {
                 for (auto& cv : m_chunk_views)
                 {
                     const Entity* entity_array = cv.m_entity_array;
                     usize count = cv.m_count;
-
-                    for (usize i = 0; i < count; ++i)
+                    usize stride = cv.m_total_size_per_entity;
+                    std::array<std::byte*, sizeof...(I)> bases = { (cv.m_data + cv.m_component_offsets[I])... };
+                    for (usize j = 0; j < count; ++j)
                     {
-                        Entity e = entity_array[i];
-                        // Expand references to each included component
-                        CallFunc(e, func, cv, i,
-                            std::make_index_sequence<std::tuple_size<IncludedTypes>::value>{});
+                        func(entity_array[j], *reinterpret_cast<std::tuple_element_t<I, IncludedTypes>*>(bases[I])...);
+                        ((bases[I] += stride), ...);
                     }
                 }
             }
 
-            usize Size()
+            usize Size() const noexcept
             {
                 usize total = 0;
                 for (auto& cv : m_chunk_views)
-                {
                     total += cv.m_count;
-                }
                 return total;
             }
 
-            auto GetVector() const
+            inline std::vector<result_type> GetVector() const noexcept
             {
-                using result_type = std::conditional_t<
-                    (std::tuple_size<IncludedTypes>::value == 1),
-                    std::tuple_element_t<0, IncludedTypes>,
-                    IncludedTypes
-                >;
                 std::vector<result_type> result_vector;
-
-                for (const auto& chunk_view : m_chunk_views)
-                {
-                    for (usize idx = 0; idx < chunk_view.m_count; ++idx)
-                    {
-                        result_vector.emplace_back(GetResult(chunk_view, idx));
-                    }
-                }
+                result_vector.reserve(Size());
+                for (const auto& cv : m_chunk_views)
+                    for (usize idx = 0; idx < cv.m_count; ++idx)
+                        result_vector.emplace_back(GetResult(cv, idx));
                 return result_vector;
             }
+
+            // Iterator support for ranged-for
+            class Iterator
+            {
+            public:
+                inline Iterator(const Query* q, bool end = false) noexcept
+                    : m_query(q), m_view_idx(0), m_idx(0)
+                {
+                    if (end || q->m_chunk_views.empty())
+                    {
+                        m_view_idx = q->m_chunk_views.size();
+                        m_idx = 0;
+                    }
+                }
+
+                using result_type = typename Query::result_type;
+
+                inline result_type operator*() const noexcept
+                {
+                    const auto& cv = m_query->m_chunk_views[m_view_idx];
+                    return m_query->GetResult(cv, m_idx);
+                }
+
+                inline Iterator& operator++() noexcept
+                {
+                    const auto& cv = m_query->m_chunk_views[m_view_idx];
+                    if (++m_idx >= cv.m_count)
+                    {
+                        ++m_view_idx;
+                        m_idx = 0;
+                    }
+                    if (m_view_idx >= m_query->m_chunk_views.size())
+                    {
+                        m_view_idx = m_query->m_chunk_views.size();
+                        m_idx = 0;
+                    }
+                    return *this;
+                }
+
+                inline bool operator!=(const Iterator& other) const noexcept
+                {
+                    return m_view_idx != other.m_view_idx || m_idx != other.m_idx;
+                }
+
+            private:
+                const Query* m_query;
+                usize m_view_idx;
+                usize m_idx;
+            };
+
+            inline Iterator begin() const noexcept { return Iterator(this, false); }
+            inline Iterator end() const noexcept { return Iterator(this, true); }
 
         private:
             template <typename First, typename... Rest>
@@ -740,16 +823,16 @@ namespace spark
                 if constexpr (detail::IsSpecialization<F, Without>::value)
                 {
                     using TT = typename F::type;
-                    m_exclude_sig.set(GetComponentTypeID<TT>(), true);
+                    m_exclude_sig |= ComponentSignature(1ULL) << GetComponentTypeID<TT>();
                 }
                 else
                 {
-                    m_include_sig.set(GetComponentTypeID<F>(), true);
+                    m_include_sig |= ComponentSignature(1ULL) << GetComponentTypeID<F>();
                 }
             }
 
             // Helper: Given a ChunkView and an entity index, build a tuple of component values
-    // by reading the data at the proper offsets.
+            // by reading the data at the proper offsets.
             template <std::size_t... idxs>
             auto GetTupleFromChunkView(const ChunkView& chunk_view, usize idx, std::index_sequence<idxs...>) const
             {
@@ -830,29 +913,8 @@ namespace spark
                 cv.m_component_offsets[IDX] = offset;
             }
 
-            // CallFunc: create references for each T from ChunkView => pass to Func
-            // spark_ecs.hpp (within Query class)
-            template <typename Func, size_t... I>
-            void CallFunc(const Entity& e,
-                Func& func,
-                const ChunkView& cv,
-                usize idx,
-                std::index_sequence<I...>)
-            {
-                if (!cv.m_data)
-                {
-                    throw std::runtime_error("Chunk data is null.");
-                }
-
-                func(
-                    e,
-                    *reinterpret_cast<std::tuple_element_t<I, IncludedTypes>*>(
-                        cv.m_data + idx * cv.m_total_size_per_entity + cv.m_component_offsets[I])...
-                );
-            }
-
         private:
-            const Coordinator& m_coord;
+            Coordinator& m_coord;
             ComponentSignature m_include_sig;
             ComponentSignature m_exclude_sig;
             std::vector<ChunkView> m_chunk_views;
@@ -860,7 +922,7 @@ namespace spark
 
         // Query builder
         template <typename... Fs>
-        Query<Fs...> CreateQuery() const
+        Query<Fs...> CreateQuery() 
         {
             return Query<Fs...>(*this);
         }
@@ -873,8 +935,8 @@ namespace spark
         std::vector<bool> m_active_entities;
         std::vector<u32> m_entity_generations;
 
-        // Archetypes by signature
-        std::unordered_map<ComponentSignature, std::unique_ptr<Archetype>> m_archetypes;
+        // Archetypes by signature; use vector for faster small-count linear search
+        std::vector<std::pair<ComponentSignature, std::unique_ptr<Archetype>>> m_archetypes;
 
     private:
         // create new or reuse old ID
@@ -886,6 +948,7 @@ namespace spark
                 m_recycled_ids.pop();
                 m_entity_generations[r.GetId()]++;
                 m_active_entities[r.GetId()] = true;
+                m_entity_locations.emplace_back();
                 return Entity(r.GetId(), m_entity_generations[r.GetId()]);
             }
             else
@@ -893,24 +956,26 @@ namespace spark
                 u32 new_id = (u32)m_active_entities.size();
                 m_active_entities.push_back(true);
                 m_entity_generations.push_back(0);
+                m_entity_locations.emplace_back();
                 return Entity(new_id, 0);
             }
         }
 
         Archetype* GetOrCreateArchetype(const ComponentSignature& sig)
         {
-            auto it = m_archetypes.find(sig);
-            if (it != m_archetypes.end())
+            // Linear search since typical archetype count is small
+            for (auto& entry : m_archetypes)
             {
-                return it->second.get();
+                if (entry.first == sig)
+                    return entry.second.get();
             }
             auto new_arch = std::make_unique<Archetype>(sig);
             Archetype* raw = new_arch.get();
-            m_archetypes.insert({ sig, std::move(new_arch) });
+            m_archetypes.emplace_back(sig, std::move(new_arch));
             return raw;
         }
 
-       template <typename T>
+        template <typename T>
         void SetComponentInChunk(Chunk* c, usize idx, const T& val)
         {
             u32 tid = GetComponentTypeID<T>();

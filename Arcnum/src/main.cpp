@@ -1,176 +1,225 @@
-﻿#define SPARK_USE_GL
-#include "spark.hpp"
+﻿#include "spark_ecs.hpp"
+#include <iostream>
+#include <chrono>
+#include <vector>
+#include <random>
 
-using namespace spark;
-using namespace spark::math;
-
-// Creates a square mesh and stores it in the ItemManager.
-void CreateSquareMesh(Application& app)
-{
-    // Create a vertex layout with a single attribute: 2D position.
-    VertexLayout layout;
-    layout.AddAttribute<f32>("a_position", AttributeType::VEC2, false);
-
-    // Define vertices for a unit square
-    std::vector<f32> vertices = {
-        -0.5f, -0.5f,  // Bottom left
-         0.5f, -0.5f,  // Bottom right
-         0.5f,  0.5f,  // Top right
-        -0.5f,  0.5f   // Top left
-    };
-
-    // Define indices for two triangles
-    std::vector<u32> indices = { 0, 1, 2, 2, 3, 0 };
-
-    // Create the mesh if not present
-    if (!app.HasItem<IMesh>("square_mesh"))
-    {
-        auto& mesh = app.AddItem<IMesh>("square_mesh");
-        mesh.SetData(vertices, layout, indices);
+#ifdef _WIN32
+#include <windows.h>
+#include <psapi.h>
+size_t getProcessMemory() {
+    PROCESS_MEMORY_COUNTERS pmc;
+    if (GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc))) {
+        return static_cast<size_t>(pmc.WorkingSetSize);
     }
+    return 0;
+}
+#else
+// Fallback for non-Windows: returns 0 (memory measurement unsupported)
+size_t getProcessMemory() {
+    return 0;
+}
+#endif
+
+struct BenchResult {
+    double time_sec;
+    size_t operations;
+    size_t memory_bytes;
+
+    double opsPerSecond() const {
+        return operations / time_sec;
+    }
+    double microsecondsPerOp() const {
+        return (time_sec * 1e6) / operations;
+    }
+    std::string memoryString() const {
+        if (memory_bytes < 1024) return std::to_string(memory_bytes) + " B";
+        if (memory_bytes < 1024 * 1024) return std::to_string(memory_bytes / 1024.0) + " KB";
+        return std::to_string(memory_bytes / (1024.0 * 1024.0)) + " MB";
+    }
+};
+
+// Component definitions
+struct Position { float x, y, z, _padding; };
+struct Velocity { float x, y, z, _padding; };
+struct Health { float value, _p0, _p1, _p2; };
+struct Transform { float matrix[16]; };
+struct Render { int mesh_id, material_id; float _p0, _p1; };
+struct Physics { float mass, friction, restitution, _padding; };
+struct LargeComponent { float data[256]; };
+
+// Benchmark: Entity creation with simple components
+BenchResult benchmarkEntityCreationSimple(size_t count) {
+    size_t startMem = getProcessMemory();
+    auto start = std::chrono::high_resolution_clock::now();
+    spark::Coordinator coord;
+    for (size_t i = 0; i < count; ++i) {
+        coord.CreateEntity(Position{ 0,0,0,0 }, Velocity{ 0,0,0,0 });
+    }
+    auto elapsed = std::chrono::high_resolution_clock::now() - start;
+    return { std::chrono::duration<double>(elapsed).count(), count, getProcessMemory() - startMem };
 }
 
-// Creates a shader that supports both instanced and regular rendering
-void CreateSquareShader(Application& app)
-{
-    const std::string vertexShaderSource = R"(
-        #version 330 core
-        layout (location = 0) in vec2 a_position;
-        layout (location = 1) in mat4 a_instance_transform;  // Instance data (optional)
+// Benchmark: Entity creation with complex components
+BenchResult benchmarkEntityCreationComplex(size_t count) {
+    size_t startMem = getProcessMemory();
+    auto start = std::chrono::high_resolution_clock::now();
+    spark::Coordinator coord;
+    for (size_t i = 0; i < count; ++i) {
+        coord.CreateEntity(
+            Position{ 0,0,0,0 }, Velocity{ 0,0,0,0 }, Health{ 100,0,0,0 },
+            Transform{}, Render{ 0,0,0,0 }, Physics{ 1,0.5f,0.5f,0 }
+        );
+    }
+    auto elapsed = std::chrono::high_resolution_clock::now() - start;
+    return { std::chrono::duration<double>(elapsed).count(), count, getProcessMemory() - startMem };
+}
 
-        uniform mat4 u_viewProjection;
-        uniform mat4 u_transform;  // Used for non-instanced rendering
+// Benchmark: Entity creation with a large component
+BenchResult benchmarkEntityCreationLarge(size_t count) {
+    size_t startMem = getProcessMemory();
+    auto start = std::chrono::high_resolution_clock::now();
+    spark::Coordinator coord;
+    for (size_t i = 0; i < count; ++i) {
+        coord.CreateEntity(LargeComponent{});
+    }
+    auto elapsed = std::chrono::high_resolution_clock::now() - start;
+    return { std::chrono::duration<double>(elapsed).count(), count, getProcessMemory() - startMem };
+}
 
-        void main() {
-            // Use instance transform if available, otherwise use uniform transform
-            mat4 modelMatrix = (gl_InstanceID >= 0) ? a_instance_transform : u_transform;
-            gl_Position = u_viewProjection * modelMatrix * vec4(a_position, 0.0, 1.0);
+// Benchmark: Entity iteration simple
+BenchResult benchmarkEntityIterationSimple(size_t count) {
+    spark::Coordinator coord;
+    for (size_t i = 0; i < count; ++i) {
+        coord.CreateEntity(Position{ 0,0,0,0 }, Velocity{ 0,0,0,0 });
+    }
+    auto start = std::chrono::high_resolution_clock::now();
+    size_t iterated = 0;
+    auto query = coord.CreateQuery<Position, Velocity>();
+    query.ForEach([&](const spark::Entity& e, Position& p, const Velocity& v) {
+        ++iterated;
+        });
+    auto elapsed = std::chrono::high_resolution_clock::now() - start;
+    return { std::chrono::duration<double>(elapsed).count(), iterated, 0 };
+}
+
+// Benchmark: Entity iteration complex
+BenchResult benchmarkEntityIterationComplex(size_t count) {
+    spark::Coordinator coord;
+    for (size_t i = 0; i < count; ++i) {
+        coord.CreateEntity(Position{ 0,0,0,0 }, Velocity{ 0,0,0,0 }, Health{ 100,0,0,0 }, Transform{});
+    }
+    auto start = std::chrono::high_resolution_clock::now();
+    size_t iterated = 0;
+    auto query = coord.CreateQuery<Position, Velocity, Health, Transform>();
+    query.ForEach([&](const spark::Entity& e, Position& p, const Velocity& v, const Health& h, const Transform& t) {
+        ++iterated;
+        });
+    auto elapsed = std::chrono::high_resolution_clock::now() - start;
+    return { std::chrono::duration<double>(elapsed).count(), iterated, 0 };
+}
+
+// Benchmark: Random component access
+BenchResult benchmarkComponentAccess(size_t accesses) {
+    std::mt19937_64 rng(12345);
+    spark::Coordinator coord;
+    std::vector<spark::Entity> entities;
+    size_t createCount = accesses / 10;
+    for (size_t i = 0; i < createCount; ++i) {
+        entities.push_back(coord.CreateEntity(Position{ 0,0,0,0 }, Velocity{ 0,0,0,0 }, Health{ 100,0,0,0 }));
+    }
+    auto start = std::chrono::high_resolution_clock::now();
+    for (size_t i = 0; i < accesses; ++i) {
+        auto& ent = entities[rng() % entities.size()];
+        coord.GetComponent<Position>(ent);
+        coord.GetComponent<Velocity>(ent);
+        coord.GetComponent<Health>(ent);
+    }
+    auto elapsed = std::chrono::high_resolution_clock::now() - start;
+    return { std::chrono::duration<double>(elapsed).count(), accesses, 0 };
+}
+
+// Benchmark: Mixed operations
+BenchResult runMixedOperationsBenchmark() {
+    const size_t OPERATIONS = 1'000'000;
+    size_t startMem = getProcessMemory();
+    auto start = std::chrono::high_resolution_clock::now();
+    spark::Coordinator coord;
+    std::vector<spark::Entity> entities;
+    entities.reserve(OPERATIONS / 5);
+    for (size_t i = 0; i < OPERATIONS; ++i) {
+        switch (i % 5) {
+        case 0:
+        case 1:
+        case 2: {
+            auto query = coord.CreateQuery<Position, Velocity>();
+            query.ForEach([](const spark::Entity&, Position& p, const Velocity& v) {
+                p.x += v.x; p.y += v.y; p.z += v.z;
+                });
+            break;
         }
-    )";
-
-    const std::string fragmentShaderSource = R"(
-        #version 330 core
-        out vec4 frag_color;
-        uniform vec4 u_color;
-        void main() {
-            frag_color = u_color;
+        case 3: {
+            entities.push_back(coord.CreateEntity(Position{ 1,1,1,0 }, Velocity{ 0.1f,0.1f,0.1f,0 }));
+            break;
         }
-    )";
-
-    if (!app.HasItem<IShaderProgram>("square_shader"))
-    {
-        auto& shader = app.AddItem<IShaderProgram>("square_shader");
-        shader.AddShader(ShaderStageType::VERTEX, vertexShaderSource);
-        shader.AddShader(ShaderStageType::FRAGMENT, fragmentShaderSource);
-        shader.Link();
+        case 4: {
+            if (!entities.empty()) {
+                size_t idx = i % entities.size();
+                coord.DestroyEntity(entities[idx]);
+                entities.erase(entities.begin() + idx);
+            }
+            break;
+        }
+        }
     }
+    auto elapsed = std::chrono::high_resolution_clock::now() - start;
+    return { std::chrono::duration<double>(elapsed).count(), OPERATIONS, getProcessMemory() - startMem };
 }
 
-// Creates a main camera and stores it as an Item.
-void CreateMainCamera(Application& app)
-{
-    Camera cam(
-        Vec3(0.0f, 0.0f, 10.0f),   // position
-        Vec3(0.0f, 0.0f, 0.0f),    // target
-        45.0f,                      // fov
-        1280.0f / 720.0f,          // aspect ratio
-        0.1f, 1000.0f,             // near/far
-        ProjectionMode::ORTHOGRAPHIC
-    );
-    cam.Zoom(-500.0f);
-    app.AddItem<Camera>("main_camera", cam);
-}
+int main() {
+    constexpr size_t ENTITY_COUNT = 1'000'000;
+    constexpr size_t ACCESS_COUNT = 10'000'000;
 
-// Creates entities that will be automatically rendered by the render system
-void CreateAutoRenderEntities(Application& app, Coordinator& coord)
-{
-    IMesh* mesh = &app.GetItem<IMesh>("square_mesh");
-    IShaderProgram* shader = &app.GetItem<IShaderProgram>("square_shader");
-    Camera* camera = &app.GetItem<Camera>("main_camera");
-    
-    if (!mesh || !shader || !camera) return;
+    std::cout << "Running Spark ECS benchmarks...\n\n";
 
-    // Create a single entity with instance data for 5000 squares
-    Entity entity = coord.CreateEntity();
-    
-    // Add unified renderable component
-    RenderableComponent renderable;
-    renderable.mesh = mesh;
-    renderable.shader = shader;
-    renderable.visible = true;
-    renderable.depth_test = true;
-    renderable.blending = true;
-    renderable.wireframe = false;
-    renderable.draw_mode = 0x0004; // GL_TRIANGLES
+    auto res1 = benchmarkEntityCreationSimple(ENTITY_COUNT);
+    std::cout << "=== Entity Creation Simple ===\n"
+        << res1.opsPerSecond() << " entities/sec, "
+        << res1.microsecondsPerOp() << " us/entity, Memory: "
+        << res1.memoryString() << "\n\n";
 
-    // Set material properties
-    renderable.material->SetUniform("u_viewProjection", camera->GetViewProjectionMatrix());
-    renderable.material->SetUniform("u_color", Vec4(0.2f, 0.5f, 1.0f, 1.0f));
+    auto res2 = benchmarkEntityCreationComplex(ENTITY_COUNT);
+    std::cout << "=== Entity Creation Complex ===\n"
+        << res2.opsPerSecond() << " entities/sec, "
+        << res2.microsecondsPerOp() << " us/entity, Memory: "
+        << res2.memoryString() << "\n\n";
 
-    // Add instance data for 5000 squares on the left side
-    renderable.instance_transforms.reserve(5000);
-    for (int i = 0; i < 5000; i++)
-    {
-        Mat4 transform = Mat4(1.0f);
-        transform = Translate(transform, Vec3(i * 1.5f - 7500.0f, 100.0f, 0.0f));
-        transform = Scale(transform, Vec3(1.0f));
-        renderable.instance_transforms.push_back(transform);
-    }
+    auto res3 = benchmarkEntityCreationLarge(ENTITY_COUNT);
+    std::cout << "=== Entity Creation Large ===\n"
+        << res3.opsPerSecond() << " entities/sec, "
+        << res3.microsecondsPerOp() << " us/entity, Memory: "
+        << res3.memoryString() << "\n\n";
 
-    coord.AddComponent<RenderableComponent>(entity, renderable);
-}
+    auto res4 = benchmarkEntityIterationSimple(ENTITY_COUNT);
+    std::cout << "=== Entity Iteration Simple ===\n"
+        << res4.opsPerSecond() << " entities/sec, "
+        << res4.microsecondsPerOp() << " us/entity\n\n";
 
-// Creates another set of squares on the right side
-void CreateRightSideSquares(Application& app, Coordinator& coord)
-{
-    IMesh* mesh = &app.GetItem<IMesh>("square_mesh");
-    IShaderProgram* shader = &app.GetItem<IShaderProgram>("square_shader");
-    Camera* camera = &app.GetItem<Camera>("main_camera");
-    
-    if (!mesh || !shader || !camera) return;
+    auto res5 = benchmarkEntityIterationComplex(ENTITY_COUNT);
+    std::cout << "=== Entity Iteration Complex ===\n"
+        << res5.opsPerSecond() << " entities/sec, "
+        << res5.microsecondsPerOp() << " us/entity\n\n";
 
-    // Create an entity for the right side squares
-    Entity entity = coord.CreateEntity();
-    
-    RenderableComponent renderable;
-    renderable.mesh = mesh;
-    renderable.shader = shader;
-    renderable.visible = true;
-    renderable.depth_test = true;
-    renderable.blending = true;
-    renderable.wireframe = false;
-    renderable.draw_mode = 0x0004; // GL_TRIANGLES
+    auto res6 = benchmarkComponentAccess(ACCESS_COUNT);
+    std::cout << "=== Random Component Access ===\n"
+        << res6.opsPerSecond() << " accesses/sec, "
+        << res6.microsecondsPerOp() << " us/access\n\n";
 
-    // Set material properties including view projection
-    renderable.material->SetUniform("u_viewProjection", camera->GetViewProjectionMatrix());
-    renderable.material->SetUniform("u_color", Vec4(1.0f, 0.5f, 0.2f, 1.0f));
-
-    // Add instance data for 5000 squares on the right side
-    renderable.instance_transforms.reserve(5000);
-    for (int i = 0; i < 5000; i++)
-    {
-        Mat4 transform = Mat4(1.0f);
-        transform = Translate(transform, Vec3(i * 1.5f, -100.0f, 0.0f));
-        transform = Scale(transform, Vec3(1.0f));
-        renderable.instance_transforms.push_back(transform);
-    }
-
-    coord.AddComponent<RenderableComponent>(entity, renderable);
-}
-
-spark::i32 main()
-{
-    spark::Application app(spark::GraphicsApi::OPENGL, "Arcnum", 1280, 720);
-
-    // Register initialization systems
-    app.RegisterSystems(CreateSquareMesh, CreateSquareShader, CreateMainCamera, CreateAutoRenderEntities, 
-        SystemSettings{.phase = SystemPhase::ON_START});
-    
-    app.RegisterSystem(CreateRightSideSquares,
-        SystemSettings{.phase = SystemPhase::ON_START});
-
-    app.Start();
-    app.Run();
+    auto res7 = runMixedOperationsBenchmark();
+    std::cout << "=== Mixed Operations ===\n"
+        << res7.opsPerSecond() << " ops/sec, "
+        << res7.microsecondsPerOp() << " us/op, Memory: "
+        << res7.memoryString() << "\n";
 
     return 0;
 }

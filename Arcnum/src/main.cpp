@@ -91,12 +91,16 @@ BenchResult benchmarkEntityCreationLarge(size_t count) {
 BenchResult benchmarkEntityIterationSimple(size_t count) {
     spark::Coordinator coord;
     for (size_t i = 0; i < count; ++i) {
-        coord.CreateEntity(Position{ 0,0,0,0 }, Velocity{ 0,0,0,0 });
+        if (i % 2 == 0) {
+            coord.CreateEntity(Position{ 0,0,0,0 }, Velocity{ 0,0,0,0 });
+        } else {
+            coord.CreateEntity(Position{ 0,0,0,0 });
+        }
     }
     auto start = std::chrono::high_resolution_clock::now();
     size_t iterated = 0;
-    auto query = coord.CreateQuery<Position, Velocity>();
-    query.ForEach([&](const spark::Entity& e, Position& p, const Velocity& v) {
+    auto query = coord.CreateQuery<Position, spark::Without<Velocity>>();
+    query.ForEach([&](const spark::Entity& e, Position& p) {
         ++iterated;
         });
     auto elapsed = std::chrono::high_resolution_clock::now() - start;

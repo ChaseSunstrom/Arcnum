@@ -713,22 +713,26 @@ namespace spark
             template <typename Func>
             void ForEach(Func func) const noexcept
             {
-                ForEachImpl<Func>(func, std::make_index_sequence<std::tuple_size<IncludedTypes>::value>{});
+                ForEachGeneric(func, std::make_index_sequence<std::tuple_size<IncludedTypes>::value>{});
             }
 
             // Optimized implementation: precompute per-component base pointers and advance by stride
             template <typename Func, size_t... I>
-            void ForEachImpl(Func func, std::index_sequence<I...>) const noexcept
+            void ForEachGeneric(Func func, std::index_sequence<I...>) const noexcept
             {
                 for (auto& cv : m_chunk_views)
                 {
-                    const Entity* entity_array = cv.m_entity_array;
+                    const Entity* entities = cv.m_entity_array;
                     usize count = cv.m_count;
+                    if (count == 0) continue;
                     usize stride = cv.m_total_size_per_entity;
-                    std::array<std::byte*, sizeof...(I)> bases = { (cv.m_data + cv.m_component_offsets[I])... };
+                    std::byte* __restrict bases[sizeof...(I)] = { cv.m_data + cv.m_component_offsets[I]... };
                     for (usize j = 0; j < count; ++j)
                     {
-                        func(entity_array[j], *reinterpret_cast<std::tuple_element_t<I, IncludedTypes>*>(bases[I])...);
+                        func(
+                            entities[j],
+                            *reinterpret_cast<std::tuple_element_t<I, IncludedTypes>*>(bases[I])...
+                        );
                         ((bases[I] += stride), ...);
                     }
                 }
